@@ -32,7 +32,7 @@ class StateApplierTest {
         );
 
         // When
-        final TodoStateApplier todoStateApplier = new TodoStateApplier(givenEvents);
+        final StateApplier<Todo, TodoId> todoStateApplier = new TodoStateApplier(givenEvents);
 
         // Then
         assertAll(
@@ -50,7 +50,7 @@ class StateApplierTest {
         );
 
         // When
-        final TodoStateApplier todoStateApplier = new TodoStateApplier(givenEvents);
+        final StateApplier<Todo, TodoId> todoStateApplier = new TodoStateApplier(givenEvents);
 
         // Then
         assertThat(todoStateApplier.getNewEvents()).isEmpty();
@@ -62,7 +62,7 @@ class StateApplierTest {
         final List<Event<TodoId>> givenEvents = List.of(
                 new NewTodoCreated(new TodoId(new UUID(0,0)), "lorem ipsum")
         );
-        final TodoStateApplier todoStateApplier = new TodoStateApplier(givenEvents);
+        final StateApplier<Todo, TodoId> todoStateApplier = new TodoStateApplier(givenEvents);
 
         // When
         todoStateApplier.append(new TodoMarkedAsDone(new TodoId(new UUID(0,0))));
@@ -71,17 +71,5 @@ class StateApplierTest {
         assertThat(todoStateApplier.getNewEvents()).containsExactly(
                 new VersionizedEvent<>(new AggregateVersion(1), new TodoMarkedAsDone(new TodoId(new UUID(0,0))))
         );
-    }
-
-    static class TodoStateApplier extends StateApplier<Todo, TodoId> {
-
-        public TodoStateApplier(final List<Event<TodoId>> events) {
-            super(new ReflectionAggregateRootInstanceCreator(), events);
-        }
-
-        @Override
-        Class<Todo> getAggregateClass() {
-            return Todo.class;
-        }
     }
 }

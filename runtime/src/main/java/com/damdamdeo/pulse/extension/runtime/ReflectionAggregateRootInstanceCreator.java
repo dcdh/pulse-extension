@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.runtime;
 
-public final class ReflectionAggregateRootInstanceCreator implements AggregateRootInstanceCreator {
+final class ReflectionAggregateRootInstanceCreator implements AggregateRootInstanceCreator {
 
     @Override
     public <A extends AggregateRoot<?>> A create(final Class<A> clazz) {
