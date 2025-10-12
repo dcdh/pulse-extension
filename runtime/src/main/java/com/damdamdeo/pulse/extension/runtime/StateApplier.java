@@ -9,8 +9,9 @@ abstract class StateApplier<A extends AggregateRoot<K>, K extends AggregateId<?>
     private static final String EVENT_HANDLER_METHOD_NAMING = "on";
 
     private final A aggregate;
-    private final List<Event<K>> newEvents;
+    private final List<VersionizedEvent<K>> newEvents;
     private final Map<Class<Event<?>>, Method> cacheEventMethods;
+    private AggregateVersion aggregateVersion;
 
     public StateApplier(final AggregateRootInstanceCreator aggregateRootInstanceCreator,
                         final List<Event<K>> events) {
@@ -31,6 +32,7 @@ abstract class StateApplier<A extends AggregateRoot<K>, K extends AggregateId<?>
                 ));
         events.forEach(this::apply);
         this.newEvents = new ArrayList<>();
+        this.aggregateVersion = new AggregateVersion(events.size());
     }
 
     abstract Class<A> getAggregateClass();
@@ -39,7 +41,8 @@ abstract class StateApplier<A extends AggregateRoot<K>, K extends AggregateId<?>
     public void append(final Event<K> event) {
         Objects.requireNonNull(event);
         apply(event);
-        this.newEvents.add(event);
+        this.newEvents.add(new VersionizedEvent<>(this.aggregateVersion, event));
+        this.aggregateVersion = this.aggregateVersion.increment();
     }
 
     private void apply(final Event<K> event) {
@@ -60,7 +63,7 @@ abstract class StateApplier<A extends AggregateRoot<K>, K extends AggregateId<?>
         return aggregate;
     }
 
-    public List<Event<K>> getNewEvents() {
+    public List<VersionizedEvent<K>> getNewEvents() {
         return newEvents;
     }
 }

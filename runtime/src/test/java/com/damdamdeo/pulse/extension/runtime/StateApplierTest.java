@@ -41,6 +41,38 @@ class StateApplierTest {
                 () -> assertThat(todoStateApplier.aggregate().status()).isEqualTo(Status.DONE));
     }
 
+    @Test
+    void shouldNewVersionizedEventsIsEmptyWhenCommandsNotCalled() {
+        // Given
+        final List<Event<TodoId>> givenEvents = List.of(
+                new NewTodoCreated(new TodoId(new UUID(0,0)), "lorem ipsum"),
+                new TodoMarkedAsDone(new TodoId(new UUID(0,0)))
+        );
+
+        // When
+        final TodoStateApplier todoStateApplier = new TodoStateApplier(givenEvents);
+
+        // Then
+        assertThat(todoStateApplier.getNewEvents()).isEmpty();
+    }
+
+    @Test
+    void shouldIncrementOnAppendANewEvent() {
+        // Given
+        final List<Event<TodoId>> givenEvents = List.of(
+                new NewTodoCreated(new TodoId(new UUID(0,0)), "lorem ipsum")
+        );
+        final TodoStateApplier todoStateApplier = new TodoStateApplier(givenEvents);
+
+        // When
+        todoStateApplier.append(new TodoMarkedAsDone(new TodoId(new UUID(0,0))));
+
+        // Then
+        assertThat(todoStateApplier.getNewEvents()).containsExactly(
+                new VersionizedEvent<>(new AggregateVersion(1), new TodoMarkedAsDone(new TodoId(new UUID(0,0))))
+        );
+    }
+
     static class TodoStateApplier extends StateApplier<Todo, TodoId> {
 
         public TodoStateApplier(final List<Event<TodoId>> events) {
