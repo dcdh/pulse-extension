@@ -12,6 +12,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.damdamdeo</groupId>
+            <artifactId>pulse-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
