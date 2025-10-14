@@ -1,5 +1,5 @@
 package com.damdamdeo.pulse.extension.core;
 
-public interface AggregateId<K> {
-    K id();
+public interface AggregateId {
+    String id();
 }

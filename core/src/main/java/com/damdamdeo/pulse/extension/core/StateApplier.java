@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class StateApplier<A extends AggregateRoot<K>, K extends AggregateId<?>> implements EventAppender<K> {
+public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateId> implements EventAppender<K> {
 
     private static final String COMMAND_HANDLER_METHOD_NAMING = "handle";
     private static final String EVENT_HANDLER_METHOD_NAMING = "on";
@@ -16,13 +16,14 @@ public abstract class StateApplier<A extends AggregateRoot<K>, K extends Aggrega
     private AggregateVersion aggregateVersion;
 
     public StateApplier(final AggregateRootInstanceCreator aggregateRootInstanceCreator,
-                        final List<Event<K>> events) {
+                        final List<Event<K>> events,
+                        final Class<A> aggregateClass) {
         Objects.requireNonNull(aggregateRootInstanceCreator);
         Objects.requireNonNull(events);
-        this.aggregate = aggregateRootInstanceCreator.create(getAggregateClass());
+        this.aggregate = aggregateRootInstanceCreator.create(aggregateClass);
         // TODO will be created each time a StateApplier is created thus each time an Aggregate is created, loaded
         // This should be defined globally elsewhere
-        this.cacheCommandHandlerMethods = Arrays.stream(getAggregateClass().getDeclaredMethods())
+        this.cacheCommandHandlerMethods = Arrays.stream(aggregateClass.getDeclaredMethods())
                 .filter(m -> COMMAND_HANDLER_METHOD_NAMING.equals(m.getName()))
                 .filter(m -> m.getParameterCount() == 2)
                 .filter(m -> Command.class.isAssignableFrom(m.getParameterTypes()[0]))
@@ -33,7 +34,7 @@ public abstract class StateApplier<A extends AggregateRoot<K>, K extends Aggrega
                         m -> m,
                         (m1, m2) -> m1
                 ));
-        this.cacheEventMethods = Arrays.stream(getAggregateClass().getDeclaredMethods())
+        this.cacheEventMethods = Arrays.stream(aggregateClass.getDeclaredMethods())
                 .filter(m -> EVENT_HANDLER_METHOD_NAMING.equals(m.getName()))
                 .filter(m -> m.getParameterCount() == 1)
                 .filter(m -> Event.class.isAssignableFrom(m.getParameterTypes()[0]))
@@ -47,8 +48,6 @@ public abstract class StateApplier<A extends AggregateRoot<K>, K extends Aggrega
         this.newEvents = new ArrayList<>();
         this.aggregateVersion = new AggregateVersion(events.size());
     }
-
-    abstract protected Class<A> getAggregateClass();
 
     @Override
     public void append(final Event<K> event) {

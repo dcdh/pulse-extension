@@ -13,11 +13,13 @@ class StateApplierTest {
 
     @Test
     void shouldFailToApplyOnDifferentAggregateIdentifier() {
-        assertThatThrownBy(() -> new TodoStateApplier(
+        assertThatThrownBy(() -> new StateApplier<>(
+                new ReflectionAggregateRootInstanceCreator(),
                 List.of(
-                        new NewTodoCreated(new TodoId(new UUID(0,0)), "lorem ipsum"),
-                        new TodoMarkedAsDone(new TodoId(new UUID(0,1)))
-                )
+                        new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum"),
+                        new TodoMarkedAsDone(TodoId.from(new UUID(0, 1)))
+                ),
+                Todo.class
         ))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Applying event on an aggregate with different id.");
@@ -27,16 +29,17 @@ class StateApplierTest {
     void shouldApplyEvents() {
         // Given
         final List<Event<TodoId>> givenEvents = List.of(
-                new NewTodoCreated(new TodoId(new UUID(0,0)), "lorem ipsum"),
-                new TodoMarkedAsDone(new TodoId(new UUID(0,0)))
+                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum"),
+                new TodoMarkedAsDone(TodoId.from(new UUID(0, 0)))
         );
 
         // When
-        final StateApplier<Todo, TodoId> todoStateApplier = new TodoStateApplier(givenEvents);
+        final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
+                new ReflectionAggregateRootInstanceCreator(), givenEvents, Todo.class);
 
         // Then
         assertAll(
-                () -> assertThat(todoStateApplier.aggregate().id()).isEqualTo(new TodoId(new UUID(0,0))),
+                () -> assertThat(todoStateApplier.aggregate().id()).isEqualTo(TodoId.from(new UUID(0, 0))),
                 () -> assertThat(todoStateApplier.aggregate().description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoStateApplier.aggregate().status()).isEqualTo(Status.DONE));
     }
@@ -45,12 +48,13 @@ class StateApplierTest {
     void shouldNewVersionizedEventsIsEmptyWhenCommandsNotCalled() {
         // Given
         final List<Event<TodoId>> givenEvents = List.of(
-                new NewTodoCreated(new TodoId(new UUID(0,0)), "lorem ipsum"),
-                new TodoMarkedAsDone(new TodoId(new UUID(0,0)))
+                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum"),
+                new TodoMarkedAsDone(TodoId.from(new UUID(0, 0)))
         );
 
         // When
-        final StateApplier<Todo, TodoId> todoStateApplier = new TodoStateApplier(givenEvents);
+        final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
+                new ReflectionAggregateRootInstanceCreator(), givenEvents, Todo.class);
 
         // Then
         assertThat(todoStateApplier.getNewEvents()).isEmpty();
@@ -60,16 +64,17 @@ class StateApplierTest {
     void shouldIncrementOnAppendANewEvent() {
         // Given
         final List<Event<TodoId>> givenEvents = List.of(
-                new NewTodoCreated(new TodoId(new UUID(0,0)), "lorem ipsum")
+                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum")
         );
-        final StateApplier<Todo, TodoId> todoStateApplier = new TodoStateApplier(givenEvents);
+        final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
+                new ReflectionAggregateRootInstanceCreator(), givenEvents, Todo.class);
 
         // When
-        todoStateApplier.append(new TodoMarkedAsDone(new TodoId(new UUID(0,0))));
+        todoStateApplier.append(new TodoMarkedAsDone(TodoId.from(new UUID(0, 0))));
 
         // Then
         assertThat(todoStateApplier.getNewEvents()).containsExactly(
-                new VersionizedEvent<>(new AggregateVersion(1), new TodoMarkedAsDone(new TodoId(new UUID(0,0))))
+                new VersionizedEvent<>(new AggregateVersion(1), new TodoMarkedAsDone(TodoId.from(new UUID(0, 0))))
         );
     }
 }
