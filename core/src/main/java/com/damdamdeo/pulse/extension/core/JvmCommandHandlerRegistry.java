@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-public final class JvmCommandHandlerRegistry implements CommandHandlerRegistry {
+public class JvmCommandHandlerRegistry implements CommandHandlerRegistry {
 
     private final ConcurrentHashMap<AggregateId, ReentrantLock> locks = new ConcurrentHashMap<>();
 
