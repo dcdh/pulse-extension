@@ -23,7 +23,7 @@ public class TodoCommandHandlerTest {
 
     @BeforeEach
     public void setUp() {
-        todoCommandHandler = new TodoCommandHandler(eventRepository, new NoOpTransaction());
+        todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), eventRepository, new NoOpTransaction());
     }
 
     @Test
