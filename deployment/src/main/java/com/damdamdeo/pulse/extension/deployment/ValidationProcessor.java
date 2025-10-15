@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class ValidationProcessor {
-    //FCKje dois tester que l'aggregate à un constructeur emptu !!
+
+    // TODO tester empty constructor
 
     @BuildStep
     void mapToQuarkusValidationErrorBuildItem(final List<ValidationErrorBuildItem> validationErrorBuildItems,

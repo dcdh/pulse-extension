@@ -2,8 +2,9 @@ package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
-import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
+import com.damdamdeo.pulse.extension.core.event.EventRepository;
+import com.damdamdeo.pulse.extension.core.event.QueryEventStore;
 import com.damdamdeo.pulse.extension.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.runtime.JdbcEventRepository;
 import io.quarkus.arc.DefaultBean;
@@ -42,6 +43,66 @@ public class CodeGenerationProcessor {
                     .build()) {
                 beanClassCreator.addAnnotation(Singleton.class);
                 beanClassCreator.addAnnotation(DefaultBean.class);
+
+                try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getAggregateClass", Class.class)) {
+                    getAggregateClass.setModifiers(Modifier.PROTECTED);
+                    getAggregateClass.returnValue(
+                            getAggregateClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
+                }
+
+                beanClassCreator.writeTo((name, data) -> {
+                    final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
+                    try {
+                        if (Files.notExists(classGeneratedPath)) {
+                            Files.createFile(classGeneratedPath);
+                        }
+                        Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
+                    } catch (final IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        });
+    }
+
+    @BuildStep
+    void generateQueryEventStore(final List<AggregateRootBuildItem> aggregateRootBuildItems,
+                                 final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
+                                 final OutputTargetBuildItem outputTargetBuildItem) {
+        aggregateRootBuildItems.forEach(aggregateRootBuildItem -> {
+            try (final ClassCreator beanClassCreator = ClassCreator.builder()
+                    .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
+                    .className(aggregateRootBuildItem.aggregateRootClazz().getName().replaceAll("\\$", "_") + "QueryEventStoreGenerated")
+                    .signature(SignatureBuilder.forClass()
+                            .setSuperClass(
+                                    Type.parameterizedType(
+                                            Type.classType(QueryEventStore.class),
+                                            Type.classType(aggregateRootBuildItem.aggregateRootClazz()),
+                                            Type.classType(aggregateRootBuildItem.aggregateIdClazz()))))
+                    .setFinal(true)
+                    .build()) {
+                beanClassCreator.addAnnotation(Singleton.class);
+                beanClassCreator.addAnnotation(DefaultBean.class);
+
+                try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
+                        EventRepository.class)) {
+                    constructor
+                            .setSignature(SignatureBuilder.forMethod()
+                                    .addParameterType(Type.parameterizedType(
+                                            Type.classType(EventRepository.class),
+                                            Type.classType(aggregateRootBuildItem.aggregateRootClazz()),
+                                            Type.classType(aggregateRootBuildItem.aggregateIdClazz())))
+                                    .build());
+                    constructor.setModifiers(Modifier.PUBLIC);
+
+                    constructor.invokeSpecialMethod(
+                            MethodDescriptor.ofConstructor(QueryEventStore.class, EventRepository.class),
+                            constructor.getThis(),
+                            constructor.getMethodParam(0)
+                    );
+
+                    constructor.returnValue(null);
+                }
 
                 try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getAggregateClass", Class.class)) {
                     getAggregateClass.setModifiers(Modifier.PROTECTED);

@@ -18,6 +18,18 @@ public final class Todo implements AggregateRoot<TodoId> {
     private Status status;
     private boolean important = false;
 
+    public Todo() {}
+
+    public Todo(final TodoId id,
+                final String description,
+                final Status status,
+                boolean important) {
+        this.id = Objects.requireNonNull(id);
+        this.description = Objects.requireNonNull(description);
+        this.status = Objects.requireNonNull(status);
+        this.important = important;
+    }
+
     public void handle(final CreateTodo createTodo, final EventAppender<TodoId> eventAppender) {
         Objects.requireNonNull(createTodo);
         Objects.requireNonNull(eventAppender);
@@ -64,5 +76,30 @@ public final class Todo implements AggregateRoot<TodoId> {
 
     public boolean important() {
         return important;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Todo todo = (Todo) o;
+        return important == todo.important
+                && Objects.equals(id, todo.id)
+                && Objects.equals(description, todo.description)
+                && status == todo.status;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, description, status, important);
+    }
+
+    @Override
+    public String toString() {
+        return "Todo{" +
+                "id=" + id +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                ", important=" + important +
+                '}';
     }
 }
