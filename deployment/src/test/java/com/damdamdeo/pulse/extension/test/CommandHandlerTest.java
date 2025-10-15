@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.test;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.command.CommandHandler;
+import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;

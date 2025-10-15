@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.test;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.runtime.InstantProvider;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -72,7 +73,7 @@ class JdbcEventRepositoryTest {
                     () -> assertThat(rs.getString("aggregateroottype")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
                     () -> assertThat(rs.getLong("version")).isEqualTo(0),
                     () -> assertThat(rs.getString("creationdate")).isEqualTo("2025-10-13 20:00:00"),
-                    () -> assertThat(rs.getString("eventtype")).isEqualTo("com.damdamdeo.pulse.extension.core.NewTodoCreated"),
+                    () -> assertThat(rs.getString("eventtype")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
                     () -> assertThat(rs.getString("eventpayload")).isEqualTo("{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000000\"}, \"description\": \"lorem ipsum\"}"));
         } catch (SQLException e) {
             throw new RuntimeException(e);

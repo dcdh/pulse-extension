@@ -1,6 +1,10 @@
 package com.damdamdeo.pulse.extension.runtime;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.event.Event;
+import com.damdamdeo.pulse.extension.core.event.EventRepository;
+import com.damdamdeo.pulse.extension.core.event.EventStoreException;
+import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;

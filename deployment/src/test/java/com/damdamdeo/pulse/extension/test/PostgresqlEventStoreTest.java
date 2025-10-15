@@ -57,12 +57,12 @@ class PostgresqlEventStoreTest {
     void shouldFailWhenEventIsAlreadyPresent() throws SQLException {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000002", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.NewTodoCreated",
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
                 "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000002\"}, \"description\": \"lorem ipsum\"}");
 
         // When && Then
         assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000002", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.NewTodoCreated",
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
                 "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000002\"}, \"description\": \"lorem ipsum\"}"))
                 .isInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: Event already present while should not be ! aggregaterootid 00000000-0000-0000-0000-000000000002 aggregateroottype com.damdamdeo.pulse.extension.core.Todo");
@@ -72,7 +72,7 @@ class PostgresqlEventStoreTest {
     void shouldFailWhenNewVersionIsNotPreviousOnePlusOne() throws SQLException {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000003", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.NewTodoCreated",
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
                 "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000003\"}, \"description\": \"lorem ipsum\"}");
 
         // When && Then
@@ -87,7 +87,7 @@ class PostgresqlEventStoreTest {
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEvent() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000004", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.NewTodoCreated",
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
                 "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000004\"}, \"description\": \"lorem ipsum\"}");
 
         assertThatThrownBy(() -> {
@@ -107,7 +107,7 @@ class PostgresqlEventStoreTest {
     @Test
     void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000005", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.NewTodoCreated",
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
                 "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000005\"}, \"description\": \"lorem ipsum\"}");
 
         assertThatThrownBy(() -> {

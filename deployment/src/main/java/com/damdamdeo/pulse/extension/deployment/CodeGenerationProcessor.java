@@ -1,9 +1,9 @@
 package com.damdamdeo.pulse.extension.deployment;
 
-import com.damdamdeo.pulse.extension.core.CommandHandler;
-import com.damdamdeo.pulse.extension.core.CommandHandlerRegistry;
-import com.damdamdeo.pulse.extension.core.EventRepository;
-import com.damdamdeo.pulse.extension.core.Transaction;
+import com.damdamdeo.pulse.extension.core.command.CommandHandler;
+import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
+import com.damdamdeo.pulse.extension.core.event.EventRepository;
+import com.damdamdeo.pulse.extension.core.command.Transaction;
 import com.damdamdeo.pulse.extension.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.runtime.JdbcEventRepository;
 import io.quarkus.arc.DefaultBean;

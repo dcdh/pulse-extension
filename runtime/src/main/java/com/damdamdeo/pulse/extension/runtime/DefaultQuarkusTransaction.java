@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.Transaction;
+import com.damdamdeo.pulse.extension.core.command.Transaction;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.narayana.jta.QuarkusTransaction;

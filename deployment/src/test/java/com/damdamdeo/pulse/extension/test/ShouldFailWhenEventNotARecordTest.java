@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.test;
 
-import com.damdamdeo.pulse.extension.core.Event;
+import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import io.quarkus.test.QuarkusUnitTest;
 import org.junit.jupiter.api.Assertions;

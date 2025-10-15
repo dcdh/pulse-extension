@@ -17,6 +17,9 @@
 package com.damdamdeo.pulse.extension.it;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.command.CommandHandler;
+import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;

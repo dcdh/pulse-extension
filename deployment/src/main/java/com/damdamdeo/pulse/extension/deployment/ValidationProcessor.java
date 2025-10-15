@@ -1,8 +1,8 @@
 package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.Command;
-import com.damdamdeo.pulse.extension.core.Event;
+import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;

@@ -1,5 +1,12 @@
 package com.damdamdeo.pulse.extension.core;
 
+import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
+import com.damdamdeo.pulse.extension.core.event.ClassifiedAsImportant;
+import com.damdamdeo.pulse.extension.core.event.EventAppender;
+import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
+
 import java.util.Objects;
 
 public final class Todo implements AggregateRoot<TodoId> {

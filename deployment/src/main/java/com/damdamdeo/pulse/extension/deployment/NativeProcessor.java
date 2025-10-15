@@ -2,8 +2,8 @@ package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.Command;
-import com.damdamdeo.pulse.extension.core.Event;
+import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.event.Event;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;

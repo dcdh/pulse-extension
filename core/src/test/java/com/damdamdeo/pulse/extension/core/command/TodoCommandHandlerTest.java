@@ -1,5 +1,7 @@
-package com.damdamdeo.pulse.extension.core;
+package com.damdamdeo.pulse.extension.core.command;
 
+import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.event.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

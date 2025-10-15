@@ -1,5 +1,6 @@
-package com.damdamdeo.pulse.extension.core;
+package com.damdamdeo.pulse.extension.core.event;
 
+import com.damdamdeo.pulse.extension.core.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

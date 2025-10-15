@@ -1,4 +1,7 @@
-package com.damdamdeo.pulse.extension.core;
+package com.damdamdeo.pulse.extension.core.event;
+
+import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.command.Command;
 
 import java.lang.reflect.Method;
 import java.util.*;

@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.deployment;
 
-import com.damdamdeo.pulse.extension.core.JvmCommandHandlerRegistry;
+import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.runtime.DefaultQuarkusTransaction;
 import com.damdamdeo.pulse.extension.runtime.PostgresqlEventStoreInitializer;

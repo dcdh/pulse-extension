@@ -1,4 +1,8 @@
-package com.damdamdeo.pulse.extension.core;
+package com.damdamdeo.pulse.extension.core.command;
+
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.event.EventRepository;
 
 public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
 

@@ -1,4 +1,12 @@
-package com.damdamdeo.pulse.extension.core;
+package com.damdamdeo.pulse.extension.core.command;
+
+import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateRoot;
+import com.damdamdeo.pulse.extension.core.ReflectionAggregateRootInstanceCreator;
+import com.damdamdeo.pulse.extension.core.event.Event;
+import com.damdamdeo.pulse.extension.core.event.EventRepository;
+import com.damdamdeo.pulse.extension.core.event.StateApplier;
+import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
 
 import java.util.List;
 import java.util.Objects;
