@@ -14,6 +14,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends AggregateId> implements EventRepository<A, K> {
 
@@ -82,9 +83,35 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
                                         Class.forName(resultSet.getString("eventtype"))));
                     }
                 } catch (ClassNotFoundException | JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    throw new EventStoreException(e);
                 }
                 return events;
+            }
+        } catch (final SQLException e) {
+            throw new EventStoreException(e);
+        }
+    }
+
+    // FCK tester bordel de merde !
+    @Override
+    public Optional<AggregateVersion> getLastVersionByAggregateId(final AggregateId aggregateId) throws EventStoreException {
+        Objects.requireNonNull(aggregateId);
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement preparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT version FROM T_EVENT e WHERE e.aggregaterootid = ? AND e.aggregateroottype = ?
+                             ORDER BY version DESC LIMIT 1
+                             """)) {
+            preparedStatement.setString(1, aggregateId.id());
+            preparedStatement.setString(2, getAggregateClass().getName());
+            try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(new AggregateVersion(
+                            resultSet.getInt("version")));
+                } else {
+                    return Optional.empty();
+                }
             }
         } catch (final SQLException e) {
             throw new EventStoreException(e);
