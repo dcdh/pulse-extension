@@ -33,7 +33,7 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
              final PreparedStatement preparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO T_EVENT (aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventpayload) 
+                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload) 
                              VALUES (?, ?, ?, ?, ?, to_json(?::json))
                              """)) {
             connection.setAutoCommit(false);
@@ -59,12 +59,12 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
              final PreparedStatement nbOfEventsStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT COUNT(*) AS nbOfEvents FROM T_EVENT e WHERE e.aggregaterootid = ? AND e.aggregateroottype = ?
+                             SELECT COUNT(*) AS nbOfEvents FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ?
                              """);
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT * FROM T_EVENT e WHERE e.aggregaterootid = ? AND e.aggregateroottype = ? ORDER BY e.version ASC
+                             SELECT * FROM T_EVENT e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             nbOfEventsStmt.setString(1, id.id());
@@ -78,8 +78,8 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
                         events.add((Event<K>)
-                                objectMapper.readValue(resultSet.getString("eventpayload"),
-                                        Class.forName(resultSet.getString("eventtype"))));
+                                objectMapper.readValue(resultSet.getString("event_payload"),
+                                        Class.forName(resultSet.getString("event_type"))));
                     }
                 } catch (ClassNotFoundException | JsonProcessingException e) {
                     throw new RuntimeException(e);

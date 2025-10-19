@@ -1,18 +1,18 @@
 DO $$
 BEGIN
 
-  CREATE TABLE IF NOT EXISTS T_EVENT (
-    aggregaterootid character varying(255) not null,
-    aggregateroottype character varying(255) not null,
+  CREATE TABLE IF NOT EXISTS t_event (
+    aggregate_root_id character varying(255) not null,
+    aggregate_root_type character varying(255) not null,
     version bigint not null,
-    creationdate timestamp without time zone not null,
-    eventtype character varying(255) not null,
-    eventpayload jsonb not null,
-    CONSTRAINT event_pkey PRIMARY KEY (aggregaterootid, aggregateroottype, version),
-    CONSTRAINT event_unique UNIQUE (aggregaterootid, aggregateroottype, version)
+    creation_date timestamp without time zone not null,
+    event_type character varying(255) not null,
+    event_payload jsonb not null,
+    CONSTRAINT event_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type, version),
+    CONSTRAINT event_unique UNIQUE (aggregate_root_id, aggregate_root_type, version)
   );
-  CREATE INDEX IF NOT EXISTS idx_t_event_aggregateRootIdentifier ON T_EVENT USING BTREE (aggregaterootid, aggregateroottype);
-  CREATE INDEX IF NOT EXISTS idx_t_event_payload_gin ON T_EVENT USING gin (eventpayload);
+  CREATE INDEX IF NOT EXISTS idx_t_event_aggregate_root_identifier ON t_event USING BTREE (aggregate_root_id, aggregate_root_type);
+  CREATE INDEX IF NOT EXISTS idx_t_event_payload_gin ON t_event USING gin (event_payload);
   IF EXISTS (SELECT 1 FROM information_schema.routines WHERE routine_name = 'event_check_version_on_create') THEN
     RAISE NOTICE 'Routine event_check_version_on_create EXISTS';
   ELSE
@@ -22,11 +22,11 @@ BEGIN
       last_version INTEGER;
       expected_version INTEGER;
     BEGIN
-      SELECT COUNT(*) INTO event_count FROM T_EVENT WHERE aggregaterootid = NEW.aggregaterootid AND aggregateroottype = NEW.aggregateroottype;
+      SELECT COUNT(*) INTO event_count FROM t_event WHERE aggregate_root_id = NEW.aggregate_root_id AND aggregate_root_type = NEW.aggregate_root_type;
       IF NEW.version = 0 AND event_count > 0 THEN
-        RAISE EXCEPTION 'Event already present while should not be ! aggregaterootid % aggregateroottype %', NEW.aggregaterootid, NEW.aggregateroottype;
+        RAISE EXCEPTION 'Event already present while should not be ! aggregate_root_id % aggregate_root_type %', NEW.aggregate_root_id, NEW.aggregate_root_type;
       END IF;
-      SELECT version INTO last_version FROM T_EVENT WHERE aggregaterootid = NEW.aggregaterootid AND aggregateroottype = NEW.aggregateroottype ORDER BY version DESC LIMIT 1;
+      SELECT version INTO last_version FROM t_event WHERE aggregate_root_id = NEW.aggregate_root_id AND aggregate_root_type = NEW.aggregate_root_type ORDER BY version DESC LIMIT 1;
       expected_version = last_version + 1;
       IF NEW.version != expected_version THEN
         RAISE EXCEPTION 'current version unexpected % - expected version %', NEW.version, expected_version;
@@ -38,7 +38,7 @@ BEGIN
 
   BEGIN
     CREATE TRIGGER event_check_version_on_create_trigger
-    BEFORE INSERT ON T_EVENT FOR EACH ROW
+    BEFORE INSERT ON t_event FOR EACH ROW
     EXECUTE FUNCTION event_check_version_on_create();
     EXCEPTION
       WHEN duplicate_object THEN
@@ -57,7 +57,7 @@ BEGIN
 
   BEGIN
     CREATE TRIGGER event_immutable_trigger
-    BEFORE UPDATE ON T_EVENT FOR EACH ROW
+    BEFORE UPDATE ON t_event FOR EACH ROW
     EXECUTE FUNCTION event_immutable();
     EXCEPTION
       WHEN duplicate_object THEN
@@ -76,7 +76,7 @@ BEGIN
 
   BEGIN
     CREATE TRIGGER event_not_deletable_trigger
-    BEFORE DELETE ON T_EVENT FOR EACH ROW
+    BEFORE DELETE ON t_event FOR EACH ROW
     EXECUTE FUNCTION event_not_deletable();
     EXCEPTION
       WHEN duplicate_object THEN
@@ -85,7 +85,7 @@ BEGIN
 
   BEGIN
     CREATE TRIGGER event_table_not_truncable_trigger
-    BEFORE TRUNCATE ON T_EVENT
+    BEFORE TRUNCATE ON t_event
     EXECUTE FUNCTION event_not_deletable();
     EXCEPTION
       WHEN duplicate_object THEN

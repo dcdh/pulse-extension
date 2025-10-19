@@ -65,7 +65,7 @@ class PostgresqlEventStoreTest {
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
                 "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000002\"}, \"description\": \"lorem ipsum\"}"))
                 .isInstanceOf(PSQLException.class)
-                .hasMessageContaining("ERROR: Event already present while should not be ! aggregaterootid 00000000-0000-0000-0000-000000000002 aggregateroottype com.damdamdeo.pulse.extension.core.Todo");
+                .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000002 aggregate_root_type com.damdamdeo.pulse.extension.core.Todo");
     }
 
     @Test
@@ -95,8 +95,8 @@ class PostgresqlEventStoreTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE public.t_event SET eventpayload = '{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000004\"}, \"description\": \"lorem ipsum 2\"}'
-                                 WHERE aggregaterootid = '00000000-0000-0000-0000-000000000004'
+                                 UPDATE public.t_event SET event_payload = '{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000004\"}, \"description\": \"lorem ipsum 2\"}'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000004'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
@@ -115,7 +115,7 @@ class PostgresqlEventStoreTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 DELETE FROM public.t_event WHERE aggregaterootid = '00000000-0000-0000-0000-000000000005'
+                                 DELETE FROM public.t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000005'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
@@ -144,7 +144,7 @@ class PostgresqlEventStoreTest {
              final PreparedStatement preparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO T_EVENT (aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventpayload) 
+                             INSERT INTO T_EVENT (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload) 
                              VALUES (?, ?, ?, ?, ?, to_json(?::json))
                              """)) {
             preparedStatement.setString(1, aggregateRootId);

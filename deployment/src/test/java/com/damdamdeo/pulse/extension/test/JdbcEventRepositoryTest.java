@@ -63,18 +63,18 @@ class JdbcEventRepositoryTest {
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregaterootid, aggregateroottype, version, creationdate, eventtype, eventpayload
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload
                                  FROM public.t_event
                              """);
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
             assertAll(
-                    () -> assertThat(rs.getString("aggregaterootid")).isEqualTo("00000000-0000-0000-0000-000000000000"),
-                    () -> assertThat(rs.getString("aggregateroottype")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                    () -> assertThat(rs.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000000"),
+                    () -> assertThat(rs.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
                     () -> assertThat(rs.getLong("version")).isEqualTo(0),
-                    () -> assertThat(rs.getString("creationdate")).isEqualTo("2025-10-13 20:00:00"),
-                    () -> assertThat(rs.getString("eventtype")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
-                    () -> assertThat(rs.getString("eventpayload")).isEqualTo("{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000000\"}, \"description\": \"lorem ipsum\"}"));
+                    () -> assertThat(rs.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
+                    () -> assertThat(rs.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
+                    () -> assertThat(rs.getString("event_payload")).isEqualTo("{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000000\"}, \"description\": \"lorem ipsum\"}"));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
