@@ -1,15 +1,15 @@
 package com.damdamdeo.pulse.extension.core;
 
 import java.util.Objects;
-import java.util.UUID;
 
-public record TodoId(String id) implements AggregateId {
+public record TodoId(String owner, Long sequence) implements AggregateId {
 
     public TodoId {
-        Objects.requireNonNull(id);
+        Objects.requireNonNull(owner);
+        Objects.requireNonNull(sequence);
     }
 
-    public static TodoId from(final UUID id) {
-        return new TodoId(id.toString());
+    public String id() {
+        return owner + "/" + sequence;
     }
 }

@@ -87,12 +87,12 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(TodoId.from(new UUID(0, 1)), "lorem ipsum")));
+                        new NewTodoCreated(new TodoId("Damien", 1L), "lorem ipsum")));
 
         // When
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        TodoId.from(new UUID(0, 1)),
+                        new TodoId("Damien", 1L),
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
@@ -112,16 +112,16 @@ class JdbcPostgresEventRepositoryTest {
                                  SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload
                                  FROM public.t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
-            tEventPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000001");
+            tEventPreparedStatement.setString(1, "Damien/1");
             tEventPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
-            tAggregateRootPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000001");
+            tAggregateRootPreparedStatement.setString(1, "Damien/1");
             tAggregateRootPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 tAggregateRootResultSet.next();
                 assertAll(
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000001"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/1"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
@@ -131,7 +131,8 @@ class JdbcPostgresEventRepositoryTest {
                                 """
                                         {
                                           "id": {
-                                            "id": "00000000-0000-0000-0000-000000000001"
+                                            "owner": "Damien",
+                                            "sequence": 1
                                           },
                                           "description": "lorem ipsum"
                                         }
@@ -140,7 +141,7 @@ class JdbcPostgresEventRepositoryTest {
                                 JSONCompareMode.STRICT),
 
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
-                                "00000000-0000-0000-0000-000000000001"),
+                                "Damien/1"),
                         () -> assertThat(tAggregateRootResultSet.getString(
                                 "aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
@@ -151,7 +152,8 @@ class JdbcPostgresEventRepositoryTest {
                                 """
                                         {
                                           "id": {
-                                            "id": "00000000-0000-0000-0000-000000000001"
+                                            "owner": "Damien",
+                                            "sequence": 1
                                           },
                                           "status": "IN_PROGRESS",
                                           "important": false,
@@ -170,10 +172,10 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         todoEventRepository.save(List.of(
                         new VersionizedEvent<>(new AggregateVersion(0),
-                                new NewTodoCreated(TodoId.from(new UUID(0, 2)), "lorem ipsum")
+                                new NewTodoCreated(new TodoId("Damien", 2L), "lorem ipsum")
                         )),
                 new Todo(
-                        TodoId.from(new UUID(0, 2)),
+                        new TodoId("Damien", 2L),
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
@@ -182,10 +184,10 @@ class JdbcPostgresEventRepositoryTest {
         // When
         todoEventRepository.save(List.of(
                         new VersionizedEvent<>(new AggregateVersion(1),
-                                new TodoMarkedAsDone(TodoId.from(new UUID(0, 2)))
+                                new TodoMarkedAsDone(new TodoId("Damien", 2L))
                         )),
                 new Todo(
-                        TodoId.from(new UUID(0, 2)),
+                        new TodoId("Damien", 2L),
                         "lorem ipsum",
                         Status.DONE,
                         false
@@ -205,15 +207,15 @@ class JdbcPostgresEventRepositoryTest {
                                  SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload
                                  FROM public.t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
-            tEventPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000002");
+            tEventPreparedStatement.setString(1, "Damien/2");
             tEventPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
-            tAggregateRootPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000002");
+            tAggregateRootPreparedStatement.setString(1, "Damien/2");
             tAggregateRootPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 assertAll(
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000002"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
@@ -223,7 +225,8 @@ class JdbcPostgresEventRepositoryTest {
                                 """
                                         {
                                           "id": {
-                                            "id": "00000000-0000-0000-0000-000000000002"
+                                            "owner": "Damien",
+                                            "sequence": 2
                                           },
                                           "description": "lorem ipsum"
                                         }
@@ -232,7 +235,7 @@ class JdbcPostgresEventRepositoryTest {
                                 JSONCompareMode.STRICT));
                 tEventResultSet.next();
                 assertAll(
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000002"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
@@ -242,7 +245,8 @@ class JdbcPostgresEventRepositoryTest {
                                 """
                                         {
                                           "id": {
-                                            "id": "00000000-0000-0000-0000-000000000002"
+                                            "owner": "Damien",
+                                            "sequence": 2
                                           }
                                         }
                                         """,
@@ -251,7 +255,7 @@ class JdbcPostgresEventRepositoryTest {
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
-                                "00000000-0000-0000-0000-000000000002"),
+                                "Damien/2"),
                         () -> assertThat(tAggregateRootResultSet.getString(
                                 "aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
@@ -262,7 +266,8 @@ class JdbcPostgresEventRepositoryTest {
                                 """
                                         {
                                           "id": {
-                                            "id": "00000000-0000-0000-0000-000000000002"
+                                            "owner": "Damien",
+                                            "sequence": 2
                                           },
                                           "status": "DONE",
                                           "important": false,
@@ -285,24 +290,24 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(TodoId.from(new UUID(0, 3)), "lorem ipsum")),
+                        new NewTodoCreated(new TodoId("Damien", 3L), "lorem ipsum")),
                 new VersionizedEvent<>(new AggregateVersion(1),
-                        new TodoMarkedAsDone(TodoId.from(new UUID(0, 3)))));
+                        new TodoMarkedAsDone(new TodoId("Damien", 3L))));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        TodoId.from(new UUID(0, 3)),
+                        new TodoId("Damien", 3L),
                         "lorem ipsum",
                         Status.DONE,
                         false
                 ));
 
         // When
-        final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(TodoId.from(new UUID(0, 3)));
+        final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
 
         // Then
         assertThat(events).containsExactly(
-                new NewTodoCreated(TodoId.from(new UUID(0, 3)), "lorem ipsum"),
-                new TodoMarkedAsDone(TodoId.from(new UUID(0, 3))));
+                new NewTodoCreated(new TodoId("Damien", 3L), "lorem ipsum"),
+                new TodoMarkedAsDone(new TodoId("Damien", 3L)));
     }
 
     @Test
@@ -311,12 +316,12 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(TodoId.from(new UUID(0, 4)), "lorem ipsum")),
+                        new NewTodoCreated(new TodoId("Damien", 4L), "lorem ipsum")),
                 new VersionizedEvent<>(new AggregateVersion(1),
-                        new TodoMarkedAsDone(TodoId.from(new UUID(0, 4)))));
+                        new TodoMarkedAsDone(new TodoId("Damien", 4L))));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        TodoId.from(new UUID(0, 4)),
+                        new TodoId("Damien", 4L),
                         "lorem ipsum",
                         Status.DONE,
                         false
@@ -324,12 +329,12 @@ class JdbcPostgresEventRepositoryTest {
 
         // When
         final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(
-                TodoId.from(new UUID(0, 4)), new AggregateVersion(1));
+                new TodoId("Damien", 4L), new AggregateVersion(1));
 
         // Then
         assertThat(events).containsExactly(
-                new NewTodoCreated(TodoId.from(new UUID(0, 4)), "lorem ipsum"),
-                new TodoMarkedAsDone(TodoId.from(new UUID(0, 4))));
+                new NewTodoCreated(new TodoId("Damien", 4L), "lorem ipsum"),
+                new TodoMarkedAsDone(new TodoId("Damien", 4L)));
     }
 
     @Test
@@ -341,7 +346,8 @@ class JdbcPostgresEventRepositoryTest {
                 """
                         {
                           "id": {
-                            "id": "00000000-0000-0000-0000-000000000006"
+                            "owner": "Damien",
+                            "sequence": 6
                           },
                           "description": "lorem ipsum"
                         }
@@ -354,7 +360,8 @@ class JdbcPostgresEventRepositoryTest {
                 """
                         {
                           "id": {
-                            "id": "00000000-0000-0000-0000-000000000006"
+                            "owner": "Damien",
+                            "sequence": 6
                           },
                           "description": "lorem ipsum"
                         }
@@ -372,7 +379,8 @@ class JdbcPostgresEventRepositoryTest {
                 """
                         {
                           "id": {
-                            "id": "00000000-0000-0000-0000-000000000007"
+                            "owner": "Damien",
+                            "sequence": 7
                           },
                           "description": "lorem ipsum"
                         }
@@ -386,7 +394,8 @@ class JdbcPostgresEventRepositoryTest {
                     """
                             {
                               "id": {
-                                "id": "00000000-0000-0000-0000-000000000007"
+                                "owner": "Damien",
+                                "sequence": 7
                               }
                             }
                             """);
@@ -402,7 +411,8 @@ class JdbcPostgresEventRepositoryTest {
                 """
                         {
                           "id": {
-                            "id": "00000000-0000-0000-0000-000000000008"
+                            "owner": "Damien",
+                            "sequence": 8
                           },
                           "description": "lorem ipsum"
                         }
@@ -430,7 +440,8 @@ class JdbcPostgresEventRepositoryTest {
                 """
                         {
                           "id": {
-                            "id": "00000000-0000-0000-0000-000000000009"
+                            "owner": "Damien",
+                            "sequence": 9
                           },
                           "description": "lorem ipsum"
                         }

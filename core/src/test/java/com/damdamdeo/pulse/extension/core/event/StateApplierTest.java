@@ -4,7 +4,6 @@ import com.damdamdeo.pulse.extension.core.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,8 +16,8 @@ class StateApplierTest {
         assertThatThrownBy(() -> new StateApplier<>(
                 new ReflectionAggregateRootInstanceCreator(),
                 List.of(
-                        new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum"),
-                        new TodoMarkedAsDone(TodoId.from(new UUID(0, 1)))
+                        new NewTodoCreated(new TodoId("Damien", 0L), "lorem ipsum"),
+                        new TodoMarkedAsDone(new TodoId("Damien", 1L))
                 ),
                 Todo.class
         ))
@@ -30,8 +29,8 @@ class StateApplierTest {
     void shouldApplyEvents() {
         // Given
         final List<Event<TodoId>> givenEvents = List.of(
-                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum"),
-                new TodoMarkedAsDone(TodoId.from(new UUID(0, 0)))
+                new NewTodoCreated(new TodoId("Damien", 0L), "lorem ipsum"),
+                new TodoMarkedAsDone(new TodoId("Damien", 0L))
         );
 
         // When
@@ -40,7 +39,7 @@ class StateApplierTest {
 
         // Then
         assertAll(
-                () -> assertThat(todoStateApplier.aggregate().id()).isEqualTo(TodoId.from(new UUID(0, 0))),
+                () -> assertThat(todoStateApplier.aggregate().id()).isEqualTo(new TodoId("Damien", 0L)),
                 () -> assertThat(todoStateApplier.aggregate().description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoStateApplier.aggregate().status()).isEqualTo(Status.DONE));
     }
@@ -49,8 +48,8 @@ class StateApplierTest {
     void shouldNewVersionizedEventsIsEmptyWhenCommandsNotCalled() {
         // Given
         final List<Event<TodoId>> givenEvents = List.of(
-                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum"),
-                new TodoMarkedAsDone(TodoId.from(new UUID(0, 0)))
+                new NewTodoCreated(new TodoId("Damien", 0L), "lorem ipsum"),
+                new TodoMarkedAsDone(new TodoId("Damien", 0L))
         );
 
         // When
@@ -65,17 +64,17 @@ class StateApplierTest {
     void shouldIncrementOnAppendANewEvent() {
         // Given
         final List<Event<TodoId>> givenEvents = List.of(
-                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum")
+                new NewTodoCreated(new TodoId("Damien", 0L), "lorem ipsum")
         );
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
                 new ReflectionAggregateRootInstanceCreator(), givenEvents, Todo.class);
 
         // When
-        todoStateApplier.append(new TodoMarkedAsDone(TodoId.from(new UUID(0, 0))));
+        todoStateApplier.append(new TodoMarkedAsDone(new TodoId("Damien", 0L)));
 
         // Then
         assertThat(todoStateApplier.getNewEvents()).containsExactly(
-                new VersionizedEvent<>(new AggregateVersion(1), new TodoMarkedAsDone(TodoId.from(new UUID(0, 0))))
+                new VersionizedEvent<>(new AggregateVersion(1), new TodoMarkedAsDone(new TodoId("Damien", 0L)))
         );
     }
 }

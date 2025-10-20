@@ -22,7 +22,7 @@ class PulseExtensionResourceTest {
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("id", is("00000000-0000-0002-0000-000000000000"))
+                .body("id", is("Damien/20"))
                 .body("description", is("lorem ipsum"))
                 .body("status", is("IN_PROGRESS"))
                 .body("important", is(false));
@@ -36,7 +36,7 @@ class PulseExtensionResourceTest {
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("id", is("00000000-0000-0002-0000-000000000000"))
+                .body("id", is("Damien/20"))
                 .body("description", is("lorem ipsum"))
                 .body("status", is("DONE"))
                 .body("important", is(false));

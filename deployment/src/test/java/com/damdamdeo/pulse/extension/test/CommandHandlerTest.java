@@ -13,7 +13,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -34,14 +33,14 @@ public class CommandHandlerTest {
     @Test
     void shouldExecuteCommand() {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo(TodoId.from(new UUID(0, 0)), "lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum");
 
         // When
         final Todo todoCreated = commandHandler.handle(givenCreateTodo);
 
         // Then
         assertAll(
-                () -> assertThat(todoCreated.id()).isEqualTo(TodoId.from(new UUID(0, 0))),
+                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", 20L)),
                 () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE)

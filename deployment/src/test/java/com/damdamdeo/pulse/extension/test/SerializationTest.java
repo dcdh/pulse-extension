@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-import java.util.UUID;
-
 public class SerializationTest {
 
     @RegisterExtension
@@ -29,7 +27,7 @@ public class SerializationTest {
     void shouldSerializedTodo() throws JsonProcessingException, JSONException {
         // Given
         final Todo givenTodo = new Todo(
-                TodoId.from(new UUID(0, 0)),
+                new TodoId("Damien", 0L),
                 "lorem ipsum",
                 Status.IN_PROGRESS,
                 false
@@ -44,7 +42,8 @@ public class SerializationTest {
                 """
                         {
                           "id": {
-                            "id": "00000000-0000-0000-0000-000000000000"
+                            "owner": "Damien",
+                            "sequence": 0
                           },
                           "description":"lorem ipsum",
                           "status":"IN_PROGRESS",

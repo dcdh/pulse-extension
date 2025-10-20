@@ -29,8 +29,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-import java.util.UUID;
-
 @Path("/pulse-extension")
 @Produces(MediaType.APPLICATION_JSON)
 @ApplicationScoped
@@ -54,12 +52,12 @@ public class PulseExtensionResource {
     @POST
     @Path("/createTodo")
     public TodoDTO createTodo() {
-        return TodoDTO.from(todoCommandHandler.handle(new CreateTodo(TodoId.from(new UUID(2, 0)), "lorem ipsum")));
+        return TodoDTO.from(todoCommandHandler.handle(new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum")));
     }
 
     @POST
     @Path("/markTodoAsDone")
     public TodoDTO markTodoAsDone() {
-        return TodoDTO.from(todoCommandHandler.handle(new MarkTodoAsDone(TodoId.from(new UUID(2, 0)))));
+        return TodoDTO.from(todoCommandHandler.handle(new MarkTodoAsDone(new TodoId("Damien", 20L))));
     }
 }
