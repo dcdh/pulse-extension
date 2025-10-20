@@ -34,14 +34,14 @@ public class CommandHandlerTest {
     @Test
     void shouldExecuteCommand() {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo(TodoId.from(new UUID(0, 7)), "lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo(TodoId.from(new UUID(0, 0)), "lorem ipsum");
 
         // When
         final Todo todoCreated = commandHandler.handle(givenCreateTodo);
 
         // Then
         assertAll(
-                () -> assertThat(todoCreated.id()).isEqualTo(TodoId.from(new UUID(0, 7))),
+                () -> assertThat(todoCreated.id()).isEqualTo(TodoId.from(new UUID(0, 0))),
                 () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE)
@@ -56,7 +56,7 @@ public class CommandHandlerTest {
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT COUNT(*) AS count FROM t_event
+                             SELECT COUNT(*) AS count FROM t_event
                              """);
              final ResultSet rs = ps.executeQuery()) {
             rs.next();

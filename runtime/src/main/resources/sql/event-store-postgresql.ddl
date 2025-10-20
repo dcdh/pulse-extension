@@ -1,6 +1,14 @@
 DO $$
 BEGIN
 
+  CREATE TABLE IF NOT EXISTS t_aggregate_root (
+    aggregate_root_id character varying(255) not null,
+    aggregate_root_type character varying(255) not null,
+    last_version bigint not null,
+    aggregate_root_payload jsonb NOT NULL,
+    CONSTRAINT t_aggregate_root_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type)
+  );
+
   CREATE TABLE IF NOT EXISTS t_event (
     aggregate_root_id character varying(255) not null,
     aggregate_root_type character varying(255) not null,

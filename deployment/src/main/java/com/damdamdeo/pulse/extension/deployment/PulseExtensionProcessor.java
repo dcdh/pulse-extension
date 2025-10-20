@@ -1,9 +1,7 @@
 package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
-import com.damdamdeo.pulse.extension.runtime.DefaultInstantProvider;
-import com.damdamdeo.pulse.extension.runtime.DefaultQuarkusTransaction;
-import com.damdamdeo.pulse.extension.runtime.PostgresqlEventStoreInitializer;
+import com.damdamdeo.pulse.extension.runtime.*;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -25,7 +23,9 @@ class PulseExtensionProcessor {
         return List.of(
                 AdditionalBeanBuildItem.builder()
                         .addBeanClasses(DefaultQuarkusTransaction.class, DefaultInstantProvider.class)
-                        .addBeanClass(PostgresqlEventStoreInitializer.class).build(),
+                        .addBeanClass(PostgresqlEventStoreInitializer.class)
+                        .addBeanClass(AllFieldsVisibilityObjectMapperCustomizer.class)
+                        .build(),
                 // TODO it is not possible to define the bean with @DefaultBean
                 // Should conditionally add it if no other implementation is present.
                 AdditionalBeanBuildItem.builder()

@@ -31,7 +31,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
             final StateApplier<A, K> stateApplier = stateApplier(events);
             final A aggregate = stateApplier.executeCommand(command);
             List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-            eventRepository.save(newEvents);
+            eventRepository.save(newEvents, aggregate);
             return aggregate;
         }));
     }

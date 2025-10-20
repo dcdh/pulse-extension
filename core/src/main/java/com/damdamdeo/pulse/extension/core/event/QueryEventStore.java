@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.ReflectionAggregateRootInstanceCreator;
+import com.damdamdeo.pulse.extension.core.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,12 +15,22 @@ public abstract class QueryEventStore<A extends AggregateRoot<K>, K extends Aggr
     }
 
     public Optional<A> findById(final K id) {
-        List<Event<K>> events = eventStore.loadOrderByVersionASC(id);
-        if (events.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(stateApplier(events).aggregate());
-        }
+        return eventStore.findLastVersionById(id)
+                .map(VersionizedAggregateRoot::aggregateRoot);
+    }
+
+    public Optional<A> findByIdAndVersion(final K id, final AggregateVersion aggregateVersion) {
+        return eventStore.findLastVersionById(id)
+                .filter(lastVersionById -> lastVersionById.aggregateVersion().equals(aggregateVersion))
+                .map(VersionizedAggregateRoot::aggregateRoot)
+                .or(() -> {
+                    List<Event<K>> events = eventStore.loadOrderByVersionASC(id, aggregateVersion);
+                    if (events.isEmpty()) {
+                        return Optional.empty();
+                    } else {
+                        return Optional.of(stateApplier(events).aggregate());
+                    }
+                });
     }
 
     abstract protected Class<A> getAggregateClass();

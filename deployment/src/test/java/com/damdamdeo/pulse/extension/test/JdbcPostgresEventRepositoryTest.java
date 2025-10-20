@@ -1,6 +1,9 @@
 package com.damdamdeo.pulse.extension.test;
 
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.Status;
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.runtime.InstantProvider;
 import io.quarkus.test.QuarkusUnitTest;
@@ -12,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.postgresql.util.PSQLException;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -73,7 +78,7 @@ class JdbcPostgresEventRepositoryTest {
         }
 
         // Then
-        assertThat(tables).contains("public.t_event");
+        assertThat(tables).contains("public.t_event", "public.t_aggregate_root");
     }
 
     @Test
@@ -82,28 +87,189 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum")));
+                        new NewTodoCreated(TodoId.from(new UUID(0, 1)), "lorem ipsum")));
 
         // When
-        todoEventRepository.save(givenTodoEvents);
+        todoEventRepository.save(givenTodoEvents,
+                new Todo(
+                        TodoId.from(new UUID(0, 1)),
+                        "lorem ipsum",
+                        Status.IN_PROGRESS,
+                        false
+                ));
 
         // Then
         try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(
+             final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
                                  SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload
-                                 FROM public.t_event
+                                 FROM public.t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
-             final ResultSet rs = ps.executeQuery()) {
-            rs.next();
-            assertAll(
-                    () -> assertThat(rs.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000000"),
-                    () -> assertThat(rs.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
-                    () -> assertThat(rs.getLong("version")).isEqualTo(0),
-                    () -> assertThat(rs.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
-                    () -> assertThat(rs.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
-                    () -> assertThat(rs.getString("event_payload")).isEqualTo("{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000000\"}, \"description\": \"lorem ipsum\"}"));
+             final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                                 SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload
+                                 FROM public.t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                             """)) {
+            tEventPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000001");
+            tEventPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            tAggregateRootPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000001");
+            tAggregateRootPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
+                 final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
+                tEventResultSet.next();
+                tAggregateRootResultSet.next();
+                assertAll(
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000001"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
+                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
+                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
+                        () -> JSONAssert.assertEquals(
+                                // language=json
+                                """
+                                        {
+                                          "id": {
+                                            "id": "00000000-0000-0000-0000-000000000001"
+                                          },
+                                          "description": "lorem ipsum"
+                                        }
+                                        """,
+                                tEventResultSet.getString("event_payload"),
+                                JSONCompareMode.STRICT),
+
+                        () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
+                                "00000000-0000-0000-0000-000000000001"),
+                        () -> assertThat(tAggregateRootResultSet.getString(
+                                "aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tAggregateRootResultSet.getLong(
+                                "last_version")).isEqualTo
+                                (0),
+                        () -> JSONAssert.assertEquals(
+                                // language=json
+                                """
+                                        {
+                                          "id": {
+                                            "id": "00000000-0000-0000-0000-000000000001"
+                                          },
+                                          "status": "IN_PROGRESS",
+                                          "important": false,
+                                          "description": "lorem ipsum"
+                                        }
+                                        """, tAggregateRootResultSet.getString("aggregate_root_payload"), JSONCompareMode.STRICT));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    @Order(2)
+    void shouldUpsertAggregateRoot() {
+        // Given
+        todoEventRepository.save(List.of(
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new NewTodoCreated(TodoId.from(new UUID(0, 2)), "lorem ipsum")
+                        )),
+                new Todo(
+                        TodoId.from(new UUID(0, 2)),
+                        "lorem ipsum",
+                        Status.IN_PROGRESS,
+                        false
+                ));
+
+        // When
+        todoEventRepository.save(List.of(
+                        new VersionizedEvent<>(new AggregateVersion(1),
+                                new TodoMarkedAsDone(TodoId.from(new UUID(0, 2)))
+                        )),
+                new Todo(
+                        TodoId.from(new UUID(0, 2)),
+                        "lorem ipsum",
+                        Status.DONE,
+                        false
+                ));
+
+        // Then
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload
+                                 FROM public.t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                             """);
+             final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                                 SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload
+                                 FROM public.t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                             """)) {
+            tEventPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000002");
+            tEventPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            tAggregateRootPreparedStatement.setString(1, "00000000-0000-0000-0000-000000000002");
+            tAggregateRootPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
+                 final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
+                tEventResultSet.next();
+                assertAll(
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000002"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
+                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
+                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
+                        () -> JSONAssert.assertEquals(
+                                // language=json
+                                """
+                                        {
+                                          "id": {
+                                            "id": "00000000-0000-0000-0000-000000000002"
+                                          },
+                                          "description": "lorem ipsum"
+                                        }
+                                        """,
+                                tEventResultSet.getString("event_payload"),
+                                JSONCompareMode.STRICT));
+                tEventResultSet.next();
+                assertAll(
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("00000000-0000-0000-0000-000000000002"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
+                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
+                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone"),
+                        () -> JSONAssert.assertEquals(
+                                // language=json
+                                """
+                                        {
+                                          "id": {
+                                            "id": "00000000-0000-0000-0000-000000000002"
+                                          }
+                                        }
+                                        """,
+                                tEventResultSet.getString("event_payload"),
+                                JSONCompareMode.STRICT));
+                tAggregateRootResultSet.next();
+                assertAll(
+                        () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
+                                "00000000-0000-0000-0000-000000000002"),
+                        () -> assertThat(tAggregateRootResultSet.getString(
+                                "aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tAggregateRootResultSet.getLong(
+                                "last_version")).isEqualTo
+                                (1),
+                        () -> JSONAssert.assertEquals(
+                                // language=json
+                                """
+                                        {
+                                          "id": {
+                                            "id": "00000000-0000-0000-0000-000000000002"
+                                          },
+                                          "status": "DONE",
+                                          "important": false,
+                                          "description": "lorem ipsum"
+                                        }
+                                        """, tAggregateRootResultSet.getString("aggregate_root_payload"), JSONCompareMode.STRICT));
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -114,92 +280,172 @@ class JdbcPostgresEventRepositoryTest {
      * Events created from store will not belong to the same classloader as events created in this test.
      */
     @Test
-    @Order(2)
+    @Order(3)
     void shouldLoadOrderByVersionASC() {
         // Given
         List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(TodoId.from(new UUID(0, 1)), "lorem ipsum 2")),
+                        new NewTodoCreated(TodoId.from(new UUID(0, 3)), "lorem ipsum")),
                 new VersionizedEvent<>(new AggregateVersion(1),
-                        new TodoMarkedAsDone(TodoId.from(new UUID(0, 1)))));
-        todoEventRepository.save(givenTodoEvents);
+                        new TodoMarkedAsDone(TodoId.from(new UUID(0, 3)))));
+        todoEventRepository.save(givenTodoEvents,
+                new Todo(
+                        TodoId.from(new UUID(0, 3)),
+                        "lorem ipsum",
+                        Status.DONE,
+                        false
+                ));
 
         // When
-        final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(TodoId.from(new UUID(0, 1)));
+        final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(TodoId.from(new UUID(0, 3)));
 
         // Then
         assertThat(events).containsExactly(
-                new NewTodoCreated(TodoId.from(new UUID(0, 1)), "lorem ipsum 2"),
-                new TodoMarkedAsDone(TodoId.from(new UUID(0, 1))));
+                new NewTodoCreated(TodoId.from(new UUID(0, 3)), "lorem ipsum"),
+                new TodoMarkedAsDone(TodoId.from(new UUID(0, 3))));
+    }
+
+    @Test
+    @Order(4)
+    void shouldPartialLoadAggregate() {
+        // Given
+        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new NewTodoCreated(TodoId.from(new UUID(0, 4)), "lorem ipsum")),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new TodoMarkedAsDone(TodoId.from(new UUID(0, 4)))));
+        todoEventRepository.save(givenTodoEvents,
+                new Todo(
+                        TodoId.from(new UUID(0, 4)),
+                        "lorem ipsum",
+                        Status.DONE,
+                        false
+                ));
+
+        // When
+        final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(
+                TodoId.from(new UUID(0, 4)), new AggregateVersion(1));
+
+        // Then
+        assertThat(events).containsExactly(
+                new NewTodoCreated(TodoId.from(new UUID(0, 4)), "lorem ipsum"),
+                new TodoMarkedAsDone(TodoId.from(new UUID(0, 4))));
     }
 
     @Test
     void shouldFailWhenEventIsAlreadyPresent() throws SQLException {
         // Given
-        insertEvent("00000000-0000-0000-0000-000000000002", "com.damdamdeo.pulse.extension.core.Todo", 0,
+        insertEvent("00000000-0000-0000-0000-000000000006", "com.damdamdeo.pulse.extension.core.Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000002\"}, \"description\": \"lorem ipsum\"}");
+                // language=json
+                """
+                        {
+                          "id": {
+                            "id": "00000000-0000-0000-0000-000000000006"
+                          },
+                          "description": "lorem ipsum"
+                        }
+                        """);
 
         // When && Then
-        assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000002", "com.damdamdeo.pulse.extension.core.Todo", 0,
+        assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000006", "com.damdamdeo.pulse.extension.core.Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000002\"}, \"description\": \"lorem ipsum\"}"))
-                .isInstanceOf(PSQLException.class)
-                .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000002 aggregate_root_type com.damdamdeo.pulse.extension.core.Todo");
+                // language=json
+                """
+                        {
+                          "id": {
+                            "id": "00000000-0000-0000-0000-000000000006"
+                          },
+                          "description": "lorem ipsum"
+                        }
+                        """))
+                .isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000006 aggregate_root_type com.damdamdeo.pulse.extension.core.Todo");
     }
 
     @Test
     void shouldFailWhenNewVersionIsNotPreviousOnePlusOne() throws SQLException {
         // Given
-        insertEvent("00000000-0000-0000-0000-000000000003", "com.damdamdeo.pulse.extension.core.Todo", 0,
+        insertEvent("00000000-0000-0000-0000-000000000007", "com.damdamdeo.pulse.extension.core.Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000003\"}, \"description\": \"lorem ipsum\"}");
+                // language=json
+                """
+                        {
+                          "id": {
+                            "id": "00000000-0000-0000-0000-000000000007"
+                          },
+                          "description": "lorem ipsum"
+                        }
+                        """);
 
         // When && Then
         assertThatThrownBy(() -> {
-            insertEvent("00000000-0000-0000-0000-000000000003", "com.damdamdeo.pulse.extension.core.Todo", 2,
+            insertEvent("00000000-0000-0000-0000-000000000007", "com.damdamdeo.pulse.extension.core.Todo", 2,
                     Instant.parse("2025-10-13T18:01:00Z"), "com.damdamdeo.pulse.extension.core.TodoMarkedAsDone",
-                    "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000003\"}}");
-        }).isInstanceOf(PSQLException.class)
+                    // language=json
+                    """
+                            {
+                              "id": {
+                                "id": "00000000-0000-0000-0000-000000000007"
+                              }
+                            }
+                            """);
+        }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: current version unexpected 2 - expected version 1");
     }
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEvent() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000004", "com.damdamdeo.pulse.extension.core.Todo", 0,
+        insertEvent("00000000-0000-0000-0000-000000000008", "com.damdamdeo.pulse.extension.core.Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000004\"}, \"description\": \"lorem ipsum\"}");
+                // language=json
+                """
+                        {
+                          "id": {
+                            "id": "00000000-0000-0000-0000-000000000008"
+                          },
+                          "description": "lorem ipsum"
+                        }
+                        """);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE public.t_event SET event_payload = '{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000004\"}, \"description\": \"lorem ipsum 2\"}'
-                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000004'
+                                 UPDATE public.t_event SET event_payload = '{\"id\": \"00000000-0000-0000-0000-000000000008\", \"description\": \"lorem ipsum\"}'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000008'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
-        }).isInstanceOf(PSQLException.class)
+        }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: not allowed");
     }
 
     @Test
     void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000005", "com.damdamdeo.pulse.extension.core.Todo", 0,
+        insertEvent("00000000-0000-0000-0000-000000000009", "com.damdamdeo.pulse.extension.core.Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                "{\"id\": {\"id\": \"00000000-0000-0000-0000-000000000005\"}, \"description\": \"lorem ipsum\"}");
+                // language=json
+                """
+                        {
+                          "id": {
+                            "id": "00000000-0000-0000-0000-000000000009"
+                          },
+                          "description": "lorem ipsum"
+                        }
+                        """);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 DELETE FROM public.t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000005'
+                                 DELETE FROM public.t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000009'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
-        }).isInstanceOf(PSQLException.class)
+        }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: not allowed");
     }
 
@@ -214,7 +460,7 @@ class JdbcPostgresEventRepositoryTest {
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
-        }).isInstanceOf(PSQLException.class)
+        }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: not allowed");
     }
 

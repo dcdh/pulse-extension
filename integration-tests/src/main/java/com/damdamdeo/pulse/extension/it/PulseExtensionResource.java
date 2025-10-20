@@ -16,7 +16,9 @@
  */
 package com.damdamdeo.pulse.extension.it;
 
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.Status;
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
@@ -52,12 +54,12 @@ public class PulseExtensionResource {
     @POST
     @Path("/createTodo")
     public TodoDTO createTodo() {
-        return TodoDTO.from(todoCommandHandler.handle(new CreateTodo(TodoId.from(new UUID(0, 6)), "lorem ipsum")));
+        return TodoDTO.from(todoCommandHandler.handle(new CreateTodo(TodoId.from(new UUID(2, 0)), "lorem ipsum")));
     }
 
     @POST
     @Path("/markTodoAsDone")
     public TodoDTO markTodoAsDone() {
-        return TodoDTO.from(todoCommandHandler.handle(new MarkTodoAsDone(TodoId.from(new UUID(0, 6)))));
+        return TodoDTO.from(todoCommandHandler.handle(new MarkTodoAsDone(TodoId.from(new UUID(2, 0)))));
     }
 }

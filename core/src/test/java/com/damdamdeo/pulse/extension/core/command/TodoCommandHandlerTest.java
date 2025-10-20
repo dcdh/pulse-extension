@@ -25,7 +25,7 @@ public class TodoCommandHandlerTest {
 
     @BeforeEach
     public void setUp() {
-        todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), eventRepository, new NoOpTransaction());
+        todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), eventRepository, new StubTransaction());
     }
 
     @Test
@@ -46,7 +46,8 @@ public class TodoCommandHandlerTest {
                 () -> verify(eventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                 new AggregateVersion(0),
-                                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum")))
+                                new NewTodoCreated(TodoId.from(new UUID(0, 0)), "lorem ipsum"))),
+                        todoCreated
                 )
         );
     }
@@ -72,8 +73,8 @@ public class TodoCommandHandlerTest {
                                         new NewTodoCreated(TodoId.from(new UUID(0, 0)), "IMPORTANT lorem ipsum")),
                                 new VersionizedEvent<>(
                                         new AggregateVersion(1),
-                                        new ClassifiedAsImportant(TodoId.from(new UUID(0, 0)))))
-                )
+                                        new ClassifiedAsImportant(TodoId.from(new UUID(0, 0))))),
+                        todoCreated)
         );
     }
 
@@ -96,7 +97,8 @@ public class TodoCommandHandlerTest {
                 () -> verify(eventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                 new AggregateVersion(1),
-                                new TodoMarkedAsDone(TodoId.from(new UUID(0, 0)))))
+                                new TodoMarkedAsDone(TodoId.from(new UUID(0, 0))))),
+                        todoMarkedAsDone
                 )
         );
     }

@@ -22,7 +22,7 @@ class StateApplierTest {
                 ),
                 Todo.class
         ))
-                .isInstanceOf(IllegalStateException.class)
+                .isExactlyInstanceOf(IllegalStateException.class)
                 .hasMessage("Applying event on an aggregate with different id.");
     }
 
