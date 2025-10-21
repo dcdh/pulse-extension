@@ -22,6 +22,8 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
+import io.quarkus.cache.Cache;
+import io.quarkus.cache.CacheName;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
@@ -33,6 +35,11 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @ApplicationScoped
 public class PulseExtensionResource {
+
+    // https://github.com/quarkusio/quarkus/issues/19676
+    @Inject
+    @CacheName("passphrase")
+    Cache cache;
 
     @Inject
     CommandHandler<Todo, TodoId> todoCommandHandler;

@@ -1,11 +1,12 @@
 package com.damdamdeo.pulse.extension.test;
 
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseAlreadyExistsException;
+import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseRepository;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -27,6 +28,29 @@ class QueryEventStoreTest {
 
     @Inject
     QueryEventStore<Todo, TodoId> queryEventStore;
+
+    @ApplicationScoped
+    static class StubPassphraseProvider implements PassphraseProvider {
+
+        @Override
+        public char[] provide(final OwnedBy ownedBy) {
+            return PassphraseSample.PASSPHRASE;
+        }
+    }
+
+    @ApplicationScoped
+    static class StubPassphraseRepository implements PassphraseRepository {
+
+        @Override
+        public Optional<char[]> retrieve(OwnedBy ownedBy) {
+            return Optional.of(PassphraseSample.PASSPHRASE);
+        }
+
+        @Override
+        public char[] store(final OwnedBy ownedBy, final char[] key) throws PassphraseAlreadyExistsException {
+            throw new IllegalStateException("Should not be calld !");
+        }
+    }
 
     @Test
     void shouldFindByIdReturnAggregateWhenExists() {

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShouldFailWhenCommandIsNotARecordTest {
+class ShouldFailWhenCommandIsNotARecordTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -20,7 +20,7 @@ public class ShouldFailWhenCommandIsNotARecordTest {
                     .hasNoSuppressedExceptions());
 
     @Test
-    public void test() {
+    void test() {
         Assertions.fail("Startup should have failed");
     }
 

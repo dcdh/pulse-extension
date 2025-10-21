@@ -36,6 +36,15 @@
             <artifactId>quarkus-jackson-deployment</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache-deployment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.vault</groupId>
+            <artifactId>quarkus-vault-deployment</artifactId>
+            <version>${quarkus-vault.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.damdamdeo</groupId>
             <artifactId>pulse-extension</artifactId>
             <version>${project.version}</version>

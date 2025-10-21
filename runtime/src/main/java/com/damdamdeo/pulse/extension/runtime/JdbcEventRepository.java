@@ -4,15 +4,15 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.VersionizedAggregateRoot;
-import com.damdamdeo.pulse.extension.core.event.Event;
-import com.damdamdeo.pulse.extension.core.event.EventRepository;
-import com.damdamdeo.pulse.extension.core.event.EventStoreException;
-import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
+import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.runtime.encryption.DecryptionService;
+import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,12 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    PassphraseProvider passphraseProvider;
+
+    @Inject
+    DecryptionService decryptionService;
+
     @Override
     public void save(final List<VersionizedEvent<K>> versionizedEvents, final AggregateRoot<K> aggregateRoot) throws EventStoreException {
         Objects.requireNonNull(versionizedEvents);
@@ -41,14 +47,14 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload) 
-                             VALUES (?, ?, ?, ?, ?, to_json(?::json))
+                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by) 
+                             VALUES (?, ?, ?, ?, ?, pgp_sym_encrypt(?::text, ?), ?)
                              """);
              final PreparedStatement aggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload)
-                             VALUES (?,?,?, to_json(?::json))
+                             INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, in_relation_with)
+                             VALUES (?,?,?, pgp_sym_encrypt(?::text, ?), ?, ?)
                              ON CONFLICT (aggregate_root_id, aggregate_root_type)
                              DO UPDATE
                              SET
@@ -56,7 +62,8 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
                                  aggregate_root_payload = EXCLUDED.aggregate_root_payload;
                              """)) {
             connection.setAutoCommit(false);
-            K aggregateId = versionizedEvents.getFirst().event().id();
+            final K aggregateId = versionizedEvents.getFirst().event().id();
+            final OwnedBy ownedBy = versionizedEvents.getFirst().event().ownedBy();
             AggregateVersion lastVersion = null;
             for (VersionizedEvent<K> versionizedEvent : versionizedEvents) {
                 eventPreparedStatement.setString(1, versionizedEvent.event().id().id());
@@ -65,6 +72,8 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
                 eventPreparedStatement.setTimestamp(4, Timestamp.from(instantProvider.now()));
                 eventPreparedStatement.setString(5, versionizedEvent.event().getClass().getName());
                 eventPreparedStatement.setString(6, objectMapper.writeValueAsString(versionizedEvent.event()));
+                eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy)));
+                eventPreparedStatement.setString(8, ownedBy.id());
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }
@@ -73,6 +82,9 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
             aggregatePreparedStatement.setString(2, getAggregateClass().getName());
             aggregatePreparedStatement.setLong(3, lastVersion.version());
             aggregatePreparedStatement.setString(4, objectMapper.writeValueAsString(aggregateRoot));
+            aggregatePreparedStatement.setString(5, new String(passphraseProvider.provide(ownedBy)));
+            aggregatePreparedStatement.setString(6, ownedBy.id());
+            aggregatePreparedStatement.setString(7, aggregateRoot.inRelationWith().aggregateId().id());
             aggregatePreparedStatement.executeUpdate();
         } catch (final JsonProcessingException | SQLException e) {
             throw new EventStoreException(e);
@@ -91,7 +103,7 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT * FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
+                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             nbOfEventsStmt.setString(1, id.id());
@@ -104,11 +116,13 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
                 final List<Event<K>> events = new ArrayList<>(nbOfEvents);
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
+                        final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
+                        final byte[] eventPayloads = decryptionService.decrypt(resultSet.getBytes("event_payload"), ownedBy);
                         events.add((Event<K>)
-                                objectMapper.readValue(resultSet.getString("event_payload"),
+                                objectMapper.readValue(eventPayloads,
                                         Class.forName(resultSet.getString("event_type"))));
                     }
-                } catch (ClassNotFoundException | JsonProcessingException e) {
+                } catch (ClassNotFoundException | IOException e) {
                     throw new EventStoreException(e);
                 }
                 return events;
@@ -126,7 +140,7 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT * FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND e.version <= ? ORDER BY e.version ASC
+                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND e.version <= ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             loadStmt.setString(1, id.id());
@@ -135,11 +149,13 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
             final List<Event<K>> events = new ArrayList<>(aggregateVersionRequested.version());
             try (final ResultSet resultSet = loadStmt.executeQuery()) {
                 while (resultSet.next()) {
+                    final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
+                    final byte[] eventPayloads = decryptionService.decrypt(resultSet.getBytes("event_payload"), ownedBy);
                     events.add((Event<K>)
-                            objectMapper.readValue(resultSet.getString("event_payload"),
+                            objectMapper.readValue(eventPayloads,
                                     Class.forName(resultSet.getString("event_type"))));
                 }
-            } catch (ClassNotFoundException | JsonProcessingException e) {
+            } catch (ClassNotFoundException | IOException e) {
                 throw new EventStoreException(e);
             }
             return events;
@@ -155,22 +171,24 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
              final PreparedStatement aggregateRootStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT * FROM t_aggregate_root e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.last_version DESC
+                             SELECT e.last_version AS last_version, e.aggregate_root_payload AS aggregate_root_payload, e.owned_by AS owned_by FROM t_aggregate_root e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.last_version DESC
                              """)) {
             connection.setAutoCommit(false);
             aggregateRootStmt.setString(1, id.id());
             aggregateRootStmt.setString(2, getAggregateClass().getName());
             try (final ResultSet aggregateRootStmtResultSet = aggregateRootStmt.executeQuery()) {
                 if (aggregateRootStmtResultSet.next()) {
-                    final A aggregateRoot = objectMapper.readValue(aggregateRootStmtResultSet.getString("aggregate_root_payload"),
-                            getAggregateClass());
+                    final OwnedBy ownedBy = new OwnedBy(aggregateRootStmtResultSet.getString("owned_by"));
+                    final byte[] eventPayloads = decryptionService.decrypt(aggregateRootStmtResultSet.getBytes("aggregate_root_payload"), ownedBy);
+
+                    final A aggregateRoot = objectMapper.readValue(eventPayloads, getAggregateClass());
                     return Optional.of(new VersionizedAggregateRoot<>(aggregateRoot,
                             new AggregateVersion(
                                     aggregateRootStmtResultSet.getInt("last_version"))));
                 } else {
                     return Optional.empty();
                 }
-            } catch (JsonProcessingException e) {
+            } catch (IOException e) {
                 throw new EventStoreException(e);
             }
         } catch (final SQLException e) {

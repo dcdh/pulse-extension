@@ -3,6 +3,8 @@ package com.damdamdeo.pulse.extension.test;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import io.quarkus.cache.Cache;
+import io.quarkus.cache.CacheName;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -17,12 +19,17 @@ import java.sql.SQLException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-public class CommandHandlerTest {
+class CommandHandlerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(jar -> jar.addAsResource("init.sql"))
             .withConfigurationResource("application.properties");
+
+    // https://github.com/quarkusio/quarkus/issues/19676
+    @Inject
+    @CacheName("passphrase")
+    Cache cache;
 
     @Inject
     CommandHandler<Todo, TodoId> commandHandler;

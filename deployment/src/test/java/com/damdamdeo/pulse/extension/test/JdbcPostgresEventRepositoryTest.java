@@ -1,11 +1,11 @@
 package com.damdamdeo.pulse.extension.test;
 
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.runtime.InstantProvider;
+import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseAlreadyExistsException;
+import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,15 +15,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.postgresql.util.PSQLException;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -49,6 +48,29 @@ class JdbcPostgresEventRepositoryTest {
         @Override
         public Instant now() {
             return Instant.parse("2025-10-13T18:00:00Z");
+        }
+    }
+
+    @ApplicationScoped
+    static class StubPassphraseProvider implements PassphraseProvider {
+
+        @Override
+        public char[] provide(final OwnedBy ownedBy) {
+            return PassphraseSample.PASSPHRASE;
+        }
+    }
+
+    @ApplicationScoped
+    static class StubPassphraseRepository implements PassphraseRepository {
+
+        @Override
+        public Optional<char[]> retrieve(final OwnedBy ownedBy) {
+            return Optional.of(PassphraseSample.PASSPHRASE);
+        }
+
+        @Override
+        public char[] store(final OwnedBy ownedBy, final char[] key) throws PassphraseAlreadyExistsException {
+            throw new IllegalStateException("Should not be called");
         }
     }
 
@@ -103,13 +125,13 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by
                                  FROM public.t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload
+                                 SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, in_relation_with
                                  FROM public.t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, "Damien/1");
@@ -126,19 +148,8 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
-                        () -> JSONAssert.assertEquals(
-                                // language=json
-                                """
-                                        {
-                                          "id": {
-                                            "owner": "Damien",
-                                            "sequence": 1
-                                          },
-                                          "description": "lorem ipsum"
-                                        }
-                                        """,
-                                tEventResultSet.getString("event_payload"),
-                                JSONCompareMode.STRICT),
+                        () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
 
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 "Damien/1"),
@@ -147,19 +158,9 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tAggregateRootResultSet.getLong(
                                 "last_version")).isEqualTo
                                 (0),
-                        () -> JSONAssert.assertEquals(
-                                // language=json
-                                """
-                                        {
-                                          "id": {
-                                            "owner": "Damien",
-                                            "sequence": 1
-                                          },
-                                          "status": "IN_PROGRESS",
-                                          "important": false,
-                                          "description": "lorem ipsum"
-                                        }
-                                        """, tAggregateRootResultSet.getString("aggregate_root_payload"), JSONCompareMode.STRICT));
+                        () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_payload")).startsWith("\\x"),
+                        () -> assertThat(tAggregateRootResultSet.getString("owned_by")).isEqualTo("Damien"),
+                        () -> assertThat(tAggregateRootResultSet.getString("in_relation_with")).isEqualTo("Damien/1"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -198,13 +199,13 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by
                                  FROM public.t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload
+                                 SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, in_relation_with
                                  FROM public.t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, "Damien/2");
@@ -220,19 +221,8 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
-                        () -> JSONAssert.assertEquals(
-                                // language=json
-                                """
-                                        {
-                                          "id": {
-                                            "owner": "Damien",
-                                            "sequence": 2
-                                          },
-                                          "description": "lorem ipsum"
-                                        }
-                                        """,
-                                tEventResultSet.getString("event_payload"),
-                                JSONCompareMode.STRICT));
+                        () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
@@ -240,18 +230,8 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone"),
-                        () -> JSONAssert.assertEquals(
-                                // language=json
-                                """
-                                        {
-                                          "id": {
-                                            "owner": "Damien",
-                                            "sequence": 2
-                                          }
-                                        }
-                                        """,
-                                tEventResultSet.getString("event_payload"),
-                                JSONCompareMode.STRICT));
+                        () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
@@ -261,19 +241,11 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tAggregateRootResultSet.getLong(
                                 "last_version")).isEqualTo
                                 (1),
-                        () -> JSONAssert.assertEquals(
-                                // language=json
-                                """
-                                        {
-                                          "id": {
-                                            "owner": "Damien",
-                                            "sequence": 2
-                                          },
-                                          "status": "DONE",
-                                          "important": false,
-                                          "description": "lorem ipsum"
-                                        }
-                                        """, tAggregateRootResultSet.getString("aggregate_root_payload"), JSONCompareMode.STRICT));
+                        () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_payload")).startsWith("\\x"),
+                        () -> assertThat(tAggregateRootResultSet.getString(
+                                "owned_by")).isEqualTo("Damien"),
+                        () -> assertThat(tAggregateRootResultSet.getString(
+                                "in_relation_with")).isEqualTo("Damien/2"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -341,31 +313,13 @@ class JdbcPostgresEventRepositoryTest {
     void shouldFailWhenEventIsAlreadyPresent() throws SQLException {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000006", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                // language=json
-                """
-                        {
-                          "id": {
-                            "owner": "Damien",
-                            "sequence": 6
-                          },
-                          "description": "lorem ipsum"
-                        }
-                        """);
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
 
         // When && Then
         assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000006", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                // language=json
-                """
-                        {
-                          "id": {
-                            "owner": "Damien",
-                            "sequence": 6
-                          },
-                          "description": "lorem ipsum"
-                        }
-                        """))
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien")))
                 .isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000006 aggregate_root_type com.damdamdeo.pulse.extension.core.Todo");
     }
@@ -374,31 +328,14 @@ class JdbcPostgresEventRepositoryTest {
     void shouldFailWhenNewVersionIsNotPreviousOnePlusOne() throws SQLException {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000007", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                // language=json
-                """
-                        {
-                          "id": {
-                            "owner": "Damien",
-                            "sequence": 7
-                          },
-                          "description": "lorem ipsum"
-                        }
-                        """);
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
 
         // When && Then
         assertThatThrownBy(() -> {
             insertEvent("00000000-0000-0000-0000-000000000007", "com.damdamdeo.pulse.extension.core.Todo", 2,
-                    Instant.parse("2025-10-13T18:01:00Z"), "com.damdamdeo.pulse.extension.core.TodoMarkedAsDone",
-                    // language=json
-                    """
-                            {
-                              "id": {
-                                "owner": "Damien",
-                                "sequence": 7
-                              }
-                            }
-                            """);
+                    Instant.parse("2025-10-13T18:01:00Z"), "com.damdamdeo.pulse.extension.core.TodoMarkedAsDone", "\\x",
+                    new OwnedBy("Damien"));
         }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: current version unexpected 2 - expected version 1");
     }
@@ -406,17 +343,8 @@ class JdbcPostgresEventRepositoryTest {
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEvent() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000008", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                // language=json
-                """
-                        {
-                          "id": {
-                            "owner": "Damien",
-                            "sequence": 8
-                          },
-                          "description": "lorem ipsum"
-                        }
-                        """);
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -435,17 +363,8 @@ class JdbcPostgresEventRepositoryTest {
     @Test
     void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000009", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
-                // language=json
-                """
-                        {
-                          "id": {
-                            "owner": "Damien",
-                            "sequence": 9
-                          },
-                          "description": "lorem ipsum"
-                        }
-                        """);
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -476,21 +395,22 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,
-                             final Instant creationDate, final String eventType, final String eventPayload) throws SQLException {
+                             final Instant creationDate, final String eventType, final String encryptedEventPayload,
+                             final OwnedBy ownedBy) throws SQLException {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO T_EVENT (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload) 
-                             VALUES (?, ?, ?, ?, ?, to_json(?::json))
+                             INSERT INTO T_EVENT (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?)
                              """)) {
             preparedStatement.setString(1, aggregateRootId);
             preparedStatement.setString(2, aggregateRootType);
             preparedStatement.setLong(3, version);
             preparedStatement.setTimestamp(4, Timestamp.from(creationDate));
             preparedStatement.setString(5, eventType);
-            preparedStatement.setString(6, eventPayload);
-
+            preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
+            preparedStatement.setString(7, ownedBy.id());
             preparedStatement.executeUpdate();
         }
     }

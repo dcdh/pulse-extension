@@ -46,6 +46,7 @@ public final class PostgresqlEventStoreInitializer {
                          final Statement stmt = con.createStatement()) {
                         con.setAutoCommit(false);
                         stmt.executeUpdate(ddl);
+                        stmt.executeUpdate("CREATE EXTENSION IF NOT EXISTS pgcrypto;");
                     } catch (final SQLException exception) {
                         throw new RuntimeException(exception);
                     }

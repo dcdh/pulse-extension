@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShouldFailWhenAggregateIdNotARecordTest {
+class ShouldFailWhenAggregateIdNotARecordTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -19,7 +19,7 @@ public class ShouldFailWhenAggregateIdNotARecordTest {
                     .hasNoSuppressedExceptions());
 
     @Test
-    public void test() {
+    void test() {
         Assertions.fail("Startup should have failed");
     }
 

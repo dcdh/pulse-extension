@@ -5,7 +5,9 @@ BEGIN
     aggregate_root_id character varying(255) not null,
     aggregate_root_type character varying(255) not null,
     last_version bigint not null,
-    aggregate_root_payload jsonb NOT NULL,
+    aggregate_root_payload bytea NOT NULL,
+    owned_by character varying(255) not null,
+    in_relation_with character varying(255) not null,
     CONSTRAINT t_aggregate_root_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type)
   );
 
@@ -15,12 +17,12 @@ BEGIN
     version bigint not null,
     creation_date timestamp without time zone not null,
     event_type character varying(255) not null,
-    event_payload jsonb not null,
+    event_payload bytea not null,
+    owned_by character varying(255) not null,
     CONSTRAINT event_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type, version),
     CONSTRAINT event_unique UNIQUE (aggregate_root_id, aggregate_root_type, version)
   );
   CREATE INDEX IF NOT EXISTS idx_t_event_aggregate_root_identifier ON t_event USING BTREE (aggregate_root_id, aggregate_root_type);
-  CREATE INDEX IF NOT EXISTS idx_t_event_payload_gin ON t_event USING gin (event_payload);
   IF EXISTS (SELECT 1 FROM information_schema.routines WHERE routine_name = 'event_check_version_on_create') THEN
     RAISE NOTICE 'Routine event_check_version_on_create EXISTS';
   ELSE

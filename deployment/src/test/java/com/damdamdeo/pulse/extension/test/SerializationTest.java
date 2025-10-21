@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-public class SerializationTest {
+class SerializationTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -42,7 +42,7 @@ public class SerializationTest {
                 """
                         {
                           "id": {
-                            "owner": "Damien",
+                            "user": "Damien",
                             "sequence": 0
                           },
                           "description":"lorem ipsum",

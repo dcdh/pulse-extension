@@ -2,14 +2,14 @@ package com.damdamdeo.pulse.extension.core;
 
 import java.util.Objects;
 
-public record TodoId(String owner, Long sequence) implements AggregateId {
+public record TodoId(String user, Long sequence) implements AggregateId {
 
     public TodoId {
-        Objects.requireNonNull(owner);
+        Objects.requireNonNull(user);
         Objects.requireNonNull(sequence);
     }
 
     public String id() {
-        return owner + "/" + sequence;
+        return user + "/" + sequence;
     }
 }
