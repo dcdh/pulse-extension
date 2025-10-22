@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class JdbcProjectionFromEventStore<P extends Projection> implements ProjectionFromEventStore<P> {
@@ -39,13 +38,13 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateQuery);
         final String query = singleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
-        LOGGER.log(Level.FINE, query);
+        LOGGER.fine(query);
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
              final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
             if (projectionResultSet.next()) {
                 final String response = projectionResultSet.getString("response");
-                LOGGER.log(Level.FINE, response);
+                LOGGER.fine(response);
                 return Optional.of(
                         objectMapper.readValue(response, getProjectionClass())
                 );
@@ -62,14 +61,14 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(multipleResultAggregateQuery);
         final String query = multipleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), ownedBy);
-        LOGGER.log(Level.FINE, query);
+        LOGGER.fine(query);
         final List<P> responses = new ArrayList<>();
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
              final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
             while (projectionResultSet.next()) {
                 final String response = projectionResultSet.getString("response");
-                LOGGER.log(Level.FINE, response);
+                LOGGER.fine(response);
                 responses.add(
                         objectMapper.readValue(response, getProjectionClass()));
             }

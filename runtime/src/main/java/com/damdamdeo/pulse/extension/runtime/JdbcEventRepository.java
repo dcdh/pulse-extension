@@ -18,8 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends AggregateId> implements EventRepository<A, K> {
+
+    static final Logger LOGGER = Logger.getLogger(JdbcEventRepository.class.getName());
 
     @Inject
     DataSource dataSource;
@@ -66,22 +69,26 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
             final OwnedBy ownedBy = versionizedEvents.getFirst().event().ownedBy();
             AggregateVersion lastVersion = null;
             for (VersionizedEvent<K> versionizedEvent : versionizedEvents) {
+                final String eventPayload = objectMapper.writeValueAsString(versionizedEvent.event());
+                LOGGER.fine(eventPayload);
                 eventPreparedStatement.setString(1, versionizedEvent.event().id().id());
                 eventPreparedStatement.setString(2, getAggregateClass().getName());
                 eventPreparedStatement.setLong(3, versionizedEvent.version().version());
                 eventPreparedStatement.setTimestamp(4, Timestamp.from(instantProvider.now()));
                 eventPreparedStatement.setString(5, versionizedEvent.event().getClass().getName());
-                eventPreparedStatement.setString(6, objectMapper.writeValueAsString(versionizedEvent.event()));
+                eventPreparedStatement.setString(6, eventPayload);
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy)));
                 eventPreparedStatement.setString(8, ownedBy.id());
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }
             eventPreparedStatement.executeBatch();
+            final String aggregateRootPayload = objectMapper.writeValueAsString(aggregateRoot);
+            LOGGER.fine(aggregateRootPayload);
             aggregatePreparedStatement.setString(1, aggregateId.id());
             aggregatePreparedStatement.setString(2, getAggregateClass().getName());
             aggregatePreparedStatement.setLong(3, lastVersion.version());
-            aggregatePreparedStatement.setString(4, objectMapper.writeValueAsString(aggregateRoot));
+            aggregatePreparedStatement.setString(4, aggregateRootPayload);
             aggregatePreparedStatement.setString(5, new String(passphraseProvider.provide(ownedBy)));
             aggregatePreparedStatement.setString(6, ownedBy.id());
             aggregatePreparedStatement.setString(7, aggregateRoot.inRelationWith().aggregateId().id());
@@ -117,9 +124,10 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                        final byte[] eventPayloads = decryptionService.decrypt(resultSet.getBytes("event_payload"), ownedBy);
+                        final byte[] eventPayload = decryptionService.decrypt(resultSet.getBytes("event_payload"), ownedBy);
+                        LOGGER.fine(new String(eventPayload));
                         events.add((Event<K>)
-                                objectMapper.readValue(eventPayloads,
+                                objectMapper.readValue(eventPayload,
                                         Class.forName(resultSet.getString("event_type"))));
                     }
                 } catch (ClassNotFoundException | IOException e) {
@@ -150,9 +158,10 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
             try (final ResultSet resultSet = loadStmt.executeQuery()) {
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                    final byte[] eventPayloads = decryptionService.decrypt(resultSet.getBytes("event_payload"), ownedBy);
+                    final byte[] eventPayload = decryptionService.decrypt(resultSet.getBytes("event_payload"), ownedBy);
+                    LOGGER.fine(new String(eventPayload));
                     events.add((Event<K>)
-                            objectMapper.readValue(eventPayloads,
+                            objectMapper.readValue(eventPayload,
                                     Class.forName(resultSet.getString("event_type"))));
                 }
             } catch (ClassNotFoundException | IOException e) {
@@ -179,9 +188,9 @@ public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends 
             try (final ResultSet aggregateRootStmtResultSet = aggregateRootStmt.executeQuery()) {
                 if (aggregateRootStmtResultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(aggregateRootStmtResultSet.getString("owned_by"));
-                    final byte[] eventPayloads = decryptionService.decrypt(aggregateRootStmtResultSet.getBytes("aggregate_root_payload"), ownedBy);
-
-                    final A aggregateRoot = objectMapper.readValue(eventPayloads, getAggregateClass());
+                    final byte[] eventPayload = decryptionService.decrypt(aggregateRootStmtResultSet.getBytes("aggregate_root_payload"), ownedBy);
+                    LOGGER.fine(new String(eventPayload));
+                    final A aggregateRoot = objectMapper.readValue(eventPayload, getAggregateClass());
                     return Optional.of(new VersionizedAggregateRoot<>(aggregateRoot,
                             new AggregateVersion(
                                     aggregateRootStmtResultSet.getInt("last_version"))));
