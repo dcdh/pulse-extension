@@ -11,6 +11,14 @@ public final class TodoChecklist implements AggregateRoot<TodoChecklistId> {
     private TodoChecklistId todoChecklistId;
     private String description;
 
+    public TodoChecklist() {}
+
+    public TodoChecklist(final TodoChecklistId todoChecklistId,
+                         final String description) {
+        this.todoChecklistId = Objects.requireNonNull(todoChecklistId);
+        this.description = Objects.requireNonNull(description);
+    }
+
     public void handle(final AddNewTodoItem addNewTodoItem, final EventAppender<TodoChecklistId> eventAppender) {
         Objects.requireNonNull(addNewTodoItem);
         Objects.requireNonNull(eventAppender);

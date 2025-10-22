@@ -107,7 +107,7 @@ class JdbcPostgresEventRepositoryTest {
     @Order(1)
     void shouldSave() {
         // Given
-        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
                         new NewTodoCreated(new TodoId("Damien", 1L), "lorem ipsum")));
 

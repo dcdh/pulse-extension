@@ -5,13 +5,17 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.QueryEventStore;
+import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.deployment.items.AggregateRootBuildItem;
+import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.runtime.JdbcEventRepository;
+import com.damdamdeo.pulse.extension.runtime.projection.JdbcProjectionFromEventStore;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
 import jakarta.inject.Singleton;
@@ -50,17 +54,7 @@ public class CodeGenerationProcessor {
                             getAggregateClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
                 }
 
-                beanClassCreator.writeTo((name, data) -> {
-                    final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
-                    try {
-                        if (Files.notExists(classGeneratedPath)) {
-                            Files.createFile(classGeneratedPath);
-                        }
-                        Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
             }
         });
     }
@@ -110,17 +104,7 @@ public class CodeGenerationProcessor {
                             getAggregateClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
                 }
 
-                beanClassCreator.writeTo((name, data) -> {
-                    final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
-                    try {
-                        if (Files.notExists(classGeneratedPath)) {
-                            Files.createFile(classGeneratedPath);
-                        }
-                        Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
             }
         });
     }
@@ -176,19 +160,61 @@ public class CodeGenerationProcessor {
                             getAggregateClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
                 }
 
-                beanClassCreator.writeTo((name, data) -> {
-                    final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
-                    try {
-                        if (Files.notExists(classGeneratedPath)) {
-                            Files.createFile(classGeneratedPath);
-                        }
-                        Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
             }
         });
     }
 
+    @BuildStep
+    void generateJdbcProjectionFromEventStore(final CombinedIndexBuildItem combinedIndexBuildItem,
+                                              final List<ValidationErrorBuildItem> validationErrorBuildItems,
+                                              final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
+                                              final OutputTargetBuildItem outputTargetBuildItem) {
+        if (validationErrorBuildItems.isEmpty()) {
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            combinedIndexBuildItem.getIndex()
+                    .getAllKnownImplementations(Projection.class)
+                    .forEach(projectionClassInfo -> {
+                        try {
+                            final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
+                            try (final ClassCreator beanClassCreator = ClassCreator.builder()
+                                    .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
+                                    .className(projectionClass.getName().replaceAll("\\$", "_") + "JdbcProjectionFromEventStore")
+                                    .signature(SignatureBuilder.forClass()
+                                            .setSuperClass(
+                                                    Type.parameterizedType(
+                                                            Type.classType(JdbcProjectionFromEventStore.class),
+                                                            Type.classType(projectionClass))))
+                                    .setFinal(true)
+                                    .build()) {
+                                beanClassCreator.addAnnotation(Singleton.class);
+                                beanClassCreator.addAnnotation(DefaultBean.class);
+
+                                try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
+                                    getAggregateClass.setModifiers(Modifier.PROTECTED);
+                                    getAggregateClass.returnValue(getAggregateClass.loadClass(projectionClass));
+                                }
+
+                                writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
+                            }
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        }
+    }
+
+    private void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {
+        classCreator.writeTo((name, data) -> {
+            final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
+            try {
+                if (Files.notExists(classGeneratedPath)) {
+                    Files.createFile(classGeneratedPath);
+                }
+                Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (final IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
 }

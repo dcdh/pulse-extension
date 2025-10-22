@@ -20,11 +20,10 @@ public class AggregateRootScannerProcessor {
                             final List<ValidationErrorBuildItem> validationErrorBuildItems,
                             final BuildProducer<AggregateRootBuildItem> aggregateRoots) {
         if (validationErrorBuildItems.isEmpty()) {
+            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             combinedIndexBuildItem.getIndex()
                     .getAllKnownImplementations(AggregateRoot.class)
                     .forEach(aggregateRootClassInfo -> {
-                        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
                         final Type aggregateIdType = aggregateRootClassInfo.interfaceTypes().stream()
                                 .filter(t -> t.name().equals(DotName.createSimple(AggregateRoot.class)))
                                 .findFirst()

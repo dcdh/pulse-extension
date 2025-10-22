@@ -55,7 +55,7 @@ class EncryptionTest {
     // psql -U quarkus postgres
     // SELECT pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
     @Test
-    void shouldDecryptEncryptedValueFromPostgres() {
+    void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() {
         // Given
         byte[] encrypted;
         String encryptedAsString;
