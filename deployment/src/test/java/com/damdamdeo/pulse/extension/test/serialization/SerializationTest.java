@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.test;
+package com.damdamdeo.pulse.extension.test.serialization;
 
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;

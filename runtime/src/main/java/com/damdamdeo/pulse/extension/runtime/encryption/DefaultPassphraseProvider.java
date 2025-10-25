@@ -1,5 +1,9 @@
 package com.damdamdeo.pulse.extension.runtime.encryption;
 
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseGenerator;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -25,11 +29,11 @@ public final class DefaultPassphraseProvider implements PassphraseProvider {
     // https://github.com/quarkusio/quarkus/issues/19676
     @CacheResult(cacheName = "passphrase")
     @Override
-    public char[] provide(final OwnedBy ownedBy) {
+    public Passphrase provide(final OwnedBy ownedBy) {
         Objects.requireNonNull(ownedBy);
         return passphraseRepository.retrieve(ownedBy)
                 .orElseGet(() -> {
-                    final char[] generated = passphraseGenerator.generate();
+                    final Passphrase generated = passphraseGenerator.generate();
                     passphraseRepository.store(ownedBy, generated);
                     return generated;
                 });

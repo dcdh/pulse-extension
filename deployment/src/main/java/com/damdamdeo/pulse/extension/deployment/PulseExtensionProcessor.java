@@ -1,7 +1,10 @@
 package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
-import com.damdamdeo.pulse.extension.runtime.*;
+import com.damdamdeo.pulse.extension.runtime.DefaultInstantProvider;
+import com.damdamdeo.pulse.extension.runtime.DefaultQuarkusTransaction;
+import com.damdamdeo.pulse.extension.runtime.PostgresqlEventStoreInitializer;
+import com.damdamdeo.pulse.extension.runtime.consumer.DebeziumConfiguration;
 import com.damdamdeo.pulse.extension.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.runtime.encryption.DefaultPassphraseProvider;
 import com.damdamdeo.pulse.extension.runtime.encryption.OpenPGPDecryptionService;
@@ -31,7 +34,7 @@ class PulseExtensionProcessor {
                         .addBeanClass(PostgresqlEventStoreInitializer.class)
                         .addBeanClass(AllFieldsVisibilityObjectMapperCustomizer.class)
                         .addBeanClasses(VaultPassphraseRepository.class, DefaultPassphraseGenerator.class,
-                                DefaultPassphraseProvider.class, OpenPGPDecryptionService.class)
+                                DefaultPassphraseProvider.class, OpenPGPDecryptionService.class, DebeziumConfiguration.class)
                         .build(),
                 // TODO it is not possible to define the bean with @DefaultBean
                 // Should conditionally add it if no other implementation is present.

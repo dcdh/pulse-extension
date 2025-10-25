@@ -1,6 +1,7 @@
-package com.damdamdeo.pulse.extension.test;
+package com.damdamdeo.pulse.extension.test.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.runtime.encryption.VaultPassphraseRepository;
 import io.quarkus.test.QuarkusUnitTest;
@@ -41,7 +42,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Optional<char[]> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -53,7 +54,7 @@ class VaultPassphraseRepositoryTest {
         vaultKVSecretEngine.writeSecret(SECRET_PATH, Map.of());
 
         // When
-        final Optional<char[]> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -63,15 +64,15 @@ class VaultPassphraseRepositoryTest {
     void shouldReturnStoredPassphrase() {
         // Given
         vaultKVSecretEngine.writeSecret(SECRET_PATH,
-                Map.of("passphrase", new String(PassphraseSample.PASSPHRASE)));
+                Map.of("passphrase", new String(PassphraseSample.PASSPHRASE.passphrase())));
 
         // When
-        final Optional<char[]> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
 
         // Then
         assertAll(
                 () -> assertThat(passphrase).isNotEmpty(),
-                () -> assertThat(passphrase.get()).containsExactly(PassphraseSample.PASSPHRASE));
+                () -> assertThat(passphrase.get().passphrase()).containsExactly(PassphraseSample.PASSPHRASE.passphrase()));
     }
 
     @Test
@@ -79,13 +80,13 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final char[] stored = vaultPassphraseRepository.store(new OwnedBy("Damien"), PassphraseSample.PASSPHRASE);
+        final Passphrase stored = vaultPassphraseRepository.store(new OwnedBy("Damien"), PassphraseSample.PASSPHRASE);
 
         // Then
         final Map<String, String> secret = vaultKVSecretEngine.readSecret(SECRET_PATH);
         assertAll(
                 () -> assertThat(stored).isEqualTo(PassphraseSample.PASSPHRASE),
-                () -> assertThat(secret).isEqualTo(Map.of("passphrase", new String(PassphraseSample.PASSPHRASE)))
+                () -> assertThat(secret).isEqualTo(Map.of("passphrase", new String(PassphraseSample.PASSPHRASE.passphrase())))
         );
     }
 }

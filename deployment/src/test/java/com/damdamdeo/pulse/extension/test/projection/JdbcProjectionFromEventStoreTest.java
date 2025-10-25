@@ -1,12 +1,13 @@
-package com.damdamdeo.pulse.extension.test;
+package com.damdamdeo.pulse.extension.test.projection;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.projection.MultipleResultAggregateQuery;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
 import com.damdamdeo.pulse.extension.core.projection.SingleResultAggregateQuery;
-import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -42,7 +43,7 @@ class JdbcProjectionFromEventStoreTest {
     public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
 
         @Override
-        public String query(final char[] passphrase, final AggregateId aggregateId) {
+        public String query(final Passphrase passphrase, final AggregateId aggregateId) {
             // language=sql
             return """
                 WITH decrypted AS (
@@ -73,14 +74,14 @@ class JdbcProjectionFromEventStoreTest {
                 WHERE d.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.Todo'
                   AND d.aggregate_root_id = '%2$s'
                 GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.in_relation_with;
-                """.formatted(new String(passphrase), aggregateId.id());
+                """.formatted(new String(passphrase.passphrase()), aggregateId.id());
         }
     }
 
     public static final class TodoProjectionMultipleResultAggregateQuery implements MultipleResultAggregateQuery {
 
         @Override
-        public String query(final char[] passphrase, final OwnedBy ownedBy) {
+        public String query(final Passphrase passphrase, final OwnedBy ownedBy) {
             // language=sql
             return """
                 WITH decrypted AS (
@@ -112,7 +113,7 @@ class JdbcProjectionFromEventStoreTest {
                 WHERE d.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.Todo'
                   AND d.owned_by = '%2$s'
                 GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.in_relation_with;
-                """.formatted(new String(passphrase), ownedBy.id());
+                """.formatted(new String(passphrase.passphrase()), ownedBy.id());
         }
     }
 
@@ -129,7 +130,7 @@ class JdbcProjectionFromEventStoreTest {
     static class StubPassphraseProvider implements PassphraseProvider {
 
         @Override
-        public char[] provide(final OwnedBy ownedBy) {
+        public Passphrase provide(final OwnedBy ownedBy) {
             return PassphraseSample.PASSPHRASE;
         }
     }

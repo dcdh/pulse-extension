@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.runtime.projection;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.projection.*;
-import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;

@@ -41,4 +41,10 @@ class PulseExtensionResourceTest {
                 .body("status", is("DONE"))
                 .body("important", is(false));
     }
+
+    @Test
+    @Order(3)
+    void shouldConsumeAsyncEvent() {
+        throw new RuntimeException("TODO debezium");
+    }
 }

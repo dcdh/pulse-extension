@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.runtime.encryption;
 
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,11 +23,11 @@ class DefaultPassphraseGeneratorTest {
         // Given
 
         // When
-        final char[] generated = passphraseGenerator.generate();
-        System.out.println(new String(generated));
+        final Passphrase generated = passphraseGenerator.generate();
+        System.out.println(new String(generated.passphrase()));
         // sample generated 7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&
 
         // Then
-        assertThat(generated.length).isEqualTo(32);
+        assertThat(generated.length()).isEqualTo(32);
     }
 }
