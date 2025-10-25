@@ -1,11 +1,12 @@
 package com.damdamdeo.pulse.extension.test;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.runtime.InstantProvider;
-import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseProvider;
-import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -55,7 +56,7 @@ class JdbcPostgresEventRepositoryTest {
     static class StubPassphraseProvider implements PassphraseProvider {
 
         @Override
-        public char[] provide(final OwnedBy ownedBy) {
+        public Passphrase provide(final OwnedBy ownedBy) {
             return PassphraseSample.PASSPHRASE;
         }
     }
@@ -64,19 +65,19 @@ class JdbcPostgresEventRepositoryTest {
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override
-        public Optional<char[]> retrieve(final OwnedBy ownedBy) {
+        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
             return Optional.of(PassphraseSample.PASSPHRASE);
         }
 
         @Override
-        public char[] store(final OwnedBy ownedBy, final char[] key) throws PassphraseAlreadyExistsException {
+        public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
             throw new IllegalStateException("Should not be called");
         }
     }
 
     @Test
     @Order(0)
-    void shouldTableBeInitialized() {
+    void shouldTablesBeInitialized() {
         // Given
 
         // When

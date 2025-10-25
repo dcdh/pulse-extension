@@ -1,6 +1,9 @@
 package com.damdamdeo.pulse.extension.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseGenerator;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,10 +38,10 @@ class DefaultPassphraseProviderTest {
         doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(new OwnedBy("custom organization"));
 
         // When
-        final char[] customOrganizations = passphraseProvider.provide(new OwnedBy("custom organization"));
+        final Passphrase customOrganizations = passphraseProvider.provide(new OwnedBy("custom organization"));
 
         // Then
-        assertThat(customOrganizations).isEqualTo("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
+        assertThat(customOrganizations.passphrase()).isEqualTo("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
     }
 
     @Test
@@ -48,10 +51,10 @@ class DefaultPassphraseProviderTest {
         doReturn(PassphraseSample.PASSPHRASE).when(passphraseGenerator).generate();
 
         // When
-        final char[] customOrganizations = passphraseProvider.provide(new OwnedBy("custom organization"));
+        final Passphrase customOrganizations = passphraseProvider.provide(new OwnedBy("custom organization"));
 
         // Then
-        assertThat(customOrganizations).isEqualTo("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
+        assertThat(customOrganizations.passphrase()).isEqualTo("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
     }
 
     @Test
@@ -78,6 +81,6 @@ class DefaultPassphraseProviderTest {
 
         // Then
         verify(passphraseRepository, times(1)).store(new OwnedBy("custom organization"),
-                "7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
+                new Passphrase("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray()));
     }
 }

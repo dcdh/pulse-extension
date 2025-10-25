@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.runtime.encryption;
 
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -33,10 +34,10 @@ public final class OpenPGPDecryptionService implements DecryptionService {
     }
 
     @Override
-    public byte[] decrypt(final byte[] encrypted, final OwnedBy ownedBy) throws DecryptionException {
+    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy) throws DecryptionException {
         Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
-        try (final InputStream in = new ByteArrayInputStream(encrypted)) {
+        try (final InputStream in = new ByteArrayInputStream(encrypted.payload())) {
             final PGPObjectFactory pgpF = new PGPObjectFactory(in, new JcaKeyFingerprintCalculator());
             final Object o = pgpF.nextObject();
 
@@ -47,6 +48,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                         new JcaPGPDigestCalculatorProviderBuilder().build())
                         .setProvider("BC")
                         .build(passphraseRepository.retrieve(ownedBy)
+                                .map(Passphrase::passphrase)
                                 .orElseThrow(() -> new DecryptionException(ownedBy, "Unknown passphrase")));
 
                 try (final InputStream clear = encData.getDataStream(decryptorFactory)) {
@@ -54,7 +56,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                     final Object message = plainFact.nextObject();
 
                     if (message instanceof PGPLiteralData literalData) {
-                        return literalData.getInputStream().readAllBytes();
+                        return new DecryptedPayload(literalData.getInputStream().readAllBytes());
                     } else {
                         throw new DecryptionException(ownedBy, "Contenu PGP inattendu, pas de PGPLiteralData");
                     }

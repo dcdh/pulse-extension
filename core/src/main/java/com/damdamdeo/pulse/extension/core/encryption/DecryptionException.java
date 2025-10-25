@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.runtime.encryption;
+package com.damdamdeo.pulse.extension.core.encryption;
 
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 

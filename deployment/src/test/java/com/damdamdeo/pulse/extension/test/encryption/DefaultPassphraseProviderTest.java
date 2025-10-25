@@ -1,10 +1,11 @@
-package com.damdamdeo.pulse.extension.test;
+package com.damdamdeo.pulse.extension.test.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.runtime.encryption.DefaultPassphraseProvider;
-import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.runtime.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
 import io.quarkus.cache.CaffeineCache;
@@ -35,13 +36,13 @@ class DefaultPassphraseProviderTest {
         final AtomicBoolean retrieveCalled = new AtomicBoolean(false);
 
         @Override
-        public Optional<char[]> retrieve(final OwnedBy ownedBy) {
+        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
             retrieveCalled.set(true);
             return Optional.of(PassphraseSample.PASSPHRASE);
         }
 
         @Override
-        public char[] store(final OwnedBy ownedBy, final char[] key) throws PassphraseAlreadyExistsException {
+        public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
             return null;
         }
 
@@ -71,11 +72,11 @@ class DefaultPassphraseProviderTest {
         // Given
 
         // When
-        final char[] provided = defaultPassphraseProvider.provide(new OwnedBy("Damien"));
+        final Passphrase provided = defaultPassphraseProvider.provide(new OwnedBy("Damien"));
 
         // Then
         assertAll(
-                () -> assertThat(provided).containsExactly(provided),
+                () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE.passphrase()),
                 () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isTrue(),
                 () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(new OwnedBy("Damien")).get())
                         .isEqualTo(PassphraseSample.PASSPHRASE)
@@ -89,11 +90,11 @@ class DefaultPassphraseProviderTest {
                 .await().indefinitely();
 
         // When
-        final char[] provided = defaultPassphraseProvider.provide(new OwnedBy("Damien"));
+        final Passphrase provided = defaultPassphraseProvider.provide(new OwnedBy("Damien"));
 
         // Then
         assertAll(
-                () -> assertThat(provided).containsExactly(provided),
+                () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE.passphrase()),
                 () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isFalse());
     }
 }

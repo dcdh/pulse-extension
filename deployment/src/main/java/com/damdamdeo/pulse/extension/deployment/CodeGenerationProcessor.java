@@ -11,6 +11,7 @@ import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.runtime.JdbcPostgresEventRepository;
 import com.damdamdeo.pulse.extension.runtime.projection.JdbcProjectionFromEventStore;
 import io.quarkus.arc.DefaultBean;
+import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -46,6 +47,7 @@ public class CodeGenerationProcessor {
                     .setFinal(true)
                     .build()) {
                 beanClassCreator.addAnnotation(Singleton.class);
+                beanClassCreator.addAnnotation(Unremovable.class);
                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                 try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getAggregateClass", Class.class)) {
@@ -76,6 +78,7 @@ public class CodeGenerationProcessor {
                     .setFinal(true)
                     .build()) {
                 beanClassCreator.addAnnotation(Singleton.class);
+                beanClassCreator.addAnnotation(Unremovable.class);
                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
@@ -126,6 +129,7 @@ public class CodeGenerationProcessor {
                     .setFinal(true)
                     .build()) {
                 beanClassCreator.addAnnotation(Singleton.class);
+                beanClassCreator.addAnnotation(Unremovable.class);
                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
@@ -188,6 +192,7 @@ public class CodeGenerationProcessor {
                                     .setFinal(true)
                                     .build()) {
                                 beanClassCreator.addAnnotation(Singleton.class);
+                                beanClassCreator.addAnnotation(Unremovable.class);
                                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                                 try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
@@ -204,7 +209,7 @@ public class CodeGenerationProcessor {
         }
     }
 
-    private void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {
+    public static void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {
         classCreator.writeTo((name, data) -> {
             final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
             try {

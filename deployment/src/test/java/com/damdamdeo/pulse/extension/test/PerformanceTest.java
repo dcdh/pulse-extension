@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.test;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -68,7 +69,7 @@ class PerformanceTest {
     public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
 
         @Override
-        public String query(final char[] passphrase, final AggregateId aggregateId) {
+        public String query(final Passphrase passphrase, final AggregateId aggregateId) {
             // language=sql
             return """
                     WITH decrypted AS (
@@ -99,7 +100,7 @@ class PerformanceTest {
                     WHERE d.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.Todo'
                       AND d.aggregate_root_id = '%2$s'
                     GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.in_relation_with;
-                    """.formatted(new String(passphrase), aggregateId.id());
+                    """.formatted(new String(passphrase.passphrase()), aggregateId.id());
         }
     }
 

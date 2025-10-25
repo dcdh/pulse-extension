@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core;
 import java.util.Objects;
 
 public record AggregateVersion(Integer version) {
+
     public AggregateVersion {
         Objects.requireNonNull(version);
         if (version < 0) {

@@ -1,11 +1,12 @@
 package com.damdamdeo.pulse.extension.runtime.encryption;
 
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseGenerator;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.security.SecureRandom;
-import java.util.Base64;
 
 @ApplicationScoped
 @Unremovable
@@ -13,7 +14,7 @@ import java.util.Base64;
 public final class DefaultPassphraseGenerator implements PassphraseGenerator {
 
     @Override
-    public char[] generate() {
+    public Passphrase generate() {
         final SecureRandom random = new SecureRandom();
         final int length = 32; // longueur de la passphrase
         final char[] passphrase = new char[length];
@@ -25,6 +26,6 @@ public final class DefaultPassphraseGenerator implements PassphraseGenerator {
             passphrase[i] = chars.charAt(index);
         }
 
-        return passphrase;
+        return new Passphrase(passphrase);
     }
 }

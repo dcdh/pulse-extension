@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.runtime.encryption;
 
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -25,7 +28,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
-    public Optional<char[]> retrieve(final OwnedBy ownedBy) {
+    public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
         Objects.requireNonNull(ownedBy);
         final String path = VAULT_PATH + "/" + ownedBy.id();
         try {
@@ -34,18 +37,18 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
                 return Optional.empty();
             }
             final String passphrase = data.get("passphrase");
-            return Optional.of(passphrase.toCharArray());
+            return Optional.of(new Passphrase(passphrase.toCharArray()));
         } catch (final VaultClientException vaultClientException) {
             return Optional.empty();
         }
     }
 
     @Override
-    public char[] store(final OwnedBy ownedBy, final char[] key) throws PassphraseAlreadyExistsException {
+    public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
         Objects.requireNonNull(ownedBy);
-        Objects.requireNonNull(key);
+        Objects.requireNonNull(passphrase);
         final String path = VAULT_PATH + "/" + ownedBy.id();
-        final Map<String, String> secret = Map.of("passphrase", new String(key));
+        final Map<String, String> secret = Map.of("passphrase", new String(passphrase.passphrase()));
         try {
             final Map<String, String> existing = vaultKVSecretEngine.readSecret(path);
             if (existing != null && existing.containsKey("passphrase")) {
@@ -56,6 +59,6 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
         } catch (final VaultClientException vaultClientException) {
             vaultKVSecretEngine.writeSecret(path, secret);
         }
-        return key.clone();
+        return new Passphrase(passphrase.passphrase().clone());
     }
 }
