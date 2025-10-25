@@ -87,6 +87,7 @@
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--FCK remove-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-test-kafka-companion</artifactId>

@@ -277,8 +277,8 @@ public class ConsumerProcessor {
                             "mp.messaging.incoming.%s.auto.offset.reset".formatted(target), "earliest",
                             "mp.messaging.incoming.%s.connector".formatted(target), "smallrye-kafka",
                             "mp.messaging.incoming.%s.topic".formatted(target), "%s_t_event".formatted(pulseConfiguration.targetTopicBinding().get(target)),
-                            "mp.messaging.incoming.%s.value.deserializer".formatted(target), JsonNodeEventRecordObjectMapperDeserializer.class.getName(),
                             "mp.messaging.incoming.%s.key.deserializer".formatted(target), JsonNodeEventKeyObjectMapperDeserializer.class.getName(),
+                            "mp.messaging.incoming.%s.value.deserializer".formatted(target), JsonNodeEventRecordObjectMapperDeserializer.class.getName(),
                             "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(target), EventKey.class.getName(),
                             "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(target), EventRecord.class.getName())
                     .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
