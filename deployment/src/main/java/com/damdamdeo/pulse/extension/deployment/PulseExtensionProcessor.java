@@ -1,7 +1,9 @@
 package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
-import com.damdamdeo.pulse.extension.runtime.*;
+import com.damdamdeo.pulse.extension.runtime.DefaultInstantProvider;
+import com.damdamdeo.pulse.extension.runtime.DefaultQuarkusTransaction;
+import com.damdamdeo.pulse.extension.runtime.PostgresqlEventStoreInitializer;
 import com.damdamdeo.pulse.extension.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.runtime.encryption.DefaultPassphraseProvider;
 import com.damdamdeo.pulse.extension.runtime.encryption.OpenPGPDecryptionService;
@@ -11,6 +13,7 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 
 import java.util.List;
 
@@ -41,5 +44,11 @@ class PulseExtensionProcessor {
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build()
         );
+    }
+
+    @BuildStep
+    List<RunTimeConfigurationDefaultBuildItem> defaultConfigurations() {
+        return List.of(
+                new RunTimeConfigurationDefaultBuildItem("quarkus.datasource.jdbc.max-size", "100"));
     }
 }
