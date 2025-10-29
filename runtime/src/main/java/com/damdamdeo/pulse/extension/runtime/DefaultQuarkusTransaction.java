@@ -16,6 +16,6 @@ public final class DefaultQuarkusTransaction implements Transaction {
 
     @Override
     public <A extends AggregateRoot<?>> A joiningExisting(final Supplier<A> callable) {
-        return QuarkusTransaction.requiringNew().call(callable::get);
+        return QuarkusTransaction.joiningExisting().call(callable::get);
     }
 }
