@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public abstract class JdbcEventRepository<A extends AggregateRoot<K>, K extends AggregateId> implements EventRepository<A, K> {
+public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K extends AggregateId> implements EventRepository<A, K> {
 
-    static final Logger LOGGER = Logger.getLogger(JdbcEventRepository.class.getName());
+    static final Logger LOGGER = Logger.getLogger(JdbcPostgresEventRepository.class.getName());
 
     @Inject
     DataSource dataSource;

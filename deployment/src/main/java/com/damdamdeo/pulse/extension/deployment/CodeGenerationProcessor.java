@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.event.QueryEventStore;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
-import com.damdamdeo.pulse.extension.runtime.JdbcEventRepository;
+import com.damdamdeo.pulse.extension.runtime.JdbcPostgresEventRepository;
 import com.damdamdeo.pulse.extension.runtime.projection.JdbcProjectionFromEventStore;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
@@ -40,7 +40,7 @@ public class CodeGenerationProcessor {
                     .signature(SignatureBuilder.forClass()
                             .setSuperClass(
                                     Type.parameterizedType(
-                                            Type.classType(JdbcEventRepository.class),
+                                            Type.classType(JdbcPostgresEventRepository.class),
                                             Type.classType(aggregateRootBuildItem.aggregateRootClazz()),
                                             Type.classType(aggregateRootBuildItem.aggregateIdClazz()))))
                     .setFinal(true)
