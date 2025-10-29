@@ -1,3 +1,4 @@
 /deployment/target/
 /integration-tests/target/
 /runtime/target/
+/core/target/
