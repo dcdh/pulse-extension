@@ -2,9 +2,9 @@ package com.damdamdeo.pulse.extension.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,14 +47,14 @@ class OpenPGPDecryptionServiceTest {
 
     // Meaning that the organization has been deleted from Vault ...
     @Test
-    void shouldThrowDecryptionExceptionWhenPassphraseIsNotFound() {
+    void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() {
         // Given
         final EncryptedPayload encrypted = OpenPGPEncryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
         doReturn(Optional.empty()).when(passphraseRepository).retrieve(new OwnedBy("custom organization"));
 
         // When && Then
         assertThatThrownBy(() -> decryptionService.decrypt(encrypted, new OwnedBy("custom organization")))
-                .isExactlyInstanceOf(DecryptionException.class)
-                .hasMessage("Unknown passphrase");
+                .isExactlyInstanceOf(UnknownPassphraseException.class)
+                .hasFieldOrPropertyWithValue("ownedBy", new OwnedBy("custom organization"));
     }
 }

@@ -119,18 +119,18 @@ class PostgresAggregateRootLoaderTest {
                 givenApplicationNaming, givenAggregateRootType, givenAggregateId);
 
         // Then
-        final ObjectNode expectedPayload = objectMapper.createObjectNode();
-        expectedPayload.put("id", "Damien/0");
-        expectedPayload.put("description", "lorem ipsum");
-        expectedPayload.put("status", "DONE");
-        expectedPayload.put("important", false);
+        final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
+        expectedAggregateRootPayload.put("id", "Damien/0");
+        expectedAggregateRootPayload.put("description", "lorem ipsum");
+        expectedAggregateRootPayload.put("status", "DONE");
+        expectedAggregateRootPayload.put("important", false);
         assertThat(byAggregateRootTypeAndAggregateId).isEqualTo(
                 new AggregateRootLoaded<>(
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
                         new LastAggregateVersion(1),
                         new EncryptedPayload(encryptedPayload),
-                        expectedPayload,
+                        DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                         new OwnedBy("Damien"),
                         new InRelationWith("Damien/0")));
     }

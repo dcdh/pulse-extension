@@ -34,7 +34,8 @@ public final class OpenPGPDecryptionService implements DecryptionService {
     }
 
     @Override
-    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy) throws DecryptionException {
+    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy)
+            throws DecryptionException, UnknownPassphraseException {
         Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
         try (final InputStream in = new ByteArrayInputStream(encrypted.payload())) {
@@ -49,7 +50,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                         .setProvider("BC")
                         .build(passphraseRepository.retrieve(ownedBy)
                                 .map(Passphrase::passphrase)
-                                .orElseThrow(() -> new DecryptionException(ownedBy, "Unknown passphrase")));
+                                .orElseThrow(() -> new UnknownPassphraseException(ownedBy)));
 
                 try (final InputStream clear = encData.getDataStream(decryptorFactory)) {
                     final PGPObjectFactory plainFact = new PGPObjectFactory(clear, new JcaKeyFingerprintCalculator());

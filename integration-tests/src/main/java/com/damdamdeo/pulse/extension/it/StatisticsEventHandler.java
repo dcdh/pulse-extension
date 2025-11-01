@@ -2,10 +2,7 @@ package com.damdamdeo.pulse.extension.it;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.consumer.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.consumer.AsyncEventChannelMessageHandler;
-import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -32,7 +29,7 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
                               final EventType eventType,
                               final EncryptedPayload encryptedPayload,
                               final OwnedBy ownedBy,
-                              final JsonNode decryptedEventPayload,
+                              final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
     }
 }

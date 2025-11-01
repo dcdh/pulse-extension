@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -61,8 +62,12 @@ class TargetEventChannelConsumerTest {
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override
-        public Optional<Passphrase> retrieve(OwnedBy ownedBy) {
-            return Optional.of(PassphraseSample.PASSPHRASE);
+        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
+            if (new OwnedBy("Damien").equals(ownedBy)) {
+                return Optional.of(PassphraseSample.PASSPHRASE);
+            } else {
+                return Optional.empty();
+            }
         }
 
         @Override
@@ -79,7 +84,7 @@ class TargetEventChannelConsumerTest {
                 EventType eventType,
                 EncryptedPayload encryptedPayload,
                 OwnedBy ownedBy,
-                JsonNode decryptedEventPayload,
+                DecryptablePayload<JsonNode> decryptableEventPayload,
                 AggregateRootLoaded<JsonNode> aggregateRootLoaded) {
         Call {
             Objects.requireNonNull(target);
@@ -90,7 +95,7 @@ class TargetEventChannelConsumerTest {
             Objects.requireNonNull(eventType);
             Objects.requireNonNull(encryptedPayload);
             Objects.requireNonNull(ownedBy);
-            Objects.requireNonNull(decryptedEventPayload);
+            Objects.requireNonNull(decryptableEventPayload);
             Objects.requireNonNull(aggregateRootLoaded);
         }
     }
@@ -113,11 +118,11 @@ class TargetEventChannelConsumerTest {
                                   final EventType eventType,
                                   final EncryptedPayload encryptedPayload,
                                   final OwnedBy ownedBy,
-                                  final JsonNode decryptedEventPayload,
+                                  final DecryptablePayload<JsonNode> decryptableEventPayload,
                                   final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
             this.call = new Call(
                     target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
-                    encryptedPayload, ownedBy, decryptedEventPayload,
+                    encryptedPayload, ownedBy, decryptableEventPayload,
                     aggregateRootLoadedSupplier.get());
         }
 
@@ -205,6 +210,7 @@ class TargetEventChannelConsumerTest {
         new ProducerBuilder<>(
                 Map.of(
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
+                        AUTO_OFFSET_RESET_CONFIG, "latest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
                 .usingGenerator(
@@ -234,14 +240,107 @@ class TargetEventChannelConsumerTest {
                         EventType.from(TodoMarkedAsDone.class),
                         new EncryptedPayload(encryptedTodoMarkedAsDonePayload),
                         new OwnedBy("Damien"),
-                        expectedTodoMarkedAsDonePayload,
+                        DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
                                 AggregateRootType.from(Todo.class),
                                 new AnyAggregateId("Damien/0"),
                                 new LastAggregateVersion(1),
                                 new EncryptedPayload(encryptedAggregatePayload),
-                                expectedAggregateRootPayload,
+                                DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                                 new OwnedBy("Damien"),
                                 new InRelationWith("Damien/0"))));
+    }
+
+    @Test
+    void shouldConsumeEventWhenPassPhraseDoesNotExistsAnymore() throws SQLException {
+        final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
+                EventChannel.Literal.of("statistics")).get();
+        // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
+        // Given
+        // language=json
+        final String aggregatePayload = """
+                {
+                  "id": "Alban/0",
+                  "description": "lorem ipsum",
+                  "status": "DONE",
+                  "important": false
+                }
+                """;
+        final byte[] encryptedAggregatePayload = OpenPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        // language=sql
+        final String aggregateRootSql = """
+                    INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, in_relation_with)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """;
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
+            ps.setString(1, Todo.class.getName());
+            ps.setString(2, "Alban/0");
+            ps.setLong(3, 1);
+            ps.setBytes(4, encryptedAggregatePayload);
+            ps.setString(5, "Alban");
+            ps.setString(6, "Alban/0");
+            ps.executeUpdate();
+        }
+
+        // language=sql
+        final String idempotencySql = """
+                INSERT INTO t_idempotency (target, source, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                VALUES (?, ?, ?, ?, ?)
+                """;
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
+            ps.setString(1, "statistics");
+            ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
+            ps.setString(3, Todo.class.getName());
+            ps.setString(4, "Alban/0");
+            ps.setLong(5, 0);
+            ps.executeUpdate();
+        }
+
+        // language=json
+        final String todoMarkedAsDonePayload = """
+                {
+                  "id": "Alban/0"
+                }
+                """;
+        final byte[] encryptedTodoMarkedAsDonePayload = OpenPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+
+        // When
+        new ProducerBuilder<>(
+                Map.of(
+                        BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
+                        AUTO_OFFSET_RESET_CONFIG, "latest",
+                        ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
+                Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
+                .usingGenerator(
+                        integer -> new ProducerRecord<>(TOPIC,
+                                new JsonNodeEventKey(Todo.class.getName(), "Alban/0", 1),
+                                new JsonNodeEventRecord(Todo.class.getName(), "Alban/0", 1, 1_761_335_312_527L,
+                                        TodoMarkedAsDone.class.getName(),
+                                        encryptedTodoMarkedAsDonePayload,
+                                        "Alban")), 1L);
+
+        // Then
+        await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
+        assertThat(statisticsEventHandler.getCall()).isEqualTo(
+                new Call(
+                        new Target("statistics"),
+                        AggregateRootType.from(Todo.class),
+                        new AnyAggregateId("Alban/0"),
+                        new CurrentVersionInConsumption(1),
+                        Instant.ofEpochMilli(1_761_335_312_527L),
+                        EventType.from(TodoMarkedAsDone.class),
+                        new EncryptedPayload(encryptedTodoMarkedAsDonePayload),
+                        new OwnedBy("Alban"),
+                        DecryptablePayload.ofUndecryptable(),
+                        new AggregateRootLoaded<>(
+                                AggregateRootType.from(Todo.class),
+                                new AnyAggregateId("Alban/0"),
+                                new LastAggregateVersion(1),
+                                new EncryptedPayload(encryptedAggregatePayload),
+                                DecryptablePayload.ofUndecryptable(),
+                                new OwnedBy("Alban"),
+                                new InRelationWith("Alban/0"))));
     }
 }

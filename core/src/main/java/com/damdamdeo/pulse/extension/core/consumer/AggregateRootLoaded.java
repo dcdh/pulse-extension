@@ -12,7 +12,7 @@ public record AggregateRootLoaded<T>(AggregateRootType aggregateRootType,
                                      AggregateId aggregateId,
                                      LastAggregateVersion lastAggregateVersion,
                                      EncryptedPayload encryptedAggregateRootPayload,
-                                     T decryptedAggregateRootPayload,
+                                     DecryptablePayload<T> decryptableAggregateRootPayload,
                                      OwnedBy ownedBy,
                                      InRelationWith inRelationWith) {
 
@@ -21,7 +21,7 @@ public record AggregateRootLoaded<T>(AggregateRootType aggregateRootType,
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(lastAggregateVersion);
         Objects.requireNonNull(encryptedAggregateRootPayload);
-        Objects.requireNonNull(decryptedAggregateRootPayload);
+        Objects.requireNonNull(decryptableAggregateRootPayload);
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(inRelationWith);
     }

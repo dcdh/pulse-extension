@@ -19,6 +19,6 @@ public interface AsyncEventChannelMessageHandler<T> {
                        EventType eventType,
                        EncryptedPayload encryptedPayload,
                        OwnedBy ownedBy,
-                       T decryptedEventPayload,
+                       DecryptablePayload<T> decryptableEventPayload,
                        Supplier<AggregateRootLoaded<T>> aggregateRootLoadedSupplier);
 }

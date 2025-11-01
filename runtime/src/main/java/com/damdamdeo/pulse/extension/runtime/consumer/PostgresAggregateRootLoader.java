@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,14 +63,20 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                         final LastAggregateVersion lastAggregateVersion = new LastAggregateVersion(rs.getInt("last_version"));
                         final EncryptedPayload encryptedPayload = new EncryptedPayload(rs.getBytes("aggregate_root_payload"));
                         final OwnedBy ownedBy = new OwnedBy(rs.getString("owned_by"));
-                        final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
+                        DecryptablePayload<JsonNode> decryptablePayload;
+                        try {
+                            final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
+                            decryptablePayload = DecryptablePayload.ofDecrypted(objectMapper.readTree(decryptedPayload.payload()));
+                        } catch (final UnknownPassphraseException unknownPassphraseException) {
+                            decryptablePayload = DecryptablePayload.ofUndecryptable();
+                        }
                         final InRelationWith inRelationWith = new InRelationWith(rs.getString("in_relation_with"));
                         return new AggregateRootLoaded<>(
                                 aggregateRootType,
                                 aggregateId,
                                 lastAggregateVersion,
                                 encryptedPayload,
-                                objectMapper.readTree(decryptedPayload.payload()),
+                                decryptablePayload,
                                 ownedBy,
                                 inRelationWith);
                     }

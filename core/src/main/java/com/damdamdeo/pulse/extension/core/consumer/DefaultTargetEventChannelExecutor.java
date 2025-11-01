@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.apache.commons.lang3.Validate;
@@ -74,10 +75,16 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                     final EncryptedPayload encryptedPayload = eventRecord.toEncryptedEventPayload();
                     final OwnedBy ownedBy = eventRecord.toOwnedBy();
                     try {
-                        final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
-                        final T decryptedEventPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
+                        DecryptablePayload<T> decryptableEventPayload;
+                        try {
+                            final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
+                            final T decryptedEventPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
+                            decryptableEventPayload = DecryptablePayload.ofDecrypted(decryptedEventPayload);
+                        } catch (final UnknownPassphraseException unknownPassphraseException) {
+                            decryptableEventPayload = DecryptablePayload.ofUndecryptable();
+                        }
                         final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(applicationNaming, aggregateRootType, aggregateId);
-                        asyncEventChannelMessageHandler.handleMessage(target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy, decryptedEventPayload,
+                        asyncEventChannelMessageHandler.handleMessage(target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy, decryptableEventPayload,
                                 aggregateRootSupplier);
                     } catch (final IOException e) {
                         throw new EventChannelMessageHandlerException(

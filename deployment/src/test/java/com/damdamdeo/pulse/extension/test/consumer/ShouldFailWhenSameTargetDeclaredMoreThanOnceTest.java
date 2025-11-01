@@ -2,14 +2,11 @@ package com.damdamdeo.pulse.extension.test.consumer;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.consumer.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.consumer.AsyncEventChannelMessageHandler;
 import com.damdamdeo.pulse.extension.runtime.consumer.EventChannel;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
@@ -61,7 +58,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
                                   final EventType eventType,
                                   final EncryptedPayload encryptedPayload,
                                   final OwnedBy ownedBy,
-                                  final JsonNode decryptedEventPayload,
+                                  final DecryptablePayload<JsonNode> decryptableEventPayload,
                                   final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
         }
     }
@@ -82,7 +79,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
                                   final EventType eventType,
                                   final EncryptedPayload encryptedPayload,
                                   final OwnedBy ownedBy,
-                                  final JsonNode decryptedEventPayload,
+                                  final DecryptablePayload<JsonNode> decryptableEventPayload,
                                   final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
         }
     }
