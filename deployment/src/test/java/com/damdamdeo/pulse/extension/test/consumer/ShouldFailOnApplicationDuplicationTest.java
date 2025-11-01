@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailWhenTargetTopicPatternIsNotRespectedTest {
+class ShouldFailOnApplicationDuplicationTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -33,12 +33,11 @@ class ShouldFailWhenTargetTopicPatternIsNotRespectedTest {
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-messaging-kafka", Version.getVersion())))
             .withConfigurationResource("application.properties")
-            .overrideConfigKey("pulse.target-topic-binding.statistics", "statistics0")
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()
                     .rootCause()
-                    .isExactlyInstanceOf(IllegalStateException.class)
-                    .hasMessage("Topic naming invalid 'statistics0' - it should match [a-zA-Z]+")
+                    .isExactlyInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("functionalDomain 'TodoTaking' componentName 'Todo' declared more than once '2' in target 'statistics'")
                     .hasNoSuppressedExceptions());
 
     @Test
@@ -47,13 +46,17 @@ class ShouldFailWhenTargetTopicPatternIsNotRespectedTest {
     }
 
     @ApplicationScoped
-    @EventChannel(target = "statistics")
+    @EventChannel(target = "statistics",
+            sources = {
+                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo"),
+                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
+            })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
         @Override
         public void handleMessage(final Target target,
-                                  final AggregateId aggregateId,
                                   final AggregateRootType aggregateRootType,
+                                  final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
                                   final Instant creationDate,
                                   final EventType eventType,

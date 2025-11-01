@@ -2,15 +2,12 @@ package com.damdamdeo.pulse.extension.runtime.consumer;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.consumer.IdempotencyException;
-import com.damdamdeo.pulse.extension.core.consumer.IdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
+import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 import org.jboss.logmanager.Level;
 
@@ -20,7 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@ApplicationScoped
+@Singleton
 @Unremovable
 @DefaultBean
 public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepository {
@@ -64,11 +61,12 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
 
     @Transactional(Transactional.TxType.REQUIRED)
     @Override
-    public void upsert(final Target target, final AggregateRootType aggregateRootType, final AggregateId aggregateId, final LastConsumedAggregateVersion lastConsumedAggregateVersion) throws IdempotencyException {
+    public void upsert(final Target target, final EventKey eventKey) throws IdempotencyException {
         Objects.requireNonNull(target);
-        Objects.requireNonNull(aggregateRootType);
-        Objects.requireNonNull(aggregateId);
-        Objects.requireNonNull(lastConsumedAggregateVersion);
+        Objects.requireNonNull(eventKey);
+        final AggregateRootType aggregateRootType = Objects.requireNonNull(eventKey.toAggregateRootType());
+        final AggregateId aggregateRootId = Objects.requireNonNull(eventKey.toAggregateId());
+        final CurrentVersionInConsumption currentVersionInConsumption = Objects.requireNonNull(eventKey.toCurrentVersionInConsumption());
         // language=sql
         final String sql = """
                     INSERT INTO t_idempotency (target, aggregate_root_type, aggregate_root_id, last_consumed_version)
@@ -80,8 +78,8 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, target.name());
             ps.setString(2, aggregateRootType.type());
-            ps.setString(3, aggregateId.id());
-            ps.setInt(4, lastConsumedAggregateVersion.version());
+            ps.setString(3, aggregateRootId.id());
+            ps.setInt(4, currentVersionInConsumption.version());
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new IdempotencyException("Failed to upsert idempotency entry", e);

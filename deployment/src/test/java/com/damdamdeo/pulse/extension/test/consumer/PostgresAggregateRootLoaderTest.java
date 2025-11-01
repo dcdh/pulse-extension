@@ -8,10 +8,16 @@ import com.damdamdeo.pulse.extension.core.consumer.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.InRelationWith;
 import com.damdamdeo.pulse.extension.core.consumer.UnknownAggregateRootException;
-import com.damdamdeo.pulse.extension.core.encryption.*;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.runtime.consumer.*;
-import com.damdamdeo.pulse.extension.runtime.encryption.*;
+import com.damdamdeo.pulse.extension.runtime.consumer.PostgresAggregateRootLoader;
+import com.damdamdeo.pulse.extension.runtime.encryption.OpenPGPEncryptionService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -60,6 +66,9 @@ class PostgresAggregateRootLoaderTest {
     @Inject
     DataSource dataSource;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @Test
     void shouldThrowUnknownAggregateRootExceptionWhenAggregateDoesNotExists() {
         // Given
@@ -77,7 +86,13 @@ class PostgresAggregateRootLoaderTest {
     @Test
     void shouldReturnAggregate() {
         // Given
-        final byte[] payload = OpenPGPEncryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        // language=json
+        final String payload = """
+                {
+                  "msg": "Hello world!"
+                }
+                """;
+        final byte[] payloadAsByte = OpenPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
                     INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, in_relation_with)
@@ -88,7 +103,7 @@ class PostgresAggregateRootLoaderTest {
             ps.setString(1, "Damien/0");
             ps.setString(2, Todo.class.getName());
             ps.setLong(3, 0);
-            ps.setBytes(4, payload);
+            ps.setBytes(4, payloadAsByte);
             ps.setString(5, "Damien");
             ps.setString(6, "Damien/0");
             ps.executeUpdate();
@@ -97,17 +112,19 @@ class PostgresAggregateRootLoaderTest {
         }
 
         // When
-        final AggregateRootLoaded byAggregateRootTypeAndAggregateId = postgresAggregateRootLoader.getByAggregateRootTypeAndAggregateId(AggregateRootType.from(Todo.class),
+        final AggregateRootLoaded<JsonNode> byAggregateRootTypeAndAggregateId = postgresAggregateRootLoader.getByAggregateRootTypeAndAggregateId(AggregateRootType.from(Todo.class),
                 new AnyAggregateId("Damien/0"));
 
         // Then
+        final ObjectNode expectedPayload = objectMapper.createObjectNode();
+        expectedPayload.put("msg", "Hello world!");
         assertThat(byAggregateRootTypeAndAggregateId).isEqualTo(
-                new AggregateRootLoaded(
+                new AggregateRootLoaded<>(
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
                         new LastAggregateVersion(0),
-                        new EncryptedPayload(payload),
-                        new DecryptedPayload("Hello world!".getBytes(StandardCharsets.UTF_8)),
+                        new EncryptedPayload(payloadAsByte),
+                        expectedPayload,
                         new OwnedBy("Damien"),
                         new InRelationWith("Damien/0")));
     }

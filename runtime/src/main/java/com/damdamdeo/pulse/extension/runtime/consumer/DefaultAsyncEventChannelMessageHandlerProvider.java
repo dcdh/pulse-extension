@@ -6,15 +6,16 @@ import com.damdamdeo.pulse.extension.core.consumer.Target;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Singleton;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@ApplicationScoped
+@Singleton
 @Unremovable
 @DefaultBean
 public final class DefaultAsyncEventChannelMessageHandlerProvider implements AsyncEventChannelMessageHandlerProvider<JsonNode> {
@@ -23,7 +24,7 @@ public final class DefaultAsyncEventChannelMessageHandlerProvider implements Asy
 
     private final Map<Target, List<AsyncEventChannelMessageHandler<JsonNode>>> cache;
 
-    public DefaultAsyncEventChannelMessageHandlerProvider(final Instance<AsyncEventChannelMessageHandler<JsonNode>> eventChannelMessageHandlers) {
+    public DefaultAsyncEventChannelMessageHandlerProvider(@Any final Instance<AsyncEventChannelMessageHandler<JsonNode>> eventChannelMessageHandlers) {
         this.eventChannelMessageHandlers = Objects.requireNonNull(eventChannelMessageHandlers);
         this.cache = new HashMap<>();
     }

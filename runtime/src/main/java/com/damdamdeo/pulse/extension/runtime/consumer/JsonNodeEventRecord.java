@@ -16,8 +16,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 @RegisterForReflection
-public record JsonNodeEventRecord(@JsonProperty("aggregate_root_id") String aggregateRootId,
-                                  @JsonProperty("aggregate_root_type") String aggregateRootType,
+public record JsonNodeEventRecord(@JsonProperty("aggregate_root_type") String aggregateRootType,
+                                  @JsonProperty("aggregate_root_id") String aggregateRootId,
                                   @JsonProperty("version") Integer version,
                                   @JsonProperty("creation_date") Long createDate,
                                   @JsonProperty("event_type") String eventType,
@@ -25,8 +25,8 @@ public record JsonNodeEventRecord(@JsonProperty("aggregate_root_id") String aggr
                                   @JsonProperty("owned_by") String ownedBy) implements EventRecord {
 
     public JsonNodeEventRecord {
-        Objects.requireNonNull(aggregateRootId);
         Objects.requireNonNull(aggregateRootType);
+        Objects.requireNonNull(aggregateRootId);
         Objects.requireNonNull(version);
         Objects.requireNonNull(createDate);
         Objects.requireNonNull(eventType);
@@ -35,13 +35,13 @@ public record JsonNodeEventRecord(@JsonProperty("aggregate_root_id") String aggr
     }
 
     @Override
-    public AggregateId toAggregateId() {
-        return new AnyAggregateId(aggregateRootId);
+    public AggregateRootType toAggregateRootType() {
+        return new AggregateRootType(aggregateRootType);
     }
 
     @Override
-    public AggregateRootType toAggregateRootType() {
-        return new AggregateRootType(aggregateRootType);
+    public AggregateId toAggregateId() {
+        return new AnyAggregateId(aggregateRootId);
     }
 
     @Override
@@ -72,8 +72,8 @@ public record JsonNodeEventRecord(@JsonProperty("aggregate_root_id") String aggr
     @Override
     public String toString() {
         return "JsonNodeEventRecord{" +
-                "aggregateRootId='" + aggregateRootId + '\'' +
-                ", aggregateRootType='" + aggregateRootType + '\'' +
+                "aggregateRootType='" + aggregateRootType + '\'' +
+                ", aggregateRootId='" + aggregateRootId + '\'' +
                 ", version=" + version +
                 ", createDate=" + createDate +
                 ", eventType='" + eventType + '\'' +

@@ -7,4 +7,8 @@ public record CurrentVersionInConsumption(Integer version) {
     public CurrentVersionInConsumption {
         Objects.requireNonNull(version);
     }
+
+    public boolean isFirstEvent() {
+        return version == 0;
+    }
 }

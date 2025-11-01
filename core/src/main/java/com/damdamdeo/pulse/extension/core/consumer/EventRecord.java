@@ -10,15 +10,9 @@ import java.time.Instant;
 
 public interface EventRecord {
 
-    String aggregateRootId();
-
-    String aggregateRootType();
-
-    Integer version();
+    AggregateRootType toAggregateRootType();
 
     AggregateId toAggregateId();
-
-    AggregateRootType toAggregateRootType();
 
     CurrentVersionInConsumption toCurrentVersionInConsumption();
 
@@ -29,4 +23,10 @@ public interface EventRecord {
     EncryptedPayload toEncryptedEventPayload();
 
     OwnedBy toOwnedBy();
+
+    default boolean match(final EventKey eventKey) {
+        return eventKey.toAggregateRootType().equals(toAggregateRootType())
+                && eventKey.toAggregateId().equals(toAggregateId())
+                && eventKey.toCurrentVersionInConsumption().equals(toCurrentVersionInConsumption());
+    }
 }

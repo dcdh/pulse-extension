@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 
 import java.io.IOException;
 import java.util.Objects;
 
-@ApplicationScoped
+@Singleton
 @Unremovable
 @DefaultBean
 public final class JacksonDecryptedPayloadToPayloadMapper implements DecryptedPayloadToPayloadMapper<JsonNode> {
@@ -25,6 +25,6 @@ public final class JacksonDecryptedPayloadToPayloadMapper implements DecryptedPa
     @Override
     public JsonNode map(final DecryptedPayload decryptedPayload) throws IOException {
         Objects.requireNonNull(decryptedPayload);
-        return objectMapper.readTree(objectMapper.writeValueAsString(decryptedPayload));
+        return objectMapper.readTree(decryptedPayload.payload());
     }
 }

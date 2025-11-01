@@ -2,10 +2,10 @@ package com.damdamdeo.pulse.extension.runtime.consumer;
 
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-@ApplicationScoped
+@Singleton
 @Unremovable
 @DefaultBean
 public final class DebeziumConfigurator {

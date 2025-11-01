@@ -1,9 +1,7 @@
 package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.consumer.*;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
-import com.damdamdeo.pulse.extension.runtime.PulseConfiguration;
 import com.damdamdeo.pulse.extension.runtime.consumer.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
@@ -22,13 +20,15 @@ import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
 import io.smallrye.common.annotation.Blocking;
-import io.smallrye.reactive.messaging.kafka.Record;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,52 +41,204 @@ public class ConsumerProcessor {
 
     public static final class TargetBuildItem extends MultiBuildItem {
 
-        private final String target;
+        private final Target target;
+        private final List<ApplicationNaming> sources;
 
-        public TargetBuildItem(final String target) {
+        public TargetBuildItem(final Target target, final List<ApplicationNaming> sources) {
             this.target = Objects.requireNonNull(target);
+            this.sources = Objects.requireNonNull(sources);
         }
 
-        public String target() {
+        public Target target() {
             return target;
         }
-    }
 
-    private static final Pattern TARGET_PATTERN = Pattern.compile("^[a-zA-Z]+$");
-
-    private static final Pattern TOPIC_PATTERN = Pattern.compile("^[a-zA-Z]+$");
-
-    @BuildStep
-    List<ValidationErrorBuildItem> validateTargetNaming(final Capabilities capabilities,
-                                                        final CombinedIndexBuildItem combinedIndexBuildItem) {
-        if (capabilities.isPresent(Capability.KAFKA)) {
-            final IndexView computingIndex = combinedIndexBuildItem.getComputingIndex();
-            return computingIndex.getAnnotations(EventChannel.class)
-                    .stream()
-                    .map(annotationInstance -> annotationInstance.value("target").asString())
-                    .filter(target -> !TARGET_PATTERN.matcher(target).matches())
-                    .distinct()
-                    .map(invalidTargetNaming -> new ValidationErrorBuildItem(
-                            new IllegalStateException("Target naming invalid '%s' - it should match [a-zA-Z]+".formatted(invalidTargetNaming))))
-                    .toList();
+        public List<ApplicationNaming> sources() {
+            return sources;
         }
-        return List.of();
+    }
+
+    record TargetWithSource(Target target, ApplicationNaming source) {
+
+        public TargetWithSource {
+            Objects.requireNonNull(target);
+            Objects.requireNonNull(source);
+        }
+
+        public String channel() {
+            return "%s-%s-%s".formatted(target.name().toLowerCase(),
+                    source.functionalDomain().toLowerCase(),
+                    source.componentName().toLowerCase());
+        }
+    }
+
+    record InvalidNaming(String naming, Pattern pattern, Kind kind) implements InvalidMessage {
+
+        enum Kind {
+            TARGET,
+            FUNCTIONAL_NAME,
+            COMPONENT_NAME
+        }
+
+        public InvalidNaming {
+            Objects.requireNonNull(naming);
+            Objects.requireNonNull(pattern);
+            Objects.requireNonNull(kind);
+        }
+
+        public static InvalidNaming ofTarget(final String naming, final Pattern pattern) {
+            return new InvalidNaming(naming, pattern, Kind.TARGET);
+        }
+
+        public static InvalidNaming ofFunctional(final String naming, final Pattern pattern) {
+            return new InvalidNaming(naming, pattern, Kind.FUNCTIONAL_NAME);
+        }
+
+        public static InvalidNaming ofComponent(final String naming, final Pattern pattern) {
+            return new InvalidNaming(naming, pattern, Kind.COMPONENT_NAME);
+        }
+
+        @Override
+        public String invalidMessage() {
+            return switch (kind) {
+                case Kind.TARGET ->
+                        "Invalid Target name '%s' - it should match '%s'".formatted(naming, pattern.pattern());
+                case Kind.FUNCTIONAL_NAME ->
+                        "Invalid Functional name '%s' - it should match '%s'".formatted(naming, pattern.pattern());
+                case Kind.COMPONENT_NAME ->
+                        "Invalid Component name '%s' - it should match '%s'".formatted(naming, pattern.pattern());
+            };
+        }
+    }
+
+    interface InvalidMessage {
+
+        String invalidMessage();
+    }
+
+    interface InvalidDuplicates extends InvalidMessage {
+
+    }
+
+    record InvalidTargetDuplicates(String naming, Long count) implements InvalidDuplicates {
+
+        InvalidTargetDuplicates {
+            Objects.requireNonNull(naming);
+            Objects.requireNonNull(count);
+        }
+
+        @Override
+        public String invalidMessage() {
+            return "Target '%s' declared more than once '%d'".formatted(naming, count);
+        }
+    }
+
+    record InvalidSourceDuplicates(String target, String functionalDomain, String componentName,
+                                   Long count) implements InvalidDuplicates {
+
+        InvalidSourceDuplicates {
+            Objects.requireNonNull(target);
+            Objects.requireNonNull(functionalDomain);
+            Objects.requireNonNull(componentName);
+            Objects.requireNonNull(count);
+        }
+
+        @Override
+        public String invalidMessage() {
+            return "functionalDomain '%s' componentName '%s' declared more than once '%d' in target '%s'"
+                    .formatted(functionalDomain, componentName, count, target);
+        }
+    }
+
+    record PreValidation(List<PreValidationEventChannel> preValidationEventChannels) {
+
+        PreValidation {
+            Objects.requireNonNull(preValidationEventChannels);
+        }
+
+        public List<InvalidNaming> invalidNamings() {
+            final List<InvalidNaming> invalidNamings = new ArrayList<>();
+            for (final PreValidationEventChannel preValidationEventChannel : preValidationEventChannels) {
+                if (!Target.TARGET_PATTERN.matcher(preValidationEventChannel.target()).matches()) {
+                    invalidNamings.add(InvalidNaming.ofTarget(preValidationEventChannel.target(), Target.TARGET_PATTERN));
+                }
+                for (final PreValidationSource preValidationSource : preValidationEventChannel.sources()) {
+                    if (!ApplicationNaming.PART_PATTERN.matcher(preValidationSource.functionalDomain()).matches()) {
+                        invalidNamings.add(InvalidNaming.ofFunctional(preValidationSource.functionalDomain(), ApplicationNaming.PART_PATTERN));
+                    }
+                    if (!ApplicationNaming.PART_PATTERN.matcher(preValidationSource.componentName()).matches()) {
+                        invalidNamings.add(InvalidNaming.ofComponent(preValidationSource.componentName(), ApplicationNaming.PART_PATTERN));
+                    }
+                }
+            }
+            return invalidNamings;
+        }
+
+        public List<InvalidDuplicates> invalidDuplicates() {
+            final List<InvalidDuplicates> invalidDuplicates = new ArrayList<>();
+
+            preValidationEventChannels
+                    .stream()
+                    .map(PreValidationEventChannel::target)
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                    .entrySet().stream()
+                    .filter(tc -> tc.getValue() > 1L)
+                    .forEach(tc -> invalidDuplicates.add(
+                            new InvalidTargetDuplicates(tc.getKey(), tc.getValue())));
+
+            for (final PreValidationEventChannel preValidationEventChannel : preValidationEventChannels) {
+                final String target = preValidationEventChannel.target();
+                preValidationEventChannel.sources().stream()
+                        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                        .entrySet().stream()
+                        .filter(tc -> tc.getValue() > 1L)
+                        .forEach(tc -> invalidDuplicates.add(
+                                new InvalidSourceDuplicates(target, tc.getKey().functionalDomain(), tc.getKey().componentName(), tc.getValue())));
+            }
+            return invalidDuplicates;
+        }
+    }
+
+    record PreValidationEventChannel(String target, List<PreValidationSource> sources) {
+
+        PreValidationEventChannel {
+            Objects.requireNonNull(target);
+            Objects.requireNonNull(sources);
+        }
+    }
+
+    record PreValidationSource(String functionalDomain, String componentName) {
+
+        PreValidationSource {
+            Objects.requireNonNull(functionalDomain);
+            Objects.requireNonNull(componentName);
+        }
     }
 
     @BuildStep
-    List<ValidationErrorBuildItem> validateNoTargetDuplication(final Capabilities capabilities,
-                                                               final CombinedIndexBuildItem combinedIndexBuildItem) {
+    List<ValidationErrorBuildItem> validate(final Capabilities capabilities,
+                                            final CombinedIndexBuildItem combinedIndexBuildItem) {
         if (capabilities.isPresent(Capability.KAFKA)) {
             final IndexView computingIndex = combinedIndexBuildItem.getComputingIndex();
-            final Map<String, Long> targetCounts = computingIndex.getAnnotations(EventChannel.class)
-                    .stream()
-                    .map(annotationInstance -> annotationInstance.value("target").asString())
-                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-            return targetCounts.entrySet().stream()
-                    .filter(tc -> tc.getValue() > 1L)
-                    .map(entry -> new ValidationErrorBuildItem(
-                            new IllegalStateException("Target '%s' declared more than once '%d'".formatted(entry.getKey(), entry.getValue()))))
-                    .toList();
+            final List<PreValidationEventChannel> preValidationEventChannels = new ArrayList<>();
+            computingIndex.getAnnotations(EventChannel.class).forEach(eventChannel -> {
+                final List<PreValidationSource> sources = new ArrayList<>();
+                final String target = eventChannel.value("target").asString();
+                eventChannel.value("sources").asArrayList().forEach(source -> {
+                    final AnnotationInstance nested = source.asNested();
+                    sources.add(new PreValidationSource(
+                            nested.value("functionalDomain").asString(),
+                            nested.value("componentName").asString()));
+                });
+                preValidationEventChannels.add(new PreValidationEventChannel(target, sources));
+            });
+            final PreValidation preValidation = new PreValidation(preValidationEventChannels);
+            return Stream.concat(
+                            preValidation.invalidNamings().stream(),
+                            preValidation.invalidDuplicates().stream())
+                    .map(invalidMessage ->
+                            new ValidationErrorBuildItem(
+                                    new IllegalArgumentException(invalidMessage.invalidMessage()))).toList();
         }
         return List.of();
     }
@@ -99,9 +251,18 @@ public class ConsumerProcessor {
             final IndexView computingIndex = combinedIndexBuildItem.getComputingIndex();
             return computingIndex.getAnnotations(EventChannel.class)
                     .stream()
-                    .map(annotationInstance -> annotationInstance.value("target").asString())
+                    .map(annotationInstance -> {
+                        final Target target = new Target(annotationInstance.value("target").asString());
+                        final List<ApplicationNaming> sources = annotationInstance.value("sources").asArrayList().stream()
+                                .map(annotationValue -> {
+                                    final AnnotationInstance nested = annotationValue.asNested();
+                                    return ApplicationNaming.of(
+                                            nested.value("functionalDomain").asString(),
+                                            nested.value("componentName").asString());
+                                }).toList();
+                        return new TargetBuildItem(target, sources);
+                    })
                     .distinct()
-                    .map(TargetBuildItem::new)
                     .toList();
         } else {
             return List.of();
@@ -113,11 +274,13 @@ public class ConsumerProcessor {
                                                   final List<ValidationErrorBuildItem> validationErrorBuildItems) {
         if (capabilities.isPresent(Capability.KAFKA)) {
             return Stream.of(
+                            EventChannel.class,
                             DebeziumConfigurator.class,
                             JdbcPostgresIdempotencyRepository.class,
                             PostgresAggregateRootLoader.class,
                             JacksonDecryptedPayloadToPayloadMapper.class,
-                            DefaultAsyncEventChannelMessageHandlerProvider.class)
+                            DefaultAsyncEventChannelMessageHandlerProvider.class,
+                            JsonNodeTargetEventChannelExecutor.class)
                     .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                     .toList();
         } else {
@@ -134,155 +297,112 @@ public class ConsumerProcessor {
     }
 
     @BuildStep
-    List<ValidationErrorBuildItem> validateTargetBindingWithTopic(final Capabilities capabilities,
-                                                                  final CombinedIndexBuildItem combinedIndexBuildItem,
-                                                                  final PulseConfiguration pulseConfiguration) {
-        if (capabilities.isPresent(Capability.KAFKA)) {
-            final IndexView computingIndex = combinedIndexBuildItem.getComputingIndex();
-
-            return computingIndex.getAnnotations(EventChannel.class)
-                    .stream()
-                    .map(annotationInstance -> annotationInstance.value("target").asString())
-                    .map(targetName -> {
-                        final String topic = pulseConfiguration.targetTopicBinding().get(targetName);
-                        if (topic != null) {
-                            if (!TOPIC_PATTERN.matcher(topic).matches()) {
-                                return new ValidationErrorBuildItem(
-                                        new IllegalStateException("Topic naming invalid '%s' - it should match [a-zA-Z]+".formatted(topic)));
-                            } else {
-                                return null;
-                            }
-                        } else {
-                            return new ValidationErrorBuildItem(
-                                    new IllegalStateException("Missing topic binding for target '%s'".formatted(targetName)));
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .toList();
-        }
-        return List.of();
-    }
-
-
-    @BuildStep
     void generateTargetsEventChannelConsumer(final List<TargetBuildItem> targetBuildItems,
-                                             final PulseConfiguration pulseConfiguration,
                                              final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
                                              final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
                                              final OutputTargetBuildItem outputTargetBuildItem) {
-        targetBuildItems.forEach(targetBuildItem -> {
-            final String targetNaming = targetBuildItem.target();
-            final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "." + capitalize(targetNaming) + "TargetEventChannelConsumer";
-            try (final ClassCreator beanClassCreator = ClassCreator.builder()
-                    .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
-                    .className(className)
-                    .superClass(AbstractTargetEventChannelConsumer.class)
-                    .signature(SignatureBuilder.forClass()
-                            .setSuperClass(
-                                    Type.parameterizedType(
-                                            Type.classType(AbstractTargetEventChannelConsumer.class),
-                                            Type.classType(JsonNode.class)
-                                    )))
-                    .build()) {
-                beanClassCreator.addAnnotation(Singleton.class);
-                beanClassCreator.addAnnotation(Unremovable.class);
-                beanClassCreator.addAnnotation(DefaultBean.class);
+        targetBuildItems.stream()
+                .flatMap(targetBuildItem -> targetBuildItem.sources().stream()
+                        .map(src -> new TargetWithSource(targetBuildItem.target(), src))
+                ).forEach(targetWithSource -> {
+                    final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "."
+                            + capitalize(targetWithSource.target().name())
+                            + capitalize(targetWithSource.source().functionalDomain())
+                            + capitalize(targetWithSource.source().componentName()) + "TargetEventChannelConsumer";
+                    try (final ClassCreator beanClassCreator = ClassCreator.builder()
+                            .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
+                            .className(className)
+                            .superClass(AbstractTargetEventChannelConsumer.class)
+                            .signature(SignatureBuilder.forClass()
+                                    .setSuperClass(
+                                            Type.parameterizedType(
+                                                    Type.classType(AbstractTargetEventChannelConsumer.class),
+                                                    Type.classType(JsonNode.class)
+                                            )))
+                            .build()) {
+                        beanClassCreator.addAnnotation(Singleton.class);
+                        beanClassCreator.addAnnotation(Unremovable.class);
+                        beanClassCreator.addAnnotation(DefaultBean.class);
 
-                try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                        DecryptionService.class, DecryptedPayloadToPayloadMapper.class, AggregateRootLoader.class,
-                        AsyncEventChannelMessageHandlerProvider.class, IdempotencyRepository.class,
-                        SequentialEventChecker.class)) {
-                    constructor
-                            .setSignature(SignatureBuilder.forMethod()
-                                    .addParameterType(Type.classType(DecryptionService.class))
-                                    .addParameterType(Type.parameterizedType(
-                                            Type.classType(DecryptedPayloadToPayloadMapper.class),
-                                            Type.classType(JsonNode.class)
-                                    ))
-                                    .addParameterType(Type.parameterizedType(
-                                            Type.classType(AggregateRootLoader.class),
-                                            Type.classType(JsonNode.class)
-                                    ))
-                                    .addParameterType(Type.parameterizedType(
-                                            Type.classType(AsyncEventChannelMessageHandlerProvider.class),
-                                            Type.classType(JsonNode.class)
-                                    ))
-                                    .addParameterType(Type.classType(IdempotencyRepository.class))
-                                    .addParameterType(Type.classType(SequentialEventChecker.class))
-                                    .build());
-                    constructor.setModifiers(Modifier.PUBLIC);
+                        try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
+                                TargetEventChannelExecutor.class, IdempotencyRepository.class)) {
+                            constructor
+                                    .setSignature(SignatureBuilder.forMethod()
+                                            .addParameterType(Type.parameterizedType(
+                                                    Type.classType(TargetEventChannelExecutor.class),
+                                                    Type.classType(JsonNode.class)
+                                            ))
+                                            .addParameterType(Type.classType(IdempotencyRepository.class))
+                                            .build());
+                            constructor.setModifiers(Modifier.PUBLIC);
 
-                    constructor.invokeSpecialMethod(
-                            MethodDescriptor.ofConstructor(AbstractTargetEventChannelConsumer.class,
-                                    DecryptionService.class, DecryptedPayloadToPayloadMapper.class, AggregateRootLoader.class,
-                                    AsyncEventChannelMessageHandlerProvider.class, IdempotencyRepository.class,
-                                    SequentialEventChecker.class),
-                            constructor.getThis(),
-                            constructor.getMethodParam(0),
-                            constructor.getMethodParam(1),
-                            constructor.getMethodParam(2),
-                            constructor.getMethodParam(3),
-                            constructor.getMethodParam(4),
-                            constructor.getMethodParam(5));
+                            constructor.invokeSpecialMethod(
+                                    MethodDescriptor.ofConstructor(AbstractTargetEventChannelConsumer.class,
+                                            TargetEventChannelExecutor.class, IdempotencyRepository.class),
+                                    constructor.getThis(),
+                                    constructor.getMethodParam(0),
+                                    constructor.getMethodParam(1));
 
-                    constructor.returnValue(null);
-                }
+                            constructor.returnValue(null);
+                        }
 
-                try (final MethodCreator consume = beanClassCreator.getMethodCreator("consume", void.class, Record.class)) {
-                    consume.setSignature(
-                            SignatureBuilder.forMethod()
-                                    .addParameterType(Type.parameterizedType(
-                                            Type.classType(Record.class),
-                                            Type.classType(EventKey.class),
-                                            Type.classType(EventRecord.class)
-                                    ))
-                                    .build());
-                    consume.addAnnotation(Transactional.class);
-                    consume.addAnnotation(Blocking.class);
-                    consume.addAnnotation(Incoming.class).addValue("value", targetNaming);
+                        try (final MethodCreator consume = beanClassCreator.getMethodCreator("consume", void.class, ConsumerRecord.class)) {
+                            consume.setSignature(
+                                    SignatureBuilder.forMethod()
+                                            .addParameterType(Type.parameterizedType(
+                                                    Type.classType(ConsumerRecord.class),
+                                                    Type.classType(JsonNodeEventKey.class),
+                                                    Type.classType(JsonNodeEventRecord.class)
+                                            ))
+                                            .build());
+                            consume.addAnnotation(Transactional.class);
+                            consume.addAnnotation(Blocking.class);
+                            consume.addAnnotation(Incoming.class).addValue("value", targetWithSource.channel());
 
-                    final ResultHandle record = consume.getMethodParam(0);
-                    final ResultHandle target = consume.newInstance(
-                            MethodDescriptor.ofConstructor(Target.class, String.class),
-                            consume.load(targetNaming));
-                    final ResultHandle eventKey = consume.invokeVirtualMethod(
-                            MethodDescriptor.ofMethod(Record.class, "key", EventKey.class), record);
-                    final ResultHandle eventRecord = consume.invokeVirtualMethod(
-                            MethodDescriptor.ofMethod(Record.class, "value", EventRecord.class), record);
+                            final ResultHandle recordParam = consume.getMethodParam(0);
+                            final ResultHandle targetParam = consume.newInstance(
+                                    MethodDescriptor.ofConstructor(Target.class, String.class),
+                                    consume.load(targetWithSource.target().name()));
+                            final ResultHandle eventKeyParam = consume.invokeVirtualMethod(
+                                    MethodDescriptor.ofMethod(ConsumerRecord.class, "key", Object.class), recordParam);
+                            final ResultHandle eventRecordParam = consume.invokeVirtualMethod(
+                                    MethodDescriptor.ofMethod(ConsumerRecord.class, "value", Object.class), recordParam);
+                            consume.invokeVirtualMethod(
+                                    MethodDescriptor.ofMethod(
+                                            className,
+                                            "handleMessage",
+                                            void.class,
+                                            Target.class,
+                                            EventKey.class,
+                                            EventRecord.class
+                                    ),
+                                    consume.getThis(),
+                                    targetParam,
+                                    eventKeyParam,
+                                    eventRecordParam
+                            );
+                            consume.returnValue(null);
+                        }
+                        CodeGenerationProcessor.writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
+                    }
+                });
 
-                    consume.invokeVirtualMethod(
-                            MethodDescriptor.ofMethod(
-                                    className,
-                                    "handleMessage",
-                                    void.class,
-                                    Target.class,
-                                    EventKey.class,
-                                    EventRecord.class
-                            ),
-                            consume.getThis(),
-                            target,
-                            eventKey,
-                            eventRecord
-                    );
-                    consume.returnValue(null);
-                }
-                CodeGenerationProcessor.writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
-            }
-        });
-
-        for (final TargetBuildItem targetBuildItem : targetBuildItems) {
-            final String target = targetBuildItem.target();
-            Map.of(
-                            "mp.messaging.incoming.%s.enable.auto.commit".formatted(target), "true",
-                            "mp.messaging.incoming.%s.auto.offset.reset".formatted(target), "earliest",
-                            "mp.messaging.incoming.%s.connector".formatted(target), "smallrye-kafka",
-                            "mp.messaging.incoming.%s.topic".formatted(target), "%s_t_event".formatted(pulseConfiguration.targetTopicBinding().get(target)),
-                            "mp.messaging.incoming.%s.key.deserializer".formatted(target), JsonNodeEventKeyObjectMapperDeserializer.class.getName(),
-                            "mp.messaging.incoming.%s.value.deserializer".formatted(target), JsonNodeEventRecordObjectMapperDeserializer.class.getName(),
-                            "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(target), EventKey.class.getName(),
-                            "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(target), EventRecord.class.getName())
-                    .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
-        }
+        targetBuildItems.stream()
+                .flatMap(targetBuildItem -> targetBuildItem.sources().stream()
+                        .map(src -> new TargetWithSource(targetBuildItem.target(), src))
+                ).forEach(targetWithSource -> {
+                    final String channelNaming = targetWithSource.channel();
+                    Map.of(
+                                    "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",
+                                    "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",
+                                    "mp.messaging.incoming.%s.connector".formatted(channelNaming), "smallrye-kafka",
+                                    "mp.messaging.incoming.%s.topic".formatted(channelNaming), channelNaming,
+                                    "mp.messaging.incoming.%s.key.deserializer".formatted(channelNaming), JsonNodeEventKeyObjectMapperDeserializer.class.getName(),
+                                    "mp.messaging.incoming.%s.value.deserializer".formatted(channelNaming), JsonNodeEventRecordObjectMapperDeserializer.class.getName(),
+                                    "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(channelNaming), EventKey.class.getName(),
+                                    "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), EventRecord.class.getName())
+                            .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
+                });
     }
 
     private static String capitalize(final String input) {

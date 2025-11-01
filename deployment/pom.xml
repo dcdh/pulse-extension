@@ -40,6 +40,10 @@
             <artifactId>quarkus-cache-deployment</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkiverse.vault</groupId>
             <artifactId>quarkus-vault-deployment</artifactId>
             <version>${quarkus-vault.version}</version>
@@ -87,7 +91,6 @@
             <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--FCK remove-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-test-kafka-companion</artifactId>

@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.runtime.consumer;
 
 import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.Nonbinding;
 import jakarta.inject.Qualifier;
 
 import java.lang.annotation.ElementType;
@@ -11,13 +12,29 @@ import java.util.Objects;
 
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.TYPE})
 public @interface EventChannel {
 
     /**
      * @return target consuming kafka channel likes "statistic"
      */
     String target();
+
+    /**
+     * @return array of sources associated with this event channel
+     */
+    @Nonbinding
+    Source[] sources();
+
+    /**
+     * Represents a source entry with application and outbox table name.
+     */
+    @interface Source {
+
+        String functionalDomain();
+
+        String componentName();
+    }
 
     class Literal extends AnnotationLiteral<EventChannel> implements EventChannel {
 
@@ -34,6 +51,11 @@ public @interface EventChannel {
         @Override
         public String target() {
             return target;
+        }
+
+        @Override
+        public Source[] sources() {
+            return new Source[] {};
         }
     }
 }

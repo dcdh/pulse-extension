@@ -14,6 +14,7 @@ class ShouldFailWhenEventNotARecordTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withConfigurationResource("application.properties")
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()
                     .rootCause()

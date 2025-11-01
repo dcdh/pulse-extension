@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import java.util.Objects;
 
 public final class UnknownAggregateRootException extends RuntimeException {
+
     private final AggregateRootType aggregateRootType;
     private final AggregateId aggregateId;
 

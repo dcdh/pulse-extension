@@ -1,10 +1,13 @@
 package com.damdamdeo.pulse.extension.core.consumer;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateRootType;
+
 public interface EventKey {
 
-    String aggregateRootId();
+    AggregateRootType toAggregateRootType();
 
-    String aggregateRootType();
+    AggregateId toAggregateId();
 
-    Integer version();
+    CurrentVersionInConsumption toCurrentVersionInConsumption();
 }

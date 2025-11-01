@@ -33,11 +33,10 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-messaging-kafka", Version.getVersion())))
             .withConfigurationResource("application.properties")
-            .overrideConfigKey("pulse.target-topic-binding.statistics", "statistics")
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()
                     .rootCause()
-                    .isExactlyInstanceOf(IllegalStateException.class)
+                    .isExactlyInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Target 'statistics' declared more than once '2'")
                     .hasNoSuppressedExceptions());
 
@@ -47,13 +46,16 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @EventChannel(target = "statistics")
+    @EventChannel(target = "statistics",
+            sources = {
+                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
+            })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
         @Override
         public void handleMessage(final Target target,
-                                  final AggregateId aggregateId,
                                   final AggregateRootType aggregateRootType,
+                                  final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
                                   final Instant creationDate,
                                   final EventType eventType,
@@ -65,13 +67,16 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @EventChannel(target = "statistics")
+    @EventChannel(target = "statistics",
+            sources = {
+                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
+            })
     static final class StatisticsAgainEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
         @Override
         public void handleMessage(final Target target,
-                                  final AggregateId aggregateId,
                                   final AggregateRootType aggregateRootType,
+                                  final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
                                   final Instant creationDate,
                                   final EventType eventType,

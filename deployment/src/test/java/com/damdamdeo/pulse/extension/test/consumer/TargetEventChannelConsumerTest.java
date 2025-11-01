@@ -1,13 +1,8 @@
 package com.damdamdeo.pulse.extension.test.consumer;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.consumer.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.consumer.AsyncEventChannelMessageHandler;
-import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.InRelationWith;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
@@ -20,20 +15,20 @@ import com.damdamdeo.pulse.extension.runtime.consumer.JsonNodeEventKey;
 import com.damdamdeo.pulse.extension.runtime.consumer.JsonNodeEventRecord;
 import com.damdamdeo.pulse.extension.runtime.encryption.OpenPGPEncryptionService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.builder.Version;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.reactive.messaging.kafka.companion.ProducerBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -49,18 +44,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.CommonClientConfigs.METADATA_MAX_AGE_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.CLIENT_ID_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 class TargetEventChannelConsumerTest {
-    // FCK PRIO 1
+
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(jar -> jar.addAsResource("init.sql"))
-            .overrideConfigKey("pulse.target-topic-binding.statistics", "statistics")// FCK use a proper name
-            .overrideConfigKey("debezium.enabled", "false")
+            .overrideConfigKey("pulse.debezium.enabled", "false")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-messaging-kafka", Version.getVersion())))
             .withConfigurationResource("application.properties");
@@ -79,14 +71,9 @@ class TargetEventChannelConsumerTest {
         }
     }
 
-    // FCK ICI je dois produire un message dans le kafka (sans debezium TODO ajouter une option pour le desactiver) comme cela je peux le tester
-    // et tester que l'appel a bien été fait en checkant la consommation du message (via la presence d'un element dans la table idempotency)
-    // et checker que l'appel a bien été effectué ... je dois tous stocker puis verifier via mon Stub !
-    // objectif tester la conf générée ...
-
     record Call(Target target,
-                AggregateId aggregateId,
                 AggregateRootType aggregateRootType,
+                AggregateId aggregateId,
                 CurrentVersionInConsumption currentVersionInConsumption,
                 Instant creationDate,
                 EventType eventType,
@@ -96,8 +83,8 @@ class TargetEventChannelConsumerTest {
                 AggregateRootLoaded<JsonNode> aggregateRootLoaded) {
         Call {
             Objects.requireNonNull(target);
-            Objects.requireNonNull(aggregateId);
             Objects.requireNonNull(aggregateRootType);
+            Objects.requireNonNull(aggregateId);
             Objects.requireNonNull(currentVersionInConsumption);
             Objects.requireNonNull(creationDate);
             Objects.requireNonNull(eventType);
@@ -109,15 +96,18 @@ class TargetEventChannelConsumerTest {
     }
 
     @ApplicationScoped
-    @EventChannel(target = "statistics")
+    @EventChannel(target = "statistics",
+            sources = {
+                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
+            })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
         private Call call = null;
 
         @Override
         public void handleMessage(final Target target,
-                                  final AggregateId aggregateId,
                                   final AggregateRootType aggregateRootType,
+                                  final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
                                   final Instant creationDate,
                                   final EventType eventType,
@@ -126,7 +116,7 @@ class TargetEventChannelConsumerTest {
                                   final JsonNode decryptedEventPayload,
                                   final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
             this.call = new Call(
-                    target, aggregateId, aggregateRootType, currentVersionInConsumption, creationDate, eventType,
+                    target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
                     encryptedPayload, ownedBy, decryptedEventPayload,
                     aggregateRootLoadedSupplier.get());
         }
@@ -140,10 +130,11 @@ class TargetEventChannelConsumerTest {
     DataSource dataSource;
 
     @Inject
-    StatisticsEventHandler statisticsEventHandler;
+    ObjectMapper objectMapper;
 
-    @ConfigProperty(name = "quarkus.application.name")
-    String name;
+    @Inject
+    @Any
+    Instance<StatisticsEventHandler> statisticsEventHandlerInstance;
 
     public static final class JsonNodeEventKeyObjectMapperSerializer extends ObjectMapperSerializer<JsonNodeEventKey> {
 
@@ -153,34 +144,32 @@ class TargetEventChannelConsumerTest {
 
     }
 
-    @BeforeEach
-    void setup() {
-        final Map<String, Object> configMap = Map.of(
-                BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
-                METADATA_MAX_AGE_CONFIG, 1000,
-                CLIENT_ID_CONFIG, "companion-admin-for-" + UUID.randomUUID());
-        final AdminClient adminClient = AdminClient.create(configMap);
-        adminClient.createTopics(List.of(new NewTopic("%s_t_event".formatted(name), Optional.empty(), Optional.empty())));
-    }
-2025-10-25 18:44:15,878 WARN  [org.apa.kaf.cli.NetworkClient] (smallrye-kafka-consumer-thread-0) [Consumer clientId=kafka-consumer-statistics, groupId=pulse-extension-deployment] The metadata response from the cluster reported a recoverable issue with correlation id 2 : {statistics_t_event=UNKNOWN_TOPIC_OR_PARTITION}
-2025-10-25 18:44:15,973 WARN  [org.apa.kaf.cli.NetworkClient] (kafka-producer-network-thread | companion-f8ee541e-3f37-4f30-ab76-dd813a88ff7f) [Producer clientId=companion-f8ee541e-3f37-4f30-ab76-dd813a88ff7f] The metadata response from the cluster reported a recoverable issue with correlation id 1 : {pulse-extension-deployment_t_event=UNKNOWN_TOPIC_OR_PARTITION}
+    private static final String TOPIC = "statistics-todotaking-todo";
 
     @Test
     void shouldConsumeEvent() {
+        final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
+                EventChannel.Literal.of("statistics")).get();
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
+        // language=json
+        final String payload = """
+                {
+                  "msg": "Hello world!"
+                }
+                """;
         // Given
-        final byte[] payload = OpenPGPEncryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] payloadAsByte = OpenPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
-                    INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, in_relation_with)
+                    INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, in_relation_with)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, "Damien/0");
-            ps.setString(2, Todo.class.getName());
+            ps.setString(1, Todo.class.getName());
+            ps.setString(2, "Damien/0");
             ps.setLong(3, 0);
-            ps.setBytes(4, payload);
+            ps.setBytes(4, payloadAsByte);
             ps.setString(5, "Damien");
             ps.setString(6, "Damien/0");
             ps.executeUpdate();
@@ -195,20 +184,35 @@ class TargetEventChannelConsumerTest {
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
                 .usingGenerator(
-                        integer -> new ProducerRecord<>("%s_t_event".formatted(name),
-                                new JsonNodeEventKey("Damien/0", Todo.class.getName(), 0),
-                                new JsonNodeEventRecord("Damien/0", Todo.class.getName(), 0, 1_761_335_312_527L,
+                        integer -> new ProducerRecord<>(TOPIC,
+                                new JsonNodeEventKey(Todo.class.getName(), "Damien/0", 0),
+                                new JsonNodeEventRecord(Todo.class.getName(), "Damien/0", 0, 1_761_335_312_527L,
                                         NewTodoCreated.class.getName(),
-                                        OpenPGPEncryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload(),
-                                        "Damien")));
+                                        payloadAsByte,
+                                        "Damien")), 1L);
 
         // Then
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
-        assertThat(statisticsEventHandler.getCall()).isEqualTo("BOOM!!!");
-// FCK asserter le contenu recu ...
-// FCK        je suis censé le consommer ... passer par awaitility ... boucler sur statisticsEventHandler ...
-//
-//  FCK      la je dois avoir un event handler
-//                FCK je dois feed la table t_aggregate cf précédent test pour tseter le Supplier !
+        final ObjectNode expectedPayload = objectMapper.createObjectNode();
+        expectedPayload.put("msg", "Hello world!");
+        assertThat(statisticsEventHandler.getCall()).isEqualTo(
+                new Call(
+                        new Target("statistics"),
+                        new AggregateRootType("com.damdamdeo.pulse.extension.core.Todo"),
+                        new AnyAggregateId("Damien/0"),
+                        new CurrentVersionInConsumption(0),
+                        Instant.ofEpochMilli(1_761_335_312_527L),
+                        new EventType("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
+                        new EncryptedPayload(payloadAsByte),
+                        new OwnedBy("Damien"),
+                        expectedPayload,
+                        new AggregateRootLoaded<>(
+                                AggregateRootType.from(Todo.class),
+                                new AnyAggregateId("Damien/0"),
+                                new LastAggregateVersion(0),
+                                new EncryptedPayload(payloadAsByte),
+                                expectedPayload,
+                                new OwnedBy("Damien"),
+                                new InRelationWith("Damien/0"))));
     }
 }

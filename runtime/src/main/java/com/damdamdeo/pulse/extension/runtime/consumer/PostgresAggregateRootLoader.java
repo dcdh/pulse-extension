@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Singleton;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
-@ApplicationScoped
+@Singleton
 @Unremovable
 @DefaultBean
 public final class PostgresAggregateRootLoader implements AggregateRootLoader<JsonNode> {
@@ -60,7 +60,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                     final OwnedBy ownedBy = new OwnedBy(rs.getString("owned_by"));
                     final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
                     final InRelationWith inRelationWith = new InRelationWith(rs.getString("in_relation_with"));
-                    return new AggregateRootLoaded<JsonNode>(
+                    return new AggregateRootLoaded<>(
                             aggregateRootType,
                             aggregateId,
                             lastAggregateVersion,

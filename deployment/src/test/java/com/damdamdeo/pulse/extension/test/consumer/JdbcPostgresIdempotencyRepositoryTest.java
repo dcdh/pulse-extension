@@ -1,11 +1,10 @@
 package com.damdamdeo.pulse.extension.test.consumer;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.runtime.consumer.JdbcPostgresIdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -127,9 +126,22 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         jdbcPostgresIdempotencyRepository.upsert(
                 new Target("statistics"),
-                AggregateRootType.from(Todo.class),
-                new AnyAggregateId("Damien/0"),
-                new LastConsumedAggregateVersion(0));
+                new EventKey() {
+                    @Override
+                    public AggregateRootType toAggregateRootType() {
+                        return AggregateRootType.from(Todo.class);
+                    }
+
+                    @Override
+                    public AggregateId toAggregateId() {
+                        return new AnyAggregateId("Damien/0");
+                    }
+
+                    @Override
+                    public CurrentVersionInConsumption toCurrentVersionInConsumption() {
+                        return new CurrentVersionInConsumption(0);
+                    }
+                });
 
         // Then
         // language=sql
@@ -173,9 +185,23 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         jdbcPostgresIdempotencyRepository.upsert(
                 new Target("statistics"),
-                AggregateRootType.from(Todo.class),
-                new AnyAggregateId("Damien/0"),
-                new LastConsumedAggregateVersion(1));
+                new EventKey() {
+
+                    @Override
+                    public AggregateRootType toAggregateRootType() {
+                        return AggregateRootType.from(Todo.class);
+                    }
+
+                    @Override
+                    public AggregateId toAggregateId() {
+                        return new AnyAggregateId("Damien/0");
+                    }
+
+                    @Override
+                    public CurrentVersionInConsumption toCurrentVersionInConsumption() {
+                        return new CurrentVersionInConsumption(1);
+                    }
+                });
 
         // Then
         // language=sql

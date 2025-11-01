@@ -12,8 +12,8 @@ import java.util.function.Supplier;
 public interface AsyncEventChannelMessageHandler<T> {
 
     void handleMessage(Target target,
-                       AggregateId aggregateId,
                        AggregateRootType aggregateRootType,
+                       AggregateId aggregateId,
                        CurrentVersionInConsumption currentVersionInConsumption,
                        Instant creationDate,
                        EventType eventType,

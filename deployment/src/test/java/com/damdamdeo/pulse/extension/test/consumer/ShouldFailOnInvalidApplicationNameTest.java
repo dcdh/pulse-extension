@@ -1,6 +1,5 @@
-package com.damdamdeo.pulse.extension.test;
+package com.damdamdeo.pulse.extension.test.consumer;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import io.quarkus.test.QuarkusUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -8,29 +7,22 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailWhenAggregateIdNotARecordTest {
+class ShouldFailOnInvalidApplicationNameTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(jar -> jar.addAsResource("init.sql"))
             .withConfigurationResource("application.properties")
+            .overrideConfigKey("quarkus.application.name", "BOOM")
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()
                     .rootCause()
-                    .hasMessage("AggregateId 'com.damdamdeo.pulse.extension.test.ShouldFailWhenAggregateIdNotARecordTest$InvalidAggregateId' must be a record")
+                    .isExactlyInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Invalid application name 'BOOM' - it should match '^[a-zA-Z]{1,64}_[a-zA-Z]{1,64}$'")
                     .hasNoSuppressedExceptions());
 
     @Test
     void test() {
         Assertions.fail("Startup should have failed");
-    }
-
-    // NOT needed to use addClass
-    // Will be registered automatically
-    private static final class InvalidAggregateId implements AggregateId {
-
-        @Override
-        public String id() {
-            throw new RuntimeException("Should not have been called");
-        }
     }
 }

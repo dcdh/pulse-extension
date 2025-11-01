@@ -9,6 +9,5 @@ public interface IdempotencyRepository {
     Optional<LastConsumedAggregateVersion> findLastAggregateVersionBy(Target target, AggregateRootType aggregateRootType, AggregateId aggregateId)
             throws IdempotencyException;
 
-    void upsert(Target target, AggregateRootType aggregateRootType, AggregateId aggregateId, LastConsumedAggregateVersion lastConsumedAggregateVersion)
-            throws IdempotencyException;
+    void upsert(Target target, EventKey eventKey) throws IdempotencyException;
 }

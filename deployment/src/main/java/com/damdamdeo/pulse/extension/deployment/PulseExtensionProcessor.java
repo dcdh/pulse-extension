@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.deployment;
 
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
+import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.runtime.DefaultQuarkusTransaction;
 import com.damdamdeo.pulse.extension.runtime.PostgresqlEventStoreInitializer;
@@ -12,7 +14,9 @@ import com.damdamdeo.pulse.extension.runtime.encryption.VaultPassphraseRepositor
 import com.damdamdeo.pulse.extension.runtime.serialization.AllFieldsVisibilityObjectMapperCustomizer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 
@@ -45,6 +49,16 @@ class PulseExtensionProcessor {
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build()
         );
+    }
+
+    @BuildStep
+    void validateApplicationNaming(final ApplicationInfoBuildItem applicationInfoBuildItem,
+                                   final BuildProducer<ValidationErrorBuildItem> validationErrorBuildItemProducer) {
+        if (!ApplicationNaming.FULL_PATTERN.matcher(applicationInfoBuildItem.getName()).matches()) {
+            validationErrorBuildItemProducer.produce(new ValidationErrorBuildItem(
+                    new IllegalArgumentException(
+                            "Invalid application name '%s' - it should match '%s'".formatted(applicationInfoBuildItem.getName(), ApplicationNaming.FULL_PATTERN.pattern()))));
+        }
     }
 
     @BuildStep
