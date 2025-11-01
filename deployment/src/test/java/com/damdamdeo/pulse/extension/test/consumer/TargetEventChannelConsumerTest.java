@@ -8,8 +8,8 @@ import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.EventType;
-import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
 import com.damdamdeo.pulse.extension.runtime.consumer.EventChannel;
 import com.damdamdeo.pulse.extension.runtime.consumer.JsonNodeEventKey;
 import com.damdamdeo.pulse.extension.runtime.consumer.JsonNodeEventRecord;
@@ -147,35 +147,58 @@ class TargetEventChannelConsumerTest {
     private static final String TOPIC = "statistics-todotaking-todo";
 
     @Test
-    void shouldConsumeEvent() {
+    void shouldConsumeEvent() throws SQLException {
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
                 EventChannel.Literal.of("statistics")).get();
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
+        // Given
         // language=json
-        final String payload = """
+        final String aggregatePayload = """
                 {
-                  "msg": "Hello world!"
+                  "id": "Damien/0",
+                  "description": "lorem ipsum",
+                  "status": "DONE",
+                  "important": false
                 }
                 """;
-        // Given
-        final byte[] payloadAsByte = OpenPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedAggregatePayload = OpenPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
-        final String sql = """
+        final String aggregateRootSql = """
                     INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, in_relation_with)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(sql)) {
+             final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
             ps.setString(1, Todo.class.getName());
             ps.setString(2, "Damien/0");
-            ps.setLong(3, 0);
-            ps.setBytes(4, payloadAsByte);
+            ps.setLong(3, 1);
+            ps.setBytes(4, encryptedAggregatePayload);
             ps.setString(5, "Damien");
             ps.setString(6, "Damien/0");
             ps.executeUpdate();
-        } catch (final SQLException e) {
-            throw new RuntimeException(e);
         }
+
+        // language=sql
+        final String idempotencySql = """
+                INSERT INTO t_idempotency (target, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                VALUES (?, ?, ?, ?)
+                """;
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
+            ps.setString(1, "statistics");
+            ps.setString(2, Todo.class.getName());
+            ps.setString(3, "Damien/0");
+            ps.setLong(4, 0);
+            ps.executeUpdate();
+        }
+
+        // language=json
+        final String todoMarkedAsDonePayload = """
+                {
+                  "id": "Damien/0"
+                }
+                """;
+        final byte[] encryptedTodoMarkedAsDonePayload = OpenPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
 
         // When
         new ProducerBuilder<>(
@@ -185,33 +208,38 @@ class TargetEventChannelConsumerTest {
                 Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
                 .usingGenerator(
                         integer -> new ProducerRecord<>(TOPIC,
-                                new JsonNodeEventKey(Todo.class.getName(), "Damien/0", 0),
-                                new JsonNodeEventRecord(Todo.class.getName(), "Damien/0", 0, 1_761_335_312_527L,
-                                        NewTodoCreated.class.getName(),
-                                        payloadAsByte,
+                                new JsonNodeEventKey(Todo.class.getName(), "Damien/0", 1),
+                                new JsonNodeEventRecord(Todo.class.getName(), "Damien/0", 1, 1_761_335_312_527L,
+                                        TodoMarkedAsDone.class.getName(),
+                                        encryptedTodoMarkedAsDonePayload,
                                         "Damien")), 1L);
 
         // Then
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
-        final ObjectNode expectedPayload = objectMapper.createObjectNode();
-        expectedPayload.put("msg", "Hello world!");
+        final ObjectNode expectedTodoMarkedAsDonePayload = objectMapper.createObjectNode();
+        expectedTodoMarkedAsDonePayload.put("id", "Damien/0");
+        final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
+        expectedAggregateRootPayload.put("id", "Damien/0");
+        expectedAggregateRootPayload.put("description", "lorem ipsum");
+        expectedAggregateRootPayload.put("status", "DONE");
+        expectedAggregateRootPayload.put("important", false);
         assertThat(statisticsEventHandler.getCall()).isEqualTo(
                 new Call(
                         new Target("statistics"),
-                        new AggregateRootType("com.damdamdeo.pulse.extension.core.Todo"),
+                        AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
-                        new CurrentVersionInConsumption(0),
+                        new CurrentVersionInConsumption(1),
                         Instant.ofEpochMilli(1_761_335_312_527L),
-                        new EventType("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
-                        new EncryptedPayload(payloadAsByte),
+                        EventType.from(TodoMarkedAsDone.class),
+                        new EncryptedPayload(encryptedTodoMarkedAsDonePayload),
                         new OwnedBy("Damien"),
-                        expectedPayload,
+                        expectedTodoMarkedAsDonePayload,
                         new AggregateRootLoaded<>(
                                 AggregateRootType.from(Todo.class),
                                 new AnyAggregateId("Damien/0"),
-                                new LastAggregateVersion(0),
-                                new EncryptedPayload(payloadAsByte),
-                                expectedPayload,
+                                new LastAggregateVersion(1),
+                                new EncryptedPayload(encryptedAggregatePayload),
+                                expectedAggregateRootPayload,
                                 new OwnedBy("Damien"),
                                 new InRelationWith("Damien/0"))));
     }

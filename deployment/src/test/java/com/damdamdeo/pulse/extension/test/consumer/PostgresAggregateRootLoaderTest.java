@@ -89,10 +89,13 @@ class PostgresAggregateRootLoaderTest {
         // language=json
         final String payload = """
                 {
-                  "msg": "Hello world!"
+                  "id": "Damien/0",
+                  "description": "lorem ipsum",
+                  "status": "DONE",
+                  "important": false
                 }
                 """;
-        final byte[] payloadAsByte = OpenPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedPayload = OpenPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
                     INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, in_relation_with)
@@ -102,8 +105,8 @@ class PostgresAggregateRootLoaderTest {
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "Damien/0");
             ps.setString(2, Todo.class.getName());
-            ps.setLong(3, 0);
-            ps.setBytes(4, payloadAsByte);
+            ps.setLong(3, 1);
+            ps.setBytes(4, encryptedPayload);
             ps.setString(5, "Damien");
             ps.setString(6, "Damien/0");
             ps.executeUpdate();
@@ -123,7 +126,7 @@ class PostgresAggregateRootLoaderTest {
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
                         new LastAggregateVersion(0),
-                        new EncryptedPayload(payloadAsByte),
+                        new EncryptedPayload(encryptedPayload),
                         expectedPayload,
                         new OwnedBy("Damien"),
                         new InRelationWith("Damien/0")));
