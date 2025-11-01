@@ -38,28 +38,31 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
     }
 
     @Override
-    public void execute(final Target target, final EventKey eventKey, final EventRecord eventRecord, final LastConsumedAggregateVersion lastConsumedAggregateVersion) {
+    public void execute(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventRecord eventRecord, final LastConsumedAggregateVersion lastConsumedAggregateVersion) {
         Objects.requireNonNull(target);
+        Objects.requireNonNull(applicationNaming);
         Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventRecord);
         Objects.requireNonNull(lastConsumedAggregateVersion);
         final CurrentVersionInConsumption currentVersionInConsumption = eventRecord.toCurrentVersionInConsumption();
         sequentialEventChecker.check(lastConsumedAggregateVersion, currentVersionInConsumption);
-        execute(target, eventRecord, currentVersionInConsumption);
+        execute(target, applicationNaming, eventRecord, currentVersionInConsumption);
     }
 
     @Override
-    public void execute(final Target target, final EventKey eventKey, final EventRecord eventRecord) {
+    public void execute(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventRecord eventRecord) {
         Objects.requireNonNull(target);
+        Objects.requireNonNull(applicationNaming);
         Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventRecord);
         Validate.validState(eventRecord.match(eventKey), "Key mismatch with payload !");
         Validate.validState(eventKey.toCurrentVersionInConsumption().isFirstEvent(), "Event must be first event !");
-        execute(target, eventRecord, eventKey.toCurrentVersionInConsumption());
+        execute(target, applicationNaming, eventRecord, eventKey.toCurrentVersionInConsumption());
     }
 
-    private void execute(final Target target, final EventRecord eventRecord, final CurrentVersionInConsumption currentVersionInConsumption) {
+    private void execute(final Target target, final ApplicationNaming applicationNaming, final EventRecord eventRecord, final CurrentVersionInConsumption currentVersionInConsumption) {
         Objects.requireNonNull(target);
+        Objects.requireNonNull(applicationNaming);
         Objects.requireNonNull(eventRecord);
         Objects.requireNonNull(currentVersionInConsumption);
         final AggregateRootType aggregateRootType = eventRecord.toAggregateRootType();
@@ -73,7 +76,7 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                     try {
                         final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
                         final T decryptedEventPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
-                        final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByAggregateRootTypeAndAggregateId(aggregateRootType, aggregateId);
+                        final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(applicationNaming, aggregateRootType, aggregateId);
                         asyncEventChannelMessageHandler.handleMessage(target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy, decryptedEventPayload,
                                 aggregateRootSupplier);
                     } catch (final IOException e) {
@@ -84,11 +87,11 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
     }
 
     @Override
-    public void onAlreadyConsumed(final Target target, final EventKey eventKey, final EventRecord eventRecord) {
+    public void onAlreadyConsumed(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventRecord eventRecord) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventRecord);
-        LOGGER.fine("Message from target '%s' - aggregateRootType '%s' - aggregateId '%s' - currentVersionInConsumption '%s' - eventType '%s' already consumed"
-                .formatted(target.name(), eventKey.toAggregateRootType().type(), eventKey.toAggregateId().id(), eventKey.toCurrentVersionInConsumption().version(), eventRecord.toEventType()));
+        LOGGER.fine("Message from target '%s' - applicationNaming '%s' - aggregateRootType '%s' - aggregateId '%s' - currentVersionInConsumption '%s' - eventType '%s' already consumed"
+                .formatted(target.name(), applicationNaming.value(), eventKey.toAggregateRootType().type(), eventKey.toAggregateId().id(), eventKey.toCurrentVersionInConsumption().version(), eventRecord.toEventType()));
     }
 }

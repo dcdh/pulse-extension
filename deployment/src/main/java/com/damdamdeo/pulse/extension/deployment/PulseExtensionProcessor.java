@@ -62,6 +62,12 @@ class PulseExtensionProcessor {
     }
 
     @BuildStep
+    RunTimeConfigurationDefaultBuildItem definePostgresCurrentSchema(final ApplicationInfoBuildItem applicationInfoBuildItem) {
+        return new RunTimeConfigurationDefaultBuildItem("quarkus.datasource.jdbc.additional-jdbc-properties.currentSchema",
+                applicationInfoBuildItem.getName().toLowerCase());
+    }
+
+    @BuildStep
     List<RunTimeConfigurationDefaultBuildItem> defaultConfigurations() {
         return List.of(
                 new RunTimeConfigurationDefaultBuildItem("quarkus.datasource.jdbc.max-size", "100"));

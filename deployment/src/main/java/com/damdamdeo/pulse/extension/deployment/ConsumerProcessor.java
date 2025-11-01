@@ -307,8 +307,8 @@ public class ConsumerProcessor {
                 ).forEach(targetWithSource -> {
                     final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "."
                             + capitalize(targetWithSource.target().name())
-                            + capitalize(targetWithSource.source().functionalDomain())
-                            + capitalize(targetWithSource.source().componentName()) + "TargetEventChannelConsumer";
+                            + capitalize(targetWithSource.source().value())
+                            + "TargetEventChannelConsumer";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
                             .className(className)
@@ -363,6 +363,10 @@ public class ConsumerProcessor {
                             final ResultHandle targetParam = consume.newInstance(
                                     MethodDescriptor.ofConstructor(Target.class, String.class),
                                     consume.load(targetWithSource.target().name()));
+                            final ResultHandle applicationNamingParam = consume.newInstance(
+                                    MethodDescriptor.ofConstructor(ApplicationNaming.class, String.class, String.class),
+                                    consume.load(targetWithSource.source().functionalDomain()),
+                                    consume.load(targetWithSource.source().componentName()));
                             final ResultHandle eventKeyParam = consume.invokeVirtualMethod(
                                     MethodDescriptor.ofMethod(ConsumerRecord.class, "key", Object.class), recordParam);
                             final ResultHandle eventRecordParam = consume.invokeVirtualMethod(
@@ -373,11 +377,13 @@ public class ConsumerProcessor {
                                             "handleMessage",
                                             void.class,
                                             Target.class,
+                                            ApplicationNaming.class,
                                             EventKey.class,
                                             EventRecord.class
                                     ),
                                     consume.getThis(),
                                     targetParam,
+                                    applicationNamingParam,
                                     eventKeyParam,
                                     eventRecordParam
                             );

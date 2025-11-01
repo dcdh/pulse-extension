@@ -72,7 +72,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         }
 
         // Then
-        assertThat(tables).contains("public.t_idempotency");
+        assertThat(tables).contains("todotaking_todo.t_idempotency");
     }
 
     @Test
@@ -82,6 +82,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                 new Target("statistics"),
+                new ApplicationNaming("TodoTaking", "Todo"),
                 AggregateRootType.from(Todo.class),
                 new AnyAggregateId("Damien/0"));
 
@@ -94,15 +95,16 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (target, aggregate_root_type, aggregate_root_id, last_consumed_version)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO t_idempotency (target, source, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    VALUES (?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, Todo.class.getName());
-            ps.setString(3, "Damien/0");
-            ps.setInt(4, 0);
+            ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
+            ps.setString(3, Todo.class.getName());
+            ps.setString(4, "Damien/0");
+            ps.setInt(5, 0);
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -111,6 +113,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                 new Target("statistics"),
+                new ApplicationNaming("TodoTaking", "Todo"),
                 AggregateRootType.from(Todo.class),
                 new AnyAggregateId("Damien/0"));
 
@@ -126,6 +129,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         jdbcPostgresIdempotencyRepository.upsert(
                 new Target("statistics"),
+                new ApplicationNaming("TodoTaking", "Todo"),
                 new EventKey() {
                     @Override
                     public AggregateRootType toAggregateRootType() {
@@ -147,13 +151,14 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // language=sql
         final String sql = """
                     SELECT last_consumed_version FROM t_idempotency
-                    WHERE target = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
+                    WHERE target = ? AND source = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, Todo.class.getName());
-            ps.setString(3, "Damien/0");
+            ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
+            ps.setString(3, Todo.class.getName());
+            ps.setString(4, "Damien/0");
             try (final ResultSet rs = ps.executeQuery()) {
                 assertThat(rs.next()).isTrue();
                 assertThat(rs.getInt("last_consumed_version")).isEqualTo(0);
@@ -168,15 +173,16 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (target, aggregate_root_type, aggregate_root_id, last_consumed_version)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO t_idempotency (target, source, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    VALUES (?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, Todo.class.getName());
-            ps.setString(3, "Damien/0");
-            ps.setInt(4, 0);
+            ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
+            ps.setString(3, Todo.class.getName());
+            ps.setString(4, "Damien/0");
+            ps.setInt(5, 0);
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -185,6 +191,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         jdbcPostgresIdempotencyRepository.upsert(
                 new Target("statistics"),
+                new ApplicationNaming("TodoTaking", "Todo"),
                 new EventKey() {
 
                     @Override
@@ -207,13 +214,14 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // language=sql
         final String querySql = """
                     SELECT last_consumed_version FROM t_idempotency
-                    WHERE target = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
+                    WHERE target = ? AND source = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(querySql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, Todo.class.getName());
-            ps.setString(3, "Damien/0");
+            ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
+            ps.setString(3, Todo.class.getName());
+            ps.setString(4, "Damien/0");
             try (final ResultSet rs = ps.executeQuery()) {
                 assertAll(
                         () -> assertThat(rs.next()).isTrue(),

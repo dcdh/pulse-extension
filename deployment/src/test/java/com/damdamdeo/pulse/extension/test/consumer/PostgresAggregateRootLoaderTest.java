@@ -1,13 +1,8 @@
 package com.damdamdeo.pulse.extension.test.consumer;
 
-import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
-import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.consumer.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.InRelationWith;
-import com.damdamdeo.pulse.extension.core.consumer.UnknownAggregateRootException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
@@ -72,12 +67,14 @@ class PostgresAggregateRootLoaderTest {
     @Test
     void shouldThrowUnknownAggregateRootExceptionWhenAggregateDoesNotExists() {
         // Given
+        final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
+        final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
+        final AggregateId givenAggregateId = new AnyAggregateId("Damien/Unknown");
 
         // When
         assertThatThrownBy(() ->
-                postgresAggregateRootLoader.getByAggregateRootTypeAndAggregateId(
-                        AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien/Unknown")))
+                postgresAggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(
+                        givenApplicationNaming, givenAggregateRootType, givenAggregateId))
                 .isExactlyInstanceOf(UnknownAggregateRootException.class)
                 .hasFieldOrPropertyWithValue("aggregateRootType", AggregateRootType.from(Todo.class))
                 .hasFieldOrPropertyWithValue("aggregateId", new AnyAggregateId("Damien/Unknown"));
@@ -113,19 +110,25 @@ class PostgresAggregateRootLoaderTest {
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
+        final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
+        final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
+        final AggregateId givenAggregateId = new AnyAggregateId("Damien/0");
 
         // When
-        final AggregateRootLoaded<JsonNode> byAggregateRootTypeAndAggregateId = postgresAggregateRootLoader.getByAggregateRootTypeAndAggregateId(AggregateRootType.from(Todo.class),
-                new AnyAggregateId("Damien/0"));
+        final AggregateRootLoaded<JsonNode> byAggregateRootTypeAndAggregateId = postgresAggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(
+                givenApplicationNaming, givenAggregateRootType, givenAggregateId);
 
         // Then
         final ObjectNode expectedPayload = objectMapper.createObjectNode();
-        expectedPayload.put("msg", "Hello world!");
+        expectedPayload.put("id", "Damien/0");
+        expectedPayload.put("description", "lorem ipsum");
+        expectedPayload.put("status", "DONE");
+        expectedPayload.put("important", false);
         assertThat(byAggregateRootTypeAndAggregateId).isEqualTo(
                 new AggregateRootLoaded<>(
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
-                        new LastAggregateVersion(0),
+                        new LastAggregateVersion(1),
                         new EncryptedPayload(encryptedPayload),
                         expectedPayload,
                         new OwnedBy("Damien"),

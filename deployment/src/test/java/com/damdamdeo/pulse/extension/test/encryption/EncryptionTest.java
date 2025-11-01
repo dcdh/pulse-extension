@@ -50,7 +50,11 @@ class EncryptionTest {
 
     // docker kill $(docker ps -q)
     // docker rm $(docker ps -a -q)
-    // psql -U quarkus postgres
+    // psql -U quarkus quarkus
+    // "\dn+" liste schemas
+    // "\l" liste databases
+    // "\c quarkus" le schema est là
+    // "\dt" lister les tables
     // SELECT pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
     @Test
     void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() {

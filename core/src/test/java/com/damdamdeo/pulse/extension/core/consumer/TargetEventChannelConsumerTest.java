@@ -122,21 +122,25 @@ class TargetEventChannelConsumerTest {
     void shouldExecuteWhenNotConsumedYetOnFirstEvent() {
         // Given
         final Target givenTarget = new Target("statistics");
+        final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
         final EventKey givenEventKey = TodoEventKey.of();
         final EventRecord givenEventRecord = TodoEventRecord.of();
         doReturn(Optional.empty()).when(idempotencyRepository).findLastAggregateVersionBy(
-                givenTarget, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
+                givenTarget, givenApplicationNaming, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
 
         // When
-        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenEventKey, givenEventRecord);
+        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord);
 
         // Then
         assertAll(
-                () -> verify(targetEventChannelExecutor, times(1)).execute(givenTarget, givenEventKey, givenEventRecord),
-                () -> verify(targetEventChannelExecutor, times(0)).execute(any(), any(), any(), any()),
-                () -> verify(idempotencyRepository, times(1)).upsert(givenTarget, givenEventKey),
+                () -> verify(targetEventChannelExecutor, times(1)).execute(
+                        givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord),
+                () -> verify(targetEventChannelExecutor, times(0)).execute(
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class), any(LastConsumedAggregateVersion.class)),
+                () -> verify(idempotencyRepository, times(1)).upsert(
+                        givenTarget, givenApplicationNaming, givenEventKey),
                 () -> verify(targetEventChannelExecutor, times(0)).onAlreadyConsumed(
-                        any(), any(), any())
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class))
         );
     }
 
@@ -144,21 +148,25 @@ class TargetEventChannelConsumerTest {
     void shouldExecuteWhenNotConsumedYetOnNextEvent() {
         // Given
         final Target givenTarget = new Target("statistics");
+        final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
         final EventKey givenEventKey = TodoEventKey.of();
         final EventRecord givenEventRecord = TodoEventRecord.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(0))).when(idempotencyRepository).findLastAggregateVersionBy(
-                givenTarget, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
+                givenTarget, givenApplicationNaming, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
 
         // When
-        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenEventKey, givenEventRecord);
+        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord);
 
         // Then
         assertAll(
-                () -> verify(targetEventChannelExecutor, times(0)).execute(any(), any(), any()),
-                () -> verify(targetEventChannelExecutor, times(1)).execute(givenTarget, givenEventKey, givenEventRecord, new LastConsumedAggregateVersion(0)),
-                () -> verify(idempotencyRepository, times(1)).upsert(givenTarget, givenEventKey),
+                () -> verify(targetEventChannelExecutor, times(0)).execute(
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class)),
+                () -> verify(targetEventChannelExecutor, times(1)).execute(
+                        givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord, new LastConsumedAggregateVersion(0)),
+                () -> verify(idempotencyRepository, times(1)).upsert(
+                        givenTarget, givenApplicationNaming, givenEventKey),
                 () -> verify(targetEventChannelExecutor, times(0)).onAlreadyConsumed(
-                        any(), any(), any())
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class))
         );
     }
 
@@ -166,21 +174,25 @@ class TargetEventChannelConsumerTest {
     void shouldNotConsumeWhenAlreadyConsumed() {
         // Given
         final Target givenTarget = new Target("statistics");
+        final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
         final EventKey givenEventKey = TodoEventKey.of();
         final EventRecord givenEventRecord = TodoEventRecord.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(1))).when(idempotencyRepository).findLastAggregateVersionBy(
-                givenTarget, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
+                givenTarget, givenApplicationNaming, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
 
         // When
-        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenEventKey, givenEventRecord);
+        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord);
 
         // Then
         assertAll(
-                () -> verify(targetEventChannelExecutor, times(0)).execute(any(), any(), any(), any()),
-                () -> verify(targetEventChannelExecutor, times(0)).execute(any(), any(), any(), any()),
-                () -> verify(idempotencyRepository, times(0)).upsert(any(), any()),
+                () -> verify(targetEventChannelExecutor, times(0)).execute(
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class)),
+                () -> verify(targetEventChannelExecutor, times(0)).execute(
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class), any(LastConsumedAggregateVersion.class)),
+                () -> verify(idempotencyRepository, times(0)).upsert(
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class)),
                 () -> verify(targetEventChannelExecutor, times(1)).onAlreadyConsumed(
-                        givenTarget, givenEventKey, givenEventRecord)
+                        givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord)
         );
     }
 }

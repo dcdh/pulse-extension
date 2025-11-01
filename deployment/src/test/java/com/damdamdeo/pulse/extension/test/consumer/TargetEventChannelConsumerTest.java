@@ -180,15 +180,16 @@ class TargetEventChannelConsumerTest {
 
         // language=sql
         final String idempotencySql = """
-                INSERT INTO t_idempotency (target, aggregate_root_type, aggregate_root_id, last_consumed_version)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO t_idempotency (target, source, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                VALUES (?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, Todo.class.getName());
-            ps.setString(3, "Damien/0");
-            ps.setLong(4, 0);
+            ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
+            ps.setString(3, Todo.class.getName());
+            ps.setString(4, "Damien/0");
+            ps.setLong(5, 0);
             ps.executeUpdate();
         }
 

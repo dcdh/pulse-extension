@@ -40,38 +40,43 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
     }
 
     @Override
-    public AggregateRootLoaded<JsonNode> getByAggregateRootTypeAndAggregateId(final AggregateRootType aggregateRootType, final AggregateId aggregateId)
+    public AggregateRootLoaded<JsonNode> getByApplicationNamingAndAggregateRootTypeAndAggregateId(final ApplicationNaming applicationNaming,
+                                                                                                  final AggregateRootType aggregateRootType,
+                                                                                                  final AggregateId aggregateId)
             throws UnknownAggregateRootException, AggregateRootLoaderException {
+        Objects.requireNonNull(applicationNaming);
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(
-                     // language=sql
-                     """
-                             SELECT last_version, aggregate_root_payload, owned_by, in_relation_with FROM t_aggregate_root
-                             WHERE aggregate_root_type = ? AND aggregate_root_id = ?
-                             """)) {
-            ps.setString(1, aggregateRootType.type());
-            ps.setString(2, aggregateId.id());
-            try (final ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    final LastAggregateVersion lastAggregateVersion = new LastAggregateVersion(rs.getInt("last_version"));
-                    final EncryptedPayload encryptedPayload = new EncryptedPayload(rs.getBytes("aggregate_root_payload"));
-                    final OwnedBy ownedBy = new OwnedBy(rs.getString("owned_by"));
-                    final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
-                    final InRelationWith inRelationWith = new InRelationWith(rs.getString("in_relation_with"));
-                    return new AggregateRootLoaded<>(
-                            aggregateRootType,
-                            aggregateId,
-                            lastAggregateVersion,
-                            encryptedPayload,
-                            objectMapper.readTree(decryptedPayload.payload()),
-                            ownedBy,
-                            inRelationWith);
+        try (final Connection connection = dataSource.getConnection()) {
+            connection.setSchema(applicationNaming.value().toLowerCase());
+            try (final PreparedStatement ps = connection.prepareStatement(
+                    // language=sql
+                    """
+                            SELECT last_version, aggregate_root_payload, owned_by, in_relation_with FROM t_aggregate_root
+                            WHERE aggregate_root_type = ? AND aggregate_root_id = ?
+                            """)) {
+                ps.setString(1, aggregateRootType.type());
+                ps.setString(2, aggregateId.id());
+                try (final ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        final LastAggregateVersion lastAggregateVersion = new LastAggregateVersion(rs.getInt("last_version"));
+                        final EncryptedPayload encryptedPayload = new EncryptedPayload(rs.getBytes("aggregate_root_payload"));
+                        final OwnedBy ownedBy = new OwnedBy(rs.getString("owned_by"));
+                        final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
+                        final InRelationWith inRelationWith = new InRelationWith(rs.getString("in_relation_with"));
+                        return new AggregateRootLoaded<>(
+                                aggregateRootType,
+                                aggregateId,
+                                lastAggregateVersion,
+                                encryptedPayload,
+                                objectMapper.readTree(decryptedPayload.payload()),
+                                ownedBy,
+                                inRelationWith);
+                    }
+                    throw new UnknownAggregateRootException(aggregateRootType, aggregateId);
+                } catch (final IOException e) {
+                    throw new AggregateRootLoaderException(aggregateRootType, aggregateId, e);
                 }
-                throw new UnknownAggregateRootException(aggregateRootType, aggregateId);
-            } catch (final IOException e) {
-                throw new AggregateRootLoaderException(aggregateRootType, aggregateId, e);
             }
         } catch (final SQLException e) {
             throw new AggregateRootLoaderException(aggregateRootType, aggregateId, e);

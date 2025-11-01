@@ -21,8 +21,9 @@ public abstract class AbstractTargetEventChannelConsumer<T> {
         this.idempotencyRepository = Objects.requireNonNull(idempotencyRepository);
     }
 
-    protected void handleMessage(final Target target, final EventKey eventKey, final EventRecord eventRecord) {
+    protected void handleMessage(final Target target, final ApplicationNaming source, final EventKey eventKey, final EventRecord eventRecord) {
         Objects.requireNonNull(target);
+        Objects.requireNonNull(source);
         Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventRecord);
         LOGGER.fine("Consuming on target '%s' with key '%s' and value '%s'".formatted(target.name(), eventKey, eventRecord));
@@ -31,15 +32,16 @@ public abstract class AbstractTargetEventChannelConsumer<T> {
         final AggregateId aggregateId = eventRecord.toAggregateId();
         final CurrentVersionInConsumption currentVersionInConsumption = eventRecord.toCurrentVersionInConsumption();
 
-        final Optional<LastConsumedAggregateVersion> lastConsumedAggregateVersion = idempotencyRepository.findLastAggregateVersionBy(target, aggregateRootType, aggregateId);
+        final Optional<LastConsumedAggregateVersion> lastConsumedAggregateVersion = idempotencyRepository.findLastAggregateVersionBy(
+                target, source, aggregateRootType, aggregateId);
         if (lastConsumedAggregateVersion.isPresent() && lastConsumedAggregateVersion.get().isBelow(currentVersionInConsumption)) {
-            targetEventChannelExecutor.execute(target, eventKey, eventRecord, lastConsumedAggregateVersion.get());
-            idempotencyRepository.upsert(target, eventKey);
+            targetEventChannelExecutor.execute(target, source, eventKey, eventRecord, lastConsumedAggregateVersion.get());
+            idempotencyRepository.upsert(target, source, eventKey);
         } else if (lastConsumedAggregateVersion.isPresent()) {
-            targetEventChannelExecutor.onAlreadyConsumed(target, eventKey, eventRecord);
+            targetEventChannelExecutor.onAlreadyConsumed(target, source, eventKey, eventRecord);
         } else {
-            targetEventChannelExecutor.execute(target, eventKey, eventRecord);
-            idempotencyRepository.upsert(target, eventKey);
+            targetEventChannelExecutor.execute(target, source, eventKey, eventRecord);
+            idempotencyRepository.upsert(target, source, eventKey);
         }
     }
 }
