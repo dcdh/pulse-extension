@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
@@ -92,7 +93,7 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
         }
     }
 
-    void onStartup(final @Observes StartupEvent event) {
+    void onStartup(final @Observes @Priority(3) StartupEvent event) {
         // language=sql
         final String ddl = """
                     CREATE TABLE IF NOT EXISTS t_idempotency (

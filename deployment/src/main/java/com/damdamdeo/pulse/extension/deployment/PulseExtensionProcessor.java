@@ -6,7 +6,8 @@ import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.runtime.DefaultQuarkusTransaction;
 import com.damdamdeo.pulse.extension.runtime.PostgresqlEventStoreInitializer;
-import com.damdamdeo.pulse.extension.runtime.consumer.DebeziumConfiguration;
+import com.damdamdeo.pulse.extension.runtime.PostgresqlSchemaInitializer;
+import com.damdamdeo.pulse.extension.runtime.consumer.debezium.DebeziumConfiguration;
 import com.damdamdeo.pulse.extension.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.runtime.encryption.DefaultPassphraseProvider;
 import com.damdamdeo.pulse.extension.runtime.encryption.OpenPGPDecryptionService;
@@ -37,6 +38,7 @@ class PulseExtensionProcessor {
                 AdditionalBeanBuildItem.builder()
                         .addBeanClasses(DefaultQuarkusTransaction.class, DefaultInstantProvider.class)
                         .addBeanClass(PostgresqlEventStoreInitializer.class)
+                        .addBeanClass(PostgresqlSchemaInitializer.class)
                         .addBeanClass(AllFieldsVisibilityObjectMapperCustomizer.class)
                         .addBeanClasses(VaultPassphraseRepository.class, DefaultPassphraseGenerator.class,
                                 DefaultPassphraseProvider.class, OpenPGPDecryptionService.class, DebeziumConfiguration.class)

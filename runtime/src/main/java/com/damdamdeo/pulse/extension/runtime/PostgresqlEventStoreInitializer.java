@@ -4,6 +4,7 @@ import io.quarkus.arc.Unremovable;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.runtime.StartupEvent;
 import io.smallrye.faulttolerance.api.TypedGuard;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 
@@ -34,7 +35,7 @@ public final class PostgresqlEventStoreInitializer {
         this.dataSource = Objects.requireNonNull(dataSource);
     }
 
-    public void onStart(@Observes final StartupEvent event) throws Exception {
+    public void onStart(@Observes @Priority(2) final StartupEvent event) throws Exception {
         // Use a retry mechanism in case of multiple instances running in //
         // DDL will be started each time an instance of the application is started
         // DDL must use an IF NOT EXIST syntax

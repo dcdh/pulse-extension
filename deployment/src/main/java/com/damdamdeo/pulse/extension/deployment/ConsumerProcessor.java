@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.deployment;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.runtime.consumer.*;
+import com.damdamdeo.pulse.extension.runtime.consumer.debezium.DebeziumConfigurator;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
