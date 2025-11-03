@@ -24,8 +24,8 @@ services:
       -c synchronized_standby_slots=replication_slot
 
   kafka:
-    #image: debezium-for-dev-service/kafka:3.3.1.Final
-    image: quay.io/debezium/kafka:3.3.1.Final
+    image: debezium-for-dev-service/kafka:3.3.1.Final
+    # image: quay.io/debezium/kafka:3.3.1.Final
     labels:
       io.quarkus.devservices.compose.exposed_ports: /tmp/ports
     ports:
@@ -36,7 +36,7 @@ services:
       - NODE_ID=1
       - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
     healthcheck:
-      test: ["CMD", "./bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      test: ["CMD", "./bin/kafka-topics.sh", "--bootstrap-server", "kafka:29092", "--list"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,7 +52,7 @@ services:
       - kafka
       - postgres
     environment:
-      - BOOTSTRAP_SERVERS=kafka:9092
+      - BOOTSTRAP_SERVERS=kafka:29092
       - GROUP_ID=1
       - CONFIG_STORAGE_TOPIC=my_connect_configs
       - OFFSET_STORAGE_TOPIC=my_connect_offsets

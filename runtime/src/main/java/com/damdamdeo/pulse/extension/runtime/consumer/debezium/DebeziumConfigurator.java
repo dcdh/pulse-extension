@@ -42,7 +42,8 @@ public final class DebeziumConfigurator {
     public void onStart(@Observes @Priority(4) final StartupEvent ev) throws Exception {
         if (debeziumConfiguration.enabled()) {
             GUARD.call(() -> {
-                final ConnectorNaming connectorNaming = connectorNamingProvider.provide();final List<ConnectorNaming> connectors = kafkaConnectorApiExecutor.getAllConnectors();
+                final ConnectorNaming connectorNaming = connectorNamingProvider.provide();
+                final List<ConnectorNaming> connectors = kafkaConnectorApiExecutor.getAllConnectors();
                 if (!connectors.contains(connectorNaming)) {
                     LOGGER.fine("No connector found for " + connectorNaming.name());
                     final KafkaConnectorConfigurationDTO kafkaConnectorConfigurationDTO = kafkaConnectorConfigurationGenerator.generateConnectorConfiguration();

@@ -39,41 +39,42 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
     }
 
     @Override
-    public void execute(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventRecord eventRecord, final LastConsumedAggregateVersion lastConsumedAggregateVersion) {
+    public void execute(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventValue eventValue, final LastConsumedAggregateVersion lastConsumedAggregateVersion) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(applicationNaming);
         Objects.requireNonNull(eventKey);
-        Objects.requireNonNull(eventRecord);
+        Objects.requireNonNull(eventValue);
         Objects.requireNonNull(lastConsumedAggregateVersion);
-        final CurrentVersionInConsumption currentVersionInConsumption = eventRecord.toCurrentVersionInConsumption();
+        final CurrentVersionInConsumption currentVersionInConsumption = eventKey.toCurrentVersionInConsumption();
         sequentialEventChecker.check(lastConsumedAggregateVersion, currentVersionInConsumption);
-        execute(target, applicationNaming, eventRecord, currentVersionInConsumption);
+        execute(target, applicationNaming, eventKey, eventValue, currentVersionInConsumption);
     }
 
     @Override
-    public void execute(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventRecord eventRecord) {
+    public void execute(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventValue eventValue) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(applicationNaming);
         Objects.requireNonNull(eventKey);
-        Objects.requireNonNull(eventRecord);
-        Validate.validState(eventRecord.match(eventKey), "Key mismatch with payload !");
+        Objects.requireNonNull(eventValue);
         Validate.validState(eventKey.toCurrentVersionInConsumption().isFirstEvent(), "Event must be first event !");
-        execute(target, applicationNaming, eventRecord, eventKey.toCurrentVersionInConsumption());
+        execute(target, applicationNaming, eventKey, eventValue, eventKey.toCurrentVersionInConsumption());
     }
 
-    private void execute(final Target target, final ApplicationNaming applicationNaming, final EventRecord eventRecord, final CurrentVersionInConsumption currentVersionInConsumption) {
+    private void execute(final Target target, final ApplicationNaming applicationNaming,
+                         final EventKey eventKey, final EventValue eventValue,
+                         final CurrentVersionInConsumption currentVersionInConsumption) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(applicationNaming);
-        Objects.requireNonNull(eventRecord);
+        Objects.requireNonNull(eventValue);
         Objects.requireNonNull(currentVersionInConsumption);
-        final AggregateRootType aggregateRootType = eventRecord.toAggregateRootType();
-        final AggregateId aggregateId = eventRecord.toAggregateId();
+        final AggregateRootType aggregateRootType = eventKey.toAggregateRootType();
+        final AggregateId aggregateId = eventKey.toAggregateId();
         asyncEventChannelMessageHandlerProvider.provideForTarget(target)
                 .forEach(asyncEventChannelMessageHandler -> {
-                    final Instant creationDate = eventRecord.toCreationDate();
-                    final EventType eventType = eventRecord.toEventType();
-                    final EncryptedPayload encryptedPayload = eventRecord.toEncryptedEventPayload();
-                    final OwnedBy ownedBy = eventRecord.toOwnedBy();
+                    final Instant creationDate = eventValue.toCreationDate();
+                    final EventType eventType = eventValue.toEventType();
+                    final EncryptedPayload encryptedPayload = eventValue.toEncryptedEventPayload();
+                    final OwnedBy ownedBy = eventValue.toOwnedBy();
                     try {
                         DecryptablePayload<T> decryptableEventPayload;
                         try {
@@ -94,11 +95,11 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
     }
 
     @Override
-    public void onAlreadyConsumed(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventRecord eventRecord) {
+    public void onAlreadyConsumed(final Target target, final ApplicationNaming applicationNaming, final EventKey eventKey, final EventValue eventValue) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(eventKey);
-        Objects.requireNonNull(eventRecord);
+        Objects.requireNonNull(eventValue);
         LOGGER.fine("Message from target '%s' - applicationNaming '%s' - aggregateRootType '%s' - aggregateId '%s' - currentVersionInConsumption '%s' - eventType '%s' already consumed"
-                .formatted(target.name(), applicationNaming.value(), eventKey.toAggregateRootType().type(), eventKey.toAggregateId().id(), eventKey.toCurrentVersionInConsumption().version(), eventRecord.toEventType()));
+                .formatted(target.name(), applicationNaming.value(), eventKey.toAggregateRootType().type(), eventKey.toAggregateId().id(), eventKey.toCurrentVersionInConsumption().version(), eventValue.toEventType()));
     }
 }

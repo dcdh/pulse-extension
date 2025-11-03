@@ -108,7 +108,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
         return databaseDbname;
     }
 
-    @JsonProperty("name.include.list")
+    @JsonProperty("schema.include.list")
     public String getSchemaIncludeList() {
         return schema;
     }
@@ -145,6 +145,56 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("topic.prefix")
     public String getTopicPrefix() {
-        return schema;
+        return "pulse";
+    }
+
+    @JsonProperty("plugin.name")
+    public String getPluginName() {
+        return "pgoutput";
+    }
+
+    @JsonProperty("transforms")
+    public String getTransforms() {
+        return "unwrap,filterFields";
+    }
+
+    @JsonProperty("transforms.unwrap.type")
+    public String getTransformsUnwrapType() {
+        return "io.debezium.transforms.ExtractNewRecordState";
+    }
+
+    @JsonProperty("transforms.unwrap.drop.tombstones")
+    public String getTransformsUnwrapDropTombstones() {
+        return "false";
+    }
+
+    @JsonProperty("transforms.unwrap.delete.handling.mode")
+    public String getTransformsUnwrapDeleteHandlingMode() {
+        return "drop";
+    }
+
+    @JsonProperty("transforms.unwrap.operation.header")
+    public String getTransformsUnwrapOperationHeader() {
+        return "true";
+    }
+
+    @JsonProperty("transforms.unwrap.add.headers")
+    public String getTransformsUnwrapAddHeaders() {
+        return "source.version,source.connector,source.name,source.ts_ms,source.db,source.schema,source.table,source.txId,source.lsn";
+    }
+
+    @JsonProperty("transforms.filterFields.type")
+    public String getTransformsFilterFieldsType() {
+        return "org.apache.kafka.connect.transforms.ReplaceField$Value";
+    }
+
+    @JsonProperty("transforms.filterFields.include")
+    public String getTransformsFilterFieldsInclude() {
+        return "creation_date,event_type,event_payload,owned_by";
+    }
+
+    @JsonProperty("compression.type")
+    public String getCompressionType() {
+        return "zstd";
     }
 }

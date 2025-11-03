@@ -1,14 +1,16 @@
 package com.damdamdeo.pulse.extension.it;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.TestMethodOrder;
+
+import java.util.concurrent.TimeUnit;
+
+import static io.restassured.RestAssured.given;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
 
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -44,7 +46,17 @@ class PulseExtensionResourceTest {
 
     @Test
     @Order(3)
-    void shouldConsumeAsyncEvent() {
-        throw new RuntimeException("TODO debezium");
+    void shouldConsumeAsyncEvents() {
+        // FCK 1
+//        putain passer par le stub et les tester toutes !!!
+        await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            final Boolean hasBeenCalled = given()
+                    .when().post("/pulse-extension/hasBeenCalled")
+                    .then()
+                    .log().all()
+                    .statusCode(200)
+                    .extract().body().as(Boolean.class);
+            return Boolean.TRUE.equals(hasBeenCalled);
+        });
     }
 }

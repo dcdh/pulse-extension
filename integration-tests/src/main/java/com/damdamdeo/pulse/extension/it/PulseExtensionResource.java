@@ -22,9 +22,12 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
+import com.damdamdeo.pulse.extension.runtime.consumer.EventChannel;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -43,6 +46,10 @@ public class PulseExtensionResource {
 
     @Inject
     CommandHandler<Todo, TodoId> todoCommandHandler;
+
+    @Inject
+    @Any
+    Instance<StatisticsEventHandler> statisticsEventHandlerInstance;
 
     public record TodoDTO(String id, String description, Status status, boolean important) {
 
@@ -66,5 +73,12 @@ public class PulseExtensionResource {
     @Path("/markTodoAsDone")
     public TodoDTO markTodoAsDone() {
         return TodoDTO.from(todoCommandHandler.handle(new MarkTodoAsDone(new TodoId("Damien", 20L))));
+    }
+
+    @POST
+    @Path("/hasBeenCalled")
+    public boolean hasBeenCalled() {
+        return statisticsEventHandlerInstance
+                .select(EventChannel.Literal.of("statistics")).get().hasBeenCalled();
     }
 }

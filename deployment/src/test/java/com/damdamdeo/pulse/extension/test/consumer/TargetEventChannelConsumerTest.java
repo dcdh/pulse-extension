@@ -12,7 +12,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
 import com.damdamdeo.pulse.extension.runtime.consumer.EventChannel;
 import com.damdamdeo.pulse.extension.runtime.consumer.JsonNodeEventKey;
-import com.damdamdeo.pulse.extension.runtime.consumer.JsonNodeEventRecord;
+import com.damdamdeo.pulse.extension.runtime.consumer.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.runtime.encryption.OpenPGPEncryptionService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -145,7 +145,7 @@ class TargetEventChannelConsumerTest {
 
     }
 
-    public static final class JsonNodeEventRecordObjectMapperSerializer extends ObjectMapperSerializer<JsonNodeEventRecord> {
+    public static final class JsonNodeEventRecordObjectMapperSerializer extends ObjectMapperSerializer<JsonNodeEventValue> {
 
     }
 
@@ -216,7 +216,7 @@ class TargetEventChannelConsumerTest {
                 .usingGenerator(
                         integer -> new ProducerRecord<>(TOPIC,
                                 new JsonNodeEventKey(Todo.class.getName(), "Damien/0", 1),
-                                new JsonNodeEventRecord(Todo.class.getName(), "Damien/0", 1, 1_761_335_312_527L,
+                                new JsonNodeEventValue(1_761_335_312_527L,
                                         TodoMarkedAsDone.class.getName(),
                                         encryptedTodoMarkedAsDonePayload,
                                         "Damien")), 1L);
@@ -316,7 +316,7 @@ class TargetEventChannelConsumerTest {
                 .usingGenerator(
                         integer -> new ProducerRecord<>(TOPIC,
                                 new JsonNodeEventKey(Todo.class.getName(), "Alban/0", 1),
-                                new JsonNodeEventRecord(Todo.class.getName(), "Alban/0", 1, 1_761_335_312_527L,
+                                new JsonNodeEventValue(1_761_335_312_527L,
                                         TodoMarkedAsDone.class.getName(),
                                         encryptedTodoMarkedAsDonePayload,
                                         "Alban")), 1L);

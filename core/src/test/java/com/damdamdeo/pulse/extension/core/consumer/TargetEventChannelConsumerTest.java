@@ -58,34 +58,19 @@ class TargetEventChannelConsumerTest {
         }
     }
 
-    record TodoEventRecord(String aggregateRootType,
-                           String aggregateRootId,
-                           Integer version,
-                           Long createDate,
-                           String eventType,
-                           byte[] eventPayload,
-                           String ownedBy) implements EventRecord {
+    record TodoEventValue(String aggregateRootType,
+                          String aggregateRootId,
+                          Integer version,
+                          Long createDate,
+                          String eventType,
+                          byte[] eventPayload,
+                          String ownedBy) implements EventValue {
 
-        public static TodoEventRecord of() {
-            return new TodoEventRecord(
+        public static TodoEventValue of() {
+            return new TodoEventValue(
                     Todo.class.getName(), new TodoId("Damien", 0L).toString(), 1,
                     1983L, NewTodoCreated.class.getName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
                     "Damien");
-        }
-
-        @Override
-        public AggregateRootType toAggregateRootType() {
-            return new AggregateRootType(aggregateRootType);
-        }
-
-        @Override
-        public AggregateId toAggregateId() {
-            return new AnyAggregateId(aggregateRootId);
-        }
-
-        @Override
-        public CurrentVersionInConsumption toCurrentVersionInConsumption() {
-            return new CurrentVersionInConsumption(version);
         }
 
         @Override
@@ -124,23 +109,23 @@ class TargetEventChannelConsumerTest {
         final Target givenTarget = new Target("statistics");
         final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
         final EventKey givenEventKey = TodoEventKey.of();
-        final EventRecord givenEventRecord = TodoEventRecord.of();
+        final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.empty()).when(idempotencyRepository).findLastAggregateVersionBy(
                 givenTarget, givenApplicationNaming, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
 
         // When
-        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord);
+        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventValue);
 
         // Then
         assertAll(
                 () -> verify(targetEventChannelExecutor, times(1)).execute(
-                        givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord),
+                        givenTarget, givenApplicationNaming, givenEventKey, givenEventValue),
                 () -> verify(targetEventChannelExecutor, times(0)).execute(
-                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class), any(LastConsumedAggregateVersion.class)),
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventValue.class), any(LastConsumedAggregateVersion.class)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
                         givenTarget, givenApplicationNaming, givenEventKey),
                 () -> verify(targetEventChannelExecutor, times(0)).onAlreadyConsumed(
-                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class))
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventValue.class))
         );
     }
 
@@ -150,23 +135,23 @@ class TargetEventChannelConsumerTest {
         final Target givenTarget = new Target("statistics");
         final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
         final EventKey givenEventKey = TodoEventKey.of();
-        final EventRecord givenEventRecord = TodoEventRecord.of();
+        final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(0))).when(idempotencyRepository).findLastAggregateVersionBy(
                 givenTarget, givenApplicationNaming, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
 
         // When
-        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord);
+        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventValue);
 
         // Then
         assertAll(
                 () -> verify(targetEventChannelExecutor, times(0)).execute(
-                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class)),
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventValue.class)),
                 () -> verify(targetEventChannelExecutor, times(1)).execute(
-                        givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord, new LastConsumedAggregateVersion(0)),
+                        givenTarget, givenApplicationNaming, givenEventKey, givenEventValue, new LastConsumedAggregateVersion(0)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
                         givenTarget, givenApplicationNaming, givenEventKey),
                 () -> verify(targetEventChannelExecutor, times(0)).onAlreadyConsumed(
-                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class))
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventValue.class))
         );
     }
 
@@ -176,23 +161,23 @@ class TargetEventChannelConsumerTest {
         final Target givenTarget = new Target("statistics");
         final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
         final EventKey givenEventKey = TodoEventKey.of();
-        final EventRecord givenEventRecord = TodoEventRecord.of();
+        final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(1))).when(idempotencyRepository).findLastAggregateVersionBy(
                 givenTarget, givenApplicationNaming, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId());
 
         // When
-        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord);
+        todoTargetEventChannelConsumer.handleMessage(givenTarget, givenApplicationNaming, givenEventKey, givenEventValue);
 
         // Then
         assertAll(
                 () -> verify(targetEventChannelExecutor, times(0)).execute(
-                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class)),
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventValue.class)),
                 () -> verify(targetEventChannelExecutor, times(0)).execute(
-                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventRecord.class), any(LastConsumedAggregateVersion.class)),
+                        any(Target.class), any(ApplicationNaming.class), any(EventKey.class), any(EventValue.class), any(LastConsumedAggregateVersion.class)),
                 () -> verify(idempotencyRepository, times(0)).upsert(
                         any(Target.class), any(ApplicationNaming.class), any(EventKey.class)),
                 () -> verify(targetEventChannelExecutor, times(1)).onAlreadyConsumed(
-                        givenTarget, givenApplicationNaming, givenEventKey, givenEventRecord)
+                        givenTarget, givenApplicationNaming, givenEventKey, givenEventValue)
         );
     }
 }

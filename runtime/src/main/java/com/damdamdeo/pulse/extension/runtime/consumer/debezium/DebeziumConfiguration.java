@@ -6,6 +6,8 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 
+import java.util.Optional;
+
 @ConfigMapping(prefix = "pulse.debezium")
 @ConfigRoot(phase = ConfigPhase.RUN_TIME)
 public interface DebeziumConfiguration {
@@ -32,7 +34,7 @@ public interface DebeziumConfiguration {
         /**
          * Debezium connect's port
          */
-        Integer port();
+        Optional<Integer> port();
 
         @ConfigGroup
         interface PostgresConfiguration {

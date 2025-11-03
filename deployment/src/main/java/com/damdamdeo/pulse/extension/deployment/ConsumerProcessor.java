@@ -353,7 +353,7 @@ public class ConsumerProcessor {
                                             .addParameterType(Type.parameterizedType(
                                                     Type.classType(ConsumerRecord.class),
                                                     Type.classType(JsonNodeEventKey.class),
-                                                    Type.classType(JsonNodeEventRecord.class)
+                                                    Type.classType(JsonNodeEventValue.class)
                                             ))
                                             .build());
                             consume.addAnnotation(Transactional.class);
@@ -380,7 +380,7 @@ public class ConsumerProcessor {
                                             Target.class,
                                             ApplicationNaming.class,
                                             EventKey.class,
-                                            EventRecord.class
+                                            EventValue.class
                                     ),
                                     consume.getThis(),
                                     targetParam,
@@ -399,15 +399,18 @@ public class ConsumerProcessor {
                         .map(src -> new TargetWithSource(targetBuildItem.target(), src))
                 ).forEach(targetWithSource -> {
                     final String channelNaming = targetWithSource.channel();
+                    final String topic = "pulse.%s_%s.t_event".formatted(
+                            targetWithSource.source().functionalDomain().toLowerCase(),
+                            targetWithSource.source().componentName().toLowerCase());
                     Map.of(
                                     "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",
                                     "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",
                                     "mp.messaging.incoming.%s.connector".formatted(channelNaming), "smallrye-kafka",
-                                    "mp.messaging.incoming.%s.topic".formatted(channelNaming), channelNaming,
+                                    "mp.messaging.incoming.%s.topic".formatted(channelNaming), topic,
                                     "mp.messaging.incoming.%s.key.deserializer".formatted(channelNaming), JsonNodeEventKeyObjectMapperDeserializer.class.getName(),
                                     "mp.messaging.incoming.%s.value.deserializer".formatted(channelNaming), JsonNodeEventRecordObjectMapperDeserializer.class.getName(),
                                     "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(channelNaming), EventKey.class.getName(),
-                                    "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), EventRecord.class.getName())
+                                    "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), EventValue.class.getName())
                             .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
                 });
     }

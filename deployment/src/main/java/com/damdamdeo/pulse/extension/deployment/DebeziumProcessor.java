@@ -18,7 +18,7 @@ public class DebeziumProcessor {
     List<AdditionalBeanBuildItem> additionalBeans(final Capabilities capabilities) {
         if (capabilities.isPresent(Capability.KAFKA)) {
             return Stream.of(DebeziumConfigurator.class, KafkaConnectorApiExecutor.class,
-                            ConnectorNamingProvider.class, SchemaNamingProvider.class,
+                            ApplicationNamingProvider.class, ConnectorNamingProvider.class,
                             KafkaConnectorConfigurationGenerator.class)
                     .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                     .toList();
