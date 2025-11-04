@@ -155,7 +155,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("transforms")
     public String getTransforms() {
-        return "unwrap,filterFields";
+        return "unwrap,filterFields,partitioner";
     }
 
     @JsonProperty("transforms.unwrap.type")
@@ -193,8 +193,43 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
         return "creation_date,event_type,event_payload,owned_by";
     }
 
+    @JsonProperty("transforms.partitioner.type")
+    public String getTransformsPartitionerType() {
+        return "io.debezium.transforms.partitions.PartitionRouting";
+    }
+
+    @JsonProperty("transforms.partitioner.partition.payload.fields")
+    public String getTransformsPartitionerPartitionPayloadFields() {
+        return "aggregate_root_type,aggregate_root_id";
+    }
+
+    @JsonProperty("transforms.partitioner.partition.topic.num")
+    public Integer getTransformsPartitionerPartitionTopicNum() {
+        return 1;
+    }
+
     @JsonProperty("compression.type")
     public String getCompressionType() {
+        return "zstd";
+    }
+
+    @JsonProperty("topic.creation.default.replication.factor")
+    public Integer getTopicCreationDefaultReplicationFactor() {
+        return 1;
+    }
+
+    @JsonProperty("topic.creation.default.partitions")
+    public Integer getTopicCreationDefaultPartitions() {
+        return 1;
+    }
+
+    @JsonProperty("topic.creation.default.cleanup.policy")
+    public String getTopicCreationDefaultCleanupPolicy() {
+        return "compact";
+    }
+
+    @JsonProperty("topic.creation.default.compression.type")
+    public String getTopicCreationDefaultCompressionType() {
         return "zstd";
     }
 }

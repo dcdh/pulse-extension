@@ -18,7 +18,7 @@
         </dependency>
         <dependency>
             <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-extension-debezium</artifactId>
+            <artifactId>pulse-extension-kafka-dev-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

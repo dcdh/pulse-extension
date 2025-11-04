@@ -20,10 +20,7 @@ import java.util.function.Supplier;
         })
 public final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
-    private boolean hasBeenCalled = false;
-
-    putain stocker dans une liste, ecouter et tous les retourner
-    et c'est good !!! youpla boom !!!
+    private Call call = null;
 
     @Override
     public void handleMessage(final Target target,
@@ -36,10 +33,20 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
                               final OwnedBy ownedBy,
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
-        this.hasBeenCalled = true;
+        this.call = new Call(
+                target,
+                aggregateRootType,
+                aggregateId,
+                currentVersionInConsumption,
+                creationDate,
+                eventType,
+                encryptedPayload,
+                ownedBy,
+                decryptableEventPayload,
+                aggregateRootLoadedSupplier.get());
     }
 
-    public boolean hasBeenCalled() {
-        return hasBeenCalled;
+    public Call getCall() {
+        return call;
     }
 }

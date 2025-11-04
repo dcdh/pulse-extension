@@ -9,7 +9,7 @@
 
     <modules>
         <module>core</module>
-        <module>debezium</module>
+        <module>kafka</module>
         <module>deployment</module>
         <module>runtime</module>
         <module>integration-tests</module>
@@ -34,6 +34,12 @@
                 <version>${quarkus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.skyscreamer</groupId>
+                <artifactId>jsonassert</artifactId>
+                <version>1.5.3</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

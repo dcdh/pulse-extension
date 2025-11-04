@@ -8,8 +8,8 @@
         <artifactId>pulse-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-extension-debezium</artifactId>
-    <name>Pulse Extension - Debezium</name>
+    <artifactId>pulse-extension-kafka-dev-service</artifactId>
+    <name>Pulse Extension - Debezium kafka for dev service</name>
 
     <build>
         <plugins>
