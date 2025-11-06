@@ -6,11 +6,11 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 import java.util.Objects;
 
 @RegisterForReflection
-public record ConnectorDTO(String state, @JsonProperty("worker_id") String workerId, String version) {
+public record TaskDTO(Integer id, String state, @JsonProperty("worker_id") String workerId) {
 
-    public ConnectorDTO {
+    public TaskDTO {
+        Objects.requireNonNull(id);
         Objects.requireNonNull(state);
         Objects.requireNonNull(workerId);
-        Objects.requireNonNull(version);
     }
 }

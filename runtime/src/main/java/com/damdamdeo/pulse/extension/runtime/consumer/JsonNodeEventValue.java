@@ -45,6 +45,21 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        JsonNodeEventValue that = (JsonNodeEventValue) o;
+        return Objects.equals(ownedBy, that.ownedBy)
+                && Objects.equals(createDate, that.createDate)
+                && Objects.equals(eventType, that.eventType)
+                && Arrays.equals(eventPayload, that.eventPayload);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy);
+    }
+
+    @Override
     public String toString() {
         return "JsonNodeEventRecord{" +
                 "createDate=" + createDate +

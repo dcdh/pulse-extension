@@ -78,6 +78,11 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
         }
     }
 
+    @JsonProperty("name")
+    public String getName() {
+        return schema;
+    }
+
     @JsonProperty("connector.class")
     public String getConnectorClass() {
         return "io.debezium.connector.postgresql.PostgresConnector";

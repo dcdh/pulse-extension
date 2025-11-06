@@ -27,9 +27,9 @@ public final class KafkaConnectorApiExecutor {
                 .orElseThrow(() -> new IllegalArgumentException("Missing port"));
     }
 
-    public void registerConnector(final KafkaConnectorConfigurationDTO connectorConfiguration) {
+    public CreatedConnectorResponseDTO registerConnector(final KafkaConnectorConfigurationDTO connectorConfiguration) {
         Objects.requireNonNull(connectorConfiguration);
-        kafkaConnectorApi.map(api -> api.registerConnector(connectorConfiguration))
+        return kafkaConnectorApi.map(api -> api.registerConnector(connectorConfiguration))
                 .orElseThrow(() -> new IllegalArgumentException("Missing port"));
     }
 

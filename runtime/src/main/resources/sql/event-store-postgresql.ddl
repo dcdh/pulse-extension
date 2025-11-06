@@ -15,7 +15,7 @@ BEGIN
     aggregate_root_type character varying(255) not null,
     aggregate_root_id character varying(255) not null,
     version bigint not null,
-    creation_date timestamp without time zone not null,
+    creation_date timestamp(6) without time zone not null,
     event_type character varying(255) not null,
     event_payload bytea not null CHECK (octet_length(event_payload) <= 1000 * 1024),
     owned_by character varying(255) not null,

@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.runtime.consumer.debezium;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Objects;
 
@@ -14,6 +15,7 @@ public record KafkaConnectorConfigurationDTO(String name, kafkaConnectorConfigur
 
     public KafkaConnectorConfigurationDTO(final Builder builder) {
         this(builder.name, builder.config);
+        Validate.validState(builder.name.equals(builder.config.getName()));
     }
 
     public static Builder newBuilder() {
