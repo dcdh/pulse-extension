@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaI
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseProvider;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService;
+import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.AllFieldsVisibilityObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.common.runtime.vault.VaultPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
@@ -34,6 +35,7 @@ public class PulseCommonProcessor {
                 .addBeanClass(AllFieldsVisibilityObjectMapperCustomizer.class)
                 .addBeanClasses(VaultPassphraseRepository.class, DefaultPassphraseGenerator.class,
                         DefaultPassphraseProvider.class, OpenPGPDecryptionService.class,
+                        OpenPGPEncryptionService.class,
                         InitScriptUsageChecker.class, PostgresqlSchemaInitializer.class)
                 .build();
     }

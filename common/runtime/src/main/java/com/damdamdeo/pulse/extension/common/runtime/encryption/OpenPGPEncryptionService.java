@@ -1,7 +1,15 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import io.quarkus.arc.DefaultBean;
+import io.quarkus.arc.Unremovable;
+import jakarta.enterprise.context.ApplicationScoped;
+import org.bouncycastle.bcpg.ArmoredOutputStream;
+import org.bouncycastle.bcpg.CompressionAlgorithmTags;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBEKeyEncryptionMethodGenerator;
@@ -15,19 +23,23 @@ import java.security.Security;
 import java.util.Date;
 import java.util.Objects;
 
-public class OpenPGPEncryptionService {
+@ApplicationScoped
+@Unremovable
+@DefaultBean
+public final class OpenPGPEncryptionService implements EncryptionService {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
 
+    @Override
     // Comply with 'pgp_sym_encrypt' used in Postgres
-    public static EncryptedPayload encrypt(final byte[] clearData, final Passphrase passphrase) {
+    public EncryptedPayload encrypt(final byte[] clearData, final Passphrase passphrase) throws EncryptionException {
         Objects.requireNonNull(clearData);
         Objects.requireNonNull(passphrase);
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             final PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(
-                    new JcePGPDataEncryptorBuilder(PGPEncryptedData.CAST5)
+                    new JcePGPDataEncryptorBuilder(PGPEncryptedData.AES_128)
                             .setWithIntegrityPacket(true)
                             .setSecureRandom(new SecureRandom())
                             .setProvider("BC"));
@@ -41,8 +53,8 @@ public class OpenPGPEncryptionService {
             }
             encGen.close();
             return new EncryptedPayload(out.toByteArray());
-        } catch (IOException | PGPException e) {
-            throw new RuntimeException(e);
+        } catch (final IOException | PGPException e) {
+            throw new EncryptionException(e);
         }
     }
 }

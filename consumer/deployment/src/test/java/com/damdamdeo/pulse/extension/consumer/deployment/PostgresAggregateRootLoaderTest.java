@@ -54,6 +54,9 @@ class PostgresAggregateRootLoaderTest {
     PostgresAggregateRootLoader postgresAggregateRootLoader;
 
     @Inject
+    OpenPGPEncryptionService openPGPEncryptionService;
+
+    @Inject
     DataSource dataSource;
 
     @Inject
@@ -87,7 +90,7 @@ class PostgresAggregateRootLoaderTest {
                   "important": false
                 }
                 """;
-        final byte[] encryptedPayload = OpenPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedPayload = openPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
                     INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, in_relation_with)

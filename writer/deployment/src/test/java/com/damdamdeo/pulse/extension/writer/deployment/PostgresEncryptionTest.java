@@ -32,6 +32,9 @@ class PostgresEncryptionTest {
     DecryptionService decryptionService;
 
     @Inject
+    EncryptionService encryptionService;
+
+    @Inject
     DataSource dataSource;
 
     @ApplicationScoped
@@ -92,6 +95,40 @@ These values ensure that:
                  */
 //                () -> assertThat(encryptedAsString).isEqualTo("\\xc30d0407030231654111a015268367d23d01657e8a31b08aad73346bc8cf7061cab608eb7a880e80bc967292b8699345cc86f08a89a1afe228c97c21429f9b77517730b056c4669c9a4caeabb147"),
                 () -> assertThat(decrypted).isEqualTo(new DecryptedPayload("Hello world!".getBytes(StandardCharsets.UTF_8)))
+        );
+    }
+
+    @Test
+    void shouldDecryptEncryptedValueFromDecryptionServiceUsingPostgres() {
+        // Given
+        final String givenToEncrypt = "Hello world!";
+
+        // When
+        final EncryptedPayload encrypted = encryptionService.encrypt(givenToEncrypt.getBytes(StandardCharsets.UTF_8),
+                PassphraseSample.PASSPHRASE);
+
+        byte[] decrypted;
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement encryptedPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT pgp_sym_decrypt_bytea(?, ?) AS decrypted
+                             """
+             )) {
+            connection.setAutoCommit(false);
+            encryptedPreparedStatement.setBytes(1, encrypted.payload());
+            encryptedPreparedStatement.setString(2, new String(PassphraseSample.PASSPHRASE.passphrase()));
+            try (final ResultSet decryptedResultSet = encryptedPreparedStatement.executeQuery()) {
+                decryptedResultSet.next();
+                decrypted = decryptedResultSet.getBytes(1);
+            }
+        } catch (final SQLException e) {
+            throw new EventStoreException(e);
+        }
+
+        // Then
+        assertAll(
+                () -> assertThat(decrypted).isEqualTo("Hello world!".getBytes(StandardCharsets.UTF_8))
         );
     }
 }

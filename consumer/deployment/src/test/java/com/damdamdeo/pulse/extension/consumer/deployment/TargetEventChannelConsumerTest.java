@@ -5,7 +5,6 @@ import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKey;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.core.*;
-import com.damdamdeo.pulse.extension.core.InRelationWith;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
@@ -137,6 +136,9 @@ class TargetEventChannelConsumerTest {
     ObjectMapper objectMapper;
 
     @Inject
+    OpenPGPEncryptionService openPGPEncryptionService;
+
+    @Inject
     @Any
     Instance<StatisticsEventHandler> statisticsEventHandlerInstance;
 
@@ -165,7 +167,7 @@ class TargetEventChannelConsumerTest {
                   "important": false
                 }
                 """;
-        final byte[] encryptedAggregatePayload = OpenPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
                     INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, in_relation_with)
@@ -203,7 +205,7 @@ class TargetEventChannelConsumerTest {
                   "id": "Damien/0"
                 }
                 """;
-        final byte[] encryptedTodoMarkedAsDonePayload = OpenPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedTodoMarkedAsDonePayload = openPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
 
         // When
         new ProducerBuilder<>(
@@ -265,7 +267,7 @@ class TargetEventChannelConsumerTest {
                   "important": false
                 }
                 """;
-        final byte[] encryptedAggregatePayload = OpenPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
                     INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, in_relation_with)
@@ -303,7 +305,7 @@ class TargetEventChannelConsumerTest {
                   "id": "Alban/0"
                 }
                 """;
-        final byte[] encryptedTodoMarkedAsDonePayload = OpenPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedTodoMarkedAsDonePayload = openPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
 
         // When
         new ProducerBuilder<>(

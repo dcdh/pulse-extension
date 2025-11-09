@@ -22,6 +22,7 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 class OpenPGPDecryptionServiceTest {
 
+    private OpenPGPEncryptionService encryptionService;
     private OpenPGPDecryptionService decryptionService;
 
     @Mock
@@ -29,13 +30,14 @@ class OpenPGPDecryptionServiceTest {
 
     @BeforeEach
     void setUp() {
+        encryptionService = new OpenPGPEncryptionService();
         decryptionService = new OpenPGPDecryptionService(passphraseRepository);
     }
 
     @Test
     void shouldDecrypt() {
         // Given
-        final EncryptedPayload encrypted = OpenPGPEncryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
+        final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
         doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(new OwnedBy("custom organization"));
 
         // When
@@ -49,7 +51,7 @@ class OpenPGPDecryptionServiceTest {
     @Test
     void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() {
         // Given
-        final EncryptedPayload encrypted = OpenPGPEncryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
+        final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
         doReturn(Optional.empty()).when(passphraseRepository).retrieve(new OwnedBy("custom organization"));
 
         // When && Then
