@@ -5,8 +5,8 @@ import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKey;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.InRelationWith;
 import com.damdamdeo.pulse.extension.core.consumer.*;
-import com.damdamdeo.pulse.extension.core.consumer.InRelationWith;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
@@ -218,7 +218,7 @@ class TargetEventChannelConsumerTest {
                                 new JsonNodeEventValue(1_761_335_312_527L,
                                         TodoMarkedAsDone.class.getName(),
                                         encryptedTodoMarkedAsDonePayload,
-                                        "Damien")), 1L);
+                                        "Damien", "Damien/0")), 1L);
 
         // Then
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
@@ -247,7 +247,7 @@ class TargetEventChannelConsumerTest {
                                 new EncryptedPayload(encryptedAggregatePayload),
                                 DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                                 new OwnedBy("Damien"),
-                                new InRelationWith("Damien/0"))));
+                                new InRelationWith(new AnyAggregateId("Damien/0")))));
     }
 
     @Test
@@ -318,7 +318,7 @@ class TargetEventChannelConsumerTest {
                                 new JsonNodeEventValue(1_761_335_312_527L,
                                         TodoMarkedAsDone.class.getName(),
                                         encryptedTodoMarkedAsDonePayload,
-                                        "Alban")), 1L);
+                                        "Alban", "Alban/0")), 1L);
 
         // Then
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
@@ -340,6 +340,6 @@ class TargetEventChannelConsumerTest {
                                 new EncryptedPayload(encryptedAggregatePayload),
                                 DecryptablePayload.ofUndecryptable(),
                                 new OwnedBy("Alban"),
-                                new InRelationWith("Alban/0"))));
+                                new InRelationWith(new AnyAggregateId("Alban/0")))));
     }
 }

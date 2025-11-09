@@ -9,6 +9,8 @@ import io.smallrye.reactive.messaging.kafka.companion.ConsumerTask;
 import jakarta.inject.Inject;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 import org.assertj.core.api.Assertions;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
@@ -22,10 +24,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Stream;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
@@ -67,13 +67,15 @@ class DebeziumConsumerTest {
     record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                               @JsonProperty("event_type") String eventType,
                               @JsonProperty("event_payload") byte[] eventPayload,
-                              @JsonProperty("owned_by") String ownedBy) {
+                              @JsonProperty("owned_by") String ownedBy,
+                              @JsonProperty("in_relation_with") String inRelationWith) {
 
         public JsonNodeEventValue {
             Objects.requireNonNull(createDate);
             Objects.requireNonNull(eventType);
             Objects.requireNonNull(eventPayload);
             Objects.requireNonNull(ownedBy);
+            Objects.requireNonNull(inRelationWith);
         }
 
         @Override
@@ -83,12 +85,13 @@ class DebeziumConsumerTest {
             return Objects.equals(ownedBy, that.ownedBy)
                     && Objects.equals(createDate, that.createDate)
                     && Objects.equals(eventType, that.eventType)
-                    && Arrays.equals(eventPayload, that.eventPayload);
+                    && Arrays.equals(eventPayload, that.eventPayload)
+                    && Objects.equals(inRelationWith, that.inRelationWith);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy);
+            return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, inRelationWith);
         }
 
         @Override
@@ -98,6 +101,7 @@ class DebeziumConsumerTest {
                     ", eventType='" + eventType + '\'' +
                     ", eventPayload=" + Arrays.toString(eventPayload) +
                     ", ownedBy='" + ownedBy + '\'' +
+                    ", inRelationWith='" + inRelationWith + '\'' +
                     '}';
         }
     }
@@ -122,8 +126,8 @@ class DebeziumConsumerTest {
         final Timestamp givenCreationDate = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
         // language=sql
         final String sql = """
-                INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, in_relation_with) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(sql)) {
@@ -143,6 +147,7 @@ class DebeziumConsumerTest {
                             }
                             """.getBytes(StandardCharsets.UTF_8));
             eventPreparedStatement.setString(7, "Damien");
+            eventPreparedStatement.setString(8, "Damien/0");
             eventPreparedStatement.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -158,9 +163,35 @@ class DebeziumConsumerTest {
                 Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperDeserializer(objectMapper), new JsonNodeEventRecordObjectMapperDeserializer(objectMapper));
         final ConsumerTask<JsonNodeEventKey, JsonNodeEventValue> records = consumer.fromTopics("pulse.todotaking_todo.t_event", Duration.ofSeconds(10)).awaitCompletion();
         records.close();
-
+        final Headers headers = records.getFirstRecord().headers();
+        final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
         // Then
         assertAll(
+                () -> assertThat(headersName).containsExactly(
+                        "__debezium.context.connectorLogicalName",
+                        "__debezium.context.taskId",
+                        "__debezium.context.connectorName",
+                        "__source_version",
+                        "__source_connector",
+                        "__source_name",
+                        "__source_ts_ms",
+                        "__source_db",
+                        "__source_schema",
+                        "__source_table",
+                        "__source_txId",
+                        "__source_lsn"),
+                () -> assertThat(getValuesByKey(headers, "__debezium.context.connectorLogicalName")).containsExactly("pulse"),
+                () -> assertThat(getValuesByKey(headers, "__debezium.context.taskId")).containsExactly("0"),
+                () -> assertThat(getValuesByKey(headers, "__debezium.context.connectorName")).containsExactly("postgresql"),
+                () -> assertThat(getValuesByKey(headers, "__source_version")).containsExactly("3.3.1.Final"),
+                () -> assertThat(getValuesByKey(headers, "__source_connector")).containsExactly("postgresql"),
+                () -> assertThat(getValuesByKey(headers, "__source_name")).containsExactly("pulse"),
+                () -> assertThat(getValuesByKey(headers, "__source_ts_ms")).hasSize(1),
+                () -> assertThat(getValuesByKey(headers, "__source_db")).containsExactly("quarkus"),
+                () -> assertThat(getValuesByKey(headers, "__source_schema")).containsExactly("todotaking_todo"),
+                () -> assertThat(getValuesByKey(headers, "__source_table")).containsExactly("t_event"),
+                () -> assertThat(getValuesByKey(headers, "__source_txId")).hasSize(1),
+                () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.count()).isEqualTo(1L),
                 () -> Assertions.assertThat(records.getFirstRecord().key()).isEqualTo(new JsonNodeEventKey("com.damdamdeo.pulse.extension.core.Todo",
                         "Damien/0", 0)),
@@ -175,6 +206,17 @@ class DebeziumConsumerTest {
                                   "important": false
                                 }
                                 """.getBytes(StandardCharsets.UTF_8),
-                        "Damien")));
+                        "Damien", "Damien/0")));
     }
+
+    private static List<String> getValuesByKey(final Headers headers, final String key) {
+        final List<String> values = new ArrayList<>();
+        final Iterator<Header> iterator = headers.headers(key).iterator();
+        while (iterator.hasNext()) {
+            final Header header = iterator.next();
+            values.add(new String(header.value()));
+        }
+        return values;
+    }
+
 }

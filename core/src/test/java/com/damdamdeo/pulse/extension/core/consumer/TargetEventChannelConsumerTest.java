@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.core.consumer;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -58,19 +55,16 @@ class TargetEventChannelConsumerTest {
         }
     }
 
-    record TodoEventValue(String aggregateRootType,
-                          String aggregateRootId,
-                          Integer version,
-                          Long createDate,
+    record TodoEventValue(Long createDate,
                           String eventType,
                           byte[] eventPayload,
-                          String ownedBy) implements EventValue {
+                          String ownedBy,
+                          String inRelationWith) implements EventValue {
 
         public static TodoEventValue of() {
             return new TodoEventValue(
-                    Todo.class.getName(), new TodoId("Damien", 0L).toString(), 1,
                     1983L, NewTodoCreated.class.getName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
-                    "Damien");
+                    "Damien", "Damien/0L");
         }
 
         @Override
@@ -91,6 +85,11 @@ class TargetEventChannelConsumerTest {
         @Override
         public OwnedBy toOwnedBy() {
             return new OwnedBy(ownedBy);
+        }
+
+        @Override
+        public InRelationWith toInRelationWith() {
+            return new InRelationWith(new AnyAggregateId(inRelationWith));
         }
     }
 

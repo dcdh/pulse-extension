@@ -4,7 +4,6 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryption
 import com.damdamdeo.pulse.extension.consumer.runtime.PostgresAggregateRootLoader;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
-import com.damdamdeo.pulse.extension.core.consumer.InRelationWith;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
@@ -128,6 +127,6 @@ class PostgresAggregateRootLoaderTest {
                         new EncryptedPayload(encryptedPayload),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                         new OwnedBy("Damien"),
-                        new InRelationWith("Damien/0")));
+                        new InRelationWith(new AnyAggregateId("Damien/0"))));
     }
 }

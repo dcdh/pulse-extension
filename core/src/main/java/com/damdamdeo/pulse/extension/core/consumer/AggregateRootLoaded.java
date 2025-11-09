@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.consumer;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.InRelationWith;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;

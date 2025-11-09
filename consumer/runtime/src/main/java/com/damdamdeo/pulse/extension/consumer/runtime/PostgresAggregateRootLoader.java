@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.InRelationWith;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
@@ -70,7 +71,8 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                         } catch (final UnknownPassphraseException unknownPassphraseException) {
                             decryptablePayload = DecryptablePayload.ofUndecryptable();
                         }
-                        final InRelationWith inRelationWith = new InRelationWith(rs.getString("in_relation_with"));
+                        final InRelationWith inRelationWith = new InRelationWith(
+                                new AnyAggregateId(rs.getString("in_relation_with")));
                         return new AggregateRootLoaded<>(
                                 aggregateRootType,
                                 aggregateId,

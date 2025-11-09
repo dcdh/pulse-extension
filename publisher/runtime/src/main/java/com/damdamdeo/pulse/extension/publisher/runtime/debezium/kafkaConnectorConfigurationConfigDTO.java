@@ -195,7 +195,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("transforms.filterFields.include")
     public String getTransformsFilterFieldsInclude() {
-        return "creation_date,event_type,event_payload,owned_by";
+        return "creation_date,event_type,event_payload,owned_by,in_relation_with";
     }
 
     @JsonProperty("transforms.partitioner.type")
@@ -205,7 +205,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("transforms.partitioner.partition.payload.fields")
     public String getTransformsPartitionerPartitionPayloadFields() {
-        return "aggregate_root_type,aggregate_root_id";
+        return "in_relation_with";
     }
 
     @JsonProperty("transforms.partitioner.partition.topic.num")

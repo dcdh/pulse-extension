@@ -52,8 +52,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by) 
-                             VALUES (?, ?, ?, ?, ?, pgp_sym_encrypt(?::text, ?), ?)
+                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, in_relation_with) 
+                             VALUES (?, ?, ?, ?, ?, pgp_sym_encrypt(?::text, ?), ?, ?)
                              """);
              final PreparedStatement aggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
@@ -81,6 +81,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 eventPreparedStatement.setString(6, eventPayload);
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy).passphrase()));
                 eventPreparedStatement.setString(8, ownedBy.id());
+                eventPreparedStatement.setString(9, aggregateRoot.inRelationWith().aggregateId().id());
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }

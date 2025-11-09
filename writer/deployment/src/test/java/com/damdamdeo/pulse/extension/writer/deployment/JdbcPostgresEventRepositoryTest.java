@@ -126,7 +126,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, in_relation_with
                                  FROM t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
@@ -151,6 +151,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
+                        () -> assertThat(tEventResultSet.getString("in_relation_with")).isEqualTo("Damien/1"),
 
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 "Damien/1"),
@@ -200,7 +201,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, in_relation_with
                                  FROM t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
@@ -223,7 +224,8 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
-                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"));
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
+                        () -> assertThat(tEventResultSet.getString("in_relation_with")).isEqualTo("Damien/2"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
@@ -232,7 +234,8 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
-                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"));
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
+                        () -> assertThat(tEventResultSet.getString("in_relation_with")).isEqualTo("Damien/2"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
@@ -523,8 +526,8 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement preparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?)
+                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, in_relation_with) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                              """)) {
             preparedStatement.setString(1, aggregateRootId);
             preparedStatement.setString(2, aggregateRootType);
@@ -533,6 +536,7 @@ class JdbcPostgresEventRepositoryTest {
             preparedStatement.setString(5, eventType);
             preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
             preparedStatement.setString(7, ownedBy.id());
+            preparedStatement.setString(8, aggregateRootId);
             preparedStatement.executeUpdate();
         }
     }
