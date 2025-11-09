@@ -1,11 +1,14 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.writer.runtime.PostgresqlEventStoreInitializer;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -32,6 +35,9 @@ class ShouldFailWhenEventNotARecordTest {
     void test() {
         Assertions.fail("Startup should have failed");
     }
+
+    @Inject
+    CommandHandler<Todo, TodoId> commandHandler;
 
     // NOT needed to use addClass
     // Will be registered automatically

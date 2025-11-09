@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
@@ -171,42 +170,39 @@ public class CodeGenerationProcessor {
 
     @BuildStep
     void generateJdbcProjectionFromEventStore(final CombinedIndexBuildItem combinedIndexBuildItem,
-                                              final List<ValidationErrorBuildItem> validationErrorBuildItems,
                                               final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
                                               final OutputTargetBuildItem outputTargetBuildItem) {
-        if (validationErrorBuildItems.isEmpty()) {
-            final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            combinedIndexBuildItem.getIndex()
-                    .getAllKnownImplementations(Projection.class)
-                    .forEach(projectionClassInfo -> {
-                        try {
-                            final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
-                            try (final ClassCreator beanClassCreator = ClassCreator.builder()
-                                    .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
-                                    .className(projectionClass.getName().replaceAll("\\$", "_") + "JdbcProjectionFromEventStore")
-                                    .signature(SignatureBuilder.forClass()
-                                            .setSuperClass(
-                                                    Type.parameterizedType(
-                                                            Type.classType(JdbcProjectionFromEventStore.class),
-                                                            Type.classType(projectionClass))))
-                                    .setFinal(true)
-                                    .build()) {
-                                beanClassCreator.addAnnotation(Singleton.class);
-                                beanClassCreator.addAnnotation(Unremovable.class);
-                                beanClassCreator.addAnnotation(DefaultBean.class);
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        combinedIndexBuildItem.getIndex()
+                .getAllKnownImplementations(Projection.class)
+                .forEach(projectionClassInfo -> {
+                    try {
+                        final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
+                        try (final ClassCreator beanClassCreator = ClassCreator.builder()
+                                .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
+                                .className(projectionClass.getName().replaceAll("\\$", "_") + "JdbcProjectionFromEventStore")
+                                .signature(SignatureBuilder.forClass()
+                                        .setSuperClass(
+                                                Type.parameterizedType(
+                                                        Type.classType(JdbcProjectionFromEventStore.class),
+                                                        Type.classType(projectionClass))))
+                                .setFinal(true)
+                                .build()) {
+                            beanClassCreator.addAnnotation(Singleton.class);
+                            beanClassCreator.addAnnotation(Unremovable.class);
+                            beanClassCreator.addAnnotation(DefaultBean.class);
 
-                                try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
-                                    getAggregateClass.setModifiers(Modifier.PROTECTED);
-                                    getAggregateClass.returnValue(getAggregateClass.loadClass(projectionClass));
-                                }
-
-                                writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
+                            try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
+                                getAggregateClass.setModifiers(Modifier.PROTECTED);
+                                getAggregateClass.returnValue(getAggregateClass.loadClass(projectionClass));
                             }
-                        } catch (ClassNotFoundException e) {
-                            throw new RuntimeException(e);
+
+                            writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
                         }
-                    });
-        }
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     public static void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {

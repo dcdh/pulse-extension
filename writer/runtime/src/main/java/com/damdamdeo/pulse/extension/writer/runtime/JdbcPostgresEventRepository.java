@@ -12,6 +12,7 @@ import com.damdamdeo.pulse.extension.core.event.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
     @Inject
-    DataSource dataSource;
+    Provider<DataSource> dataSource;
 
     @Inject
     InstantProvider instantProvider;
@@ -48,7 +49,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
         if (versionizedEvents.isEmpty()) {
             return;
         }
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
@@ -104,7 +105,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     @Override
     public List<Event<K>> loadOrderByVersionASC(K id) throws EventStoreException {
         Objects.requireNonNull(id);
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement nbOfEventsStmt = connection.prepareStatement(
                      // language=sql
                      """
@@ -147,7 +148,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     public List<Event<K>> loadOrderByVersionASC(final K id, final AggregateVersion aggregateVersionRequested) throws EventStoreException {
         Objects.requireNonNull(id);
         Objects.requireNonNull(aggregateVersionRequested);
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
@@ -179,7 +180,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     @Override
     public Optional<VersionizedAggregateRoot<A>> findLastVersionById(final K id) {
         Objects.requireNonNull(id);
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement aggregateRootStmt = connection.prepareStatement(
                      // language=sql
                      """
