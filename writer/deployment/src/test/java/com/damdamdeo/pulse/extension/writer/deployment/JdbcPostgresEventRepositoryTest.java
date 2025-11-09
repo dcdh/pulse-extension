@@ -342,7 +342,7 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @Test
-    void shouldPreventMutabilityByFailingToUpdateAnEvent() throws SQLException {
+    void shouldPreventMutabilityByFailingToUpdateAnEventAggregateType() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000008", "com.damdamdeo.pulse.extension.core.Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
@@ -362,7 +362,7 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @Test
-    void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
+    void shouldPreventMutabilityByFailingToUpdateAnEventAggregateId() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000009", "com.damdamdeo.pulse.extension.core.Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
@@ -372,7 +372,128 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 DELETE FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000009'
+                                 UPDATE t_event SET aggregate_root_id = '00000000-0000-0000-0000-000000000019'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000009'
+                                 """);
+                 final ResultSet rs = ps.executeQuery()) {
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToUpdateAnEventVersion() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000010", "com.damdamdeo.pulse.extension.core.Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 UPDATE t_event SET version = 1 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000010'
+                                 """);
+                 final ResultSet rs = ps.executeQuery()) {
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToUpdateAnEventCreationDate() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000011", "com.damdamdeo.pulse.extension.core.Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 UPDATE t_event SET creation_date = ?
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000011'
+                                 """)) {
+                ps.setTimestamp(1, Timestamp.from(Instant.now()));
+                try (final ResultSet rs = ps.executeQuery()) {
+                }
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToUpdateAnEventType() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000012", "com.damdamdeo.pulse.extension.core.Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 UPDATE t_event SET event_type = 'boom'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000012'
+                                 """);
+                 final ResultSet rs = ps.executeQuery()) {
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToUpdateAnEventPayload() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000013", "com.damdamdeo.pulse.extension.core.Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 UPDATE t_event SET event_payload = '{\"id\": \"00000000-0000-0000-0000-000000000013\", \"description\": \"lorem ipsum\"}'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000013'
+                                 """);
+                 final ResultSet rs = ps.executeQuery()) {
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToUpdateAnEventOwnedBy() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000014", "com.damdamdeo.pulse.extension.core.Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 UPDATE t_event SET owned_by = 'Alban'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000014'
+                                 """);
+                 final ResultSet rs = ps.executeQuery()) {
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000015", "com.damdamdeo.pulse.extension.core.Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+                new OwnedBy("Damien"));
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 DELETE FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000015'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
