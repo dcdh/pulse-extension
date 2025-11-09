@@ -1,0 +1,82 @@
+= DEBEZIUM
+
+[source,shell]
+----
+docker pull quay.io/debezium/connect:3.3.1.Final
+----
+
+https://github.com/debezium/debezium-examples/blob/main/postgres-failover-slots/docker-compose.yaml
+
+https://github.com/quarkusio/quarkus/blob/main/integration-tests/compose-devservices/compose-devservices.yml
+
+https://github.com/quarkusio/quarkus/blob/main/integration-tests/compose-devservices/compose-devservices.yml
+
+== kafka native
+
+[source,shell]
+----
+docker pull quay.io/ogunalp/kafka-native:latest
+----
+
+== kafka debezium
+
+[source,shell]
+----
+docker pull quay.io/debezium/kafka:3.3.1.Final
+----
+
+== kafka + Quarkus
+
+https://quarkus.io/guides/compose-dev-services#exposing-port-mappings-to-running-containers
+
+https://github.com/quarkusio/quarkus/blob/main/integration-tests/compose-devservices/docker-compose-dev-services.yml
+
+== debug
+
+Launch a container in bash mode directly without running the default command.
+
+[source,shell]
+----
+docker run -it --rm --entrypoint bash quay.io/debezium/kafka:3.3.1.Final
+----
+
+[source,shell]
+----
+docker image inspect quay.io/debezium/kafka:3.3.1.Final
+----
+
+check why container is unhealthy
+
+[source,shell]
+----
+docker inspect --format='{{json .State.Health}}' <containerid>
+----
+
+== Docker
+
+[source,shell]
+----
+docker rm -v -f $(docker ps -qa)
+----
+
+== Kafka
+
+From the kafka container
+
+[source,shell]
+----
+kafka-topics.sh --bootstrap-server kafka:29092 --list
+----
+
+----
+__consumer_offsets
+my_connect_configs
+my_connect_offsets
+my_connect_statuses
+pulse.todotaking_todo.t_event
+----
+
+[source,shell]
+----
+kafka-console-consumer.sh --bootstrap-server kafka:29092 --topic pulse.todotaking_todo.t_event --from-beginning --group debug-reader --property print.key=true --property print.timestamp=true --property print.headers=true
+----

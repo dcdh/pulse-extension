@@ -1,14 +1,17 @@
 package com.damdamdeo.pulse.extension.it;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-
-import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.TestMethodOrder;
+
+import java.util.concurrent.TimeUnit;
+
+import static io.restassured.RestAssured.given;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -30,15 +33,42 @@ class PulseExtensionResourceTest {
 
     @Test
     @Order(2)
-    void testMarkTodoAsDoneEndpoint() {
+    void shouldConsumeAsyncEvents() {
+        await().atMost(5, TimeUnit.SECONDS).until(() -> given()
+                .when().post("/pulse-extension/called")
+                .then()
+                .log().all()
+                .extract()
+                .statusCode() == 200);
         given()
-                .when().post("/pulse-extension/markTodoAsDone")
+                .when().post("/pulse-extension/called")
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("id", is("Damien/20"))
-                .body("description", is("lorem ipsum"))
-                .body("status", is("DONE"))
-                .body("important", is(false));
+                .body("target.name", is("statistics"))
+                .body("aggregateRootType.type", is("com.damdamdeo.pulse.extension.core.Todo"))
+                .body("aggregateId.id", is("Damien/20"))
+                .body("currentVersionInConsumption.version", is(0))
+                .body("currentVersionInConsumption.firstEvent", is(true))
+                .body("creationDate", notNullValue())
+                .body("eventType.type", is("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"))
+                .body("encryptedPayload.payload", notNullValue(String.class))
+                .body("ownedBy.id", is("Damien"))
+                .body("decryptableEventPayload.payload.id.user", is("Damien"))
+                .body("decryptableEventPayload.payload.id.sequence", is(20))
+                .body("decryptableEventPayload.payload.description", is("lorem ipsum"))
+                .body("decryptableEventPayload.decrypted", is(true))
+                .body("aggregateRootLoaded.aggregateRootType.type", is("com.damdamdeo.pulse.extension.core.Todo"))
+                .body("aggregateRootLoaded.aggregateId.id", is("Damien/20"))
+                .body("aggregateRootLoaded.lastAggregateVersion.version", is(0))
+                .body("aggregateRootLoaded.encryptedAggregateRootPayload.payload", notNullValue(String.class))
+                .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.id.user", is("Damien"))
+                .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.id.sequence", is(20))
+                .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.description", is("lorem ipsum"))
+                .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.status", is("IN_PROGRESS"))
+                .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.important", is(false))
+                .body("aggregateRootLoaded.decryptableAggregateRootPayload.decrypted", is(true))
+                .body("aggregateRootLoaded.ownedBy.id", is("Damien"))
+                .body("aggregateRootLoaded.belongsTo.aggregateId.id", is("Damien/20"));
     }
 }

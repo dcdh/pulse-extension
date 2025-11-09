@@ -43,7 +43,7 @@ public final class TodoChecklist implements AggregateRoot<TodoChecklistId> {
     }
 
     @Override
-    public InRelationWith inRelationWith() {
-        return new InRelationWith(todoChecklistId.todoId());
+    public BelongsTo belongsTo() {
+        return new BelongsTo(todoChecklistId.todoId());
     }
 }

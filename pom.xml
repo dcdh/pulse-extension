@@ -9,8 +9,12 @@
 
     <modules>
         <module>core</module>
-        <module>deployment</module>
-        <module>runtime</module>
+        <module>common</module>
+        <module>kafka</module>
+        <module>writer</module>
+        <module>publisher</module>
+        <module>consumer</module>
+        <module>bom</module>
         <module>integration-tests</module>
     </modules>
 
@@ -33,6 +37,12 @@
                 <version>${quarkus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.skyscreamer</groupId>
+                <artifactId>jsonassert</artifactId>
+                <version>1.5.3</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
