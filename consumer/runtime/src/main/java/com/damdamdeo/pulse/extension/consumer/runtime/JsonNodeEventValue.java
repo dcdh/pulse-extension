@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.runtime;
 
-import com.damdamdeo.pulse.extension.core.InRelationWith;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.EventValue;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
@@ -18,14 +18,14 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                                  @JsonProperty("event_type") String eventType,
                                  @JsonProperty("event_payload") byte[] eventPayload,
                                  @JsonProperty("owned_by") String ownedBy,
-                                 @JsonProperty("in_relation_with") String inRelationWith) implements EventValue {
+                                 @JsonProperty("belongs_to") String belongsTo) implements EventValue {
 
     public JsonNodeEventValue {
         Objects.requireNonNull(createDate);
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(eventPayload);
         Objects.requireNonNull(ownedBy);
-        Objects.requireNonNull(inRelationWith);
+        Objects.requireNonNull(belongsTo);
     }
 
     @Override
@@ -49,8 +49,8 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
     }
 
     @Override
-    public InRelationWith toInRelationWith() {
-        return new InRelationWith(new AnyAggregateId(inRelationWith));
+    public BelongsTo toBelongsTo() {
+        return new BelongsTo(new AnyAggregateId(belongsTo));
     }
 
     @Override
@@ -61,12 +61,12 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                 && Objects.equals(createDate, that.createDate)
                 && Objects.equals(eventType, that.eventType)
                 && Arrays.equals(eventPayload, that.eventPayload)
-                && Objects.equals(inRelationWith, that.inRelationWith);
+                && Objects.equals(belongsTo, that.belongsTo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, inRelationWith);
+        return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo);
     }
 
     @Override
@@ -76,7 +76,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                 ", eventType='" + eventType + '\'' +
                 ", eventPayload=" + Arrays.toString(eventPayload) +
                 ", ownedBy='" + ownedBy + '\'' +
-                ", inRelationWith='" + inRelationWith + '\'' +
+                ", belongsTo='" + belongsTo + '\'' +
                 '}';
     }
 }

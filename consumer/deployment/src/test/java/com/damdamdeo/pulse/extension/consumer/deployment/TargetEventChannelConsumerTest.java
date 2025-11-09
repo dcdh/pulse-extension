@@ -170,7 +170,7 @@ class TargetEventChannelConsumerTest {
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
-                    INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, in_relation_with)
+                    INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -249,7 +249,7 @@ class TargetEventChannelConsumerTest {
                                 new EncryptedPayload(encryptedAggregatePayload),
                                 DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                                 new OwnedBy("Damien"),
-                                new InRelationWith(new AnyAggregateId("Damien/0")))));
+                                new BelongsTo(new AnyAggregateId("Damien/0")))));
     }
 
     @Test
@@ -270,7 +270,7 @@ class TargetEventChannelConsumerTest {
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregatePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
-                    INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, in_relation_with)
+                    INSERT INTO t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -342,6 +342,6 @@ class TargetEventChannelConsumerTest {
                                 new EncryptedPayload(encryptedAggregatePayload),
                                 DecryptablePayload.ofUndecryptable(),
                                 new OwnedBy("Alban"),
-                                new InRelationWith(new AnyAggregateId("Alban/0")))));
+                                new BelongsTo(new AnyAggregateId("Alban/0")))));
     }
 }

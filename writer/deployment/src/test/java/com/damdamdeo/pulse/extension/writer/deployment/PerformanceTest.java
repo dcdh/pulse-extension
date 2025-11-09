@@ -76,9 +76,9 @@ class PerformanceTest {
                         aggregate_root_id,
                         aggregate_root_type,
                         pgp_sym_decrypt(aggregate_root_payload, '%1$s')::jsonb AS decrypted_aggregate_root_payload,
-                        in_relation_with
+                        belongs_to
                       FROM t_aggregate_root
-                      WHERE in_relation_with = '%2$s'
+                      WHERE belongs_to = '%2$s'
                     )
                     SELECT jsonb_build_object(
                       'todoId', d.decrypted_aggregate_root_payload -> 'id',
@@ -94,11 +94,11 @@ class PerformanceTest {
                     ) AS response
                     FROM decrypted d
                     LEFT JOIN decrypted i
-                      ON i.in_relation_with = d.aggregate_root_id
+                      ON i.belongs_to = d.aggregate_root_id
                      AND i.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.TodoChecklist'
                     WHERE d.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.Todo'
                       AND d.aggregate_root_id = '%2$s'
-                    GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.in_relation_with;
+                    GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.belongs_to;
                     """.formatted(new String(passphrase.passphrase()), aggregateId.id());
         }
     }

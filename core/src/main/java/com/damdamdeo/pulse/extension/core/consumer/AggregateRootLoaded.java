@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.core.consumer;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.InRelationWith;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -15,7 +15,7 @@ public record AggregateRootLoaded<T>(AggregateRootType aggregateRootType,
                                      EncryptedPayload encryptedAggregateRootPayload,
                                      DecryptablePayload<T> decryptableAggregateRootPayload,
                                      OwnedBy ownedBy,
-                                     InRelationWith inRelationWith) {
+                                     BelongsTo belongsTo) {
 
     public AggregateRootLoaded {
         Objects.requireNonNull(aggregateRootType);
@@ -24,6 +24,6 @@ public record AggregateRootLoaded<T>(AggregateRootType aggregateRootType,
         Objects.requireNonNull(encryptedAggregateRootPayload);
         Objects.requireNonNull(decryptableAggregateRootPayload);
         Objects.requireNonNull(ownedBy);
-        Objects.requireNonNull(inRelationWith);
+        Objects.requireNonNull(belongsTo);
     }
 }

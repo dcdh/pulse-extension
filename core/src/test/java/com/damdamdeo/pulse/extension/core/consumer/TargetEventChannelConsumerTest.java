@@ -59,7 +59,7 @@ class TargetEventChannelConsumerTest {
                           String eventType,
                           byte[] eventPayload,
                           String ownedBy,
-                          String inRelationWith) implements EventValue {
+                          String belongsTo) implements EventValue {
 
         public static TodoEventValue of() {
             return new TodoEventValue(
@@ -88,8 +88,8 @@ class TargetEventChannelConsumerTest {
         }
 
         @Override
-        public InRelationWith toInRelationWith() {
-            return new InRelationWith(new AnyAggregateId(inRelationWith));
+        public BelongsTo toBelongsTo() {
+            return new BelongsTo(new AnyAggregateId(belongsTo));
         }
     }
 

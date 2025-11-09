@@ -64,8 +64,8 @@ public final class Todo implements AggregateRoot<TodoId> {
     }
 
     @Override
-    public InRelationWith inRelationWith() {
-        return new InRelationWith(id);
+    public BelongsTo belongsTo() {
+        return new BelongsTo(id);
     }
 
     public String description() {

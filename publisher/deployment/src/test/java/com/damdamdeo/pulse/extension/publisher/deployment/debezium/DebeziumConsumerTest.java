@@ -68,14 +68,14 @@ class DebeziumConsumerTest {
                               @JsonProperty("event_type") String eventType,
                               @JsonProperty("event_payload") byte[] eventPayload,
                               @JsonProperty("owned_by") String ownedBy,
-                              @JsonProperty("in_relation_with") String inRelationWith) {
+                              @JsonProperty("belongs_to") String belongsTo) {
 
         public JsonNodeEventValue {
             Objects.requireNonNull(createDate);
             Objects.requireNonNull(eventType);
             Objects.requireNonNull(eventPayload);
             Objects.requireNonNull(ownedBy);
-            Objects.requireNonNull(inRelationWith);
+            Objects.requireNonNull(belongsTo);
         }
 
         @Override
@@ -86,12 +86,12 @@ class DebeziumConsumerTest {
                     && Objects.equals(createDate, that.createDate)
                     && Objects.equals(eventType, that.eventType)
                     && Arrays.equals(eventPayload, that.eventPayload)
-                    && Objects.equals(inRelationWith, that.inRelationWith);
+                    && Objects.equals(belongsTo, that.belongsTo);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, inRelationWith);
+            return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo);
         }
 
         @Override
@@ -101,7 +101,7 @@ class DebeziumConsumerTest {
                     ", eventType='" + eventType + '\'' +
                     ", eventPayload=" + Arrays.toString(eventPayload) +
                     ", ownedBy='" + ownedBy + '\'' +
-                    ", inRelationWith='" + inRelationWith + '\'' +
+                    ", belongsTo='" + belongsTo + '\'' +
                     '}';
         }
     }
@@ -126,7 +126,7 @@ class DebeziumConsumerTest {
         final Timestamp givenCreationDate = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
         // language=sql
         final String sql = """
-                INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, in_relation_with) 
+                INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();

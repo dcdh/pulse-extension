@@ -2,9 +2,10 @@ package com.damdamdeo.pulse.extension.core;
 
 import java.util.Objects;
 
-public record InRelationWith(AggregateId aggregateId) {
+// Composition relationship (part-of)
+public record BelongsTo(AggregateId aggregateId) {
 
-    public InRelationWith {
+    public BelongsTo {
         Objects.requireNonNull(aggregateId);
     }
 }

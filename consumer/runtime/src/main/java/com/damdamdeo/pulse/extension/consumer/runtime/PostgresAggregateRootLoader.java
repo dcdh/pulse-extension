@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.InRelationWith;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
@@ -54,7 +54,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
             try (final PreparedStatement ps = connection.prepareStatement(
                     // language=sql
                     """
-                            SELECT last_version, aggregate_root_payload, owned_by, in_relation_with FROM t_aggregate_root
+                            SELECT last_version, aggregate_root_payload, owned_by, belongs_to FROM t_aggregate_root
                             WHERE aggregate_root_type = ? AND aggregate_root_id = ?
                             """)) {
                 ps.setString(1, aggregateRootType.type());
@@ -71,8 +71,8 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                         } catch (final UnknownPassphraseException unknownPassphraseException) {
                             decryptablePayload = DecryptablePayload.ofUndecryptable();
                         }
-                        final InRelationWith inRelationWith = new InRelationWith(
-                                new AnyAggregateId(rs.getString("in_relation_with")));
+                        final BelongsTo belongsTo = new BelongsTo(
+                                new AnyAggregateId(rs.getString("belongs_to")));
                         return new AggregateRootLoaded<>(
                                 aggregateRootType,
                                 aggregateId,
@@ -80,7 +80,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                                 encryptedPayload,
                                 decryptablePayload,
                                 ownedBy,
-                                inRelationWith);
+                                belongsTo);
                     }
                     throw new UnknownAggregateRootException(aggregateRootType, aggregateId);
                 } catch (final IOException e) {

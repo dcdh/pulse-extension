@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.consumer;
 
-import com.damdamdeo.pulse.extension.core.InRelationWith;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -17,5 +17,5 @@ public interface EventValue {
 
     OwnedBy toOwnedBy();
 
-    InRelationWith toInRelationWith();
+    BelongsTo toBelongsTo();
 }

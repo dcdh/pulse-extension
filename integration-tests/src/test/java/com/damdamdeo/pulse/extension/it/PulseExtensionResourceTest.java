@@ -69,6 +69,6 @@ class PulseExtensionResourceTest {
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.important", is(false))
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.decrypted", is(true))
                 .body("aggregateRootLoaded.ownedBy.id", is("Damien"))
-                .body("aggregateRootLoaded.inRelationWith.aggregateId.id", is("Damien/20"));
+                .body("aggregateRootLoaded.belongsTo.aggregateId.id", is("Damien/20"));
     }
 }
