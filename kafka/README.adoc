@@ -74,12 +74,6 @@ my_connect_configs
 my_connect_offsets
 my_connect_statuses
 pulse.todotaking_todo.t_event
-statistics-todotaking-todo
-----
-
-[source,shell]
-----
-kafka-console-consumer.sh --bootstrap-server kafka:29092 --topic statistics-todotaking-todo --from-beginning --group debug-reader --property print.key=true --property print.timestamp=true --property print.headers=true
 ----
 
 [source,shell]

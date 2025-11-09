@@ -14,7 +14,7 @@ services:
     environment:
       POSTGRES_USER: quarkus
       POSTGRES_DB: quarkus
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: quarkus
     command: |
       postgres
       -c wal_level=logical

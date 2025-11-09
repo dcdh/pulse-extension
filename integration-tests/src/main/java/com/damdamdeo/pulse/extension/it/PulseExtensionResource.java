@@ -16,12 +16,12 @@
  */
 package com.damdamdeo.pulse.extension.it;
 
+import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
-import com.damdamdeo.pulse.extension.runtime.consumer.EventChannel;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
 import jakarta.enterprise.context.ApplicationScoped;

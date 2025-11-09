@@ -9,9 +9,12 @@
 
     <modules>
         <module>core</module>
+        <module>common</module>
         <module>kafka</module>
-        <module>deployment</module>
-        <module>runtime</module>
+        <module>writer</module>
+        <module>publisher</module>
+        <module>consumer</module>
+        <module>bom</module>
         <module>integration-tests</module>
     </modules>
 
