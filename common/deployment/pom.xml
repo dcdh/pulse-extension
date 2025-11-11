@@ -38,6 +38,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.damdamdeo</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>

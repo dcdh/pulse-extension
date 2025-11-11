@@ -1,24 +1,18 @@
 package com.damdamdeo.pulse.extension.publisher.deployment;
 
+import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
+import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.*;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
-import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
-import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class PulsePublisherProcessor {
-
-    private static final String DOCKER_COMPOSE_FILE = "../compose-devservices-pulse-publisher.yml";
 
     private static final String FEATURE = "pulse-publisher-extension";
 
@@ -42,54 +36,34 @@ public class PulsePublisherProcessor {
     }
 
     @BuildStep
-    void generateCompose(final OutputTargetBuildItem outputTargetBuildItem,
-                         // use the GeneratedResourceBuildItem only to ensure that the file will be created before compose is started
-                         final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException {
-        // language=yaml
-        final String composeContent = """
-                services:
-                  kafka:
-                    image: debezium-for-dev-service/kafka:3.3.1.Final
-                    labels:
-                      io.quarkus.devservices.compose.exposed_ports: /tmp/ports
-                    ports:
-                      - "9092"
-                      - "29092"
-                    environment:
-                      - CLUSTER_ID=oh-sxaDRTcyAr6pFRbXyzA
-                      - NODE_ID=1
-                      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
-                    healthcheck:
-                      test: ["CMD", "./bin/kafka-topics.sh", "--bootstrap-server", "kafka:29092", "--list"]
-                      interval: 10s
-                      timeout: 5s
-                      retries: 5
-                      start_period: 10s
-                
-                  connect:
-                    image: quay.io/debezium/connect:3.3.1.Final
-                    labels:
-                      io.quarkus.devservices.compose.config_map.port.8083: pulse.debezium.connect.port
-                    ports:
-                      - "8083"
-                    links:
-                      - kafka
-                      - postgres
-                    environment:
-                      - BOOTSTRAP_SERVERS=kafka:29092
-                      - GROUP_ID=1
-                      - CONFIG_STORAGE_TOPIC=my_connect_configs
-                      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-                      - STATUS_STORAGE_TOPIC=my_connect_statuses
-                    healthcheck:
-                      test: ["CMD", "curl", "-f", "http://localhost:8083/connectors"]
-                      interval: 10s
-                      timeout: 5s
-                      retries: 5
-                      start_period: 10s
-                """;
-        final Path resolved = outputTargetBuildItem.getOutputDirectory().resolve(DOCKER_COMPOSE_FILE);
-        Files.createDirectories(resolved.getParent());
-        Files.writeString(resolved, composeContent, StandardCharsets.UTF_8);
+    List<ComposeServiceBuildItem> generateCompose() {
+        return List.of(
+                PulseCommonProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM,
+                new ComposeServiceBuildItem(
+                        new ComposeServiceBuildItem.ServiceName("connect"),
+                        new ComposeServiceBuildItem.ImageName("quay.io/debezium/connect:3.3.1.Final"),
+                        new ComposeServiceBuildItem.Labels(
+                                Map.of("io.quarkus.devservices.compose.config_map.port.8083", "pulse.debezium.connect.port")),
+                        new ComposeServiceBuildItem.Ports(List.of("8083")),
+                        ComposeServiceBuildItem.Links.on(List.of(
+                                PulseCommonProcessor.KAFKA_SERVICE_NAME,
+                                PulseCommonProcessor.POSTGRES_SERVICE_NAME)),
+                        new ComposeServiceBuildItem.EnvironmentVariables(
+                                Map.of("BOOTSTRAP_SERVERS", "kafka:29092",
+                                        "GROUP_ID", "1",
+                                        "CONFIG_STORAGE_TOPIC", "my_connect_configs",
+                                        "OFFSET_STORAGE_TOPIC", "my_connect_offsets",
+                                        "STATUS_STORAGE_TOPIC", "my_connect_statuses")),
+                        ComposeServiceBuildItem.Command.ofNone(),
+                        new ComposeServiceBuildItem.HealthCheck(
+                                List.of("CMD", "curl", "-f", "http://localhost:8083/connectors"),
+                                new ComposeServiceBuildItem.Interval(10),
+                                new ComposeServiceBuildItem.Timeout(5),
+                                new ComposeServiceBuildItem.Retries(5),
+                                new ComposeServiceBuildItem.StartPeriod(10)),
+                        ComposeServiceBuildItem.DependsOn.on(List.of(
+                                PulseCommonProcessor.POSTGRES_SERVICE_NAME,
+                                PulseCommonProcessor.KAFKA_SERVICE_NAME)))
+        );
     }
 }
