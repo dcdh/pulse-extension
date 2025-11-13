@@ -23,3 +23,9 @@
 /writer/deployment/compose-devservices-pulse-writer.yml
 /writer/runtime/target/
 /.idea/
+/integration-tests/compose-devservices-pulse.yml
+/integration-tests/kafka.sh
+/writer/deployment/compose-devservices-pulse.yml
+/publisher/deployment/compose-devservices-pulse.yml
+/publisher/deployment/kafka.sh
+/consumer/deployment/compose-devservices-pulse.yml

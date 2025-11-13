@@ -22,7 +22,6 @@ import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -34,6 +33,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 public class PulseCommonProcessor {
 
@@ -111,12 +113,14 @@ public class PulseCommonProcessor {
                             "-c", "max_wal_senders=10",
                             "-c", "max_replication_slots=10",
                             "-c", "synchronized_standby_slots=replication_slot")),
+            ComposeServiceBuildItem.Entrypoint.ofNone(),
             new ComposeServiceBuildItem.HealthCheck(
                     List.of("CMD", "pg_isready"),
                     new ComposeServiceBuildItem.Interval(10),
                     new ComposeServiceBuildItem.Timeout(5),
                     new ComposeServiceBuildItem.Retries(5),
                     new ComposeServiceBuildItem.StartPeriod(10)),
+            List.of(),
             ComposeServiceBuildItem.DependsOn.ofNone()
     );
 
@@ -131,13 +135,41 @@ public class PulseCommonProcessor {
                     Map.of("CLUSTER_ID", "oh-sxaDRTcyAr6pFRbXyzA",
                             "NODE_ID", "1",
                             "KAFKA_CONTROLLER_QUORUM_VOTERS", "1@kafka:9093")),
-            ComposeServiceBuildItem.Command.ofNone(),
+            new ComposeServiceBuildItem.Command(List.of("/kafka.sh")),// "/bin/sh", "-c", "chmod 755 /kafka.sh && /kafka.sh"
+            ComposeServiceBuildItem.Entrypoint.ofNone(),
             new ComposeServiceBuildItem.HealthCheck(
                     List.of("CMD", "./bin/kafka-topics.sh", "--bootstrap-server", "kafka:29092", "--list"),
                     new ComposeServiceBuildItem.Interval(10),
                     new ComposeServiceBuildItem.Timeout(5),
                     new ComposeServiceBuildItem.Retries(5),
                     new ComposeServiceBuildItem.StartPeriod(10)),
+            List.of(
+// Not working for executable
+// Even if `srcResolved.toFile().setExecutable(true);`
+// Using KAFKA_LISTENERS=PLAINTEXT://172.24.0.3:9092,CONTROLLER://172.24.0.3:9093 and KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.24.0.3:9092
+// /docker-entrypoint.sh: line 278: /kafka.sh: Permission denied
+// Starting in KRaft mode, using CLUSTER_ID=oh-sxaDRTcyAr6pFRbXyzA, NODE_ID=1 and NODE_ROLE=combined.
+// Using configuration config/server.properties.
+// Using KAFKA_LISTENERS=PLAINTEXT://172.24.0.3:9092,CONTROLLER://172.24.0.3:9093 and KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.24.0.3:9092
+// /docker-entrypoint.sh: line 278: /kafka.sh: Permission denied
+//                    new ComposeServiceBuildItem.Volume("./kafka.sh", "/kafka.sh",
+//                            // language=bash
+//                            """
+//                                    #!/bin/bash
+//                                    set -euxo pipefail;
+//                                    while [ ! -f /tmp/ports ]; do
+//                                      sleep 0.1;
+//                                    done;
+//                                    sleep 0.1;
+//                                    source /tmp/ports;
+//                                    export KAFKA_LISTENERS=INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093;
+//                                    export KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka:29092,EXTERNAL://localhost:$PORT_9092;
+//                                    export KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT;
+//                                    export KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER;
+//                                    export KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL;
+//                                    exec /docker-entrypoint.sh start
+//                                    """.getBytes(StandardCharsets.UTF_8))
+            ),
             ComposeServiceBuildItem.DependsOn.on(List.of(POSTGRES_SERVICE_NAME)));
 
     public static class InlineList<T> extends ArrayList<T> {
@@ -152,6 +184,7 @@ public class PulseCommonProcessor {
                                // use the GeneratedResourceBuildItem only to ensure that the file will be created before compose is started
                                final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException {
         if (!composeServiceBuildItems.isEmpty()) {
+            final List<ComposeServiceBuildItem.Volume> volumesToCreateOnHostSrc = new ArrayList<>();
             final Map<String, Object> root = new LinkedHashMap<>();
             final Map<String, Object> services = new LinkedHashMap<>();
             composeServiceBuildItems.forEach(composeServiceBuildItem -> {
@@ -160,9 +193,12 @@ public class PulseCommonProcessor {
                 final ComposeServiceBuildItem.ImageName imageName = composeServiceBuildItem.getImageName();
                 final ComposeServiceBuildItem.Labels labels = composeServiceBuildItem.getLabels();
                 final ComposeServiceBuildItem.Ports ports = composeServiceBuildItem.getPorts();
+                final ComposeServiceBuildItem.Links links = composeServiceBuildItem.getLinks();
                 final ComposeServiceBuildItem.EnvironmentVariables environmentVariables = composeServiceBuildItem.getEnvironmentVariables();
                 final ComposeServiceBuildItem.Command command = composeServiceBuildItem.getCommand();
+                final ComposeServiceBuildItem.Entrypoint entrypoint = composeServiceBuildItem.getEntrypoint();
                 final ComposeServiceBuildItem.HealthCheck healthCheck = composeServiceBuildItem.getHealthCheck();
+                final List<ComposeServiceBuildItem.Volume> volumes = composeServiceBuildItem.getVolumes();
                 final ComposeServiceBuildItem.DependsOn dependsOn = composeServiceBuildItem.getDependsOn();
                 service.put("image", imageName.name());
                 if (labels.hasLabels()) {
@@ -172,6 +208,9 @@ public class PulseCommonProcessor {
                 if (ports.hasPorts()) {
                     service.put("ports", ports.ports());
                 }
+                if (links.hasLinks()) {
+                    service.put("links", links.links().stream().map(ComposeServiceBuildItem.ServiceName::name).toList());
+                }
                 if (environmentVariables.hasEnvironmentVariables()) {
                     service.put("environment", environmentVariables.environmentVariables().entrySet().stream()
                             .map(e -> e.getKey() + "=" + e.getValue())
@@ -180,7 +219,9 @@ public class PulseCommonProcessor {
                 if (command.hasCommand()) {
                     service.put("command", command.command());
                 }
-
+                if (entrypoint.hasEntrypoint()) {
+                    service.put("entrypoint", new InlineList<>(entrypoint.entrypoint()));
+                }
                 service.put("healthcheck",
                         Map.of(
                                 "test", new InlineList<>(healthCheck.testCommand()),
@@ -188,6 +229,12 @@ public class PulseCommonProcessor {
                                 "timeout", healthCheck.timeout().inSeconds() + "s",
                                 "retries", healthCheck.retries().numberOfRetries(),
                                 "start_period", healthCheck.startPeriod().inSeconds() + "s"));
+                if (!volumes.isEmpty()) {
+                    service.put("volumes", volumes.stream()
+                            .map(volume -> "%s:%s".formatted(volume.src(), volume.destination()))
+                            .toList());
+                }
+                volumesToCreateOnHostSrc.addAll(volumes);
                 if (dependsOn.hasDependenciesOn()) {
                     service.put("depends_on", dependsOn.dependsOn().stream()
                             .map(ComposeServiceBuildItem.ServiceName::name)
@@ -222,6 +269,12 @@ public class PulseCommonProcessor {
             Files.createDirectories(resolved.getParent());
             try (final FileWriter writer = new FileWriter(resolved.toFile())) {
                 yaml.dump(root, writer);
+            }
+
+            final Path whereToCreate = outputTargetBuildItem.getOutputDirectory().getParent();
+            for (final ComposeServiceBuildItem.Volume volume : volumesToCreateOnHostSrc) {
+                final Path srcResolved = whereToCreate.resolve(volume.src().substring(2));
+                Files.write(srcResolved, volume.content(), CREATE, TRUNCATE_EXISTING);
             }
         }
     }

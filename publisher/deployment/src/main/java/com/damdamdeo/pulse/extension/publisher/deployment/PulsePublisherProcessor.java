@@ -55,12 +55,14 @@ public class PulsePublisherProcessor {
                                         "OFFSET_STORAGE_TOPIC", "my_connect_offsets",
                                         "STATUS_STORAGE_TOPIC", "my_connect_statuses")),
                         ComposeServiceBuildItem.Command.ofNone(),
+                        ComposeServiceBuildItem.Entrypoint.ofNone(),
                         new ComposeServiceBuildItem.HealthCheck(
                                 List.of("CMD", "curl", "-f", "http://localhost:8083/connectors"),
                                 new ComposeServiceBuildItem.Interval(10),
                                 new ComposeServiceBuildItem.Timeout(5),
                                 new ComposeServiceBuildItem.Retries(5),
                                 new ComposeServiceBuildItem.StartPeriod(10)),
+                        List.of(),
                         ComposeServiceBuildItem.DependsOn.on(List.of(
                                 PulseCommonProcessor.POSTGRES_SERVICE_NAME,
                                 PulseCommonProcessor.KAFKA_SERVICE_NAME)))

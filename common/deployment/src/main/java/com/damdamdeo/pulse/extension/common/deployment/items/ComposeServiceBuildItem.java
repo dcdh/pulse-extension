@@ -148,6 +148,21 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
         }
     }
 
+    public record Entrypoint(List<String> entrypoint) {
+
+        public Entrypoint {
+            Objects.requireNonNull(entrypoint);
+        }
+
+        public static Entrypoint ofNone() {
+            return new Entrypoint(List.of());
+        }
+
+        public boolean hasEntrypoint() {
+            return !entrypoint.isEmpty();
+        }
+    }
+
     public record DependsOn(List<ServiceName> dependsOn) {
 
         public DependsOn {
@@ -167,6 +182,17 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
         }
     }
 
+    // https://docs.docker.com/engine/storage/bind-mounts/#syntax
+    public record Volume(String src, String destination, byte[] content) {
+
+        public Volume {
+            Objects.requireNonNull(src);
+            Validate.validState(src.startsWith("./"));
+            Objects.requireNonNull(destination);
+            Objects.requireNonNull(content);
+        }
+    }
+
     private final ServiceName serviceName;
     private final ImageName imageName;
     private final Labels labels;
@@ -174,7 +200,9 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
     private final Links links;
     private final EnvironmentVariables environmentVariables;
     private final Command command;
+    private final Entrypoint entrypoint;
     private final HealthCheck healthCheck;
+    private final List<Volume> volumes;
     private final DependsOn dependsOn;
 
     public ComposeServiceBuildItem(final ServiceName serviceName,
@@ -184,7 +212,9 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
                                    final Links links,
                                    final EnvironmentVariables environmentVariables,
                                    final Command command,
+                                   final Entrypoint entrypoint,
                                    final HealthCheck healthCheck,
+                                   final List<Volume> volumes,
                                    final DependsOn dependsOn) {
         this.serviceName = Objects.requireNonNull(serviceName);
         this.imageName = Objects.requireNonNull(imageName);
@@ -193,7 +223,9 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
         this.links = Objects.requireNonNull(links);
         this.environmentVariables = Objects.requireNonNull(environmentVariables);
         this.command = Objects.requireNonNull(command);
+        this.entrypoint = Objects.requireNonNull(entrypoint);
         this.healthCheck = Objects.requireNonNull(healthCheck);
+        this.volumes = Objects.requireNonNull(volumes);
         this.dependsOn = Objects.requireNonNull(dependsOn);
     }
 
@@ -225,8 +257,16 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
         return command;
     }
 
+    public Entrypoint getEntrypoint() {
+        return entrypoint;
+    }
+
     public HealthCheck getHealthCheck() {
         return healthCheck;
+    }
+
+    public List<Volume> getVolumes() {
+        return volumes;
     }
 
     public DependsOn getDependsOn() {
