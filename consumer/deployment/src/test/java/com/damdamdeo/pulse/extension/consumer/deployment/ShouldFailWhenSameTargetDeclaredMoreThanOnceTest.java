@@ -48,7 +48,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     @ApplicationScoped
     @EventChannel(target = "statistics",
             sources = {
-                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
+                    @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
@@ -69,7 +69,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     @ApplicationScoped
     @EventChannel(target = "statistics",
             sources = {
-                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
+                    @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
     static final class StatisticsAgainEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 

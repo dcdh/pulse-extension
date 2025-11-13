@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.deployment;
 
+import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.InitScriptUsageChecker;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -180,6 +182,7 @@ public class PulseCommonProcessor {
 
     @BuildStep
     void generateDockerCompose(final List<ComposeServiceBuildItem> composeServiceBuildItems,
+                               final List<AdditionalVolumeBuildItem> additionalVolumeBuildItems,
                                final OutputTargetBuildItem outputTargetBuildItem,
                                // use the GeneratedResourceBuildItem only to ensure that the file will be created before compose is started
                                final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException {
@@ -229,12 +232,18 @@ public class PulseCommonProcessor {
                                 "timeout", healthCheck.timeout().inSeconds() + "s",
                                 "retries", healthCheck.retries().numberOfRetries(),
                                 "start_period", healthCheck.startPeriod().inSeconds() + "s"));
-                if (!volumes.isEmpty()) {
-                    service.put("volumes", volumes.stream()
+                final List<ComposeServiceBuildItem.Volume> mergedVolumes = Stream.concat(
+                                volumes.stream(),
+                                additionalVolumeBuildItems.stream()
+                                        .filter(additionalVolumeBuildItem -> serviceName.equals(additionalVolumeBuildItem.getServiceName()))
+                                        .map(AdditionalVolumeBuildItem::getVolume))
+                        .toList();
+                if (!mergedVolumes.isEmpty()) {
+                    service.put("volumes", mergedVolumes.stream()
                             .map(volume -> "%s:%s".formatted(volume.src(), volume.destination()))
                             .toList());
                 }
-                volumesToCreateOnHostSrc.addAll(volumes);
+                volumesToCreateOnHostSrc.addAll(mergedVolumes);
                 if (dependsOn.hasDependenciesOn()) {
                     service.put("depends_on", dependsOn.dependsOn().stream()
                             .map(ComposeServiceBuildItem.ServiceName::name)

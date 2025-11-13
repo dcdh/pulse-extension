@@ -29,3 +29,5 @@
 /publisher/deployment/compose-devservices-pulse.yml
 /publisher/deployment/kafka.sh
 /consumer/deployment/compose-devservices-pulse.yml
+/consumer/deployment/todotaking_todo.sql
+/consumer/deployment/todoclient_registered.sql
