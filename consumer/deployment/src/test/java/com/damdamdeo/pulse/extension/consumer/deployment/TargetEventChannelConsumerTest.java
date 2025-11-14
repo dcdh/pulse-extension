@@ -48,9 +48,6 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-// not working when all tests are running ... volumes are defined in docker compose but mount is not working ...
-// sql files are not mounted inside the container
-@Disabled
 class TargetEventChannelConsumerTest {
 
     @RegisterExtension
