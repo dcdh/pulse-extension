@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core;
 
 import com.damdamdeo.pulse.extension.core.command.AddNewTodoItem;
 import com.damdamdeo.pulse.extension.core.event.EventAppender;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 
 import java.util.Objects;
@@ -11,7 +12,8 @@ public final class TodoChecklist implements AggregateRoot<TodoChecklistId> {
     private TodoChecklistId todoChecklistId;
     private String description;
 
-    public TodoChecklist() {}
+    public TodoChecklist() {
+    }
 
     public TodoChecklist(final TodoChecklistId todoChecklistId,
                          final String description) {
@@ -45,5 +47,10 @@ public final class TodoChecklist implements AggregateRoot<TodoChecklistId> {
     @Override
     public BelongsTo belongsTo() {
         return new BelongsTo(todoChecklistId.todoId());
+    }
+
+    @Override
+    public OwnedBy ownedBy() {
+        return new OwnedBy(todoChecklistId.todoId().user());
     }
 }

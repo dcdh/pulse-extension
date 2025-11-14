@@ -9,9 +9,4 @@ public record ClassifiedAsImportant(TodoId id) implements Event<TodoId> {
     public ClassifiedAsImportant {
         Objects.requireNonNull(id);
     }
-
-    @Override
-    public OwnedBy ownedBy() {
-        return new OwnedBy(id.user());
-    }
 }

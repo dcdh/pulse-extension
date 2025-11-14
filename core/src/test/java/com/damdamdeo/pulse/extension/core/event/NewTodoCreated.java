@@ -10,9 +10,4 @@ public record NewTodoCreated(TodoId id, String description) implements Event<Tod
         Objects.requireNonNull(id);
         Objects.requireNonNull(description);
     }
-
-    @Override
-    public OwnedBy ownedBy() {
-        return new OwnedBy(id.user());
-    }
 }

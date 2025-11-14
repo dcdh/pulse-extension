@@ -69,7 +69,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                              """)) {
             connection.setAutoCommit(false);
             final K aggregateId = versionizedEvents.getFirst().event().id();
-            final OwnedBy ownedBy = versionizedEvents.getFirst().event().ownedBy();
+            final OwnedBy ownedBy = aggregateRoot.ownedBy();
             AggregateVersion lastVersion = null;
             for (VersionizedEvent<K> versionizedEvent : versionizedEvents) {
                 final String eventPayload = objectMapper.writeValueAsString(versionizedEvent.event());

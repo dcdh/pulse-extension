@@ -68,6 +68,11 @@ public final class Todo implements AggregateRoot<TodoId> {
         return new BelongsTo(id);
     }
 
+    @Override
+    public OwnedBy ownedBy() {
+        return new OwnedBy(id.user());
+    }
+
     public String description() {
         return description;
     }
