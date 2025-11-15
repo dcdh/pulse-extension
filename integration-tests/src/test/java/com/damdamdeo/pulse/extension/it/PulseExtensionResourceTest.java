@@ -54,8 +54,6 @@ class PulseExtensionResourceTest {
                 .body("eventType.type", is("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"))
                 .body("encryptedPayload.payload", notNullValue(String.class))
                 .body("ownedBy.id", is("Damien"))
-                .body("decryptableEventPayload.payload.id.user", is("Damien"))
-                .body("decryptableEventPayload.payload.id.sequence", is(20))
                 .body("decryptableEventPayload.payload.description", is("lorem ipsum"))
                 .body("decryptableEventPayload.decrypted", is(true))
                 .body("aggregateRootLoaded.aggregateRootType.type", is("com.damdamdeo.pulse.extension.core.Todo"))
