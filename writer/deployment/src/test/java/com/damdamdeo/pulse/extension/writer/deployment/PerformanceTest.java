@@ -210,46 +210,47 @@ class PerformanceTest {
         }
     }
 /*
-2025-10-28 23:04:26,303 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Start execute performance test
-2025-10-28 23:04:26,304 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Create 30.000 of NewTodoCreated events
-2025-10-28 23:04:26,305 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 0
-2025-10-28 23:04:31,745 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 1000
-2025-10-28 23:04:39,333 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 2000
-2025-10-28 23:04:44,283 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 3000
-2025-10-28 23:04:48,526 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 4000
-2025-10-28 23:04:53,505 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 5000
-2025-10-28 23:04:58,601 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 6000
-2025-10-28 23:05:08,204 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 7000
-2025-10-28 23:05:13,937 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 8000
-2025-10-28 23:05:19,531 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 9000
-2025-10-28 23:05:25,735 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 10000
-2025-10-28 23:05:33,095 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 11000
-2025-10-28 23:05:40,857 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 12000
-2025-10-28 23:05:47,504 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 13000
-2025-10-28 23:05:53,548 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 14000
-2025-10-28 23:06:00,107 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 15000
-2025-10-28 23:06:09,102 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 16000
-2025-10-28 23:06:16,018 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 17000
-2025-10-28 23:06:22,619 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 18000
-2025-10-28 23:06:29,064 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 19000
-2025-10-28 23:06:35,603 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 20000
-2025-10-28 23:06:46,125 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 21000
-2025-10-28 23:06:52,577 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 22000
-2025-10-28 23:06:58,988 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 23000
-2025-10-28 23:07:05,597 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 24000
-2025-10-28 23:07:12,455 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 25000
-2025-10-28 23:07:22,707 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 26000
-2025-10-28 23:07:29,438 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 27000
-2025-10-28 23:07:36,424 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 28000
-2025-10-28 23:07:43,622 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Current creation 29000
-2025-10-28 23:07:50,591 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) 30.000 of NewTodoCreated events created in 204285 ms
-2025-10-28 23:07:52,251 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) Fetch Performance
-2025-10-28 23:07:52,251 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) min: 7 in ms
-2025-10-28 23:07:52,251 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) P50: 20 in ms
-2025-10-28 23:07:52,251 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) P90: 67 in ms
-2025-10-28 23:07:52,252 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) P99: 1527 in ms
-2025-10-28 23:07:52,252 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) max: 1604 in ms
-2025-10-28 23:07:52,253 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) t_event - table_size '23 MB' - indexes_size '9112 kB' - total_size '32 MB'
-2025-10-28 23:07:52,253 INFO  [com.dam.pul.ext.tes.PerformanceTest] (main) t_event - table_size '23 MB' - indexes_size '4336 kB' - total_size '28 MB'
- */
+2025-11-15 14:16:40,956 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Start execute performance test
+2025-11-15 14:16:40,957 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Create 30.000 of NewTodoCreated events
+2025-11-15 14:16:40,958 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 0
+2025-11-15 14:16:48,419 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 1000
+2025-11-15 14:16:59,855 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 2000
+2025-11-15 14:17:06,367 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 3000
+2025-11-15 14:17:12,753 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 4000
+2025-11-15 14:17:19,408 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 5000
+2025-11-15 14:17:26,557 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 6000
+2025-11-15 14:17:33,180 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 7000
+2025-11-15 14:17:39,357 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 8000
+2025-11-15 14:17:45,106 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 9000
+2025-11-15 14:17:51,534 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 10000
+2025-11-15 14:18:01,497 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 11000
+2025-11-15 14:18:08,045 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 12000
+2025-11-15 14:18:14,171 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 13000
+2025-11-15 14:18:20,693 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 14000
+2025-11-15 14:18:27,217 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 15000
+2025-11-15 14:18:33,395 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 16000
+2025-11-15 14:18:39,840 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 17000
+2025-11-15 14:18:46,023 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 18000
+2025-11-15 14:18:52,519 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 19000
+2025-11-15 14:19:03,285 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 20000
+2025-11-15 14:19:10,348 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 21000
+2025-11-15 14:19:16,648 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 22000
+2025-11-15 14:19:23,417 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 23000
+2025-11-15 14:19:30,012 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 24000
+2025-11-15 14:19:36,666 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 25000
+2025-11-15 14:19:43,651 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 26000
+2025-11-15 14:19:50,510 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 27000
+2025-11-15 14:20:00,940 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 28000
+2025-11-15 14:20:07,427 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Current creation 29000
+2025-11-15 14:20:15,135 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) 30.000 of NewTodoCreated events created in 214176 ms
+2025-11-15 14:20:16,914 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) Fetch Performance
+2025-11-15 14:20:16,914 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) min: 7 in ms
+2025-11-15 14:20:16,914 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) P50: 23 in ms
+2025-11-15 14:20:16,914 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) P90: 89 in ms
+2025-11-15 14:20:16,915 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) P99: 1648 in ms
+2025-11-15 14:20:16,915 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) max: 1728 in ms
+2025-11-15 14:20:16,917 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) t_event - table_size '21 MB' - indexes_size '9112 kB' - total_size '30 MB'
+2025-11-15 14:20:16,917 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) t_event - table_size '23 MB' - indexes_size '4336 kB' - total_size '28 MB'
+2025-11-15 14:20:16,970 INFO  [io.quarkus] (main) TodoTaking_Todo stopped in 0.046s
+*/
 }
