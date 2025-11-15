@@ -159,8 +159,8 @@ class DebeziumConsumerTest {
                         AUTO_OFFSET_RESET_CONFIG, "earliest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID(),
                         ConsumerConfig.GROUP_ID_CONFIG, "my-group"),
-                Duration.ofSeconds(30), new JsonNodeEventKeyObjectMapperDeserializer(objectMapper), new JsonNodeEventRecordObjectMapperDeserializer(objectMapper));
-        final ConsumerTask<JsonNodeEventKey, JsonNodeEventValue> records = consumer.fromTopics("pulse.todotaking_todo.t_event", Duration.ofSeconds(30)).awaitCompletion();
+                Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperDeserializer(objectMapper), new JsonNodeEventRecordObjectMapperDeserializer(objectMapper));
+        final ConsumerTask<JsonNodeEventKey, JsonNodeEventValue> records = consumer.fromTopics("pulse.todotaking_todo.t_event", Duration.ofSeconds(10)).awaitCompletion();
         records.close();
         final Headers headers = records.getFirstRecord().headers();
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();

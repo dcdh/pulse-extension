@@ -138,7 +138,7 @@ public class PulseCommonProcessor {
                     Map.of("CLUSTER_ID", "oh-sxaDRTcyAr6pFRbXyzA",
                             "NODE_ID", "1",
                             "KAFKA_CONTROLLER_QUORUM_VOTERS", "1@kafka:9093")),
-            new ComposeServiceBuildItem.Command(List.of("/kafka.sh")),// "/bin/sh", "-c", "chmod 755 /kafka.sh && /kafka.sh"
+            ComposeServiceBuildItem.Command.ofNone(),
             ComposeServiceBuildItem.Entrypoint.ofNone(),
             new ComposeServiceBuildItem.HealthCheck(
                     List.of("CMD", "./bin/kafka-topics.sh", "--bootstrap-server", "kafka:29092", "--list"),
