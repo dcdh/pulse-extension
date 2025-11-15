@@ -36,7 +36,7 @@ class TargetEventChannelConsumerTest {
                         Integer version) implements EventKey {
 
         public static TodoEventKey of() {
-            return new TodoEventKey(Todo.class.getName(), new TodoId("Damien", 0L).toString(), 1);
+            return new TodoEventKey(Todo.class.getSimpleName(), new TodoId("Damien", 0L).toString(), 1);
         }
 
         @Override
@@ -63,7 +63,7 @@ class TargetEventChannelConsumerTest {
 
         public static TodoEventValue of() {
             return new TodoEventValue(
-                    1983L, NewTodoCreated.class.getName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
+                    1983L, NewTodoCreated.class.getSimpleName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
                     "Damien", "Damien/0L");
         }
 

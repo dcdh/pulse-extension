@@ -164,7 +164,7 @@ public class ValidationProcessor {
 
     @BuildStep
     List<ValidationErrorBuildItem> validate(final CombinedIndexBuildItem combinedIndexBuildItem) {
-        final IndexView computingIndex = combinedIndexBuildItem.getComputingIndex();
+        final IndexView computingIndex = combinedIndexBuildItem.getIndex();
         final List<PreValidationEventChannel> preValidationEventChannels = new ArrayList<>();
         computingIndex.getAnnotations(EventChannel.class).forEach(eventChannel -> {
             final List<PreValidationSource> sources = new ArrayList<>();

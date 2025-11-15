@@ -145,7 +145,7 @@ class TargetEventChannelConsumerTest {
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
-            ps.setString(1, Todo.class.getName());
+            ps.setString(1, Todo.class.getSimpleName());
             ps.setString(2, "Damien/0");
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedAggregatePayload);
@@ -163,7 +163,7 @@ class TargetEventChannelConsumerTest {
              final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
-            ps.setString(3, Todo.class.getName());
+            ps.setString(3, Todo.class.getSimpleName());
             ps.setString(4, "Damien/0");
             ps.setLong(5, 0);
             ps.executeUpdate();
@@ -184,9 +184,9 @@ class TargetEventChannelConsumerTest {
                 Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
                 .usingGenerator(
                         integer -> new ProducerRecord<>(TOPIC,
-                                new JsonNodeEventKey(Todo.class.getName(), "Damien/0", 1),
+                                new JsonNodeEventKey(Todo.class.getSimpleName(), "Damien/0", 1),
                                 new JsonNodeEventValue(1_761_335_312_527L,
-                                        TodoMarkedAsDone.class.getName(),
+                                        TodoMarkedAsDone.class.getSimpleName(),
                                         encryptedTodoMarkedAsDonePayload,
                                         "Damien", "Damien/0")), 1L);
 
@@ -242,7 +242,7 @@ class TargetEventChannelConsumerTest {
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
-            ps.setString(1, Todo.class.getName());
+            ps.setString(1, Todo.class.getSimpleName());
             ps.setString(2, "Alban/0");
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedAggregatePayload);
@@ -260,7 +260,7 @@ class TargetEventChannelConsumerTest {
              final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
-            ps.setString(3, Todo.class.getName());
+            ps.setString(3, Todo.class.getSimpleName());
             ps.setString(4, "Alban/0");
             ps.setLong(5, 0);
             ps.executeUpdate();
@@ -281,9 +281,9 @@ class TargetEventChannelConsumerTest {
                 Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
                 .usingGenerator(
                         integer -> new ProducerRecord<>(TOPIC,
-                                new JsonNodeEventKey(Todo.class.getName(), "Alban/0", 1),
+                                new JsonNodeEventKey(Todo.class.getSimpleName(), "Alban/0", 1),
                                 new JsonNodeEventValue(1_761_335_312_527L,
-                                        TodoMarkedAsDone.class.getName(),
+                                        TodoMarkedAsDone.class.getSimpleName(),
                                         encryptedTodoMarkedAsDonePayload,
                                         "Alban", "Alban/0")), 1L);
 

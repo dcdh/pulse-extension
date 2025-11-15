@@ -18,9 +18,8 @@ class ShouldFailWhenCommandIsNotARecordTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.datasource.devservices.enabled", "false")
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
+            .overrideConfigKey("quarkus.devservices.enabled", "false")
             .overrideConfigKey("quarkus.arc.exclude-types",
                     "%s,%s".formatted(PostgresqlSchemaInitializer.class.getName(), PostgresqlEventStoreInitializer.class.getName()))
             .withConfigurationResource("application.properties")

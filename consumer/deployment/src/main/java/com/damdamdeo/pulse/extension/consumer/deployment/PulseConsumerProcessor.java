@@ -28,7 +28,7 @@ public class PulseConsumerProcessor {
     List<TargetBuildItem> discoverTargets(final List<ValidationErrorBuildItem> validationErrorBuildItems,
                                           final CombinedIndexBuildItem combinedIndexBuildItem) {
         if (validationErrorBuildItems.isEmpty()) {
-            final IndexView computingIndex = combinedIndexBuildItem.getComputingIndex();
+            final IndexView computingIndex = combinedIndexBuildItem.getIndex();
             return computingIndex.getAnnotations(EventChannel.class)
                     .stream()
                     .map(annotationInstance -> {

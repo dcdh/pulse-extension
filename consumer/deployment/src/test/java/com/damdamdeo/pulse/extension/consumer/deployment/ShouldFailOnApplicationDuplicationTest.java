@@ -25,7 +25,7 @@ class ShouldFailOnApplicationDuplicationTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "false")
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .overrideConfigKey("quarkus.arc.exclude-types", JdbcPostgresIdempotencyRepository.class.getName())
             .overrideConfigKey("quarkus.arc.exclude-types", PostgresqlSchemaInitializer.class.getName())

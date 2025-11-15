@@ -132,10 +132,10 @@ class DebeziumConsumerTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(sql)) {
             eventPreparedStatement.setString(1, "Damien/0");
-            eventPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            eventPreparedStatement.setString(2, "Todo");
             eventPreparedStatement.setLong(3, 0);
             eventPreparedStatement.setObject(4, givenCreationDate);
-            eventPreparedStatement.setString(5, "com.damdamdeo.pulse.extension.core.event.NewTodoCreated");
+            eventPreparedStatement.setString(5, "NewTodoCreated");
             eventPreparedStatement.setBytes(6,
                     // language=json
                     """
@@ -192,10 +192,10 @@ class DebeziumConsumerTest {
                 () -> assertThat(getValuesByKey(headers, "__source_txId")).hasSize(1),
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.count()).isEqualTo(1L),
-                () -> Assertions.assertThat(records.getFirstRecord().key()).isEqualTo(new JsonNodeEventKey("com.damdamdeo.pulse.extension.core.Todo",
+                () -> Assertions.assertThat(records.getFirstRecord().key()).isEqualTo(new JsonNodeEventKey("Todo",
                         "Damien/0", 0)),
                 () -> Assertions.assertThat(records.getFirstRecord().value()).isEqualTo(new JsonNodeEventValue(1003_600_000_000L,// I do not understand the added part ...
-                        "com.damdamdeo.pulse.extension.core.event.NewTodoCreated",
+                        "NewTodoCreated",
                         // language=json
                         """
                                 {

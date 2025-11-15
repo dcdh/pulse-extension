@@ -34,6 +34,7 @@ class JdbcPostgresEventRepositoryTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
@@ -136,19 +137,19 @@ class JdbcPostgresEventRepositoryTest {
                                  FROM t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, "Damien/1");
-            tEventPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            tEventPreparedStatement.setString(2, "Todo");
             tAggregateRootPreparedStatement.setString(1, "Damien/1");
-            tAggregateRootPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            tAggregateRootPreparedStatement.setString(2, "Todo");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/1"),
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
-                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
+                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/1"),
@@ -156,7 +157,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 "Damien/1"),
                         () -> assertThat(tAggregateRootResultSet.getString(
-                                "aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                                "aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
                                 "last_version")).isEqualTo
                                 (0),
@@ -211,28 +212,28 @@ class JdbcPostgresEventRepositoryTest {
                                  FROM t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, "Damien/2");
-            tEventPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            tEventPreparedStatement.setString(2, "Todo");
             tAggregateRootPreparedStatement.setString(1, "Damien/2");
-            tAggregateRootPreparedStatement.setString(2, "com.damdamdeo.pulse.extension.core.Todo");
+            tAggregateRootPreparedStatement.setString(2, "Todo");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
-                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.NewTodoCreated"),
+                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
                         () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
-                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone"),
+                        () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("TodoMarkedAsDone"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"));
@@ -241,7 +242,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 "Damien/2"),
                         () -> assertThat(tAggregateRootResultSet.getString(
-                                "aggregate_root_type")).isEqualTo("com.damdamdeo.pulse.extension.core.Todo"),
+                                "aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
                                 "last_version")).isEqualTo
                                 (1),
@@ -316,29 +317,29 @@ class JdbcPostgresEventRepositoryTest {
     @Test
     void shouldFailWhenEventIsAlreadyPresent() throws SQLException {
         // Given
-        insertEvent("00000000-0000-0000-0000-000000000006", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000006", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         // When && Then
-        assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000006", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000006", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien")))
                 .isExactlyInstanceOf(PSQLException.class)
-                .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000006 aggregate_root_type com.damdamdeo.pulse.extension.core.Todo");
+                .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000006 aggregate_root_type Todo");
     }
 
     @Test
     void shouldFailWhenNewVersionIsNotPreviousOnePlusOne() throws SQLException {
         // Given
-        insertEvent("00000000-0000-0000-0000-000000000007", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000007", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         // When && Then
         assertThatThrownBy(() -> {
-            insertEvent("00000000-0000-0000-0000-000000000007", "com.damdamdeo.pulse.extension.core.Todo", 2,
-                    Instant.parse("2025-10-13T18:01:00Z"), "com.damdamdeo.pulse.extension.core.TodoMarkedAsDone", "\\x",
+            insertEvent("00000000-0000-0000-0000-000000000007", "Todo", 2,
+                    Instant.parse("2025-10-13T18:01:00Z"), "TodoMarkedAsDone", "\\x",
                     new OwnedBy("Damien"));
         }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: current version unexpected 2 - expected version 1");
@@ -346,8 +347,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEventAggregateType() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000008", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000008", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
@@ -366,8 +367,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEventAggregateId() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000009", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000009", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
@@ -386,8 +387,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEventVersion() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000010", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000010", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
@@ -405,8 +406,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEventCreationDate() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000011", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000011", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
@@ -427,8 +428,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEventType() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000012", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000012", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
@@ -447,8 +448,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEventPayload() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000013", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000013", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
@@ -467,8 +468,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToUpdateAnEventOwnedBy() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000014", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000014", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {
@@ -487,8 +488,8 @@ class JdbcPostgresEventRepositoryTest {
 
     @Test
     void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
-        insertEvent("00000000-0000-0000-0000-000000000015", "com.damdamdeo.pulse.extension.core.Todo", 0,
-                Instant.parse("2025-10-13T18:00:00Z"), "com.damdamdeo.pulse.extension.core.event.NewTodoCreated", "\\x",
+        insertEvent("00000000-0000-0000-0000-000000000015", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"));
 
         assertThatThrownBy(() -> {

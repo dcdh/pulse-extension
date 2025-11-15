@@ -99,7 +99,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
-            ps.setString(3, Todo.class.getName());
+            ps.setString(3, Todo.class.getSimpleName());
             ps.setString(4, "Damien/0");
             ps.setInt(5, 0);
             ps.executeUpdate();
@@ -154,7 +154,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
-            ps.setString(3, Todo.class.getName());
+            ps.setString(3, Todo.class.getSimpleName());
             ps.setString(4, "Damien/0");
             try (final ResultSet rs = ps.executeQuery()) {
                 assertThat(rs.next()).isTrue();
@@ -177,7 +177,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
-            ps.setString(3, Todo.class.getName());
+            ps.setString(3, Todo.class.getSimpleName());
             ps.setString(4, "Damien/0");
             ps.setInt(5, 0);
             ps.executeUpdate();
@@ -217,7 +217,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
              final PreparedStatement ps = connection.prepareStatement(querySql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
-            ps.setString(3, Todo.class.getName());
+            ps.setString(3, Todo.class.getSimpleName());
             ps.setString(4, "Damien/0");
             try (final ResultSet rs = ps.executeQuery()) {
                 assertAll(

@@ -100,7 +100,7 @@ class PostgresAggregateRootLoaderTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "Damien/0");
-            ps.setString(2, Todo.class.getName());
+            ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedPayload);
             ps.setString(5, "Damien");

@@ -27,6 +27,7 @@ class JdbcProjectionFromEventStoreTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
@@ -69,8 +70,8 @@ class JdbcProjectionFromEventStoreTest {
                     FROM decrypted d
                     LEFT JOIN decrypted i
                       ON i.belongs_to = d.aggregate_root_id
-                     AND i.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.TodoChecklist'
-                    WHERE d.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.Todo'
+                     AND i.aggregate_root_type = 'TodoChecklist'
+                    WHERE d.aggregate_root_type = 'Todo'
                       AND d.aggregate_root_id = '%2$s'
                     GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.belongs_to;
                     """.formatted(new String(passphrase.passphrase()), aggregateId.id());
@@ -107,8 +108,8 @@ class JdbcProjectionFromEventStoreTest {
                     FROM decrypted d
                     LEFT JOIN decrypted i
                       ON i.belongs_to = d.aggregate_root_id
-                     AND i.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.TodoChecklist'
-                    WHERE d.aggregate_root_type = 'com.damdamdeo.pulse.extension.core.Todo'
+                     AND i.aggregate_root_type = 'TodoChecklist'
+                    WHERE d.aggregate_root_type = 'Todo'
                       AND d.owned_by = '%2$s'
                     GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.belongs_to;
                     """.formatted(new String(passphrase.passphrase()), ownedBy.id());

@@ -42,6 +42,9 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     @Inject
     DecryptionService decryptionService;
 
+    @Inject
+    EventClazzDiscovery eventClazzDiscovery;
+
     @Override
     public void save(final List<VersionizedEvent> versionizedEvents, final AggregateRoot<K> aggregateRoot) throws EventStoreException {
         Objects.requireNonNull(versionizedEvents);
@@ -75,10 +78,10 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 final String eventPayload = objectMapper.writeValueAsString(versionizedEvent.event());
                 LOGGER.fine(eventPayload);
                 eventPreparedStatement.setString(1, aggregateId.id());
-                eventPreparedStatement.setString(2, getAggregateClass().getName());
+                eventPreparedStatement.setString(2, getAggregateClass().getSimpleName());
                 eventPreparedStatement.setLong(3, versionizedEvent.version().version());
                 eventPreparedStatement.setTimestamp(4, Timestamp.from(instantProvider.now()));
-                eventPreparedStatement.setString(5, versionizedEvent.event().getClass().getName());
+                eventPreparedStatement.setString(5, versionizedEvent.event().getClass().getSimpleName());
                 eventPreparedStatement.setString(6, eventPayload);
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy).passphrase()));
                 eventPreparedStatement.setString(8, ownedBy.id());
@@ -90,7 +93,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             final String aggregateRootPayload = objectMapper.writeValueAsString(aggregateRoot);
             LOGGER.fine(aggregateRootPayload);
             aggregatePreparedStatement.setString(1, aggregateId.id());
-            aggregatePreparedStatement.setString(2, getAggregateClass().getName());
+            aggregatePreparedStatement.setString(2, getAggregateClass().getSimpleName());
             aggregatePreparedStatement.setLong(3, lastVersion.version());
             aggregatePreparedStatement.setString(4, aggregateRootPayload);
             aggregatePreparedStatement.setString(5, new String(passphraseProvider.provide(ownedBy).passphrase()));
@@ -118,12 +121,12 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                              """)) {
             connection.setAutoCommit(false);
             nbOfEventsStmt.setString(1, id.id());
-            nbOfEventsStmt.setString(2, getAggregateClass().getName());
+            nbOfEventsStmt.setString(2, getAggregateClass().getSimpleName());
             try (final ResultSet nbOfEventsResultSet = nbOfEventsStmt.executeQuery()) {
                 nbOfEventsResultSet.next();
                 final int nbOfEvents = nbOfEventsResultSet.getInt("nb_of_events");
                 loadStmt.setString(1, id.id());
-                loadStmt.setString(2, getAggregateClass().getName());
+                loadStmt.setString(2, getAggregateClass().getSimpleName());
                 final List<Event> events = new ArrayList<>(nbOfEvents);
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
@@ -132,7 +135,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                         LOGGER.fine(new String(decryptedEventPayload.payload()));
                         events.add((Event)
                                 objectMapper.readValue(decryptedEventPayload.payload(),
-                                        Class.forName(resultSet.getString("event_type"))));
+                                        eventClazzDiscovery.from(resultSet.getString("event_type"))));
                     }
                 } catch (ClassNotFoundException | IOException e) {
                     throw new EventStoreException(e);
@@ -156,7 +159,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                              """)) {
             connection.setAutoCommit(false);
             loadStmt.setString(1, id.id());
-            loadStmt.setString(2, getAggregateClass().getName());
+            loadStmt.setString(2, getAggregateClass().getSimpleName());
             loadStmt.setInt(3, aggregateVersionRequested.version());
             final List<Event> events = new ArrayList<>(aggregateVersionRequested.version());
             try (final ResultSet resultSet = loadStmt.executeQuery()) {
@@ -166,7 +169,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                     LOGGER.fine(new String(decryptedEventPayload.payload()));
                     events.add((Event)
                             objectMapper.readValue(decryptedEventPayload.payload(),
-                                    Class.forName(resultSet.getString("event_type"))));
+                                    eventClazzDiscovery.from(resultSet.getString("event_type"))));
                 }
             } catch (ClassNotFoundException | IOException e) {
                 throw new EventStoreException(e);
@@ -188,7 +191,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                              """)) {
             connection.setAutoCommit(false);
             aggregateRootStmt.setString(1, id.id());
-            aggregateRootStmt.setString(2, getAggregateClass().getName());
+            aggregateRootStmt.setString(2, getAggregateClass().getSimpleName());
             try (final ResultSet aggregateRootStmtResultSet = aggregateRootStmt.executeQuery()) {
                 if (aggregateRootStmtResultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(aggregateRootStmtResultSet.getString("owned_by"));

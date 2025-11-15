@@ -16,10 +16,7 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
-import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
-import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
+import io.quarkus.deployment.builditem.*;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -34,7 +31,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -186,7 +182,7 @@ public class PulseCommonProcessor {
                                final List<AdditionalVolumeBuildItem> additionalVolumeBuildItems,
                                final OutputTargetBuildItem outputTargetBuildItem,
                                // use the GeneratedResourceBuildItem only to ensure that the file will be created before compose is started
-                               final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException, InterruptedException {
+                               final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException {
         if (!composeServiceBuildItems.isEmpty()) {
             final List<ComposeServiceBuildItem.Volume> volumesToCreateOnHostSrc = new ArrayList<>();
             final Map<String, Object> root = new LinkedHashMap<>();
@@ -254,6 +250,12 @@ public class PulseCommonProcessor {
             });
             root.put("services", services);
 
+            final Path whereToCreate = outputTargetBuildItem.getOutputDirectory().getParent();
+            for (final ComposeServiceBuildItem.Volume volume : volumesToCreateOnHostSrc) {
+                final Path srcResolved = whereToCreate.resolve(volume.src().substring(2));
+                Files.write(srcResolved, volume.content(), CREATE, TRUNCATE_EXISTING);
+            }
+
             final DumperOptions options = new DumperOptions();
             options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
             options.setIndent(2);
@@ -280,13 +282,6 @@ public class PulseCommonProcessor {
             try (final FileWriter writer = new FileWriter(resolved.toFile())) {
                 yaml.dump(root, writer);
             }
-
-            final Path whereToCreate = outputTargetBuildItem.getOutputDirectory().getParent();
-            for (final ComposeServiceBuildItem.Volume volume : volumesToCreateOnHostSrc) {
-                final Path srcResolved = whereToCreate.resolve(volume.src().substring(2));
-                Files.write(srcResolved, volume.content(), CREATE, TRUNCATE_EXISTING);
-            }
-            TimeUnit.SECONDS.sleep(1L);
         }
     }
 }
