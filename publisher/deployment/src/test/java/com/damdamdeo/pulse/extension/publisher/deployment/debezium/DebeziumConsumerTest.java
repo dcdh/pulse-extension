@@ -140,7 +140,6 @@ class DebeziumConsumerTest {
                     // language=json
                     """
                             {
-                              "id": "Damien/0",
                               "description": "lorem ipsum",
                               "status": "DONE",
                               "important": false
@@ -200,7 +199,6 @@ class DebeziumConsumerTest {
                         // language=json
                         """
                                 {
-                                  "id": "Damien/0",
                                   "description": "lorem ipsum",
                                   "status": "DONE",
                                   "important": false

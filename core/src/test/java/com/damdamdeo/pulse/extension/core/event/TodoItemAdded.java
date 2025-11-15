@@ -1,13 +1,10 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-import com.damdamdeo.pulse.extension.core.TodoChecklistId;
-
 import java.util.Objects;
 
-public record TodoItemAdded(TodoChecklistId id, String description) implements Event<TodoChecklistId> {
+public record TodoItemAdded(String description) implements Event {
 
     public TodoItemAdded {
-        Objects.requireNonNull(id);
         Objects.requireNonNull(description);
     }
 }

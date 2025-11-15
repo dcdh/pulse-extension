@@ -10,11 +10,11 @@ import java.util.Optional;
 
 public interface EventRepository<A extends AggregateRoot<K>, K extends AggregateId> {
 
-    void save(List<VersionizedEvent<K>> events, AggregateRoot<K> aggregateRoot) throws EventStoreException;
+    void save(List<VersionizedEvent> events, AggregateRoot<K> aggregateRoot) throws EventStoreException;
 
-    List<Event<K>> loadOrderByVersionASC(K id) throws EventStoreException;
+    List<Event> loadOrderByVersionASC(K id) throws EventStoreException;
 
-    List<Event<K>> loadOrderByVersionASC(K id, AggregateVersion aggregateVersionRequested) throws EventStoreException;
+    List<Event> loadOrderByVersionASC(K id, AggregateVersion aggregateVersionRequested) throws EventStoreException;
 
     Optional<VersionizedAggregateRoot<A>> findLastVersionById(K id);
 }

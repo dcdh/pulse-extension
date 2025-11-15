@@ -108,9 +108,9 @@ class JdbcPostgresEventRepositoryTest {
     @Order(1)
     void shouldSave() {
         // Given
-        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(new TodoId("Damien", 1L), "lorem ipsum")));
+        final List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new NewTodoCreated("lorem ipsum")));
 
         // When
         todoEventRepository.save(givenTodoEvents,
@@ -174,8 +174,8 @@ class JdbcPostgresEventRepositoryTest {
     void shouldUpsertAggregateRoot() {
         // Given
         todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new NewTodoCreated(new TodoId("Damien", 2L), "lorem ipsum")
+                        new VersionizedEvent(new AggregateVersion(0),
+                                new NewTodoCreated("lorem ipsum")
                         )),
                 new Todo(
                         new TodoId("Damien", 2L),
@@ -186,8 +186,8 @@ class JdbcPostgresEventRepositoryTest {
 
         // When
         todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(1),
-                                new TodoMarkedAsDone(new TodoId("Damien", 2L))
+                        new VersionizedEvent(new AggregateVersion(1),
+                                new TodoMarkedAsDone()
                         )),
                 new Todo(
                         new TodoId("Damien", 2L),
@@ -264,11 +264,11 @@ class JdbcPostgresEventRepositoryTest {
     @Order(3)
     void shouldLoadOrderByVersionASC() {
         // Given
-        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(new TodoId("Damien", 3L), "lorem ipsum")),
-                new VersionizedEvent<>(new AggregateVersion(1),
-                        new TodoMarkedAsDone(new TodoId("Damien", 3L))));
+        List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new NewTodoCreated("lorem ipsum")),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new TodoMarkedAsDone()));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 3L),
@@ -278,23 +278,23 @@ class JdbcPostgresEventRepositoryTest {
                 ));
 
         // When
-        final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
+        final List<Event> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
 
         // Then
         assertThat(events).containsExactly(
-                new NewTodoCreated(new TodoId("Damien", 3L), "lorem ipsum"),
-                new TodoMarkedAsDone(new TodoId("Damien", 3L)));
+                new NewTodoCreated("lorem ipsum"),
+                new TodoMarkedAsDone());
     }
 
     @Test
     @Order(4)
     void shouldPartialLoadAggregate() {
         // Given
-        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(new TodoId("Damien", 4L), "lorem ipsum")),
-                new VersionizedEvent<>(new AggregateVersion(1),
-                        new TodoMarkedAsDone(new TodoId("Damien", 4L))));
+        List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new NewTodoCreated("lorem ipsum")),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new TodoMarkedAsDone()));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 4L),
@@ -304,13 +304,13 @@ class JdbcPostgresEventRepositoryTest {
                 ));
 
         // When
-        final List<Event<TodoId>> events = todoEventRepository.loadOrderByVersionASC(
+        final List<Event> events = todoEventRepository.loadOrderByVersionASC(
                 new TodoId("Damien", 4L), new AggregateVersion(1));
 
         // Then
         assertThat(events).containsExactly(
-                new NewTodoCreated(new TodoId("Damien", 4L), "lorem ipsum"),
-                new TodoMarkedAsDone(new TodoId("Damien", 4L)));
+                new NewTodoCreated("lorem ipsum"),
+                new TodoMarkedAsDone());
     }
 
     @Test
@@ -355,7 +355,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET event_payload = '{\"id\": \"00000000-0000-0000-0000-000000000008\", \"description\": \"lorem ipsum\"}'
+                                 UPDATE t_event SET event_payload = '{\"description\": \"lorem ipsum\"}'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000008'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -456,7 +456,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET event_payload = '{\"id\": \"00000000-0000-0000-0000-000000000013\", \"description\": \"lorem ipsum\"}'
+                                 UPDATE t_event SET event_payload = '{\"description\": \"lorem ipsum\"}'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000013'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {

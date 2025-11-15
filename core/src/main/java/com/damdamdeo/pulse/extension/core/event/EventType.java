@@ -7,7 +7,7 @@ public record EventType(String type) {
         Objects.requireNonNull(type);
     }
 
-    public static <A extends Event<?>> EventType from(Class<A> clazz) {
+    public static <A extends Event> EventType from(Class<A> clazz) {
         return new EventType(clazz.getName());
     }
 }

@@ -170,9 +170,7 @@ class TargetEventChannelConsumerTest {
 
         // language=json
         final String todoMarkedAsDonePayload = """
-                {
-                  "id": "Damien/0"
-                }
+                {}
                 """;
         final byte[] encryptedTodoMarkedAsDonePayload = openPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
 
@@ -194,7 +192,6 @@ class TargetEventChannelConsumerTest {
         // Then
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
         final ObjectNode expectedTodoMarkedAsDonePayload = objectMapper.createObjectNode();
-        expectedTodoMarkedAsDonePayload.put("id", "Damien/0");
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
         expectedAggregateRootPayload.put("id", "Damien/0");
         expectedAggregateRootPayload.put("description", "lorem ipsum");
@@ -270,9 +267,7 @@ class TargetEventChannelConsumerTest {
 
         // language=json
         final String todoMarkedAsDonePayload = """
-                {
-                  "id": "Alban/0"
-                }
+                {}
                 """;
         final byte[] encryptedTodoMarkedAsDonePayload = openPGPEncryptionService.encrypt(todoMarkedAsDonePayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
 

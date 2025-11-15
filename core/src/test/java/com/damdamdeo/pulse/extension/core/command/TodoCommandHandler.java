@@ -13,7 +13,12 @@ public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
     }
 
     @Override
-    protected Class<Todo> getAggregateClass() {
+    protected Class<Todo> getAggregateRootClass() {
         return Todo.class;
+    }
+
+    @Override
+    protected Class<TodoId> getAggregateIdClass() {
+        return TodoId.class;
     }
 }

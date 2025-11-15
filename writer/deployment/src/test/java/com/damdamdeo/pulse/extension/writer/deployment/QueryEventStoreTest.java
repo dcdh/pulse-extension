@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// FCK ...
 class QueryEventStoreTest {
 
     @RegisterExtension
@@ -57,12 +58,12 @@ class QueryEventStoreTest {
     void shouldFindByIdReturnAggregateWhenExists() {
         // Given
         final TodoId givenTodoId = new TodoId("Damien", 10L);
-        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(givenTodoId, "lorem ipsum")));
+        final List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new NewTodoCreated("lorem ipsum")));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId("Damien", 10L),
+                        givenTodoId,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
@@ -110,11 +111,11 @@ class QueryEventStoreTest {
         // Given
         final TodoId givenTodoId = new TodoId("Damien", 13L);
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
-        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(givenTodoId, "lorem ipsum")),
-                new VersionizedEvent<>(new AggregateVersion(1),
-                        new TodoMarkedAsDone(givenTodoId)));
+        final List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new NewTodoCreated("lorem ipsum")),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new TodoMarkedAsDone()));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,
@@ -142,11 +143,11 @@ class QueryEventStoreTest {
         // Given
         final TodoId givenTodoId = new TodoId("Damien", 14L);
         final AggregateVersion aggregateVersion = new AggregateVersion(0);
-        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                new VersionizedEvent<>(new AggregateVersion(0),
-                        new NewTodoCreated(givenTodoId, "lorem ipsum")),
-                new VersionizedEvent<>(new AggregateVersion(1),
-                        new TodoMarkedAsDone(givenTodoId)));
+        final List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new NewTodoCreated("lorem ipsum")),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new TodoMarkedAsDone()));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,

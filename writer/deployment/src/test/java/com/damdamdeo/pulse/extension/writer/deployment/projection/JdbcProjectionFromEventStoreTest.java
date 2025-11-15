@@ -30,14 +30,14 @@ class JdbcProjectionFromEventStoreTest {
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
-    record TodoProjection(TodoId todoId,
+    record TodoProjection(TodoId id,
                           String description,
                           Status status,
                           boolean important,
                           List<TodoChecklistProjection> checklist) implements Projection {
     }
 
-    record TodoChecklistProjection(TodoChecklistId todoChecklistId, String description) {
+    record TodoChecklistProjection(TodoChecklistId id, String description) {
     }
 
     public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
@@ -56,15 +56,14 @@ class JdbcProjectionFromEventStoreTest {
                       WHERE belongs_to = '%2$s'
                     )
                     SELECT jsonb_build_object(
-                      'todoId', d.decrypted_aggregate_root_payload -> 'id',
+                      'id', d.decrypted_aggregate_root_payload -> 'id',
                       'description', d.decrypted_aggregate_root_payload ->> 'description',
                       'status', d.decrypted_aggregate_root_payload ->> 'status',
                       'important', d.decrypted_aggregate_root_payload ->> 'important',
                       'checklist', COALESCE(
                         jsonb_agg(
                           i.decrypted_aggregate_root_payload::jsonb
-                        ) FILTER (WHERE i.aggregate_root_id IS NOT NULL),
-                        '[]'::jsonb
+                        ), '[]'::jsonb
                       )
                     ) AS response
                     FROM decrypted d
@@ -95,15 +94,14 @@ class JdbcProjectionFromEventStoreTest {
                       WHERE owned_by = '%2$s'
                     )
                     SELECT jsonb_build_object(
-                      'todoId', d.decrypted_aggregate_root_payload -> 'id',
+                      'id', d.decrypted_aggregate_root_payload -> 'id',
                       'description', d.decrypted_aggregate_root_payload ->> 'description',
                       'status', d.decrypted_aggregate_root_payload ->> 'status',
                       'important', d.decrypted_aggregate_root_payload ->> 'important',
                       'checklist', COALESCE(
                         jsonb_agg(
                           i.decrypted_aggregate_root_payload::jsonb
-                        ) FILTER (WHERE i.aggregate_root_id IS NOT NULL),
-                        '[]'::jsonb
+                        ), '[]'::jsonb
                       )
                     ) AS response
                     FROM decrypted d
@@ -140,8 +138,8 @@ class JdbcProjectionFromEventStoreTest {
     void shouldFindBy() {
         // Given
         todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new NewTodoCreated(new TodoId("Damien", 1L), "IMPORTANT: pulse extension development"))),
+                        new VersionizedEvent(new AggregateVersion(0),
+                                new NewTodoCreated("IMPORTANT: pulse extension development"))),
                 new Todo(
                         new TodoId("Damien", 1L),
                         "IMPORTANT: pulse extension development",
@@ -149,15 +147,15 @@ class JdbcProjectionFromEventStoreTest {
                         true
                 ));
         todoChecklistEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new TodoItemAdded(new TodoChecklistId(new TodoId("Damien", 1L), 0L), "Implement Projection feature"))),
+                        new VersionizedEvent(new AggregateVersion(0),
+                                new TodoItemAdded("Implement Projection feature"))),
                 new TodoChecklist(
                         new TodoChecklistId(new TodoId("Damien", 1L), 0L),
                         "Implement Projection feature"
                 ));
         todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new NewTodoCreated(new TodoId("Damien", 2L), "Organization vacancies"))),
+                        new VersionizedEvent(new AggregateVersion(0),
+                                new NewTodoCreated("Organization vacancies"))),
                 new Todo(
                         new TodoId("Damien", 2L),
                         "Organization vacancies",
@@ -165,15 +163,15 @@ class JdbcProjectionFromEventStoreTest {
                         false
                 ));
         todoChecklistEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new TodoItemAdded(new TodoChecklistId(new TodoId("Damien", 2L), 0L), "Go see family"))),
+                        new VersionizedEvent(new AggregateVersion(0),
+                                new TodoItemAdded("Go see family"))),
                 new TodoChecklist(
                         new TodoChecklistId(new TodoId("Damien", 2L), 0L),
                         "Go see family"
                 ));
         todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new NewTodoCreated(new TodoId("Bob", 0L), "Bob vacancies"))),
+                        new VersionizedEvent(new AggregateVersion(0),
+                                new NewTodoCreated("Bob vacancies"))),
                 new Todo(
                         new TodoId("Bob", 0L),
                         "Bob vacancies",

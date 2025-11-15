@@ -27,18 +27,23 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
 
     public A handle(final Command<K> command) {
         return commandHandlerRegistry.execute(command.id(), () -> transaction.joiningExisting(() -> {
-            final List<Event<K>> events = eventRepository.loadOrderByVersionASC(command.id());
-            final StateApplier<A, K> stateApplier = stateApplier(events);
+            final List<Event> events = eventRepository.loadOrderByVersionASC(command.id());
+            final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
             final A aggregate = stateApplier.executeCommand(command);
-            List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+            List<VersionizedEvent> newEvents = stateApplier.getNewEvents();
             eventRepository.save(newEvents, aggregate);
             return aggregate;
         }));
     }
 
-    abstract protected Class<A> getAggregateClass();
+    abstract protected Class<A> getAggregateRootClass();
 
-    private StateApplier<A, K> stateApplier(List<Event<K>> events) {
-        return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), events, getAggregateClass());
+    abstract protected Class<K> getAggregateIdClass();
+
+    private StateApplier<A, K> stateApplier(final List<Event> events, final K aggregateId) {
+        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(events);
+        return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), events, getAggregateRootClass(),
+                getAggregateIdClass(), aggregateId);
     }
 }

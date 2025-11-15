@@ -35,7 +35,7 @@ public class NativeProcessor {
     @BuildStep
     ReflectiveClassBuildItem registerAggregateRoots(final CombinedIndexBuildItem combinedIndexBuildItem) {
         final String[] classes = combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementations(AggregateRoot.class)
+                .getAllKnownSubclasses(AggregateRoot.class)
                 .stream()
                 .map(classInfo -> classInfo.name().toString())
                 .toArray(String[]::new);

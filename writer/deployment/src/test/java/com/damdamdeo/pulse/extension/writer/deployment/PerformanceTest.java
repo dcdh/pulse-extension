@@ -140,12 +140,12 @@ class PerformanceTest {
                 LOGGER.info("Current creation %d".formatted(i));
             }
             final TodoId givenTodoId = new TodoId("Performance", i);
-            final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                    new VersionizedEvent<>(new AggregateVersion(0),
-                            new NewTodoCreated(givenTodoId, LOREM_IPSUM)));
+            final List<VersionizedEvent> givenTodoEvents = List.of(
+                    new VersionizedEvent(new AggregateVersion(0),
+                            new NewTodoCreated(LOREM_IPSUM)));
             todoEventRepository.save(givenTodoEvents,
                     new Todo(
-                            new TodoId("Performance", i),
+                            givenTodoId,
                             LOREM_IPSUM,
                             Status.IN_PROGRESS,
                             false

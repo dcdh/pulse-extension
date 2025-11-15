@@ -43,9 +43,9 @@ class TodoCommandHandlerTest {
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE),
                 () -> verify(eventRepository, times(1)).save(
-                        List.of(new VersionizedEvent<>(
+                        List.of(new VersionizedEvent(
                                 new AggregateVersion(0),
-                                new NewTodoCreated(new TodoId("Damien", 0L), "lorem ipsum"))),
+                                new NewTodoCreated("lorem ipsum"))),
                         todoCreated
                 )
         );
@@ -67,12 +67,12 @@ class TodoCommandHandlerTest {
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.TRUE),
                 () -> verify(eventRepository, times(1)).save(
-                        List.of(new VersionizedEvent<>(
+                        List.of(new VersionizedEvent(
                                         new AggregateVersion(0),
-                                        new NewTodoCreated(new TodoId("Damien", 0L), "IMPORTANT lorem ipsum")),
-                                new VersionizedEvent<>(
+                                        new NewTodoCreated("IMPORTANT lorem ipsum")),
+                                new VersionizedEvent(
                                         new AggregateVersion(1),
-                                        new ClassifiedAsImportant(new TodoId("Damien", 0L)))),
+                                        new ClassifiedAsImportant())),
                         todoCreated)
         );
     }
@@ -81,7 +81,7 @@ class TodoCommandHandlerTest {
     void shouldMarkTodoAsDone() {
         // Given
         final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", 0L));
-        doReturn(List.of(new NewTodoCreated(new TodoId("Damien", 0L), "lorem ipsum")))
+        doReturn(List.of(new NewTodoCreated("lorem ipsum")))
                 .when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
 
         // When
@@ -94,9 +94,9 @@ class TodoCommandHandlerTest {
                 () -> assertThat(todoMarkedAsDone.status()).isEqualTo(Status.DONE),
                 () -> assertThat(todoMarkedAsDone.important()).isEqualTo(Boolean.FALSE),
                 () -> verify(eventRepository, times(1)).save(
-                        List.of(new VersionizedEvent<>(
+                        List.of(new VersionizedEvent(
                                 new AggregateVersion(1),
-                                new TodoMarkedAsDone(new TodoId("Damien", 0L)))),
+                                new TodoMarkedAsDone())),
                         todoMarkedAsDone
                 )
         );

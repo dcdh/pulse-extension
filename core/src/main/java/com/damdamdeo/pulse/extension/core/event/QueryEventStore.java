@@ -24,18 +24,23 @@ public abstract class QueryEventStore<A extends AggregateRoot<K>, K extends Aggr
                 .filter(lastVersionById -> lastVersionById.aggregateVersion().equals(aggregateVersion))
                 .map(VersionizedAggregateRoot::aggregateRoot)
                 .or(() -> {
-                    List<Event<K>> events = eventStore.loadOrderByVersionASC(id, aggregateVersion);
+                    List<Event> events = eventStore.loadOrderByVersionASC(id, aggregateVersion);
                     if (events.isEmpty()) {
                         return Optional.empty();
                     } else {
-                        return Optional.of(stateApplier(events).aggregate());
+                        return Optional.of(stateApplier(events, id).aggregate());
                     }
                 });
     }
 
-    abstract protected Class<A> getAggregateClass();
+    abstract protected Class<A> getAggregateRootClass();
 
-    private StateApplier<A, K> stateApplier(List<Event<K>> events) {
-        return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), events, getAggregateClass());
+    abstract protected Class<K> getAggregateIdClass();
+
+    private StateApplier<A, K> stateApplier(final List<Event> events, final K aggregateId) {
+        Objects.requireNonNull(events);
+        Objects.requireNonNull(aggregateId);
+        return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), events, getAggregateRootClass(),
+                getAggregateIdClass(), aggregateId);
     }
 }

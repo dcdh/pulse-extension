@@ -13,8 +13,13 @@ public final class TodoChecklistCommandHandler extends CommandHandler<TodoCheckl
     }
 
     @Override
-    protected Class<TodoChecklist> getAggregateClass() {
+    protected Class<TodoChecklist> getAggregateRootClass() {
         return TodoChecklist.class;
+    }
+
+    @Override
+    protected Class<TodoChecklistId> getAggregateIdClass() {
+        return TodoChecklistId.class;
     }
 }
 

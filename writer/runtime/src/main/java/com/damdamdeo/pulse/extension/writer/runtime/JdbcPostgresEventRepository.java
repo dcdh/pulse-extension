@@ -43,7 +43,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     DecryptionService decryptionService;
 
     @Override
-    public void save(final List<VersionizedEvent<K>> versionizedEvents, final AggregateRoot<K> aggregateRoot) throws EventStoreException {
+    public void save(final List<VersionizedEvent> versionizedEvents, final AggregateRoot<K> aggregateRoot) throws EventStoreException {
         Objects.requireNonNull(versionizedEvents);
         Objects.requireNonNull(aggregateRoot);
         if (versionizedEvents.isEmpty()) {
@@ -68,13 +68,13 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                  aggregate_root_payload = EXCLUDED.aggregate_root_payload;
                              """)) {
             connection.setAutoCommit(false);
-            final K aggregateId = versionizedEvents.getFirst().event().id();
+            final K aggregateId = aggregateRoot.id();
             final OwnedBy ownedBy = aggregateRoot.ownedBy();
             AggregateVersion lastVersion = null;
-            for (VersionizedEvent<K> versionizedEvent : versionizedEvents) {
+            for (final VersionizedEvent versionizedEvent : versionizedEvents) {
                 final String eventPayload = objectMapper.writeValueAsString(versionizedEvent.event());
                 LOGGER.fine(eventPayload);
-                eventPreparedStatement.setString(1, versionizedEvent.event().id().id());
+                eventPreparedStatement.setString(1, aggregateId.id());
                 eventPreparedStatement.setString(2, getAggregateClass().getName());
                 eventPreparedStatement.setLong(3, versionizedEvent.version().version());
                 eventPreparedStatement.setTimestamp(4, Timestamp.from(instantProvider.now()));
@@ -103,7 +103,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     }
 
     @Override
-    public List<Event<K>> loadOrderByVersionASC(K id) throws EventStoreException {
+    public List<Event> loadOrderByVersionASC(K id) throws EventStoreException {
         Objects.requireNonNull(id);
         try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement nbOfEventsStmt = connection.prepareStatement(
@@ -124,13 +124,13 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 final int nbOfEvents = nbOfEventsResultSet.getInt("nb_of_events");
                 loadStmt.setString(1, id.id());
                 loadStmt.setString(2, getAggregateClass().getName());
-                final List<Event<K>> events = new ArrayList<>(nbOfEvents);
+                final List<Event> events = new ArrayList<>(nbOfEvents);
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
                         final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
                         LOGGER.fine(new String(decryptedEventPayload.payload()));
-                        events.add((Event<K>)
+                        events.add((Event)
                                 objectMapper.readValue(decryptedEventPayload.payload(),
                                         Class.forName(resultSet.getString("event_type"))));
                     }
@@ -145,7 +145,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     }
 
     @Override
-    public List<Event<K>> loadOrderByVersionASC(final K id, final AggregateVersion aggregateVersionRequested) throws EventStoreException {
+    public List<Event> loadOrderByVersionASC(final K id, final AggregateVersion aggregateVersionRequested) throws EventStoreException {
         Objects.requireNonNull(id);
         Objects.requireNonNull(aggregateVersionRequested);
         try (final Connection connection = dataSource.get().getConnection();
@@ -158,13 +158,13 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             loadStmt.setString(1, id.id());
             loadStmt.setString(2, getAggregateClass().getName());
             loadStmt.setInt(3, aggregateVersionRequested.version());
-            final List<Event<K>> events = new ArrayList<>(aggregateVersionRequested.version());
+            final List<Event> events = new ArrayList<>(aggregateVersionRequested.version());
             try (final ResultSet resultSet = loadStmt.executeQuery()) {
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
                     final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
                     LOGGER.fine(new String(decryptedEventPayload.payload()));
-                    events.add((Event<K>)
+                    events.add((Event)
                             objectMapper.readValue(decryptedEventPayload.payload(),
                                     Class.forName(resultSet.getString("event_type"))));
                 }

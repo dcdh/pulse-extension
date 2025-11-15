@@ -40,12 +40,7 @@ class ShouldFailWhenEventNotARecordTest {
 
     // NOT needed to use addClass
     // Will be registered automatically
-    private static final class InvalidEvent implements Event<TodoId> {
-
-        @Override
-        public TodoId id() {
-            throw new RuntimeException("Should not have been called");
-        }
+    private static final class InvalidEvent implements Event {
     }
 
 }

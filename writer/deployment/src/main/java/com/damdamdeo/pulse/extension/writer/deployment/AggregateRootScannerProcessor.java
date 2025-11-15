@@ -5,11 +5,8 @@ import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildI
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
-import org.jboss.jandex.DotName;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.Type;
-
-import java.util.Optional;
 
 public class AggregateRootScannerProcessor {
 
@@ -18,15 +15,19 @@ public class AggregateRootScannerProcessor {
                             final BuildProducer<AggregateRootBuildItem> aggregateRoots) {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementations(AggregateRoot.class)
+                .getAllKnownSubclasses(AggregateRoot.class)
                 .forEach(aggregateRootClassInfo -> {
-                    final Type aggregateIdType = aggregateRootClassInfo.interfaceTypes().stream()
-                            .filter(t -> t.name().equals(DotName.createSimple(AggregateRoot.class)))
-                            .findFirst()
-                            .flatMap(t -> t.kind() == Type.Kind.PARAMETERIZED_TYPE
-                                    ? Optional.of(((ParameterizedType) t).arguments().get(0))
-                                    : Optional.empty())
-                            .orElseThrow(() -> new IllegalArgumentException("Should not be here"));
+                    final Type superType = aggregateRootClassInfo.superClassType();
+                    if (superType == null || superType.kind() != Type.Kind.PARAMETERIZED_TYPE) {
+                        throw new IllegalArgumentException("AggregateRoot subclass must specify generic parameters");
+                    }
+
+                    final ParameterizedType parameterized = superType.asParameterizedType();
+                    if (parameterized.arguments().isEmpty()) {
+                        throw new IllegalArgumentException("AggregateRoot generic type K not found");
+                    }
+
+                    final Type aggregateIdType = parameterized.arguments().get(0);
 
                     try {
                         aggregateRoots.produce(new AggregateRootBuildItem(

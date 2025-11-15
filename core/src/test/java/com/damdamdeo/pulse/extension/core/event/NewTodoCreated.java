@@ -1,13 +1,10 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-import com.damdamdeo.pulse.extension.core.TodoId;
-
 import java.util.Objects;
 
-public record NewTodoCreated(TodoId id, String description) implements Event<TodoId> {
+public record NewTodoCreated(String description) implements Event {
 
     public NewTodoCreated {
-        Objects.requireNonNull(id);
         Objects.requireNonNull(description);
     }
 }

@@ -100,10 +100,16 @@ public class CodeGenerationProcessor {
                     constructor.returnValue(null);
                 }
 
-                try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getAggregateClass", Class.class)) {
-                    getAggregateClass.setModifiers(Modifier.PROTECTED);
-                    getAggregateClass.returnValue(
-                            getAggregateClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
+                try (final MethodCreator getAggregateRootClass = beanClassCreator.getMethodCreator("getAggregateRootClass", Class.class)) {
+                    getAggregateRootClass.setModifiers(Modifier.PROTECTED);
+                    getAggregateRootClass.returnValue(
+                            getAggregateRootClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
+                }
+
+                try (final MethodCreator getAggregateRootClass = beanClassCreator.getMethodCreator("getAggregateIdClass", Class.class)) {
+                    getAggregateRootClass.setModifiers(Modifier.PROTECTED);
+                    getAggregateRootClass.returnValue(
+                            getAggregateRootClass.loadClass(aggregateRootBuildItem.aggregateIdClazz()));
                 }
 
                 writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
@@ -157,10 +163,16 @@ public class CodeGenerationProcessor {
                     constructor.returnValue(null);
                 }
 
-                try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getAggregateClass", Class.class)) {
-                    getAggregateClass.setModifiers(Modifier.PROTECTED);
-                    getAggregateClass.returnValue(
-                            getAggregateClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
+                try (final MethodCreator getAggregateRootClass = beanClassCreator.getMethodCreator("getAggregateRootClass", Class.class)) {
+                    getAggregateRootClass.setModifiers(Modifier.PROTECTED);
+                    getAggregateRootClass.returnValue(
+                            getAggregateRootClass.loadClass(aggregateRootBuildItem.aggregateRootClazz()));
+                }
+
+                try (final MethodCreator getAggregateRootClass = beanClassCreator.getMethodCreator("getAggregateIdClass", Class.class)) {
+                    getAggregateRootClass.setModifiers(Modifier.PROTECTED);
+                    getAggregateRootClass.returnValue(
+                            getAggregateRootClass.loadClass(aggregateRootBuildItem.aggregateIdClazz()));
                 }
 
                 writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
