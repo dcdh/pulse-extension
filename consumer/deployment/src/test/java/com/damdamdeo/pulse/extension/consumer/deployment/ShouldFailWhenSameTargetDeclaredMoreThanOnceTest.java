@@ -26,8 +26,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.compose.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.datasource.devservices.enabled", "false")
+            .overrideConfigKey("quarkus.devservices.enabled", "false")
             .overrideConfigKey("quarkus.arc.exclude-types",
                     "%s,%s".formatted(
                             JdbcPostgresIdempotencyRepository.class.getName(),

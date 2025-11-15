@@ -53,6 +53,7 @@ class TargetEventChannelConsumerTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClass(StatisticsEventHandler.class))
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 

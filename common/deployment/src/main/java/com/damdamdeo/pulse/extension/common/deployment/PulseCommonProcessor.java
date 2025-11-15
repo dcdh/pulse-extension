@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -185,7 +186,7 @@ public class PulseCommonProcessor {
                                final List<AdditionalVolumeBuildItem> additionalVolumeBuildItems,
                                final OutputTargetBuildItem outputTargetBuildItem,
                                // use the GeneratedResourceBuildItem only to ensure that the file will be created before compose is started
-                               final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException {
+                               final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException, InterruptedException {
         if (!composeServiceBuildItems.isEmpty()) {
             final List<ComposeServiceBuildItem.Volume> volumesToCreateOnHostSrc = new ArrayList<>();
             final Map<String, Object> root = new LinkedHashMap<>();
@@ -285,6 +286,7 @@ public class PulseCommonProcessor {
                 final Path srcResolved = whereToCreate.resolve(volume.src().substring(2));
                 Files.write(srcResolved, volume.content(), CREATE, TRUNCATE_EXISTING);
             }
+            TimeUnit.SECONDS.sleep(1L);
         }
     }
 }
