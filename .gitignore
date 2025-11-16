@@ -31,3 +31,5 @@
 /consumer/deployment/compose-devservices-pulse.yml
 /consumer/deployment/todotaking_todo.sql
 /consumer/deployment/todoclient_registered.sql
+/consumer/test-framework/target/
+/publisher/test-framework/target/
