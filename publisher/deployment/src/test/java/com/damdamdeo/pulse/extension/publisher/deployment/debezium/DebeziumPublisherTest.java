@@ -1,18 +1,15 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.damdamdeo.pulse.extension.publisher.JsonNodeEventKey;
+import com.damdamdeo.pulse.extension.publisher.JsonNodeEventValue;
+import com.damdamdeo.pulse.extension.publisher.Consumer;
+import com.damdamdeo.pulse.extension.publisher.Record;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.kafka.client.serialization.ObjectMapperDeserializer;
 import io.quarkus.test.QuarkusUnitTest;
-import io.smallrye.reactive.messaging.kafka.companion.ConsumerBuilder;
-import io.smallrye.reactive.messaging.kafka.companion.ConsumerTask;
 import jakarta.inject.Inject;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
 import org.assertj.core.api.Assertions;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -22,17 +19,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class DebeziumConsumerTest {
+class DebeziumPublisherTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -44,81 +40,8 @@ class DebeziumConsumerTest {
     @Inject
     ObjectMapper objectMapper;
 
-    record JsonNodeEventKey(@JsonProperty("aggregate_root_type") String aggregateRootType,
-                            @JsonProperty("aggregate_root_id") String aggregateRootId,
-                            @JsonProperty("version") Integer version) {
-
-        public JsonNodeEventKey {
-            Objects.requireNonNull(aggregateRootType);
-            Objects.requireNonNull(aggregateRootId);
-            Objects.requireNonNull(version);
-        }
-
-        @Override
-        public String toString() {
-            return "JsonNodeEventKey{" +
-                    "aggregateRootType='" + aggregateRootType + '\'' +
-                    ", aggregateRootId='" + aggregateRootId + '\'' +
-                    ", version=" + version +
-                    '}';
-        }
-    }
-
-    record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
-                              @JsonProperty("event_type") String eventType,
-                              @JsonProperty("event_payload") byte[] eventPayload,
-                              @JsonProperty("owned_by") String ownedBy,
-                              @JsonProperty("belongs_to") String belongsTo) {
-
-        public JsonNodeEventValue {
-            Objects.requireNonNull(createDate);
-            Objects.requireNonNull(eventType);
-            Objects.requireNonNull(eventPayload);
-            Objects.requireNonNull(ownedBy);
-            Objects.requireNonNull(belongsTo);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass()) return false;
-            JsonNodeEventValue that = (JsonNodeEventValue) o;
-            return Objects.equals(ownedBy, that.ownedBy)
-                    && Objects.equals(createDate, that.createDate)
-                    && Objects.equals(eventType, that.eventType)
-                    && Arrays.equals(eventPayload, that.eventPayload)
-                    && Objects.equals(belongsTo, that.belongsTo);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo);
-        }
-
-        @Override
-        public String toString() {
-            return "JsonNodeEventRecord{" +
-                    "createDate=" + createDate +
-                    ", eventType='" + eventType + '\'' +
-                    ", eventPayload=" + Arrays.toString(eventPayload) +
-                    ", ownedBy='" + ownedBy + '\'' +
-                    ", belongsTo='" + belongsTo + '\'' +
-                    '}';
-        }
-    }
-
-    public static final class JsonNodeEventKeyObjectMapperDeserializer extends ObjectMapperDeserializer<JsonNodeEventKey> {
-
-        public JsonNodeEventKeyObjectMapperDeserializer(final ObjectMapper objectMapper) {
-            super(JsonNodeEventKey.class, objectMapper);
-        }
-    }
-
-    public static final class JsonNodeEventRecordObjectMapperDeserializer extends ObjectMapperDeserializer<JsonNodeEventValue> {
-
-        public JsonNodeEventRecordObjectMapperDeserializer(final ObjectMapper objectMapper) {
-            super(JsonNodeEventValue.class, objectMapper);
-        }
-    }
+    @Inject
+    Consumer consumer;
 
     @Test
     void shouldConsumeFromKafkaTopic() {
@@ -153,16 +76,8 @@ class DebeziumConsumerTest {
         }
 
         // When
-        final ConsumerBuilder<JsonNodeEventKey, JsonNodeEventValue> consumer = new ConsumerBuilder<>(
-                Map.of(
-                        BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
-                        AUTO_OFFSET_RESET_CONFIG, "earliest",
-                        ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID(),
-                        ConsumerConfig.GROUP_ID_CONFIG, "my-group"),
-                Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperDeserializer(objectMapper), new JsonNodeEventRecordObjectMapperDeserializer(objectMapper));
-        final ConsumerTask<JsonNodeEventKey, JsonNodeEventValue> records = consumer.fromTopics("pulse.todotaking_todo.t_event", Duration.ofSeconds(10)).awaitCompletion();
-        records.close();
-        final Headers headers = records.getFirstRecord().headers();
+        final List<Record> records = consumer.consume("pulse.todotaking_todo.t_event");
+        final Headers headers = records.getFirst().getHeaders();
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
         // Then
         assertAll(
@@ -191,10 +106,10 @@ class DebeziumConsumerTest {
                 () -> assertThat(getValuesByKey(headers, "__source_table")).containsExactly("t_event"),
                 () -> assertThat(getValuesByKey(headers, "__source_txId")).hasSize(1),
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
-                () -> assertThat(records.count()).isEqualTo(1L),
-                () -> Assertions.assertThat(records.getFirstRecord().key()).isEqualTo(new JsonNodeEventKey("Todo",
+                () -> assertThat(records.size()).isEqualTo(1L),
+                () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeEventKey("Todo",
                         "Damien/0", 0)),
-                () -> Assertions.assertThat(records.getFirstRecord().value()).isEqualTo(new JsonNodeEventValue(1003_600_000_000L,// I do not understand the added part ...
+                () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(1003_600_000_000L,// I do not understand the added part ...
                         "NewTodoCreated",
                         // language=json
                         """
