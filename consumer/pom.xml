@@ -14,6 +14,7 @@
 
     <modules>
         <module>runtime</module>
+        <module>test-framework</module>
         <module>deployment</module>
     </modules>
 </project>
