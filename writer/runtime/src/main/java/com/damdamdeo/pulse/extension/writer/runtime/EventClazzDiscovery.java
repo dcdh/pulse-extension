@@ -9,7 +9,8 @@ public abstract class EventClazzDiscovery {
         if (!mappings.containsKey(eventClassName)) {
             throw new IllegalStateException("Should not be here !");
         } else {
-            return Class.forName(mappings.get(eventClassName));
+            final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            return cl.loadClass(mappings.get(eventClassName));
         }
     }
 

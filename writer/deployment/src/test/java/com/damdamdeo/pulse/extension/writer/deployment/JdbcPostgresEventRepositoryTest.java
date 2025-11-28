@@ -257,10 +257,6 @@ class JdbcPostgresEventRepositoryTest {
         }
     }
 
-    /**
-     * Must have the property *quarkus.class-loading.parent-first-artifacts* defined to *com.damdamdeo:pulse-core:tests*.
-     * Events created from store will not belong to the same classloader as events created in this test.
-     */
     @Test
     @Order(3)
     void shouldLoadOrderByVersionASC() {
