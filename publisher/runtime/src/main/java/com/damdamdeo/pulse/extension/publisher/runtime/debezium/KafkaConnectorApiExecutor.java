@@ -16,7 +16,9 @@ public final class KafkaConnectorApiExecutor {
 
     public KafkaConnectorApiExecutor(final DebeziumConfiguration debeziumConfiguration) {
         this.kafkaConnectorApi = QuarkusRestClientBuilder.newBuilder()
-                .baseUri(URI.create("http://localhost:%d".formatted(debeziumConfiguration.connect().port())))
+                .baseUri(URI.create("http://%s:%d".formatted(
+                        debeziumConfiguration.connect().host(),
+                        debeziumConfiguration.connect().port())))
                 .build(KafkaConnectorApi.class);
     }
 

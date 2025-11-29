@@ -32,7 +32,13 @@ public interface DebeziumConfiguration {
         PostgresConfiguration postgres();
 
         /**
-         * Debezium connect's port
+         * Debezium connect's host - default to localhost
+         */
+        @WithDefault("localhost")
+        String host();
+
+        /**
+         * Debezium connect's port - default to 8083
          */
         @WithDefault("8083")
         Integer port();
