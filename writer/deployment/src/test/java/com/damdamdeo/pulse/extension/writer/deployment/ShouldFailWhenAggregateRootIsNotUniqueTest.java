@@ -37,7 +37,7 @@ public class ShouldFailWhenAggregateRootIsNotUniqueTest {
 
         public static final class TodoAggregateRoot extends AggregateRoot<TodoId> {
 
-            TodoAggregateRoot(final TodoId id) {
+            public TodoAggregateRoot(final TodoId id) {
                 super(id);
             }
 

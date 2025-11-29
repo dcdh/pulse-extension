@@ -6,7 +6,7 @@ public abstract class AggregateRoot<K extends AggregateId> implements Belonging,
 
     protected final K id;
 
-    protected AggregateRoot(final K id) {
+    public AggregateRoot(final K id) {
         this.id = Objects.requireNonNull(id);
     }
 
