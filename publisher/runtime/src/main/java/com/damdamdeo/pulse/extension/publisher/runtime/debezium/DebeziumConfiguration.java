@@ -34,7 +34,8 @@ public interface DebeziumConfiguration {
         /**
          * Debezium connect's port
          */
-        Optional<Integer> port();
+        @WithDefault("8083")
+        Integer port();
 
         @ConfigGroup
         interface PostgresConfiguration {
