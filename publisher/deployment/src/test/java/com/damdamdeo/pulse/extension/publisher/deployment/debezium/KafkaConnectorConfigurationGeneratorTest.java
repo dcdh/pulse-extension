@@ -10,13 +10,18 @@ import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.json.JSONException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import java.util.regex.Matcher;
+
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class KafkaConnectorConfigurationGeneratorTest {
 
@@ -34,6 +39,23 @@ class KafkaConnectorConfigurationGeneratorTest {
     @Inject
     @ConfigProperty(name = "pulse.debezium.connect.port")
     int pulseDebeziumConnectPort;
+
+    @Test
+    void shouldExtractPostgresUrlParameters() {
+        // Given
+        final String givenJdbcPostgresUrl = "jdbc:postgresql://localhost:34879/quarkus";
+
+        // When
+        final Matcher matcher = KafkaConnectorConfigurationGenerator.JDBC_POSTGRES_PATTERN.matcher(givenJdbcPostgresUrl);
+
+        // Then
+        assertAll(
+                () -> assertThat(matcher.matches()).isTrue(),
+                () -> assertThat(matcher.group("host")).isEqualTo("localhost"),
+                () -> assertThat(matcher.group("port")).isEqualTo("34879"),
+                () -> assertThat(matcher.group("database")).isEqualTo("quarkus")
+        );
+    }
 
     @Test
     void shouldGenerateKafkaConnectorConfiguration() throws JsonProcessingException, JSONException {

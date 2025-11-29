@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBui
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.InitScriptUsageChecker;
+import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseProvider;
@@ -16,7 +17,10 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.*;
+import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
+import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
+import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -89,7 +93,7 @@ public class PulseCommonProcessor {
                 new RunTimeConfigurationDefaultBuildItem("quarkus.datasource.jdbc.max-size", "100"));
     }
 
-    public static ComposeServiceBuildItem.ServiceName POSTGRES_SERVICE_NAME = new ComposeServiceBuildItem.ServiceName("postgres");
+    public static ComposeServiceBuildItem.ServiceName POSTGRES_SERVICE_NAME = new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME);
 
     public static ComposeServiceBuildItem.ServiceName KAFKA_SERVICE_NAME = new ComposeServiceBuildItem.ServiceName("kafka");
 
@@ -98,7 +102,7 @@ public class PulseCommonProcessor {
             new ComposeServiceBuildItem.ImageName("postgres:17.6-alpine3.22"),
             new ComposeServiceBuildItem.Labels(
                     Map.of("io.quarkus.devservices.compose.wait_for.logs", ".*database system is ready to accept connections.*")),
-            new ComposeServiceBuildItem.Ports(List.of("5432")),
+            new ComposeServiceBuildItem.Ports(List.of(String.valueOf(PostgresUtils.DEFAULT_PORT))),
             ComposeServiceBuildItem.Links.ofNone(),
             new ComposeServiceBuildItem.EnvironmentVariables(
                     Map.of("POSTGRES_USER", "quarkus",

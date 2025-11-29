@@ -6,8 +6,6 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;
 
-import java.util.Optional;
-
 @ConfigMapping(prefix = "pulse.debezium")
 @ConfigRoot(phase = ConfigPhase.RUN_TIME)
 public interface DebeziumConfiguration {
@@ -27,11 +25,6 @@ public interface DebeziumConfiguration {
     interface ConnectConfiguration {
 
         /**
-         * Postgres Configuration
-         */
-        PostgresConfiguration postgres();
-
-        /**
          * Debezium connect's host - default to localhost
          */
         @WithDefault("localhost")
@@ -42,27 +35,5 @@ public interface DebeziumConfiguration {
          */
         @WithDefault("8083")
         Integer port();
-
-        @ConfigGroup
-        interface PostgresConfiguration {
-
-            /**
-             * dbName - default to quarkus
-             */
-            @WithDefault("quarkus")
-            String dbName();
-
-            /**
-             * Network name - default to postgres in dev
-             */
-            @WithDefault("postgres")
-            String networkName();
-
-            /**
-             * port - default to 5432
-             */
-            @WithDefault("5432")
-            Integer port();
-        }
     }
 }
