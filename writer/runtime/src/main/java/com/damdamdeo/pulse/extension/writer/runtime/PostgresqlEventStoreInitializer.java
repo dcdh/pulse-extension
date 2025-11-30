@@ -27,7 +27,7 @@ public final class PostgresqlEventStoreInitializer {
             .done()
             .build();
 
-    private static final String POSTGRESQL_DDL_FILE = "/sql/event-store-postgresql.ddl";
+    private static final String POSTGRESQL_DDL_FILE = "/META-INF/resources/sql/event-store-postgresql.ddl";
 
     private final DataSource dataSource;
 
