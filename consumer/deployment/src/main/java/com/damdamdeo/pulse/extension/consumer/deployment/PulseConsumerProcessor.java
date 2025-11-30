@@ -15,6 +15,7 @@ import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
@@ -114,5 +115,12 @@ public class PulseConsumerProcessor {
                     ).toList();
             additionalVolumeBuildItemBuildProducer.produce(additionalVolumeBuildItems);
         }
+    }
+
+    @BuildStep
+    ReflectiveClassBuildItem reflectiveClassBuildItem() {
+        return ReflectiveClassBuildItem
+                .builder(JsonNodeEventRecordObjectMapperDeserializer.class, JsonNodeEventKeyObjectMapperDeserializer.class)
+                .constructors().build();
     }
 }

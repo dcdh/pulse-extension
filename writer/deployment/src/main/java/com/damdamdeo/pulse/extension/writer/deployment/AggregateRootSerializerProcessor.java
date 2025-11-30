@@ -11,6 +11,7 @@ import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
 import jakarta.inject.Singleton;
@@ -113,6 +114,7 @@ public class AggregateRootSerializerProcessor {
     @BuildStep
     void generateMixins(final List<DiscoveredClassBuildItem> discoveredClassBuildItems,
                         final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
+                        final BuildProducer<ReflectiveClassBuildItem> reflectiveClassBuildItemProducer,
                         final OutputTargetBuildItem outputTargetBuildItem) {
         discoveredClassBuildItems.forEach(discovered -> {
             final String mixinClassName = discovered.getSource() + "Mixin";
@@ -120,7 +122,6 @@ public class AggregateRootSerializerProcessor {
                     .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
                     .className(mixinClassName)
                     .build()) {
-
                 // Création du constructeur @JsonCreator
                 final MethodCreator constructor = mixinClassCreator.getMethodCreator("<init>", "V",
                         toTypeArray(discovered.getFieldTypes()));
@@ -141,6 +142,7 @@ public class AggregateRootSerializerProcessor {
                 constructor.returnValue(null);
                 CodeGenerationProcessor.writeGeneratedClass(mixinClassCreator, outputTargetBuildItem);
             }
+            reflectiveClassBuildItemProducer.produce(ReflectiveClassBuildItem.builder(mixinClassName).constructors().build());
         });
         generateMixinRegistrarObjectMapper(discoveredClassBuildItems, generatedBeanBuildItemBuildProducer, outputTargetBuildItem);
     }
