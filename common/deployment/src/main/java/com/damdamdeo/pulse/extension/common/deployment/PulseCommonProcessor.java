@@ -22,6 +22,7 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
+import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -287,5 +288,17 @@ public class PulseCommonProcessor {
                 yaml.dump(root, writer);
             }
         }
+    }
+
+    /*
+    2025-11-30 15:24:58,424 ERROR [io.qua.ver.htt.run.QuarkusErrorHandler] (executor-thread-1) HTTP Request to /prise_de_commande/1/ajouterPlat failed, error id: 3d488f63-b3a7-41e9-a9e5-b3d179b96e4e-1: com.damdamdeo.pulse.extension.core.encryption.DecryptionException: org.bouncycastle.openpgp.PGPException: cannot create cipher: No such provider: BC
+        at com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService.decrypt(OpenPGPDecryptionService.java:68)
+        at com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService_ClientProxy.decrypt(Unknown Source)
+        at com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository.loadOrderByVersionASC(JdbcPostgresEventRepository.java:134)
+        at com.damdamdeo.pulse.extension.core.command.CommandHandler.lambda$handle$0(CommandHandler.java:30)
+     */
+    @BuildStep
+    BouncyCastleProviderBuildItem bouncyCastleProviderBuildItemProducer() {
+        return new BouncyCastleProviderBuildItem();
     }
 }
