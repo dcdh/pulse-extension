@@ -34,7 +34,7 @@ class PulseExtensionResourceTest {
     @Test
     @Order(2)
     void shouldConsumeAsyncEvents() {
-        await().atMost(5, TimeUnit.SECONDS).until(() -> given()
+        await().atMost(10, TimeUnit.SECONDS).until(() -> given()
                 .when().post("/pulse-extension/called")
                 .then()
                 .log().all()

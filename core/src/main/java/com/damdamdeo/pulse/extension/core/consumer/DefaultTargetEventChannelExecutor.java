@@ -85,8 +85,10 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                             decryptableEventPayload = DecryptablePayload.ofUndecryptable();
                         }
                         final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(applicationNaming, aggregateRootType, aggregateId);
-                        asyncEventChannelMessageHandler.handleMessage(target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy, decryptableEventPayload,
-                                aggregateRootSupplier);
+                        synchronized (this) {
+                            asyncEventChannelMessageHandler.handleMessage(target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy, decryptableEventPayload,
+                                    aggregateRootSupplier);
+                        }
                     } catch (final IOException e) {
                         throw new EventChannelMessageHandlerException(
                                 target, aggregateId, aggregateRootType, currentVersionInConsumption, eventType, e);

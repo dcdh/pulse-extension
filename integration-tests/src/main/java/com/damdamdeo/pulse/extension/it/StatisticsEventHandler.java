@@ -16,8 +16,8 @@ import java.util.function.Supplier;
 @ApplicationScoped
 @EventChannel(target = "statistics",
         sources = {
-                @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
-        })
+                @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo"),
+                @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")})
 public final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
     private Call call = null;
