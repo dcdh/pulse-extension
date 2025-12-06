@@ -6,11 +6,9 @@ import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.EventKey;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import java.util.Objects;
 
-@RegisterForReflection
 public record JsonNodeEventKey(@JsonProperty("aggregate_root_type") String aggregateRootType,
                                @JsonProperty("aggregate_root_id") String aggregateRootId,
                                @JsonProperty("version") Integer version) implements EventKey {

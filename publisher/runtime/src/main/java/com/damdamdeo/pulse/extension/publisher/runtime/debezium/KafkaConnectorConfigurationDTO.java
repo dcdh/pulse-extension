@@ -1,11 +1,9 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Objects;
 
-@RegisterForReflection
 public record KafkaConnectorConfigurationDTO(String name, kafkaConnectorConfigurationConfigDTO config) {
 
     public KafkaConnectorConfigurationDTO {

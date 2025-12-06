@@ -1,11 +1,9 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import java.util.Objects;
 
-@RegisterForReflection
 public record kafkaConnectorConfigurationConfigDTO(String schema,
                                                    String databaseHostname,
                                                    Integer databasePort,

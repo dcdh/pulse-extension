@@ -7,13 +7,11 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 
-@RegisterForReflection
 public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                                  @JsonProperty("event_type") String eventType,
                                  @JsonProperty("event_payload") byte[] eventPayload,
