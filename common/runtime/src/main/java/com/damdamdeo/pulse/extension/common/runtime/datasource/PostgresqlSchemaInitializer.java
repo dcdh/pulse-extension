@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.datasource;
 
-import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.Priority;
@@ -19,19 +19,19 @@ import java.util.Objects;
 public class PostgresqlSchemaInitializer {
 
     private final DataSource dataSource;
-    private final ApplicationNaming applicationNaming;
+    private final FromApplication fromApplication;
 
     public PostgresqlSchemaInitializer(final DataSource dataSource,
                                        @ConfigProperty(name = "quarkus.application.name") final String quarkusApplicationName) {
         this.dataSource = Objects.requireNonNull(dataSource);
-        this.applicationNaming = ApplicationNaming.from(quarkusApplicationName);
+        this.fromApplication = FromApplication.from(quarkusApplicationName);
     }
 
     public void onStart(@Observes @Priority(10) final StartupEvent event) throws Exception {
         try (final Connection con = dataSource.getConnection();
              final Statement stmt = con.createStatement()) {
             con.setAutoCommit(false);
-            stmt.executeUpdate("CREATE SCHEMA IF NOT EXISTS %s;".formatted(applicationNaming.value().toLowerCase()));
+            stmt.executeUpdate("CREATE SCHEMA IF NOT EXISTS %s;".formatted(fromApplication.value().toLowerCase()));
         } catch (final SQLException exception) {
             throw new RuntimeException(exception);
         }

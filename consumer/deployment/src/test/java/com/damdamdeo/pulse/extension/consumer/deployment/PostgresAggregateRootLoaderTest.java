@@ -66,14 +66,14 @@ class PostgresAggregateRootLoaderTest {
     @Test
     void shouldThrowUnknownAggregateRootExceptionWhenAggregateDoesNotExists() {
         // Given
-        final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
         final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
         final AggregateId givenAggregateId = new AnyAggregateId("Damien/Unknown");
 
         // When
         assertThatThrownBy(() ->
                 postgresAggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(
-                        givenApplicationNaming, givenAggregateRootType, givenAggregateId))
+                        givenFromApplication, givenAggregateRootType, givenAggregateId))
                 .isExactlyInstanceOf(UnknownAggregateRootException.class)
                 .hasFieldOrPropertyWithValue("aggregateRootType", AggregateRootType.from(Todo.class))
                 .hasFieldOrPropertyWithValue("aggregateId", new AnyAggregateId("Damien/Unknown"));
@@ -109,13 +109,13 @@ class PostgresAggregateRootLoaderTest {
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
-        final ApplicationNaming givenApplicationNaming = new ApplicationNaming("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
         final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
         final AggregateId givenAggregateId = new AnyAggregateId("Damien/0");
 
         // When
         final AggregateRootLoaded<JsonNode> byAggregateRootTypeAndAggregateId = postgresAggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(
-                givenApplicationNaming, givenAggregateRootType, givenAggregateId);
+                givenFromApplication, givenAggregateRootType, givenAggregateId);
 
         // Then
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();

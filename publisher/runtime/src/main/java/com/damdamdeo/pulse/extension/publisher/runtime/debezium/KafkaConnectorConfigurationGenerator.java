@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
-import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import io.quarkus.agroal.runtime.DataSourcesJdbcRuntimeConfig;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.datasource.common.runtime.DataSourceUtil;
@@ -21,13 +21,13 @@ public final class KafkaConnectorConfigurationGenerator {
             "^jdbc:postgresql://(?<host>[^/:]+):(?<port>\\d+)/(?<database>[^/]+)$");
 
     private final DebeziumConfiguration debeziumConfiguration;
-    private final ApplicationNamingProvider applicationNamingProvider;
+    private final FromApplicationProvider fromApplicationProvider;
     private final String jdbcUrl;
     private final String datasourceUsername;
     private final String datasourcePassword;
 
     public KafkaConnectorConfigurationGenerator(final DebeziumConfiguration debeziumConfiguration,
-                                                final ApplicationNamingProvider applicationNamingProvider,
+                                                final FromApplicationProvider fromApplicationProvider,
                                                 final DataSourcesJdbcRuntimeConfig dataSourcesJdbcRuntimeConfig,
                                                 final DataSourcesRuntimeConfig dataSourcesRuntimeConfig) {
         jdbcUrl = dataSourcesJdbcRuntimeConfig.dataSources().get(DataSourceUtil.DEFAULT_DATASOURCE_NAME).jdbc().url()
@@ -37,11 +37,11 @@ public final class KafkaConnectorConfigurationGenerator {
         datasourcePassword = dataSourcesRuntimeConfig.dataSources().get(DataSourceUtil.DEFAULT_DATASOURCE_NAME).password()
                 .orElseThrow(() -> new IllegalArgumentException("quarkus.datasource.password is mandatory"));
         this.debeziumConfiguration = Objects.requireNonNull(debeziumConfiguration);
-        this.applicationNamingProvider = Objects.requireNonNull(applicationNamingProvider);
+        this.fromApplicationProvider = Objects.requireNonNull(fromApplicationProvider);
     }
 
     public KafkaConnectorConfigurationDTO generateConnectorConfiguration() {
-        final ApplicationNaming applicationNaming = applicationNamingProvider.provide();
+        final FromApplication fromApplication = fromApplicationProvider.provide();
         final Matcher matcher = KafkaConnectorConfigurationGenerator.JDBC_POSTGRES_PATTERN.matcher(jdbcUrl);
         Validate.validState(matcher.matches(), "quarkus.datasource.jdbc.url '%s' is invalid".formatted(jdbcUrl));
         final String host = "localhost".equals(matcher.group("host")) ? PostgresUtils.SERVICE_NAME : matcher.group("host");
@@ -49,11 +49,11 @@ public final class KafkaConnectorConfigurationGenerator {
         final String database = matcher.group("database");
         return KafkaConnectorConfigurationDTO
                 .newBuilder()
-                .withName(applicationNaming.value().toLowerCase())
+                .withName(fromApplication.value().toLowerCase())
                 .withConfig(
                         kafkaConnectorConfigurationConfigDTO
                                 .newBuilder()
-                                .withSchema(applicationNaming.value().toLowerCase())
+                                .withSchema(fromApplication.value().toLowerCase())
                                 .withDatabaseHostname(host)
                                 .withDatabasePort(port)
                                 .withDatabaseUser(datasourceUsername)

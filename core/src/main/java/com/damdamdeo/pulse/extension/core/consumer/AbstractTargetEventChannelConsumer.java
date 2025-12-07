@@ -20,9 +20,9 @@ public abstract class AbstractTargetEventChannelConsumer<T> {
         this.idempotencyRepository = Objects.requireNonNull(idempotencyRepository);
     }
 
-    protected void handleMessage(final Target target, final ApplicationNaming source, final EventKey eventKey, final EventValue eventValue) {
+    protected void handleMessage(final Target target, final FromApplication fromApplication, final EventKey eventKey, final EventValue eventValue) {
         Objects.requireNonNull(target);
-        Objects.requireNonNull(source);
+        Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventValue);
         LOGGER.fine("Consuming on target '%s' with key '%s' and value '%s'".formatted(target.name(), eventKey, eventValue));
@@ -31,15 +31,15 @@ public abstract class AbstractTargetEventChannelConsumer<T> {
         final CurrentVersionInConsumption currentVersionInConsumption = eventKey.toCurrentVersionInConsumption();
 
         final Optional<LastConsumedAggregateVersion> lastConsumedAggregateVersion = idempotencyRepository.findLastAggregateVersionBy(
-                target, source, aggregateRootType, aggregateId);
+                target, fromApplication, aggregateRootType, aggregateId);
         if (lastConsumedAggregateVersion.isPresent() && lastConsumedAggregateVersion.get().isBelow(currentVersionInConsumption)) {
-            targetEventChannelExecutor.execute(target, source, eventKey, eventValue, lastConsumedAggregateVersion.get());
-            idempotencyRepository.upsert(target, source, eventKey);
+            targetEventChannelExecutor.execute(target, fromApplication, eventKey, eventValue, lastConsumedAggregateVersion.get());
+            idempotencyRepository.upsert(target, fromApplication, eventKey);
         } else if (lastConsumedAggregateVersion.isPresent()) {
-            targetEventChannelExecutor.onAlreadyConsumed(target, source, eventKey, eventValue);
+            targetEventChannelExecutor.onAlreadyConsumed(target, fromApplication, eventKey, eventValue);
         } else {
-            targetEventChannelExecutor.execute(target, source, eventKey, eventValue);
-            idempotencyRepository.upsert(target, source, eventKey);
+            targetEventChannelExecutor.execute(target, fromApplication, eventKey, eventValue);
+            idempotencyRepository.upsert(target, fromApplication, eventKey);
         }
     }
 }

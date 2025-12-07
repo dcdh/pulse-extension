@@ -61,7 +61,8 @@ class TargetEventChannelConsumerTest {
         }
     }
 
-    record Call(Target target,
+    record Call(FromApplication fromApplication,
+                Target target,
                 AggregateRootType aggregateRootType,
                 AggregateId aggregateId,
                 CurrentVersionInConsumption currentVersionInConsumption,
@@ -72,6 +73,7 @@ class TargetEventChannelConsumerTest {
                 DecryptablePayload<JsonNode> decryptableEventPayload,
                 AggregateRootLoaded<JsonNode> aggregateRootLoaded) {
         Call {
+            Objects.requireNonNull(fromApplication);
             Objects.requireNonNull(target);
             Objects.requireNonNull(aggregateRootType);
             Objects.requireNonNull(aggregateId);
@@ -111,7 +113,7 @@ class TargetEventChannelConsumerTest {
         // When
         final Response response = producer.produce(
                 "statistics",
-                new ApplicationNaming("TodoTaking", "Todo"),
+                new FromApplication("TodoTaking", "Todo"),
                 // language=json
                 """
                         {
@@ -141,6 +143,7 @@ class TargetEventChannelConsumerTest {
         expectedAggregateRootPayload.put("important", false);
         assertThat(statisticsEventHandler.getCall()).isEqualTo(
                 new Call(
+                        new FromApplication("TodoTaking", "Todo"),
                         new Target("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
@@ -170,7 +173,7 @@ class TargetEventChannelConsumerTest {
         // When
         final Response response = producer.produce(
                 "statistics",
-                new ApplicationNaming("TodoTaking", "Todo"),
+                new FromApplication("TodoTaking", "Todo"),
                 // language=json
                 """
                         {
@@ -194,6 +197,7 @@ class TargetEventChannelConsumerTest {
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
         assertThat(statisticsEventHandler.getCall()).isEqualTo(
                 new Call(
+                        new FromApplication("TodoTaking", "Todo"),
                         new Target("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Alban/0"),

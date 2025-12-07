@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuild
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.TargetBuildItem;
 import com.damdamdeo.pulse.extension.consumer.runtime.*;
-import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.SequentialEventChecker;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -34,10 +34,10 @@ public class PulseConsumerProcessor {
                     .stream()
                     .map(annotationInstance -> {
                         final Target target = new Target(annotationInstance.value("target").asString());
-                        final List<ApplicationNaming> sources = annotationInstance.value("sources").asArrayList().stream()
+                        final List<FromApplication> sources = annotationInstance.value("sources").asArrayList().stream()
                                 .map(annotationValue -> {
                                     final AnnotationInstance nested = annotationValue.asNested();
-                                    return ApplicationNaming.of(
+                                    return FromApplication.of(
                                             nested.value("functionalDomain").asString(),
                                             nested.value("componentName").asString());
                                 }).toList();
@@ -89,7 +89,7 @@ public class PulseConsumerProcessor {
             final List<AdditionalVolumeBuildItem> additionalVolumeBuildItems = targetBuildItems.stream()
                     .flatMap(targetBuildItem -> targetBuildItem.sources().stream())
                     .distinct()
-                    .map(ApplicationNaming::value)
+                    .map(FromApplication::value)
                     .map(String::toLowerCase)
                     .map(schemaName ->
                             new AdditionalVolumeBuildItem(

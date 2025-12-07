@@ -24,7 +24,8 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
     private TargetEventChannelConsumerTest.Call call = null;
 
     @Override
-    public void handleMessage(final Target target,
+    public void handleMessage(final FromApplication fromApplication,
+                              final Target target,
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
@@ -34,7 +35,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final OwnedBy ownedBy,
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
-        this.call = new TargetEventChannelConsumerTest.Call(
+        this.call = new TargetEventChannelConsumerTest.Call(fromApplication,
                 target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
                 encryptedPayload, ownedBy, decryptableEventPayload,
                 aggregateRootLoadedSupplier.get());

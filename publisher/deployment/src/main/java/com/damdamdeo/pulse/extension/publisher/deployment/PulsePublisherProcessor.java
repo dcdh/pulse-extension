@@ -24,7 +24,7 @@ public class PulsePublisherProcessor {
     @BuildStep
     List<AdditionalBeanBuildItem> additionalBeans() {
         return Stream.of(DebeziumConfigurator.class, KafkaConnectorApiExecutor.class,
-                        ApplicationNamingProvider.class, ConnectorNamingProvider.class,
+                        FromApplicationProvider.class, ConnectorNamingProvider.class,
                         KafkaConnectorConfigurationGenerator.class)
                 .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                 .toList();

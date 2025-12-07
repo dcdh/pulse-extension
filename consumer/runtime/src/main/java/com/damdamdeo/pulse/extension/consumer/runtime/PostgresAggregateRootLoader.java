@@ -42,15 +42,15 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
     }
 
     @Override
-    public AggregateRootLoaded<JsonNode> getByApplicationNamingAndAggregateRootTypeAndAggregateId(final ApplicationNaming applicationNaming,
+    public AggregateRootLoaded<JsonNode> getByApplicationNamingAndAggregateRootTypeAndAggregateId(final FromApplication fromApplication,
                                                                                                   final AggregateRootType aggregateRootType,
                                                                                                   final AggregateId aggregateId)
             throws UnknownAggregateRootException, AggregateRootLoaderException {
-        Objects.requireNonNull(applicationNaming);
+        Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
         try (final Connection connection = dataSource.getConnection()) {
-            connection.setSchema(applicationNaming.value().toLowerCase());
+            connection.setSchema(fromApplication.value().toLowerCase());
             try (final PreparedStatement ps = connection.prepareStatement(
                     // language=sql
                     """

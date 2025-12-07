@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -42,7 +42,7 @@ public class Producer {
     OpenPGPEncryptionService openPGPEncryptionService;
 
     public <A extends AggregateRoot<?>, B extends Event> Response produce(final String target,
-                                                                          final ApplicationNaming applicationNaming,
+                                                                          final FromApplication fromApplication,
                                                                           final String aggregateRootPayload,
                                                                           final String eventPayload,
                                                                           final AggregateId aggregateId,
@@ -71,13 +71,13 @@ public class Producer {
 
         // language=sql
         final String idempotencySql = """
-                INSERT INTO t_idempotency (target, source, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                INSERT INTO t_idempotency (target, from_application, aggregate_root_type, aggregate_root_id, last_consumed_version)
                 VALUES (?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
             ps.setString(1, target);
-            ps.setString(2, new ApplicationNaming("TodoTaking", "Todo").value());
+            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, aggregateRootClass.getSimpleName());
             ps.setString(4, aggregateId.id());
             ps.setLong(5, 0);
@@ -94,7 +94,7 @@ public class Producer {
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
                 .usingGenerator(
-                        integer -> new ProducerRecord<>("pulse.%s_%s.t_event".formatted(applicationNaming.functionalDomain().toLowerCase(), applicationNaming.componentName().toLowerCase()),
+                        integer -> new ProducerRecord<>("pulse.%s_%s.t_event".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
                                 new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 1),
                                 new JsonNodeEventValue(1_761_335_312_527L,
                                         eventClass.getSimpleName(),

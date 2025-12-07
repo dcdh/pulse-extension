@@ -32,24 +32,24 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
     }
 
     @Override
-    public Optional<LastConsumedAggregateVersion> findLastAggregateVersionBy(final Target target, final ApplicationNaming source,
+    public Optional<LastConsumedAggregateVersion> findLastAggregateVersionBy(final Target target, final FromApplication fromApplication,
                                                                              final AggregateRootType aggregateRootType, final AggregateId aggregateId) throws IdempotencyException {
         Objects.requireNonNull(target);
-        Objects.requireNonNull(source);
+        Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
         final String sql = """
                     SELECT last_consumed_version
                     FROM t_idempotency
                     WHERE target = ?
-                      AND source = ?
+                      AND from_application = ?
                       AND aggregate_root_type = ?
                       AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, target.name());
-            ps.setString(2, source.value());
+            ps.setString(2, fromApplication.value());
             ps.setString(3, aggregateRootType.type());
             ps.setString(4, aggregateId.id());
             try (final ResultSet rs = ps.executeQuery()) {
@@ -66,24 +66,24 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
 
     @Transactional(Transactional.TxType.REQUIRED)
     @Override
-    public void upsert(final Target target, final ApplicationNaming source, final EventKey eventKey) throws IdempotencyException {
+    public void upsert(final Target target, final FromApplication fromApplication, final EventKey eventKey) throws IdempotencyException {
         Objects.requireNonNull(target);
-        Objects.requireNonNull(source);
+        Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(eventKey);
         final AggregateRootType aggregateRootType = Objects.requireNonNull(eventKey.toAggregateRootType());
         final AggregateId aggregateRootId = Objects.requireNonNull(eventKey.toAggregateId());
         final CurrentVersionInConsumption currentVersionInConsumption = Objects.requireNonNull(eventKey.toCurrentVersionInConsumption());
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (target, source, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO t_idempotency (target, from_application, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?)
-                    ON CONFLICT (target, source, aggregate_root_type, aggregate_root_id)
+                    ON CONFLICT (target, from_application, aggregate_root_type, aggregate_root_id)
                     DO UPDATE SET last_consumed_version = EXCLUDED.last_consumed_version
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, target.name());
-            ps.setString(2, source.value());
+            ps.setString(2, fromApplication.value());
             ps.setString(3, aggregateRootType.type());
             ps.setString(4, aggregateRootId.id());
             ps.setInt(5, currentVersionInConsumption.version());
@@ -98,11 +98,11 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
         final String ddl = """
                     CREATE TABLE IF NOT EXISTS t_idempotency (
                         target character varying(255) not null,
-                        source character varying(255) not null,
+                        from_application character varying(255) not null,
                         aggregate_root_type character varying(255) not null,
                         aggregate_root_id character varying(255) not null,
                         last_consumed_version bigint not null,
-                        PRIMARY KEY (target, source, aggregate_root_type, aggregate_root_id)
+                        PRIMARY KEY (target, from_application, aggregate_root_type, aggregate_root_id)
                     )
                 """;
         try (final Connection connection = dataSource.getConnection();

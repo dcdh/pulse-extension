@@ -33,17 +33,17 @@ import java.util.Objects;
 
 public class CodeGenerationProcessor {
 
-    record TargetWithSource(Target target, ApplicationNaming source) {
+    record TargetWithSource(Target target, FromApplication fromApplication) {
 
         public TargetWithSource {
             Objects.requireNonNull(target);
-            Objects.requireNonNull(source);
+            Objects.requireNonNull(fromApplication);
         }
 
         public String channel() {
             return "%s-%s-%s".formatted(target.name().toLowerCase(),
-                    source.functionalDomain().toLowerCase(),
-                    source.componentName().toLowerCase());
+                    fromApplication.functionalDomain().toLowerCase(),
+                    fromApplication.componentName().toLowerCase());
         }
     }
 
@@ -58,7 +58,7 @@ public class CodeGenerationProcessor {
                 ).forEach(targetWithSource -> {
                     final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "."
                             + capitalize(targetWithSource.target().name())
-                            + capitalize(targetWithSource.source().value())
+                            + capitalize(targetWithSource.fromApplication().value())
                             + "TargetEventChannelConsumer";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
@@ -115,9 +115,9 @@ public class CodeGenerationProcessor {
                                     MethodDescriptor.ofConstructor(Target.class, String.class),
                                     consume.load(targetWithSource.target().name()));
                             final ResultHandle applicationNamingParam = consume.newInstance(
-                                    MethodDescriptor.ofConstructor(ApplicationNaming.class, String.class, String.class),
-                                    consume.load(targetWithSource.source().functionalDomain()),
-                                    consume.load(targetWithSource.source().componentName()));
+                                    MethodDescriptor.ofConstructor(FromApplication.class, String.class, String.class),
+                                    consume.load(targetWithSource.fromApplication().functionalDomain()),
+                                    consume.load(targetWithSource.fromApplication().componentName()));
                             final ResultHandle eventKeyParam = consume.invokeVirtualMethod(
                                     MethodDescriptor.ofMethod(ConsumerRecord.class, "key", Object.class), recordParam);
                             final ResultHandle eventRecordParam = consume.invokeVirtualMethod(
@@ -128,7 +128,7 @@ public class CodeGenerationProcessor {
                                             "handleMessage",
                                             void.class,
                                             Target.class,
-                                            ApplicationNaming.class,
+                                            FromApplication.class,
                                             EventKey.class,
                                             EventValue.class
                                     ),
@@ -150,8 +150,8 @@ public class CodeGenerationProcessor {
                 ).forEach(targetWithSource -> {
                     final String channelNaming = targetWithSource.channel();
                     final String topic = "pulse.%s_%s.t_event".formatted(
-                            targetWithSource.source().functionalDomain().toLowerCase(),
-                            targetWithSource.source().componentName().toLowerCase());
+                            targetWithSource.fromApplication().functionalDomain().toLowerCase(),
+                            targetWithSource.fromApplication().componentName().toLowerCase());
                     Map.of(
                                     "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",
                                     "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",

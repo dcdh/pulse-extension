@@ -52,7 +52,8 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
         @Override
-        public void handleMessage(final Target target,
+        public void handleMessage(final FromApplication fromApplication,
+                                  final Target target,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
@@ -73,7 +74,8 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     static final class StatisticsAgainEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
         @Override
-        public void handleMessage(final Target target,
+        public void handleMessage(final FromApplication fromApplication,
+                                  final Target target,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,

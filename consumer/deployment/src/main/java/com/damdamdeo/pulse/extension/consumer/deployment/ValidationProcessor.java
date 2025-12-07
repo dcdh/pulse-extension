@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
-import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -110,11 +110,11 @@ public class ValidationProcessor {
                     invalidNamings.add(InvalidNaming.ofTarget(preValidationEventChannel.target(), Target.TARGET_PATTERN));
                 }
                 for (final PreValidationSource preValidationSource : preValidationEventChannel.sources()) {
-                    if (!ApplicationNaming.PART_PATTERN.matcher(preValidationSource.functionalDomain()).matches()) {
-                        invalidNamings.add(InvalidNaming.ofFunctional(preValidationSource.functionalDomain(), ApplicationNaming.PART_PATTERN));
+                    if (!FromApplication.PART_PATTERN.matcher(preValidationSource.functionalDomain()).matches()) {
+                        invalidNamings.add(InvalidNaming.ofFunctional(preValidationSource.functionalDomain(), FromApplication.PART_PATTERN));
                     }
-                    if (!ApplicationNaming.PART_PATTERN.matcher(preValidationSource.componentName()).matches()) {
-                        invalidNamings.add(InvalidNaming.ofComponent(preValidationSource.componentName(), ApplicationNaming.PART_PATTERN));
+                    if (!FromApplication.PART_PATTERN.matcher(preValidationSource.componentName()).matches()) {
+                        invalidNamings.add(InvalidNaming.ofComponent(preValidationSource.componentName(), FromApplication.PART_PATTERN));
                     }
                 }
             }

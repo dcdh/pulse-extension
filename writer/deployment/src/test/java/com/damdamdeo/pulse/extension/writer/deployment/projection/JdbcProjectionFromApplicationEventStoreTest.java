@@ -23,7 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class JdbcProjectionFromEventStoreTest {
+class JdbcProjectionFromApplicationEventStoreTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

@@ -12,7 +12,7 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryption
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.AllFieldsVisibilityObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.common.runtime.vault.VaultPassphraseRepository;
-import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -66,10 +66,10 @@ public class PulseCommonProcessor {
     @BuildStep
     void validateApplicationNaming(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                    final BuildProducer<ValidationErrorBuildItem> validationErrorBuildItemProducer) {
-        if (!ApplicationNaming.FULL_PATTERN.matcher(applicationInfoBuildItem.getName()).matches()) {
+        if (!FromApplication.FULL_PATTERN.matcher(applicationInfoBuildItem.getName()).matches()) {
             validationErrorBuildItemProducer.produce(new ValidationErrorBuildItem(
                     new IllegalArgumentException(
-                            "Invalid application name '%s' - it should match '%s'".formatted(applicationInfoBuildItem.getName(), ApplicationNaming.FULL_PATTERN.pattern()))));
+                            "Invalid application name '%s' - it should match '%s'".formatted(applicationInfoBuildItem.getName(), FromApplication.FULL_PATTERN.pattern()))));
         }
     }
 

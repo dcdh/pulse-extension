@@ -22,8 +22,11 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
 
     private Call call = null;
 
+    private final static FromApplication TODO_TAKING_TODO = new FromApplication("TodoTaking", "Todo");
+
     @Override
-    public void handleMessage(final Target target,
+    public void handleMessage(final FromApplication fromApplication,
+                              final Target target,
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
@@ -33,17 +36,20 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
                               final OwnedBy ownedBy,
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
-        this.call = new Call(
-                target,
-                aggregateRootType,
-                aggregateId,
-                currentVersionInConsumption,
-                creationDate,
-                eventType,
-                encryptedPayload,
-                ownedBy,
-                decryptableEventPayload,
-                aggregateRootLoadedSupplier.get());
+        if (TODO_TAKING_TODO.equals(fromApplication)) {
+            this.call = new Call(
+                    fromApplication,
+                    target,
+                    aggregateRootType,
+                    aggregateId,
+                    currentVersionInConsumption,
+                    creationDate,
+                    eventType,
+                    encryptedPayload,
+                    ownedBy,
+                    decryptableEventPayload,
+                    aggregateRootLoadedSupplier.get());
+        }
     }
 
     public Call getCall() {

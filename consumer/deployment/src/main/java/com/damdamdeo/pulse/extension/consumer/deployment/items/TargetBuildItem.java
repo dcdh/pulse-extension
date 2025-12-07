@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.deployment.items;
 
-import com.damdamdeo.pulse.extension.core.consumer.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
 import io.quarkus.builder.item.MultiBuildItem;
 
@@ -10,18 +10,18 @@ import java.util.Objects;
 public final class TargetBuildItem extends MultiBuildItem {
 
     private final Target target;
-    private final List<ApplicationNaming> sources;
+    private final List<FromApplication> fromApplications;
 
-    public TargetBuildItem(final Target target, final List<ApplicationNaming> sources) {
+    public TargetBuildItem(final Target target, final List<FromApplication> fromApplications) {
         this.target = Objects.requireNonNull(target);
-        this.sources = Objects.requireNonNull(sources);
+        this.fromApplications = Objects.requireNonNull(fromApplications);
     }
 
     public Target target() {
         return target;
     }
 
-    public List<ApplicationNaming> sources() {
-        return sources;
+    public List<FromApplication> sources() {
+        return fromApplications;
     }
 }

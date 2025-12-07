@@ -2,10 +2,7 @@ package com.damdamdeo.pulse.extension.it;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.consumer.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
-import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -14,7 +11,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;
 import java.util.Objects;
 
-public record Call(Target target,
+public record Call(FromApplication fromApplication,
+                   Target target,
                    AggregateRootType aggregateRootType,
                    AggregateId aggregateId,
                    CurrentVersionInConsumption currentVersionInConsumption,
@@ -26,6 +24,7 @@ public record Call(Target target,
                    AggregateRootLoaded<JsonNode> aggregateRootLoaded) {
 
     public Call {
+        Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(target);
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);

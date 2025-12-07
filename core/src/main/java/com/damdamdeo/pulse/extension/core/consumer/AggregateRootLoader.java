@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.AggregateRootType;
 
 public interface AggregateRootLoader<T> {
 
-    AggregateRootLoaded<T> getByApplicationNamingAndAggregateRootTypeAndAggregateId(final ApplicationNaming applicationNaming,
+    AggregateRootLoaded<T> getByApplicationNamingAndAggregateRootTypeAndAggregateId(final FromApplication fromApplication,
                                                                                     final AggregateRootType aggregateRootType,
                                                                                     final AggregateId aggregateId)
             throws UnknownAggregateRootException, AggregateRootLoaderException;
