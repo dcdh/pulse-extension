@@ -33,3 +33,11 @@
 /consumer/deployment/todoclient_registered.sql
 /consumer/test-framework/target/
 /publisher/test-framework/target/
+/writer/deployment/todotaking_todo_writer.sql
+/consumer/deployment/todoclient_registered_consumer.sql
+/consumer/deployment/todotaking_todo_consumer.sql
+/consumer/deployment/todoclient_registered_target_consumer.sql
+/consumer/deployment/todotaking_todo_idempotency_consumer.sql
+/consumer/deployment/todotaking_todo_target_consumer.sql
+/integration-tests/todotaking_todo_idempotency_consumer.sql
+/integration-tests/todotaking_todo_writer.sql

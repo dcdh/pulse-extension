@@ -1,11 +1,9 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.event.Event;
-import com.damdamdeo.pulse.extension.writer.runtime.PostgresqlEventStoreInitializer;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
@@ -20,8 +18,6 @@ class ShouldFailWhenEventNotARecordTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.arc.exclude-types",
-                    "%s,%s".formatted(PostgresqlSchemaInitializer.class.getName(), PostgresqlEventStoreInitializer.class.getName()))
             .withConfigurationResource("application.properties")
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()

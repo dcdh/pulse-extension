@@ -75,7 +75,7 @@ class PerformanceTest {
                       SELECT
                         aggregate_root_id,
                         aggregate_root_type,
-                        pgp_sym_decrypt(aggregate_root_payload, '%1$s')::jsonb AS decrypted_aggregate_root_payload,
+                        public.pgp_sym_decrypt(aggregate_root_payload, '%1$s')::jsonb AS decrypted_aggregate_root_payload,
                         belongs_to
                       FROM t_aggregate_root
                       WHERE belongs_to = '%2$s'

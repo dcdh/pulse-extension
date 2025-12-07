@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
-import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
-import com.damdamdeo.pulse.extension.consumer.runtime.JdbcPostgresIdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.*;
@@ -27,8 +25,6 @@ class ShouldFailOnApplicationDuplicationTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.arc.exclude-types", JdbcPostgresIdempotencyRepository.class.getName())
-            .overrideConfigKey("quarkus.arc.exclude-types", PostgresqlSchemaInitializer.class.getName())
             .withConfigurationResource("application.properties")
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()

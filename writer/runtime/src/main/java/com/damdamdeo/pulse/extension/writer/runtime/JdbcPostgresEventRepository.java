@@ -57,13 +57,13 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                      // language=sql
                      """
                              INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to) 
-                             VALUES (?, ?, ?, ?, ?, pgp_sym_encrypt(?::text, ?), ?, ?)
+                             VALUES (?, ?, ?, ?, ?, public.pgp_sym_encrypt(?::text, ?), ?, ?)
                              """);
              final PreparedStatement aggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
                              INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
-                             VALUES (?,?,?, pgp_sym_encrypt(?::text, ?), ?, ?)
+                             VALUES (?,?,?, public.pgp_sym_encrypt(?::text, ?), ?, ?)
                              ON CONFLICT (aggregate_root_id, aggregate_root_type)
                              DO UPDATE
                              SET

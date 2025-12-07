@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.common.runtime.serialization;
 
-import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
@@ -19,7 +18,6 @@ class SerializationTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.arc.exclude-types", PostgresqlSchemaInitializer.class.getName())
             .withConfigurationResource("application.properties");
 
     @Inject

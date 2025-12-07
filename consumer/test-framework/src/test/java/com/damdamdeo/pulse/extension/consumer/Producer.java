@@ -49,7 +49,7 @@ public class Producer {
                                                                           final OwnedBy ownedBy,
                                                                           final BelongsTo belongsTo,
                                                                           final Class<A> aggregateRootClass,
-                                                                          final Class<B> eventClass) throws SQLException {
+                                                                          final Class<B> eventClass) {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
@@ -67,6 +67,8 @@ public class Producer {
             ps.setString(5, ownedBy.id());
             ps.setString(6, belongsTo.aggregateId().id());
             ps.executeUpdate();
+        } catch (final SQLException sqlException) {
+            throw new RuntimeException(sqlException);
         }
 
         // language=sql
@@ -82,6 +84,8 @@ public class Producer {
             ps.setString(4, aggregateId.id());
             ps.setLong(5, 0);
             ps.executeUpdate();
+        } catch (final SQLException sqlException) {
+            throw new RuntimeException(sqlException);
         }
 
         final byte[] encryptedEvent = openPGPEncryptionService.encrypt(eventPayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();

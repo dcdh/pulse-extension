@@ -1,0 +1,23 @@
+= INFRA
+
+== Postgres
+
+=== pgcrypto
+
+----
+quarkus=# \dx
+List of installed extensions
+Name   | Version |        Schema         |         Description
+----------+---------+-----------------------+------------------------------
+pgcrypto | 1.3     | todoclient_registered | cryptographic functions
+plpgsql  | 1.0     | pg_catalog            | PL/pgSQL procedural language
+(2 rows)
+
+quarkus=# CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA todotaking_todo;
+NOTICE:  extension "pgcrypto" already exists, skipping
+CREATE EXTENSION
+----
+
+An extension can be only loaded on only one schema ...
+
+To fix: load it inside public schema and reference function from schema public likes `public.pgp_sym_encrypt(...`

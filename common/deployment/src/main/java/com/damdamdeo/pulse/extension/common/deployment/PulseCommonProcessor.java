@@ -5,7 +5,6 @@ import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuild
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.InitScriptUsageChecker;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
-import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseProvider;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService;
@@ -59,7 +58,7 @@ public class PulseCommonProcessor {
                 .addBeanClasses(VaultPassphraseRepository.class, DefaultPassphraseGenerator.class,
                         DefaultPassphraseProvider.class, OpenPGPDecryptionService.class,
                         OpenPGPEncryptionService.class,
-                        InitScriptUsageChecker.class, PostgresqlSchemaInitializer.class)
+                        InitScriptUsageChecker.class)
                 .build();
     }
 

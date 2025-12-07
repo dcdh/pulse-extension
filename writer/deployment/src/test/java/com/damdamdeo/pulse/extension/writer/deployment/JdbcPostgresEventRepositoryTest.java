@@ -77,35 +77,6 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @Test
-    @Order(0)
-    void shouldTablesBeInitialized() {
-        // Given
-
-        // When
-        final List<String> tables = new ArrayList<>();
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(
-                     // language=sql
-                     """
-                                 SELECT table_schema, table_name
-                                 FROM information_schema.tables
-                                 ORDER BY table_schema, table_name
-                             """);
-             final ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                String schema = rs.getString("table_schema");
-                String table = rs.getString("table_name");
-                tables.add(schema + "." + table);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Then
-        assertThat(tables).contains("todotaking_todo.t_event", "todotaking_todo.t_aggregate_root");
-    }
-
-    @Test
     @Order(1)
     void shouldSave() {
         // Given

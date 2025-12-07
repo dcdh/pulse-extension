@@ -59,7 +59,10 @@ class PostgresEncryptionTest {
     // "\l" liste databases
     // "\c quarkus" le name est là
     // "\dt" lister les tables
-    // SELECT pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
+    // "\dt todotaking_todo.*" lister les tables dans le schema todotaking_todo
+    // "\df todotaking_todo.*" lister les procedure stockée dans le schema todotaking_todo
+    // "\dx" lister les extensions
+    // SELECT public.pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
     @Test
     void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() {
         // Given
@@ -68,7 +71,7 @@ class PostgresEncryptionTest {
              final PreparedStatement encryptedPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT pgp_sym_encrypt(?,?) AS encrypted
+                             SELECT public.pgp_sym_encrypt(?,?) AS encrypted
                              """
              )) {
             connection.setAutoCommit(false);
@@ -113,7 +116,7 @@ These values ensure that:
              final PreparedStatement encryptedPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT pgp_sym_decrypt_bytea(?, ?) AS decrypted
+                             SELECT public.pgp_sym_decrypt_bytea(?, ?) AS decrypted
                              """
              )) {
             connection.setAutoCommit(false);

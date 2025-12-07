@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import com.damdamdeo.pulse.extension.core.event.Event;
-import com.damdamdeo.pulse.extension.writer.runtime.PostgresqlEventStoreInitializer;
 import io.quarkus.test.QuarkusUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -18,8 +16,6 @@ public class ShouldFailWhenEventIsNotUniqueTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.arc.exclude-types",
-                    "%s,%s".formatted(PostgresqlSchemaInitializer.class.getName(), PostgresqlEventStoreInitializer.class.getName()))
             .withConfigurationResource("application.properties")
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()

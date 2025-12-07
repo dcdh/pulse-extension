@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
-import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresqlSchemaInitializer;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -21,7 +20,6 @@ class VaultPassphraseRepositoryTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.arc.exclude-types", PostgresqlSchemaInitializer.class.getName())
             .withConfigurationResource("application.properties");
 
     private static final String SECRET_PATH = "secret/owner/Damien";
