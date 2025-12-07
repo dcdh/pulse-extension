@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
+import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.writer.deployment.items.DiscoveredClassBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.MixinRegistrationObjectMapperCustomizer;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -24,20 +25,23 @@ import java.util.*;
 
 import static io.quarkus.gizmo.Type.parameterizedType;
 
-public class AggregateRootSerializerProcessor {
+public class SerializerProcessor {
 
     @BuildStep
     public List<DiscoveredClassBuildItem> discoverAggregateFields(final CombinedIndexBuildItem indexItem) {
         final IndexView index = indexItem.getIndex();
 
-        final Collection<ClassInfo> aggregates =
-                index.getAllKnownSubclasses(DotName.createSimple(AggregateRoot.class));
-
         final List<DiscoveredClassBuildItem> buildItems = new ArrayList<>();
         final Set<DotName> visited = new HashSet<>();
 
+        final Collection<ClassInfo> aggregates = index.getAllKnownSubclasses(DotName.createSimple(AggregateRoot.class));
         for (final ClassInfo aggregate : aggregates) {
             collectFieldsRecursive(aggregate.name(), index, visited, buildItems);
+        }
+
+        final Collection<ClassInfo> events = index.getAllKnownImplementations(DotName.createSimple(Event.class));
+        for (final ClassInfo event : events) {
+            collectFieldsRecursive(event.name(), index, visited, buildItems);
         }
 
         return buildItems;
@@ -143,6 +147,7 @@ public class AggregateRootSerializerProcessor {
                 CodeGenerationProcessor.writeGeneratedClass(mixinClassCreator, outputTargetBuildItem);
             }
             reflectiveClassBuildItemProducer.produce(ReflectiveClassBuildItem.builder(mixinClassName).constructors().build());
+            reflectiveClassBuildItemProducer.produce(ReflectiveClassBuildItem.builder(discovered.getSource().toString()).constructors().build());
         });
         generateMixinRegistrarObjectMapper(discoveredClassBuildItems, generatedBeanBuildItemBuildProducer, outputTargetBuildItem);
     }

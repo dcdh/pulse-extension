@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.runtime.serializer;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -104,6 +106,34 @@ public class SerializerTest {
         }
     }
 
+    public record NombreDeConvives(Integer nombre) {
+
+        public NombreDeConvives {
+            Objects.requireNonNull(nombre);
+        }
+    }
+
+    public record CommandeEnCoursDePrise(NombreDeConvives nombreDeConvives) implements Event {
+
+        public CommandeEnCoursDePrise {
+            Objects.requireNonNull(nombreDeConvives);
+        }
+    }
+
+    static class NombreDeConvivesMixIn {
+        @JsonCreator
+        public NombreDeConvivesMixIn(@JsonProperty("nombre") Integer nombre) {
+
+        }
+    }
+
+    static class CommandeEnCoursDePriseMixIn {
+        @JsonCreator
+        public CommandeEnCoursDePriseMixIn(@JsonProperty("nombreDeConvives") NombreDeConvives nombre) {
+
+        }
+    }
+
     static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
@@ -112,6 +142,8 @@ public class SerializerTest {
         OBJECT_MAPPER.addMixIn(TodoChecklist.class, TodoChecklistMixin.class);
         OBJECT_MAPPER.addMixIn(TodoChecklistId.class, TodoChecklistIdMixin.class);
         OBJECT_MAPPER.addMixIn(FullTodo.class, FullTodoMixin.class);
+        OBJECT_MAPPER.addMixIn(NombreDeConvives.class, NombreDeConvivesMixIn.class);
+        OBJECT_MAPPER.addMixIn(CommandeEnCoursDePrise.class, CommandeEnCoursDePriseMixIn.class);
     }
 
     @Test
@@ -200,5 +232,15 @@ public class SerializerTest {
                         )
                 )
         ));
+    }
+
+    @Test
+    void toto() throws JsonProcessingException {
+        // System.out.println(OBJECT_MAPPER.writeValueAsString(new CommandeEnCoursDePrise(new NombreDeConvives(10))));
+        CommandeEnCoursDePrise commandeEnCoursDePrise = OBJECT_MAPPER.readValue(
+                """
+                        {"nombreDeConvives":{"nombre":10}}
+                        """, CommandeEnCoursDePrise.class);
+        System.out.print(commandeEnCoursDePrise);
     }
 }
