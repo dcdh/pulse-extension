@@ -50,13 +50,12 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
         try (final Connection connection = dataSource.getConnection()) {
-            connection.setSchema(fromApplication.value().toLowerCase());
             try (final PreparedStatement ps = connection.prepareStatement(
                     // language=sql
                     """
-                            SELECT last_version, aggregate_root_payload, owned_by, belongs_to FROM t_aggregate_root
+                            SELECT last_version, aggregate_root_payload, owned_by, belongs_to FROM %s.t_aggregate_root
                             WHERE aggregate_root_type = ? AND aggregate_root_id = ?
-                            """)) {
+                            """.formatted(fromApplication.value().toLowerCase()))) {
                 ps.setString(1, aggregateRootType.type());
                 ps.setString(2, aggregateId.id());
                 try (final ResultSet rs = ps.executeQuery()) {
