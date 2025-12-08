@@ -235,4 +235,24 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
     public String getTopicCreationDefaultCompressionType() {
         return "zstd";
     }
+
+    @JsonProperty("publication.name")
+    public String getPublicationName() {
+        return "%s_publication".formatted(schema);
+    }
+
+    @JsonProperty("publication.autocreate.mode")
+    public String getPublicationAutocreateMode() {
+        return "all_tables";
+    }
+
+    @JsonProperty("slot.name")
+    public String getSlotName() {
+        return "%s_slot".formatted(schema);
+    }
+
+    @JsonProperty("slot.drop.on.stop")
+    public String getSlotDropOnStop() {
+        return "false";
+    }
 }

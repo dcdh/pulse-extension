@@ -148,7 +148,8 @@ public class PulseConsumerProcessor {
     @BuildStep
     ReflectiveClassBuildItem reflectiveClassBuildItem() {
         return ReflectiveClassBuildItem
-                .builder(JsonNodeEventRecordObjectMapperDeserializer.class, JsonNodeEventKeyObjectMapperDeserializer.class)
+                .builder(JsonNodeEventRecordObjectMapperDeserializer.class, JsonNodeEventKeyObjectMapperDeserializer.class,
+                        JsonNodeEventKey.class, JsonNodeEventValue.class)
                 .constructors().build();
     }
 }

@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.EventKey;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
@@ -13,6 +14,7 @@ public record JsonNodeEventKey(@JsonProperty("aggregate_root_type") String aggre
                                @JsonProperty("aggregate_root_id") String aggregateRootId,
                                @JsonProperty("version") Integer version) implements EventKey {
 
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public JsonNodeEventKey {
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateRootId);

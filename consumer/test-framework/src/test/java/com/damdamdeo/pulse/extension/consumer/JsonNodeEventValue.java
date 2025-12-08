@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Arrays;
@@ -11,6 +12,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                                  @JsonProperty("owned_by") String ownedBy,
                                  @JsonProperty("belongs_to") String belongsTo) {
 
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public JsonNodeEventValue {
         Objects.requireNonNull(createDate);
         Objects.requireNonNull(eventType);

@@ -41,3 +41,4 @@
 /consumer/deployment/todotaking_todo_target_consumer.sql
 /integration-tests/todotaking_todo_idempotency_consumer.sql
 /integration-tests/todotaking_todo_writer.sql
+/publisher/deployment/todotaking_todo_writer.sql

@@ -104,7 +104,11 @@ class KafkaConnectorConfigurationGeneratorTest {
                             "topic.creation.default.replication.factor": 1,
                             "topic.creation.default.partitions": 1,
                             "topic.creation.default.cleanup.policy": "compact",
-                            "topic.creation.default.compression.type": "zstd"
+                            "topic.creation.default.compression.type": "zstd",
+                            "publication.name": "todotaking_todo_publication",
+                            "publication.autocreate.mode": "all_tables",
+                            "slot.name": "todotaking_todo_slot",
+                            "slot.drop.on.stop": "false"
                           }
                         }
                         """, jsonConfiguration, JSONCompareMode.STRICT);
