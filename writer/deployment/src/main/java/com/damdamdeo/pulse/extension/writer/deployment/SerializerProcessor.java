@@ -73,13 +73,17 @@ public class SerializerProcessor {
         final List<DotName> fieldTypes = new ArrayList<>();
         final List<String> fieldNames = new ArrayList<>();
 
-        for (int parameterIndex = 0; parameterIndex < longestConstructor.parametersCount(); parameterIndex++) {
-            final Type parameterType = longestConstructor.parameterType(parameterIndex);
-            final String parameterName = longestConstructor.parameterName(parameterIndex);
-            fieldTypes.add(parameterType.name());
-            fieldNames.add(parameterName);
-            if (shouldTraverse(parameterType, index)) {
-                collectFieldsRecursive(parameterType.name(), index, visited, buildItems);
+        for (int i = 0; i < longestConstructor.parametersCount(); i++) {
+            Type paramType = longestConstructor.parameterType(i);
+            String paramName = longestConstructor.parameterName(i);
+
+            fieldTypes.add(paramType.name());
+            fieldNames.add(paramName);
+
+            // resolve ALL possible types (List<T> -> T, Map<K,V> -> K & V)
+            List<DotName> traversables = resolveTraversableAll(paramType, index);
+            for (DotName t : traversables) {
+                collectFieldsRecursive(t, index, visited, buildItems);
             }
         }
         if (!fieldTypes.isEmpty()) {
@@ -87,32 +91,89 @@ public class SerializerProcessor {
         }
     }
 
-    private boolean shouldTraverse(final Type type, final IndexView index) {
+    private List<DotName> resolveTraversableAll(final Type type, final IndexView index) {
         if (type == null) {
-            return false;
+            return List.of();
         }
-        // Ignore primitives
+
+        // ----- Arrays : MyType[] -----
+        if (type.kind() == Type.Kind.ARRAY) {
+            Type component = type.asArrayType().component();
+            return resolveTraversableAll(component, index);
+        }
+
+        // ----- Parameterized types -----
+        if (type.kind() == Type.Kind.PARAMETERIZED_TYPE) {
+            ParameterizedType p = type.asParameterizedType();
+            DotName raw = p.name();
+
+            // ---- Collections ----
+            if (isCollection(raw)) {
+                if (p.arguments().size() == 1) {
+                    return resolveTraversableAll(p.arguments().get(0), index);
+                }
+                return List.of();
+            }
+
+            // ---- Maps ----
+            if (isMap(raw)) {
+                if (p.arguments().size() == 2) {
+                    Type key = p.arguments().get(0);
+                    Type value = p.arguments().get(1);
+
+                    List<DotName> result = new ArrayList<>();
+                    result.addAll(resolveTraversableAll(key, index));
+                    result.addAll(resolveTraversableAll(value, index));
+                    return result;
+                }
+                return List.of();
+            }
+        }
+
+        // ----- Primitives -----
         if (type.kind() == Type.Kind.PRIMITIVE) {
-            return false;
+            return List.of();
         }
-        final DotName name = type.name();
+
+        // ----- Raw class -----
+        DotName name = type.name();
         if (name == null) {
-            return false;
+            return List.of();
         }
-        final String nameAsString = name.toString();
-        // Ignore Java standard
-        if (nameAsString.startsWith("java.")
-                || nameAsString.startsWith("javax.")
-                || nameAsString.startsWith("jakarta.")) {
-            return false;
+
+        String fqcn = name.toString();
+
+        // Ignore built-in types
+        if (fqcn.startsWith("javax.")
+                || fqcn.startsWith("jakarta.")
+                || fqcn.startsWith("java.")) {
+            return List.of();
         }
-        // Ignore types
-        final ClassInfo classInfo = index.getClassByName(name);
-        if (classInfo.isEnum() || classInfo.isAbstract() || classInfo.isAnnotation() || classInfo.isInterface()
-                || classInfo.isModule()) {
-            return false;
+
+        ClassInfo info = index.getClassByName(name);
+        if (info == null
+                || info.isEnum()
+                || info.isAbstract()
+                || info.isAnnotation()
+                || info.isInterface()
+                || info.isModule()) {
+            return List.of();
         }
-        return true;
+
+        return List.of(name); // ✔ traversable
+    }
+
+    private boolean isCollection(final DotName n) {
+        String s = n.toString();
+        return s.equals("java.util.List")
+                || s.equals("java.util.Set")
+                || s.equals("java.util.Collection")
+                || s.equals("java.util.Queue")
+                || s.equals("java.util.Deque");
+    }
+
+    private boolean isMap(final DotName n) {
+        return n.toString().equals("java.util.Map");
     }
 
     @BuildStep
