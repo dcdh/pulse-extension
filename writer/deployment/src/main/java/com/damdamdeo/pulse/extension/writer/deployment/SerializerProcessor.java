@@ -128,7 +128,7 @@ public class SerializerProcessor {
                     .build()) {
                 // Création du constructeur @JsonCreator
                 final MethodCreator constructor = mixinClassCreator.getMethodCreator("<init>", "V",
-                        toTypeArray(discovered.getFieldTypes()));
+                        toTypeArray(discovered.getFieldTypes()));// FCK ma list Object ... au lieu du type esperé
 
                 constructor.addAnnotation(JsonCreator.class);
 
