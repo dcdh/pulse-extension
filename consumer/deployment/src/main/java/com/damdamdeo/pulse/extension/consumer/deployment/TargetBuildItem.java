@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.consumer.deployment.items;
+package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Target;

@@ -112,6 +112,38 @@ class KafkaConnectorConfigurationGeneratorTest {
                           }
                         }
                         """, jsonConfiguration, JSONCompareMode.STRICT);
+        /*
+{
+  "name": "todotaking_todo_notification_mirror",
+  "config": {
+    "connector.class": "org.apache.kafka.connect.mirror.MirrorSourceConnector",
+    "source.cluster.alias": "primary",
+    "target.cluster.alias": "primary",
+    "source.cluster.bootstrap.servers": "kafka:9092",
+    "target.cluster.bootstrap.servers": "kafka:9092",
+    "topics": "pulse.todotaking_todo.t_event",
+    "topic.creation.default.replication.factor": 1,
+    "topic.creation.default.partitions": 1,
+    "topic.creation.default.cleanup.policy": "delete",
+    "topic.creation.default.retention.ms": 30000,
+    "topic.creation.default.compression.type": "zstd",
+    "replication.factor": 1,
+    "sync.topic.configs.enabled": "false",
+    "sync.topic.acls.enabled": "false",
+    "transforms": "route",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "pulse\\.todotaking_todo\\.t_event",
+    "transforms.route.replacement": "pulse.notification.todotaking_todo.t_event"
+  }
+}
+*/
+        la notification devrait etre lié à un aggregate id + root + from application
+            l'idempotency est compliqué parce que je peux avoir plusieurs application qui ecoute depuis le debut ...
+            je devrait considéré que je peux publier si la version == la version courante dans  ... mais si entre temps il y a une nouvelle version bah je ne vois pas celle - ci...
+        fuck off c'est compliqué ...
+
+
+            alors je peux faire du 2h et comme je prends le latest je n'ai pas de rejoue !
     }
 
     @Test

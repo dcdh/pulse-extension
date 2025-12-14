@@ -1,9 +1,11 @@
-package com.damdamdeo.pulse.extension.consumer.deployment;
+package com.damdamdeo.pulse.extension.consumer.deployment.notification;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKey;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKeyObjectMapperDeserializer;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventRecordObjectMapperDeserializer;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventValue;
+import com.damdamdeo.pulse.extension.consumer.runtime.notification.AbstractNotifierListener;
+import com.damdamdeo.pulse.extension.consumer.runtime.notification.NotificationChannel;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
@@ -13,6 +15,7 @@ import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
@@ -21,48 +24,46 @@ import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 
-import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
 public class CodeGenerationProcessor {
 
-    record TargetWithSource(Target target, FromApplication fromApplication) {
-
-        public TargetWithSource {
-            Objects.requireNonNull(target);
-            Objects.requireNonNull(fromApplication);
-        }
-
-        public String channel() {
-            return "consumer-%s-%s-%s".formatted(target.name().toLowerCase(),
-                    fromApplication.functionalDomain().toLowerCase(),
-                    fromApplication.componentName().toLowerCase());
-        }
+    @BuildStep
+    List<NotificationChannelBuildItem> discoverSources(final CombinedIndexBuildItem combinedIndexBuildItem) {
+        final IndexView computingIndex = combinedIndexBuildItem.getIndex();
+        return computingIndex.getAnnotations(NotificationChannel.class)
+                .stream()
+                .map(annotationInstance -> {
+                    final AnnotationInstance source = annotationInstance.value("source").asNested();
+                    return new NotificationChannelBuildItem(
+                            source.value("functionalDomain").asString(),
+                            source.value("componentName").asString()
+                    );
+                })
+                .distinct()
+                .toList();
     }
 
     @BuildStep
-    void generateTargetsEventChannelConsumer(final ApplicationInfoBuildItem applicationInfoBuildItem,
-                                             final List<TargetBuildItem> targetBuildItems,
-                                             final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
-                                             final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
-                                             final OutputTargetBuildItem outputTargetBuildItem) {
-        targetBuildItems.stream()
-                .flatMap(targetBuildItem -> targetBuildItem.sources().stream()
-                        .map(src -> new TargetWithSource(targetBuildItem.target(), src))
-                ).forEach(targetWithSource -> {
-                    final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "."
-                            + capitalize(targetWithSource.target().name())
-                            + capitalize(targetWithSource.fromApplication().value())
-                            + "TargetEventChannelConsumer";
+    void generateNotifierListener(final ApplicationInfoBuildItem applicationInfoBuildItem,
+                                  final List<NotificationChannelBuildItem> notificationChannelBuildItems,
+                                  final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
+                                  final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
+                                  final OutputTargetBuildItem outputTargetBuildItem) {
+        notificationChannelBuildItems.stream()
+                .forEach(notificationChannelBuildItem -> {
+                    final String className = AbstractNotifierListener.class.getPackageName() + "."
+                            + capitalize(notificationChannelBuildItem.functionalDomain())
+                            + capitalize(notificationChannelBuildItem.componentName())
+                            + "NotifierListener";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
                             .className(className)
@@ -111,7 +112,7 @@ public class CodeGenerationProcessor {
                                             .build());
                             consume.addAnnotation(Transactional.class);
                             consume.addAnnotation(Blocking.class);
-                            consume.addAnnotation(Incoming.class).addValue("value", targetWithSource.channel());
+                            consume.addAnnotation(Incoming.class).addValue("value", notificationChannelBuildItem.channel());
 
                             final ResultHandle recordParam = consume.getMethodParam(0);
                             final ResultHandle targetParam = consume.newInstance(
@@ -147,18 +148,16 @@ public class CodeGenerationProcessor {
                     }
                 });
 
-        targetBuildItems.stream()
-                .flatMap(targetBuildItem -> targetBuildItem.sources().stream()
-                        .map(src -> new TargetWithSource(targetBuildItem.target(), src))
-                ).forEach(targetWithSource -> {
-                    final String channelNaming = targetWithSource.channel();
-                    final String topic = "pulse.%s_%s.t_event".formatted(
-                            targetWithSource.fromApplication().functionalDomain().toLowerCase(),
-                            targetWithSource.fromApplication().componentName().toLowerCase());
+        notificationChannelBuildItems.stream()
+                .forEach(notificationChannelBuildItem -> {
+                    final String channelNaming = notificationChannelBuildItem.channel();
+                    final String topic = "pulse.notification.%s_%s.t_event".formatted(
+                            notificationChannelBuildItem.functionalDomain().toLowerCase(),
+                            notificationChannelBuildItem.componentName().toLowerCase());
                     Map.of(
-                                    "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName(),
+                                    "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName() + "_" + UUID.randomUUID(),
                                     "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",
-                                    "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",
+                                    "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "latest",
                                     "mp.messaging.incoming.%s.connector".formatted(channelNaming), "smallrye-kafka",
                                     "mp.messaging.incoming.%s.topic".formatted(channelNaming), topic,
                                     "mp.messaging.incoming.%s.key.deserializer".formatted(channelNaming), JsonNodeEventKeyObjectMapperDeserializer.class.getName(),
@@ -167,19 +166,5 @@ public class CodeGenerationProcessor {
                                     "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), EventValue.class.getName())
                             .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
                 });
-    }
-
-    public static void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {
-        classCreator.writeTo((name, data) -> {
-            final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
-            try {
-                if (Files.notExists(classGeneratedPath)) {
-                    Files.createFile(classGeneratedPath);
-                }
-                Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 }

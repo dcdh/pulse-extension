@@ -69,4 +69,6 @@ class PulseExtensionResourceTest {
                 .body("aggregateRootLoaded.ownedBy.id", is("Damien"))
                 .body("aggregateRootLoaded.belongsTo.aggregateId.id", is("Damien/20"));
     }
+
+    TODO consumer des message debezium coté code de prod puis exposer un endpoint pour tester ici !
 }

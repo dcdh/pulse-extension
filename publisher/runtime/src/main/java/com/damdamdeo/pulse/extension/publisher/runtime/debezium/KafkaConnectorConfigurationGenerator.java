@@ -40,7 +40,8 @@ public final class KafkaConnectorConfigurationGenerator {
         this.fromApplicationProvider = Objects.requireNonNull(fromApplicationProvider);
     }
 
-    public KafkaConnectorConfigurationDTO generateConnectorConfiguration() {
+    public KafkaConnectorConfigurationDTO generateConnectorConfiguration(final Target target) {
+        Objects.requireNonNull(target);
         final FromApplication fromApplication = fromApplicationProvider.provide();
         final Matcher matcher = KafkaConnectorConfigurationGenerator.JDBC_POSTGRES_PATTERN.matcher(jdbcUrl);
         Validate.validState(matcher.matches(), "quarkus.datasource.jdbc.url '%s' is invalid".formatted(jdbcUrl));
@@ -53,6 +54,7 @@ public final class KafkaConnectorConfigurationGenerator {
                 .withConfig(
                         kafkaConnectorConfigurationConfigDTO
                                 .newBuilder()
+                                .withTarget(target)
                                 .withSchema(fromApplication.value().toLowerCase())
                                 .withDatabaseHostname(host)
                                 .withDatabasePort(port)

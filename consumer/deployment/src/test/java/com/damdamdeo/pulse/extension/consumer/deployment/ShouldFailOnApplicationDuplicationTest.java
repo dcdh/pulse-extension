@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.Source;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.*;
@@ -41,8 +42,8 @@ class ShouldFailOnApplicationDuplicationTest {
     @ApplicationScoped
     @EventChannel(target = "statistics",
             sources = {
-                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo"),
-                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
+                    @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
+                    @Source(functionalDomain = "TodoTaking", componentName = "Todo")
             })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 

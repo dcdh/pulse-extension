@@ -26,16 +26,6 @@ public @interface EventChannel {
     @Nonbinding
     Source[] sources();
 
-    /**
-     * Represents a source entry with application and outbox table name.
-     */
-    @interface Source {
-
-        String functionalDomain();
-
-        String componentName();
-    }
-
     class Literal extends AnnotationLiteral<EventChannel> implements EventChannel {
 
         public static Literal of(final String target) {

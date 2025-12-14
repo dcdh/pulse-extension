@@ -47,4 +47,6 @@ class DebeziumConfiguratorTest {
                 .body("tasks[0].version", is("3.3.1.Final"))
                 .body("type", is("source"));
     }
+
+//    faire la version /connectors/todotaking_todo_notification/status
 }
