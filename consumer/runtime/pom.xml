@@ -93,11 +93,9 @@
                 <artifactId>quarkus-extension-maven-plugin</artifactId>
                 <version>${quarkus.version}</version>
                 <configuration>
-                    <!-- avoid this exception when running integration tests -->
-                    <!-- java.lang.ClassCastException: class com.damdamdeo.pulse.extension.core.event.NewTodoCreated cannot be cast to class com.damdamdeo.pulse.extension.core.Event (com.damdamdeo.pulse.extension.core.event.NewTodoCreated is in unnamed module of loader 'app'; com.damdamdeo.pulse.extension.core.Event is in unnamed module of loader io.quarkus.bootstrap.classloading.QuarkusClassLoader @3d3ba765)-->
-                    <parentFirstArtifacts>
-                        <parentFirstArtifact>com.damdamdeo:pulse-core</parentFirstArtifact>
-                    </parentFirstArtifacts>
+                    <capabilities>
+                        <provides>com.damdamdeo.pulse-consumer-extension</provides>
+                    </capabilities>
                 </configuration>
                 <executions>
                     <execution>
