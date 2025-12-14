@@ -153,6 +153,7 @@ public class CodeGenerationProcessor {
                             targetWithSource.fromApplication().functionalDomain().toLowerCase(),
                             targetWithSource.fromApplication().componentName().toLowerCase());
                     Map.of(
+                                    "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName(),
                                     "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",
                                     "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",
                                     "mp.messaging.incoming.%s.connector".formatted(channelNaming), "smallrye-kafka",
