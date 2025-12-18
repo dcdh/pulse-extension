@@ -3,27 +3,27 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.damdamdeo</groupId>
-        <artifactId>pulse-publisher-extension-parent</artifactId>
+        <groupId>com.damdamdeo.pulse</groupId>
+        <artifactId>quarkus-pulse-publisher-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-publisher-extension</artifactId>
+    <artifactId>quarkus-pulse-publisher-extension</artifactId>
     <name>Pulse Extension - Publisher Runtime</name>
 
     <dependencies>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-common-extension</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-common-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-extension-kafka-dev-service</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-extension-kafka-dev-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -68,12 +68,12 @@
             <artifactId>quarkus-rest-client-jackson</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-writer-extension</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-writer-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>

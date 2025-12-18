@@ -3,22 +3,22 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.damdamdeo</groupId>
-        <artifactId>pulse-consumer-extension-parent</artifactId>
+        <groupId>com.damdamdeo.pulse</groupId>
+        <artifactId>quarkus-pulse-consumer-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-consumer-extension</artifactId>
+    <artifactId>quarkus-pulse-consumer-extension</artifactId>
     <name>Pulse Extension - Consumer Runtime</name>
 
     <dependencies>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-extension-kafka-dev-service</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-extension-kafka-dev-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -59,8 +59,8 @@
             <version>${quarkus-vault.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-common-extension</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-common-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -68,7 +68,7 @@
             <artifactId>quarkus-messaging-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>

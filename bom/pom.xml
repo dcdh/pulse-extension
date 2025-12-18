@@ -4,29 +4,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.damdamdeo</groupId>
-        <artifactId>pulse-extension-parent</artifactId>
+        <groupId>com.damdamdeo.pulse</groupId>
+        <artifactId>quarkus-pulse-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-extension-bom</artifactId>
+    <artifactId>quarkus-pulse-extension-bom</artifactId>
     <packaging>pom</packaging>
     <name>Pulse Extension - Bom</name>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.damdamdeo</groupId>
-                <artifactId>pulse-writer-extension</artifactId>
+                <groupId>com.damdamdeo.pulse</groupId>
+                <artifactId>quarkus-pulse-writer-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.damdamdeo</groupId>
-                <artifactId>pulse-publisher-extension</artifactId>
+                <groupId>com.damdamdeo.pulse</groupId>
+                <artifactId>quarkus-pulse-publisher-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.damdamdeo</groupId>
-                <artifactId>pulse-consumer-extension</artifactId>
+                <groupId>com.damdamdeo.pulse</groupId>
+                <artifactId>quarkus-pulse-consumer-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

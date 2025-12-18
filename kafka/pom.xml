@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.damdamdeo</groupId>
-        <artifactId>pulse-extension-parent</artifactId>
+        <groupId>com.damdamdeo.pulse</groupId>
+        <artifactId>quarkus-pulse-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-extension-kafka-dev-service</artifactId>
+    <artifactId>quarkus-pulse-extension-kafka-dev-service</artifactId>
     <name>Pulse Extension - Debezium kafka for dev service</name>
 
     <build>

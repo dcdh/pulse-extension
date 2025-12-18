@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.damdamdeo</groupId>
-        <artifactId>pulse-publisher-extension-parent</artifactId>
+        <groupId>com.damdamdeo.pulse</groupId>
+        <artifactId>quarkus-pulse-publisher-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-publisher-test-framework-extension</artifactId>
+    <artifactId>quarkus-pulse-publisher-test-framework-extension</artifactId>
     <name>Pulse Extension - Publisher Test Framework</name>
 
     <dependencies>

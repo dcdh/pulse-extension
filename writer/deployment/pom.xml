@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.damdamdeo</groupId>
-        <artifactId>pulse-writer-extension-parent</artifactId>
+        <groupId>com.damdamdeo.pulse</groupId>
+        <artifactId>quarkus-pulse-writer-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-writer-extension-deployment</artifactId>
+    <artifactId>quarkus-pulse-writer-extension-deployment</artifactId>
     <name>Pulse Extension - Writer Deployment</name>
 
     <dependencies>
@@ -45,17 +45,17 @@
             <version>${quarkus-vault.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-common-extension-deployment</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-common-extension-deployment</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-writer-extension</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-writer-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>

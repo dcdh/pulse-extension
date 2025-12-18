@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.damdamdeo</groupId>
-        <artifactId>pulse-extension-parent</artifactId>
+        <groupId>com.damdamdeo.pulse</groupId>
+        <artifactId>quarkus-pulse-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>pulse-extension-integration-tests</artifactId>
+    <artifactId>quarkus-pulse-extension-integration-tests</artifactId>
     <name>Pulse Extension - Integration Tests</name>
 
     <properties>
@@ -18,8 +18,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.damdamdeo</groupId>
-                <artifactId>pulse-extension-bom</artifactId>
+                <groupId>com.damdamdeo.pulse</groupId>
+                <artifactId>quarkus-pulse-extension-bom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -28,16 +28,16 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-writer-extension</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-writer-extension</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-publisher-extension</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-publisher-extension</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
-            <artifactId>pulse-consumer-extension</artifactId>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-consumer-extension</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -48,7 +48,7 @@
             <artifactId>quarkus-messaging-kafka</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo</groupId>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
