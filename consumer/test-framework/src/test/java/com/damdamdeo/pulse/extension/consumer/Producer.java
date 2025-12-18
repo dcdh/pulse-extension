@@ -4,9 +4,9 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryption
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
-import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +32,8 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 @ApplicationScoped
 public class Producer {
 
+    public static final Passphrase PASSPHRASE = new Passphrase("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
+
     @Inject
     DataSource dataSource;
 
@@ -52,7 +54,7 @@ public class Producer {
                                                                           final Class<B> eventClass) {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
-        final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
                     INSERT INTO todotaking_todo.t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
@@ -88,7 +90,7 @@ public class Producer {
             throw new RuntimeException(sqlException);
         }
 
-        final byte[] encryptedEvent = openPGPEncryptionService.encrypt(eventPayload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        final byte[] encryptedEvent = openPGPEncryptionService.encrypt(eventPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
 
         // When
         new ProducerBuilder<>(

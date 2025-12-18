@@ -18,12 +18,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>pulse-core</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-        </dependency>
-        <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
         </dependency>
