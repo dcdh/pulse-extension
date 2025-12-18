@@ -241,7 +241,7 @@ public class PulseCommonProcessor {
                         .toList();
                 if (!mergedVolumes.isEmpty()) {
                     service.put("volumes", mergedVolumes.stream()
-                            .map(volume -> "%s:%s".formatted(volume.src(), volume.destination()))
+                            .map(volume -> "%s:%s:ro,z".formatted(volume.src(), volume.destination()))
                             .toList());
                 }
                 volumesToCreateOnHostSrc.addAll(mergedVolumes);
