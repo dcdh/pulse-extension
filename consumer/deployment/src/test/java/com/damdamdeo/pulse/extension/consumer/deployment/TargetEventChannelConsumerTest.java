@@ -21,6 +21,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class TargetEventChannelConsumerTest {
 
@@ -102,6 +104,30 @@ class TargetEventChannelConsumerTest {
 
     @Inject
     Producer producer;
+
+    @Test
+    void shouldGenerateMessagingConfiguration() {
+        assertAll(
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.group.id", String.class))
+                        .isEqualTo("TodoTaking_Todo"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.enable.auto.commit", String.class))
+                        .isEqualTo("true"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.auto.offset.reset", String.class))
+                        .isEqualTo("earliest"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.connector", String.class))
+                        .isEqualTo("smallrye-kafka"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.topic", String.class))
+                        .isEqualTo("pulse.todotaking_todo.t_event"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.key.deserializer", String.class))
+                        .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKeyObjectMapperDeserializer"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.value.deserializer", String.class))
+                        .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventRecordObjectMapperDeserializer"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.value.deserializer.key-type", String.class))
+                        .isEqualTo("com.damdamdeo.pulse.extension.core.consumer.EventKey"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-out.value.deserializer.value-type", String.class))
+                        .isEqualTo("com.damdamdeo.pulse.extension.core.consumer.EventValue")
+        );
+    }
 
     @Test
     void shouldConsumeEvent() throws SQLException {

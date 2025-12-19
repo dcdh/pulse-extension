@@ -42,7 +42,7 @@ public class CodeGenerationProcessor {
         }
 
         public String channel() {
-            return "%s-%s-%s".formatted(target.name().toLowerCase(),
+            return "%s-%s-%s-out".formatted(target.name().toLowerCase(),
                     fromApplication.functionalDomain().toLowerCase(),
                     fromApplication.componentName().toLowerCase());
         }
