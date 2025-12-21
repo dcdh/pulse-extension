@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.deployment.items;
+package com.damdamdeo.pulse.extension.common.deployment.items;
 
 import io.quarkus.builder.item.MultiBuildItem;
 import org.jboss.jandex.DotName;

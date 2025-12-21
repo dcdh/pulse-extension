@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 import static io.quarkus.gizmo.Type.parameterizedType;
 
 public class EventClazzDiscoveryProcessor {
@@ -60,7 +61,7 @@ public class EventClazzDiscoveryProcessor {
                         map, eventSimpleName, eventName);
             });
             mappingsMethod.returnValue(map);
-            CodeGenerationProcessor.writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
+            writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
         }
     }
 }

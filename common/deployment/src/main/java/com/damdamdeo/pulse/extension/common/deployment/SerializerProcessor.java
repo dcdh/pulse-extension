@@ -1,9 +1,8 @@
-package com.damdamdeo.pulse.extension.writer.deployment;
+package com.damdamdeo.pulse.extension.common.deployment;
 
-import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.event.Event;
-import com.damdamdeo.pulse.extension.writer.deployment.items.DiscoveredClassBuildItem;
-import com.damdamdeo.pulse.extension.writer.runtime.MixinRegistrationObjectMapperCustomizer;
+import com.damdamdeo.pulse.extension.common.deployment.items.DiscoveredClassBuildItem;
+import com.damdamdeo.pulse.extension.common.deployment.items.EligibleTypeForSerializationBuildItem;
+import com.damdamdeo.pulse.extension.common.runtime.serialization.MixinRegistrationObjectMapperCustomizer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.arc.Unremovable;
@@ -23,25 +22,31 @@ import org.jboss.jandex.Type;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 import static io.quarkus.gizmo.Type.parameterizedType;
 
 public class SerializerProcessor {
 
     @BuildStep
-    public List<DiscoveredClassBuildItem> discoverAggregateFields(final CombinedIndexBuildItem indexItem) {
+    public List<DiscoveredClassBuildItem> discoverAggregateFields(
+            final List<EligibleTypeForSerializationBuildItem> eligibleTypeForSerializationBuildItems,
+            final CombinedIndexBuildItem indexItem) {
         final IndexView index = indexItem.getIndex();
 
         final List<DiscoveredClassBuildItem> buildItems = new ArrayList<>();
         final Set<DotName> visited = new HashSet<>();
-
-        final Collection<ClassInfo> aggregates = index.getAllKnownSubclasses(DotName.createSimple(AggregateRoot.class));
-        for (final ClassInfo aggregate : aggregates) {
-            collectFieldsRecursive(aggregate.name(), index, visited, buildItems);
-        }
-
-        final Collection<ClassInfo> events = index.getAllKnownImplementations(DotName.createSimple(Event.class));
-        for (final ClassInfo event : events) {
-            collectFieldsRecursive(event.name(), index, visited, buildItems);
+        for (EligibleTypeForSerializationBuildItem eligibleTypeForSerializationBuildItem : eligibleTypeForSerializationBuildItems) {
+            if (eligibleTypeForSerializationBuildItem.clazz().isInterface()) {
+                final Collection<ClassInfo> clazzes = index.getAllKnownSubclasses(DotName.createSimple(eligibleTypeForSerializationBuildItem.clazz()));
+                for (final ClassInfo clazz : clazzes) {
+                    collectFieldsRecursive(clazz.name(), index, visited, buildItems);
+                }
+            } else if (eligibleTypeForSerializationBuildItem.clazz().isLocalClass()
+                    || eligibleTypeForSerializationBuildItem.clazz().isMemberClass()
+                    || eligibleTypeForSerializationBuildItem.clazz().isRecord()
+                    || eligibleTypeForSerializationBuildItem.clazz().isSealed()) {
+                collectFieldsRecursive(DotName.createSimple(eligibleTypeForSerializationBuildItem.clazz()), index, visited, buildItems);
+            }
         }
 
         return buildItems;
@@ -110,7 +115,7 @@ public class SerializerProcessor {
             // ---- Collections ----
             if (isCollection(raw)) {
                 if (p.arguments().size() == 1) {
-                    return resolveTraversableAll(p.arguments().get(0), index);
+                    return resolveTraversableAll(p.arguments().getFirst(), index);
                 }
                 return List.of();
             }
@@ -189,7 +194,7 @@ public class SerializerProcessor {
                     .build()) {
                 // Création du constructeur @JsonCreator
                 final MethodCreator constructor = mixinClassCreator.getMethodCreator("<init>", "V",
-                        toTypeArray(discovered.getFieldTypes()));// FCK ma list Object ... au lieu du type esperé
+                        toTypeArray(discovered.getFieldTypes()));
 
                 constructor.addAnnotation(JsonCreator.class);
 
@@ -205,7 +210,7 @@ public class SerializerProcessor {
                             .addValue("value", fieldName);
                 }
                 constructor.returnValue(null);
-                CodeGenerationProcessor.writeGeneratedClass(mixinClassCreator, outputTargetBuildItem);
+                writeGeneratedClass(mixinClassCreator, outputTargetBuildItem);
             }
             reflectiveClassBuildItemProducer.produce(ReflectiveClassBuildItem.builder(mixinClassName).constructors().build());
             reflectiveClassBuildItemProducer.produce(ReflectiveClassBuildItem.builder(discovered.getSource().toString()).constructors().build());
@@ -257,7 +262,7 @@ public class SerializerProcessor {
                 );
             }
             mixinsMethod.returnValue(map);
-            CodeGenerationProcessor.writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
+            writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
         }
     }
 }

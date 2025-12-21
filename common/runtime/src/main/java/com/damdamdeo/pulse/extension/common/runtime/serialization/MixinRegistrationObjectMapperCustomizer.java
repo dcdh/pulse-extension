@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.runtime;
+package com.damdamdeo.pulse.extension.common.runtime.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.jackson.ObjectMapperCustomizer;

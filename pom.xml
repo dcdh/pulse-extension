@@ -14,6 +14,7 @@
         <module>writer</module>
         <module>publisher</module>
         <module>consumer</module>
+        <module>live-notifier</module>
         <module>bom</module>
         <module>integration-tests</module>
     </modules>

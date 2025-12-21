@@ -20,12 +20,10 @@ import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
 import jakarta.inject.Singleton;
 
-import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
+
+import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 
 public class CodeGenerationProcessor {
 
@@ -215,19 +213,5 @@ public class CodeGenerationProcessor {
                         throw new RuntimeException(e);
                     }
                 });
-    }
-
-    public static void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {
-        classCreator.writeTo((name, data) -> {
-            final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
-            try {
-                if (Files.notExists(classGeneratedPath)) {
-                    Files.createFile(classGeneratedPath);
-                }
-                Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 }

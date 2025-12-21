@@ -9,7 +9,6 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.reactive.messaging.kafka.companion.ProducerBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -36,9 +35,6 @@ public class Producer {
 
     @Inject
     DataSource dataSource;
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Inject
     OpenPGPEncryptionService openPGPEncryptionService;
