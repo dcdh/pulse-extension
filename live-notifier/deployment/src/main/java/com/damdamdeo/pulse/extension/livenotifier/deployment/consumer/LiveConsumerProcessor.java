@@ -3,13 +3,11 @@ package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.items.EventBuildItem;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.JacksonHeaderBasedDeserializer;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.MessagingConsumer;
-import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.notifier.SseBroadcasterEndpoint;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
@@ -24,7 +22,7 @@ import java.util.UUID;
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 import static io.quarkus.gizmo.Type.parameterizedType;
 
-public class LiveNotifierConsumerProcessor {
+public class LiveConsumerProcessor {
 
     public static final String GENERATED_JACKSON_HEADER_BASED_DESERIALIZER_NAME = JacksonHeaderBasedDeserializer.class.getName() + "Generated";
 
@@ -42,14 +40,8 @@ public class LiveNotifierConsumerProcessor {
     }
 
     @BuildStep
-    AdditionalIndexedClassesBuildItem produceAdditionalIndexedClassesBuildItem() {
-        return new AdditionalIndexedClassesBuildItem(SseBroadcasterEndpoint.class.getName());
-    }
-
-    @BuildStep
     AdditionalBeanBuildItem produceAdditionalBeanBuildItem() {
         return AdditionalBeanBuildItem.builder()
-                .addBeanClass(SseBroadcasterEndpoint.class)
                 .addBeanClass(MessagingConsumer.class)
                 .setUnremovable().build();
     }
