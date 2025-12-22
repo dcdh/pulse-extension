@@ -12,6 +12,11 @@ public final class UnknownClient implements Client {
     }
 
     @Override
+    public boolean isUnknown() {
+        return true;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         UnknownClient that = (UnknownClient) o;
