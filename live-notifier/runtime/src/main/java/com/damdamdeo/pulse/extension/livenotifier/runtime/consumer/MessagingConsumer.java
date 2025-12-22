@@ -23,6 +23,7 @@ public class MessagingConsumer {
     public void consume(final ConsumerRecord<Void, Object> consumerRecord) {
         final String eventName = new String(consumerRecord.headers()
                 .lastHeader(MessagingLiveNotifierPublisher.EVENT_NAME).value());
-        notifyEventProducer.fire(new NotifyEvent(eventName, consumerRecord.value()));
+        // TODO
+        notifyEventProducer.fire(new NotifyEvent(eventName, consumerRecord.value(), null));
     }
 }
