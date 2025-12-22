@@ -1,30 +1,31 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.notifier;
 
+import java.security.Principal;
 import java.util.Objects;
-import java.util.UUID;
 
-public final class UnknownClient implements Client {
+public final class ConnectedClient implements Client {
 
-    private final UUID identifier;
+    private final String identifier;
 
-    public UnknownClient(final UUID identifier) {
-        this.identifier = Objects.requireNonNull(identifier);
+    public ConnectedClient(final Principal principal) {
+        Objects.requireNonNull(principal);
+        this.identifier = Objects.requireNonNull(principal.getName());
     }
 
     @Override
     public String identifier() {
-        return identifier.toString();
+        return identifier;
     }
 
     @Override
     public boolean isUnknown() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        UnknownClient that = (UnknownClient) o;
+        ConnectedClient that = (ConnectedClient) o;
         return Objects.equals(identifier, that.identifier);
     }
 

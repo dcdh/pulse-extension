@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class MessagingLiveNotifierPublisherTest {
+class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -47,9 +47,10 @@ class MessagingLiveNotifierPublisherTest {
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
 
         assertAll(
-                () -> assertThat(headersName).containsExactly("event-name", "content-type"),
+                () -> assertThat(headersName).containsExactly("event-name", "content-type", "user-id"),
                 () -> assertThat(getValuesByKey(headers, "event-name")).containsExactly("TodoEvents"),
                 () -> assertThat(getValuesByKey(headers, "content-type")).containsExactly("application/vnd.com.damdamdeo.pulse.extension.core.event.NewTodoCreated.api+json"),
+                () -> assertThat(getValuesByKey(headers, "user-id")).isEmpty(),
                 () -> assertThat(records.getFirst().getKey()).isNull(),
                 () -> JSONAssert.assertEquals(
                         // language=json
@@ -58,6 +59,21 @@ class MessagingLiveNotifierPublisherTest {
                                   "description" : "lorem ipsum"
                                 }
                                 """, records.getFirst().getValue().toPrettyString(), JSONCompareMode.STRICT));
+    }
+
+    @Test
+    void shouldHaveExpectedUserIdInHeader() {
+        // Given
+
+        // When
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"), "alice");
+
+        // Then
+        final List<Record> records = consumer.consume("pulse.live-notification.todotaking_todo");
+        final Headers headers = records.getFirst().getHeaders();
+        final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
+
+        assertThat(getValuesByKey(headers, "user-id")).containsExactly("alice");
     }
 
     @Test
@@ -85,7 +101,9 @@ class MessagingLiveNotifierPublisherTest {
         final Iterator<Header> iterator = headers.headers(key).iterator();
         while (iterator.hasNext()) {
             final Header header = iterator.next();
-            values.add(new String(header.value()));
+            if (header.value() != null) {
+                values.add(new String(header.value()));
+            }
         }
         return values;
     }

@@ -10,6 +10,8 @@ import jakarta.transaction.Transactional;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
+import java.util.Optional;
+
 @ApplicationScoped
 @Unremovable
 public class MessagingConsumer {
@@ -23,7 +25,10 @@ public class MessagingConsumer {
     public void consume(final ConsumerRecord<Void, Object> consumerRecord) {
         final String eventName = new String(consumerRecord.headers()
                 .lastHeader(MessagingLiveNotifierPublisher.EVENT_NAME).value());
-        // TODO
-        notifyEventProducer.fire(new NotifyEvent(eventName, consumerRecord.value(), null));
+        final String userId = Optional.ofNullable(consumerRecord.headers()
+                        .lastHeader(MessagingLiveNotifierPublisher.USER_ID).value())
+                .map(String::new)
+                .orElse(null);
+        notifyEventProducer.fire(new NotifyEvent(eventName, consumerRecord.value(), userId));
     }
 }

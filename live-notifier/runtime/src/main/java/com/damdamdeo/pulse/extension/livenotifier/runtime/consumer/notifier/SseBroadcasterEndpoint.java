@@ -17,6 +17,7 @@ import jakarta.ws.rs.sse.SseEventSink;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 @Path("/notifier/sse")
 @ApplicationScoped
@@ -25,7 +26,7 @@ public class SseBroadcasterEndpoint {
     @Context
     Sse sse;
 
-    private static final Map<Client, SseBroadcaster> SSE_BROADCASTERS_FOR_UNKNOW_CLIENTS = new ConcurrentHashMap<>();
+    private static final Map<Client, SseBroadcaster> SSE_BROADCASTERS_BY_CLIENT = new ConcurrentHashMap<>();
 
     @Inject
     ClientProvider clientProvider;
@@ -35,21 +36,19 @@ public class SseBroadcasterEndpoint {
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public void register(@Context SseEventSink eventSink) {
         final Client client = clientProvider.provide();
-        if (client.isUnknown()) {
-            final SseBroadcaster sseBroadcaster = sse.newBroadcaster();
-            sseBroadcaster.onClose(sseEventSink -> {
-                Log.debugv("received client disconnection {0}", sseEventSink.toString());
-                final SseBroadcaster remove = SSE_BROADCASTERS_FOR_UNKNOW_CLIENTS.remove(client);
-                remove.close();
-            });
-            sseBroadcaster.onError(((sseEventSink, throwable) -> {
-                Log.debugv("received client connection error {0} {1}", sseEventSink.toString(), throwable.toString());
-                final SseBroadcaster remove = SSE_BROADCASTERS_FOR_UNKNOW_CLIENTS.remove(client);
-                remove.close();
-            }));
-            sseBroadcaster.register(eventSink);
-            SSE_BROADCASTERS_FOR_UNKNOW_CLIENTS.put(client, sseBroadcaster);
-        }
+        final SseBroadcaster sseBroadcaster = sse.newBroadcaster();
+        sseBroadcaster.onClose(sseEventSink -> {
+            Log.debugv("received client disconnection {0}", sseEventSink.toString());
+            final SseBroadcaster remove = SSE_BROADCASTERS_BY_CLIENT.remove(client);
+            remove.close();
+        });
+        sseBroadcaster.onError(((sseEventSink, throwable) -> {
+            Log.debugv("received client connection error {0} {1}", sseEventSink.toString(), throwable.toString());
+            final SseBroadcaster remove = SSE_BROADCASTERS_BY_CLIENT.remove(client);
+            remove.close();
+        }));
+        sseBroadcaster.register(eventSink);
+        SSE_BROADCASTERS_BY_CLIENT.put(client, sseBroadcaster);
     }
 
     public void on(@Observes NotifyEvent notifyEvent) {
@@ -58,22 +57,27 @@ public class SseBroadcasterEndpoint {
                 .data(notifyEvent.type(), notifyEvent.data())
                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
                 .build();
-
         Log.infov("Broadcasting ''{0}''", notifyEvent.eventName());
+        final Function<Client, Boolean> filterOn;
         if (notifyEvent.shouldBroadcastToUnknownClients()) {
-            SSE_BROADCASTERS_FOR_UNKNOW_CLIENTS.forEach(((unknownClient, sseBroadcaster) -> {
-                sseBroadcaster.broadcast(event)
-                        .whenComplete((result, throwable) -> {
-                            if (throwable != null) {
-                                Log.warnv("Error broadcasting ''{0}'': {1}", notifyEvent.eventName(), throwable.getMessage());
-                            } else {
-                                Log.infov("Broadcast completed for event ''{0}''", notifyEvent.eventName());
-                            }
-                        });
-            }));
+            filterOn = Client::isUnknown;
         } else {
             final String identifier = notifyEvent.userId();
-            throw new UnsupportedOperationException("TODO");
+            filterOn = client -> identifier.equals(client.identifier());
         }
+        SSE_BROADCASTERS_BY_CLIENT.entrySet().stream()
+                .filter(entry -> filterOn.apply(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .forEach(sseBroadcaster -> {
+                    sseBroadcaster.broadcast(event)
+                            .whenComplete((result, throwable) -> {
+                                if (throwable != null) {
+                                    Log.warnv("Error broadcasting ''{0}'': {1}", notifyEvent.eventName(), throwable.getMessage());
+                                } else {
+                                    Log.infov("Broadcast completed for event ''{0}''", notifyEvent.eventName());
+                                }
+                            });
+                });
+
     }
 }

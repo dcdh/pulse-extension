@@ -17,13 +17,14 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
 
     public static final String CONTENT_TYPE_PREFIX = "application/vnd.";
     public static final String CONTENT_TYPE_SUFFIX = ".api+json";
+    public static final String USER_ID = "user-id";
 
     @Inject
     @Channel("live-notification-out")
     MutinyEmitter<T> emitter;
 
     @Override
-    public void publish(final String eventName, final T payload) {
+    public void publish(final String eventName, final T payload, final String userId) {
         Objects.requireNonNull(eventName);
         Objects.requireNonNull(payload);
         final String contentType = CONTENT_TYPE_PREFIX + payload.getClass().getName() + CONTENT_TYPE_SUFFIX;
@@ -32,7 +33,13 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
                         OutgoingKafkaRecordMetadata.<String>builder()
                                 .withHeaders(new RecordHeaders()
                                         .add(EVENT_NAME, eventName.getBytes())
-                                        .add(CONTENT_TYPE, contentType.getBytes(StandardCharsets.UTF_8)))
+                                        .add(CONTENT_TYPE, contentType.getBytes(StandardCharsets.UTF_8))
+                                        .add(USER_ID, userId == null ? null : userId.getBytes(StandardCharsets.UTF_8)))
                                 .build()));
+    }
+
+    @Override
+    public void publish(final String eventName, final T payload) {
+        publish(eventName, payload, null);
     }
 }

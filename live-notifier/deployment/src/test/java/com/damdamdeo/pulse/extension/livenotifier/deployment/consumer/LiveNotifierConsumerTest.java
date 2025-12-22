@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.livenotifier.SseConsumer;
+import com.damdamdeo.pulse.extension.livenotifier.deployment.AbstractMessagingTest;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierPublisher;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -8,20 +10,15 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
+import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class LiveNotifierConsumerTest {
+class LiveNotifierConsumerTest extends AbstractMessagingTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -30,46 +27,21 @@ class LiveNotifierConsumerTest {
     @Inject
     LiveNotifierPublisher<NewTodoCreated> messagingLiveNotifierPublisher;
 
+    @Inject
+    SseConsumer sseConsumer;
+
     @Test
     void shouldConsumeNotificationUsingSse() throws Exception {
         // Given
-        final Integer testPort = ConfigProvider.getConfig().getValue("quarkus.http.test-port", Integer.class);
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        final CompletableFuture<String> receivedEvent = new CompletableFuture<>();
-        executor.submit(() -> {
-            try {
-                final URL url = new URI("http://localhost:%d/notifier/sse/stream".formatted(testPort)).toURL();
-                final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestProperty("Accept", "text/event-stream");
-                connection.connect();
-
-                try (final BufferedReader reader =
-                             new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-
-                    String line;
-                    StringBuilder event = new StringBuilder();
-
-                    while ((line = reader.readLine()) != null) {
-                        if (line.isBlank()) {
-                            receivedEvent.complete(event.toString());
-                            break;
-                        }
-                        event.append(line).append("\n");
-                    }
-                }
-            } catch (final Exception exception) {
-                throw new RuntimeException(exception);
-            }
-        });
-        Thread.sleep(1000);
+        final CompletableFuture<List<String>> receivedEvents = sseConsumer.consume(null, Duration.ofSeconds(10));
 
         // When
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("another lorem ipsum"));
 
         // Then
-        final String ssePayload = receivedEvent.get(10, TimeUnit.SECONDS);
+        final List<String> ssePayload = receivedEvents.get(12, TimeUnit.SECONDS);
 
-        assertThat(ssePayload).isEqualTo(
+        assertThat(ssePayload).containsExactly(
                 """
                         content-type:application/json
                         event:TodoEvents
