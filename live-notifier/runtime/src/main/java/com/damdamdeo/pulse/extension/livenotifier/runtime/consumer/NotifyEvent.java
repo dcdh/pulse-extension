@@ -1,9 +1,11 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer;
 
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+
 import java.util.Objects;
 
 public record NotifyEvent(String eventName, Object data,
-                          String userId) {// nullable → broadcast tenant
+                          OwnedBy ownedBy) {// nullable → broadcast all
 
     public NotifyEvent {
         Objects.requireNonNull(eventName);
@@ -15,6 +17,6 @@ public record NotifyEvent(String eventName, Object data,
     }
 
     public boolean shouldBroadcastToUnknownClients() {
-        return userId == null;
+        return ownedBy == null;
     }
 }

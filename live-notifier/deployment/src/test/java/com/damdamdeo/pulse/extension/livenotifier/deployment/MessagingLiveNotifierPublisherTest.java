@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.Consumer;
 import com.damdamdeo.pulse.extension.livenotifier.Record;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierPublisher;
@@ -47,10 +48,10 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
 
         assertAll(
-                () -> assertThat(headersName).containsExactly("event-name", "content-type", "user-id"),
+                () -> assertThat(headersName).containsExactly("event-name", "content-type", "owned-by"),
                 () -> assertThat(getValuesByKey(headers, "event-name")).containsExactly("TodoEvents"),
                 () -> assertThat(getValuesByKey(headers, "content-type")).containsExactly("application/vnd.com.damdamdeo.pulse.extension.core.event.NewTodoCreated.api+json"),
-                () -> assertThat(getValuesByKey(headers, "user-id")).isEmpty(),
+                () -> assertThat(getValuesByKey(headers, "owned-by")).isEmpty(),
                 () -> assertThat(records.getFirst().getKey()).isNull(),
                 () -> JSONAssert.assertEquals(
                         // language=json
@@ -66,14 +67,14 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
         // Given
 
         // When
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"), "alice");
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"), new OwnedBy("alice"));
 
         // Then
         final List<Record> records = consumer.consume("pulse.live-notification.todotaking_todo");
         final Headers headers = records.getFirst().getHeaders();
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
 
-        assertThat(getValuesByKey(headers, "user-id")).containsExactly("alice");
+        assertThat(getValuesByKey(headers, "owned-by")).containsExactly("alice");
     }
 
     @Test

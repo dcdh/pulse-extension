@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.SseConsumer;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.AbstractMessagingTest;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierPublisher;
@@ -65,10 +66,10 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
         final CompletableFuture<List<String>> receivedEvents = sseConsumer.consume(accessToken, Duration.ofSeconds(10));
 
         // When
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), "bob");
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum"), "duke");
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum"), "alice");
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob another lorem ipsum"), "bob");
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), new OwnedBy("bob"));
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum"), new OwnedBy("duke"));
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum"), new OwnedBy("alice"));
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob another lorem ipsum"), new OwnedBy("bob"));
 
         // Then
         final List<String> ssePayload = receivedEvents.get(12, TimeUnit.SECONDS);

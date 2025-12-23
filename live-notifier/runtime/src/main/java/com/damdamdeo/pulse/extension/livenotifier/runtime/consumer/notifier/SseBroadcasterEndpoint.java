@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.notifier;
 
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.NotifyEvent;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -62,8 +63,8 @@ public class SseBroadcasterEndpoint {
         if (notifyEvent.shouldBroadcastToUnknownClients()) {
             filterOn = Client::isUnknown;
         } else {
-            final String identifier = notifyEvent.userId();
-            filterOn = client -> identifier.equals(client.identifier());
+            final OwnedBy ownedBy = notifyEvent.ownedBy();
+            filterOn = client -> ownedBy.id().equals(client.identifier());
         }
         SSE_BROADCASTERS_BY_CLIENT.entrySet().stream()
                 .filter(entry -> filterOn.apply(entry.getKey()))

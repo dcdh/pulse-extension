@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer;
 
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.MessagingLiveNotifierPublisher;
 import io.quarkus.arc.Unremovable;
 import io.smallrye.common.annotation.Blocking;
@@ -25,10 +26,11 @@ public class MessagingConsumer {
     public void consume(final ConsumerRecord<Void, Object> consumerRecord) {
         final String eventName = new String(consumerRecord.headers()
                 .lastHeader(MessagingLiveNotifierPublisher.EVENT_NAME).value());
-        final String userId = Optional.ofNullable(consumerRecord.headers()
-                        .lastHeader(MessagingLiveNotifierPublisher.USER_ID).value())
+        final OwnedBy ownedBy = Optional.ofNullable(consumerRecord.headers()
+                        .lastHeader(MessagingLiveNotifierPublisher.OWNED_BY).value())
                 .map(String::new)
+                .map(OwnedBy::new)
                 .orElse(null);
-        notifyEventProducer.fire(new NotifyEvent(eventName, consumerRecord.value(), userId));
+        notifyEventProducer.fire(new NotifyEvent(eventName, consumerRecord.value(), ownedBy));
     }
 }
