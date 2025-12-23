@@ -22,16 +22,16 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 public class Consumer {
 
     public List<Record> consume(final String topic) {
-        final ConsumerBuilder<String, JsonNode> consumer = new ConsumerBuilder<>(
+        try (final ConsumerBuilder<String, JsonNode> consumer = new ConsumerBuilder<>(
                 Map.of(
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
                         AUTO_OFFSET_RESET_CONFIG, "earliest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID(),
                         ConsumerConfig.GROUP_ID_CONFIG, "my-group"),
                 Duration.ofSeconds(10), new StringDeserializer(), new ObjectMapperDeserializer<>(JsonNode.class));
-        final ConsumerTask<String, JsonNode> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion();
-        records.close();
-        return records.stream().map(record ->
-                new Record(record.headers(), record.key(), record.value())).toList();
+             final ConsumerTask<String, JsonNode> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion()) {
+            return records.stream().map(record ->
+                    new Record(record.headers(), record.key(), record.value())).toList();
+        }
     }
 }
