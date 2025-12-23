@@ -1,6 +1,12 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
+import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
+import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.reactive.messaging.MutinyEmitter;
 import io.smallrye.reactive.messaging.kafka.api.OutgoingKafkaRecordMetadata;
 import jakarta.inject.Inject;
@@ -10,8 +16,11 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.logging.Logger;
 
 public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierPublisher<T> {
+    final Logger LOGGER = Logger.getLogger(this.getClass().getName());
 
     public static final String EVENT_NAME = "event-name";
     public static final String CONTENT_TYPE = "content-type";
@@ -22,25 +31,54 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
 
     @Inject
     @Channel("live-notification-out")
-    MutinyEmitter<T> emitter;
+    MutinyEmitter<byte[]> emitter;
+
+    @Inject
+    ObjectMapper objectMapper;
+
+    @Inject
+    EncryptionService encryptionService;
+
+    @Inject
+    PassphraseRepository passphraseRepository;
 
     @Override
-    public void publish(final String eventName, final T payload, final OwnedBy ownedBy) {
+    public void publish(final String eventName, final T payload, final OwnedBy ownedBy) throws PublicationException {
         Objects.requireNonNull(eventName);
         Objects.requireNonNull(payload);
-        final String contentType = CONTENT_TYPE_PREFIX + payload.getClass().getName() + CONTENT_TYPE_SUFFIX;
-        emitter.sendMessageAndAwait(
-                Message.of(payload).addMetadata(
-                        OutgoingKafkaRecordMetadata.<String>builder()
-                                .withHeaders(new RecordHeaders()
-                                        .add(EVENT_NAME, eventName.getBytes())
-                                        .add(CONTENT_TYPE, contentType.getBytes(StandardCharsets.UTF_8))
-                                        .add(OWNED_BY, ownedBy == null ? null : ownedBy.id().getBytes(StandardCharsets.UTF_8)))
-                                .build()));
+        try {
+            byte[] payloadToPublish = null;
+            if (ownedBy != null) {
+                final Optional<Passphrase> retrievedPassphrase = passphraseRepository.retrieve(ownedBy);
+                if (retrievedPassphrase.isPresent()) {
+                    final byte[] jsonPayload = objectMapper.writeValueAsBytes(payload);
+                    final EncryptedPayload encryptedPayload = encryptionService.encrypt(jsonPayload, retrievedPassphrase.get());
+                    payloadToPublish = encryptedPayload.payload();
+                } else {
+                    LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
+                }
+            } else {
+                payloadToPublish = objectMapper.writeValueAsBytes(payload);
+            }
+
+            if (payloadToPublish != null) {
+                final String contentType = CONTENT_TYPE_PREFIX + payload.getClass().getName() + CONTENT_TYPE_SUFFIX;
+                emitter.sendMessageAndAwait(
+                        Message.of(payloadToPublish).addMetadata(
+                                OutgoingKafkaRecordMetadata.<String>builder()
+                                        .withHeaders(new RecordHeaders()
+                                                .add(EVENT_NAME, eventName.getBytes())
+                                                .add(CONTENT_TYPE, contentType.getBytes(StandardCharsets.UTF_8))
+                                                .add(OWNED_BY, ownedBy == null ? null : ownedBy.id().getBytes(StandardCharsets.UTF_8)))
+                                        .build()));
+            }
+        } catch (final JsonProcessingException exception) {
+            throw new PublicationException(exception);
+        }
     }
 
     @Override
-    public void publish(final String eventName, final T payload) {
+    public void publish(final String eventName, final T payload) throws PublicationException {
         publish(eventName, payload, null);
     }
 }

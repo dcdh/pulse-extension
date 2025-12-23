@@ -1,15 +1,14 @@
 package com.damdamdeo.pulse.extension.livenotifier;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.kafka.common.header.Headers;
 
 public final class Record {
 
     private final Headers headers;
     private final String key;
-    private final JsonNode value;
+    private final byte[] value;
 
-    public Record(final Headers headers, final String key, final JsonNode value) {
+    public Record(final Headers headers, final String key, final byte[] value) {
         this.headers = headers;
         this.key = key;
         this.value = value;
@@ -23,7 +22,7 @@ public final class Record {
         return key;
     }
 
-    public JsonNode getValue() {
+    public byte[] getValue() {
         return value;
     }
 }

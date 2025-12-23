@@ -1,12 +1,11 @@
 package com.damdamdeo.pulse.extension.livenotifier;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.quarkus.kafka.client.serialization.ObjectMapperDeserializer;
 import io.smallrye.reactive.messaging.kafka.companion.ConsumerBuilder;
 import io.smallrye.reactive.messaging.kafka.companion.ConsumerTask;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -22,14 +21,14 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 public class Consumer {
 
     public List<Record> consume(final String topic) {
-        try (final ConsumerBuilder<String, JsonNode> consumer = new ConsumerBuilder<>(
+        try (final ConsumerBuilder<String, byte[]> consumer = new ConsumerBuilder<>(
                 Map.of(
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
                         AUTO_OFFSET_RESET_CONFIG, "earliest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID(),
                         ConsumerConfig.GROUP_ID_CONFIG, "my-group"),
-                Duration.ofSeconds(10), new StringDeserializer(), new ObjectMapperDeserializer<>(JsonNode.class));
-             final ConsumerTask<String, JsonNode> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion()) {
+                Duration.ofSeconds(10), new StringDeserializer(), new ByteArrayDeserializer());
+             final ConsumerTask<String, byte[]> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion()) {
             return records.stream().map(record ->
                     new Record(record.headers(), record.key(), record.value())).toList();
         }

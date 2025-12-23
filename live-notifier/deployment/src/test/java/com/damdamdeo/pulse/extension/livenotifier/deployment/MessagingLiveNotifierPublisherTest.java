@@ -27,7 +27,9 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withConfigurationResource("application.properties");
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
+            .withConfigurationResource("application.properties")
+            .overrideConfigKey("quarkus.vault.devservices.enabled", "false");
 
     @Inject
     Consumer consumer;
@@ -59,11 +61,11 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
                                 {
                                   "description" : "lorem ipsum"
                                 }
-                                """, records.getFirst().getValue().toPrettyString(), JSONCompareMode.STRICT));
+                                """, new String(records.getFirst().getValue()), JSONCompareMode.STRICT));
     }
 
     @Test
-    void shouldHaveExpectedUserIdInHeader() {
+    void shouldConsumeEncryptedRecordFromLiveNotificationKafka() {
         // Given
 
         // When
@@ -74,7 +76,10 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
         final Headers headers = records.getFirst().getHeaders();
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
 
-        assertThat(getValuesByKey(headers, "owned-by")).containsExactly("alice");
+        assertAll(
+                () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("alice"),
+                () -> assertThat(records.getFirst().getValue()).startsWith(-61, 30)
+        );
     }
 
     @Test
@@ -91,9 +96,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.topic", String.class))
                         .isEqualTo("pulse.live-notification.todotaking_todo"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.value.serializer", String.class))
-                        .isEqualTo("com.damdamdeo.pulse.extension.livenotifier.runtime.DefaultObjectMapperSerializer"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.value.serializer.value-type", String.class))
-                        .isEqualTo("java.lang.Object")
+                        .isEqualTo("org.apache.kafka.common.serialization.ByteArraySerializer")
         );
     }
 

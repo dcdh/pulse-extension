@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 public interface LiveNotifierPublisher<T> {
 
-    void publish(String eventName, T payload, OwnedBy ownedBy);
+    void publish(String eventName, T payload, OwnedBy ownedBy) throws PublicationException;
 
-    void publish(String eventName, T payload);
+    void publish(String eventName, T payload) throws PublicationException;
 }

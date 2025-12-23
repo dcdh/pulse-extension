@@ -2,7 +2,6 @@ package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.EligibleTypeForSerializationBuildItem;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.items.EventBuildItem;
-import com.damdamdeo.pulse.extension.livenotifier.runtime.DefaultObjectMapperSerializer;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.MessagingLiveNotifierPublisher;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -17,6 +16,7 @@ import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.SignatureBuilder;
 import io.quarkus.gizmo.Type;
 import jakarta.inject.Singleton;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
 
 import java.util.List;
 
@@ -34,8 +34,7 @@ public class MessagingLiveNotifierPublisherProcessor {
                 new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.auto.offset.reset", "latest"),
                 new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.connector", "smallrye-kafka"),
                 new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.topic", topic),
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.value.serializer", DefaultObjectMapperSerializer.class.getName()),
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.value.serializer.value-type", Object.class.getName())
+                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.value.serializer", ByteArraySerializer.class.getName())
         );
     }
 

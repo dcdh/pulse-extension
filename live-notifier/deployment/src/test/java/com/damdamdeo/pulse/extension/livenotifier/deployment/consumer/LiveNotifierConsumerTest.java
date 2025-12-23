@@ -22,7 +22,9 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withConfigurationResource("application.properties");
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
+            .withConfigurationResource("application.properties")
+            .overrideConfigKey("quarkus.vault.devservices.enabled", "false");
 
     @Inject
     LiveNotifierPublisher<NewTodoCreated> messagingLiveNotifierPublisher;
@@ -63,7 +65,7 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.topic", String.class))
                         .isEqualTo("pulse.live-notification.todotaking_todo"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.value.deserializer", String.class))
-                        .isEqualTo("com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.JacksonHeaderBasedDeserializerGenerated")
+                        .isEqualTo("org.apache.kafka.common.serialization.ByteArrayDeserializer")
         );
     }
 }

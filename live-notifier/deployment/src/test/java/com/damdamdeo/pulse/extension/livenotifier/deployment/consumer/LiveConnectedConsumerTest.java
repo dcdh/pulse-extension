@@ -26,7 +26,9 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties")
+            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.keycloak.devservices.users.alice", "alice")
             .overrideConfigKey("quarkus.keycloak.devservices.users.duke", "duke")
             .overrideConfigKey("quarkus.keycloak.devservices.users.bob", "bob")

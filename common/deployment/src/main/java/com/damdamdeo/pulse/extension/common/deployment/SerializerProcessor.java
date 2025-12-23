@@ -28,7 +28,7 @@ import static io.quarkus.gizmo.Type.parameterizedType;
 public class SerializerProcessor {
 
     @BuildStep
-    public List<DiscoveredClassBuildItem> discoverAggregateFields(
+    public List<DiscoveredClassBuildItem> discoveredClassBuildItemProducer(
             final List<EligibleTypeForSerializationBuildItem> eligibleTypeForSerializationBuildItems,
             final CombinedIndexBuildItem indexItem) {
         final IndexView index = indexItem.getIndex();
