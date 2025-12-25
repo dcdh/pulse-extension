@@ -15,16 +15,16 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SerializerTest {
+class SerializerTest {
 
     static class TodoMixin {
 
         @JsonCreator
         public TodoMixin(
-                @JsonProperty("id") TodoId id,
-                @JsonProperty("description") String description,
-                @JsonProperty("status") Status status,
-                @JsonProperty("important") boolean important
+                @JsonProperty("id") TodoId var1,
+                @JsonProperty("description") String var2,
+                @JsonProperty("status") Status var3,
+                @JsonProperty("important") boolean var4
         ) {
         }
     }
@@ -33,8 +33,8 @@ public class SerializerTest {
 
         @JsonCreator
         public TodoIdMixin(
-                @JsonProperty("user") String user,
-                @JsonProperty("sequence") Long sequence
+                @JsonProperty("user") String var1,
+                @JsonProperty("sequence") Long var2
         ) {
         }
     }
@@ -43,8 +43,8 @@ public class SerializerTest {
 
         @JsonCreator
         public TodoChecklistMixin(
-                @JsonProperty("id") TodoChecklistId id,
-                @JsonProperty("description") String description
+                @JsonProperty("id") TodoChecklistId var1,
+                @JsonProperty("description") String var2
         ) {
         }
     }
@@ -53,8 +53,8 @@ public class SerializerTest {
 
         @JsonCreator
         public TodoChecklistIdMixin(
-                @JsonProperty("todoId") TodoId todoId,
-                @JsonProperty("index") Long index
+                @JsonProperty("todoId") TodoId var1,
+                @JsonProperty("index") Long var2
         ) {
         }
     }
@@ -97,11 +97,11 @@ public class SerializerTest {
 
         @JsonCreator
         public FullTodoMixin(
-                @JsonProperty("id") TodoId todoId,
-                @JsonProperty("description") String description,
-                @JsonProperty("status") Status status,
-                @JsonProperty("important") boolean important,
-                @JsonProperty("todoChecklistList") List<TodoChecklist> todoChecklistList
+                @JsonProperty("id") TodoId var1,
+                @JsonProperty("description") String var2,
+                @JsonProperty("status") Status var3,
+                @JsonProperty("important") boolean var4,
+                @JsonProperty("todoChecklistList") List<TodoChecklist> var5
         ) {
         }
     }
@@ -122,14 +122,14 @@ public class SerializerTest {
 
     static class NombreDeConvivesMixIn {
         @JsonCreator
-        public NombreDeConvivesMixIn(@JsonProperty("nombre") Integer nombre) {
+        public NombreDeConvivesMixIn(@JsonProperty("nombre") Integer var1) {
 
         }
     }
 
     static class CommandeEnCoursDePriseMixIn {
         @JsonCreator
-        public CommandeEnCoursDePriseMixIn(@JsonProperty("nombreDeConvives") NombreDeConvives nombre) {
+        public CommandeEnCoursDePriseMixIn(@JsonProperty("nombreDeConvives") NombreDeConvives var1) {
 
         }
     }
@@ -193,7 +193,7 @@ public class SerializerTest {
                         "todoId": {
                           "user": "Damien",
                           "sequence": 14
-                        }, 
+                        },
                         "index": 0
                       },
                       "description": "Implement Projection feature"
@@ -203,7 +203,7 @@ public class SerializerTest {
                         "todoId": {
                           "user": "Damien",
                           "sequence": 14
-                        }, 
+                        },
                         "index": 1
                       },
                       "description": "Organization vacancies"                      
