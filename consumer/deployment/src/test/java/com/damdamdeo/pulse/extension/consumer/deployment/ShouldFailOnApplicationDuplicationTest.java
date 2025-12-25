@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -56,6 +57,7 @@ class ShouldFailOnApplicationDuplicationTest {
                                   final EventType eventType,
                                   final EncryptedPayload encryptedPayload,
                                   final OwnedBy ownedBy,
+                                  final ExecutedBy executedBy,
                                   final DecryptablePayload<JsonNode> decryptableEventPayload,
                                   final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
         }

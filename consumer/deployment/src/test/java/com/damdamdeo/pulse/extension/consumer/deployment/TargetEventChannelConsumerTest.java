@@ -13,6 +13,7 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,6 +23,8 @@ import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.ConfigProvider;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -40,7 +43,7 @@ class TargetEventChannelConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot(javaArchive -> javaArchive.addClass(StatisticsEventHandler.class))
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(StatisticsEventHandler.class, Call.class))
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
@@ -63,32 +66,6 @@ class TargetEventChannelConsumerTest {
         }
     }
 
-    record Call(FromApplication fromApplication,
-                Target target,
-                AggregateRootType aggregateRootType,
-                AggregateId aggregateId,
-                CurrentVersionInConsumption currentVersionInConsumption,
-                Instant creationDate,
-                EventType eventType,
-                EncryptedPayload encryptedPayload,
-                OwnedBy ownedBy,
-                DecryptablePayload<JsonNode> decryptableEventPayload,
-                AggregateRootLoaded<JsonNode> aggregateRootLoaded) {
-        Call {
-            Objects.requireNonNull(fromApplication);
-            Objects.requireNonNull(target);
-            Objects.requireNonNull(aggregateRootType);
-            Objects.requireNonNull(aggregateId);
-            Objects.requireNonNull(currentVersionInConsumption);
-            Objects.requireNonNull(creationDate);
-            Objects.requireNonNull(eventType);
-            Objects.requireNonNull(encryptedPayload);
-            Objects.requireNonNull(ownedBy);
-            Objects.requireNonNull(decryptableEventPayload);
-            Objects.requireNonNull(aggregateRootLoaded);
-        }
-    }
-
     @Inject
     DataSource dataSource;
 
@@ -104,6 +81,12 @@ class TargetEventChannelConsumerTest {
 
     @Inject
     Producer producer;
+
+    @BeforeEach
+    @AfterEach
+    void tearDown() {
+        statisticsEventHandlerInstance.select(EventChannel.Literal.of("statistics")).get().reset();
+    }
 
     @Test
     void shouldGenerateMessagingConfiguration() {
@@ -130,7 +113,7 @@ class TargetEventChannelConsumerTest {
     }
 
     @Test
-    void shouldConsumeEvent() throws SQLException {
+    void shouldConsumeEvent() {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
@@ -155,6 +138,7 @@ class TargetEventChannelConsumerTest {
                         """,
                 new AnyAggregateId("Damien/0"),
                 new OwnedBy("Damien"),
+                ExecutedBy.NotAvailable.INSTANCE,
                 new BelongsTo(new AnyAggregateId("Damien/0")),
                 Todo.class,
                 TodoMarkedAsDone.class);
@@ -178,6 +162,7 @@ class TargetEventChannelConsumerTest {
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Damien"),
+                        ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
                                 AggregateRootType.from(Todo.class),
@@ -190,7 +175,7 @@ class TargetEventChannelConsumerTest {
     }
 
     @Test
-    void shouldConsumeEventWhenPassPhraseDoesNotExistsAnymore() throws SQLException {
+    void shouldConsumeEventWhenPassPhraseDoesNotExistsAnymore() {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
@@ -215,6 +200,7 @@ class TargetEventChannelConsumerTest {
                         """,
                 new AnyAggregateId("Alban/0"),
                 new OwnedBy("Alban"),
+                ExecutedBy.NotAvailable.INSTANCE,
                 new BelongsTo(new AnyAggregateId("Alban/0")),
                 Todo.class,
                 TodoMarkedAsDone.class);
@@ -232,6 +218,7 @@ class TargetEventChannelConsumerTest {
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Alban"),
+                        ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofUndecryptable(),
                         new AggregateRootLoaded<>(
                                 AggregateRootType.from(Todo.class),

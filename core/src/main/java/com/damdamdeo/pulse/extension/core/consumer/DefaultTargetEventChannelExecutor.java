@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
@@ -75,6 +76,7 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                     final EventType eventType = eventValue.toEventType();
                     final EncryptedPayload encryptedPayload = eventValue.toEncryptedEventPayload();
                     final OwnedBy ownedBy = eventValue.toOwnedBy();
+                    final ExecutedBy executedBy = eventValue.toExecutedBy();
                     try {
                         DecryptablePayload<T> decryptableEventPayload;
                         try {
@@ -86,8 +88,8 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                         }
                         final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(fromApplication, aggregateRootType, aggregateId);
                         synchronized (this) {
-                            asyncEventChannelMessageHandler.handleMessage(fromApplication, target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy, decryptableEventPayload,
-                                    aggregateRootSupplier);
+                            asyncEventChannelMessageHandler.handleMessage(fromApplication, target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy,
+                                    executedBy, decryptableEventPayload, aggregateRootSupplier);
                         }
                     } catch (final IOException e) {
                         throw new EventChannelMessageHandlerException(

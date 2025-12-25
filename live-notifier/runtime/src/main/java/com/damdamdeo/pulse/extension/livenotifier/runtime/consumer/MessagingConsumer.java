@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.MessagingLiveNotifierPublisher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.Unremovable;
@@ -39,27 +40,19 @@ public class MessagingConsumer {
     public void consume(final ConsumerRecord<Void, byte[]> consumerRecord) {
         final String eventName = new String(consumerRecord.headers()
                 .lastHeader(MessagingLiveNotifierPublisher.EVENT_NAME).value());
-        final OwnedBy ownedBy = Optional.ofNullable(consumerRecord.headers()
-                        .lastHeader(MessagingLiveNotifierPublisher.OWNED_BY).value())
-                .map(String::new)
-                .map(OwnedBy::new)
-                .orElse(null);
+        final OwnedBy ownedBy = new OwnedBy(new String(consumerRecord.headers()
+                .lastHeader(MessagingLiveNotifierPublisher.OWNED_BY).value()));
+        final Audience audience = Audience.decode(new String(consumerRecord.headers()
+                .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()));
         final String className = extractClassName(consumerRecord.headers());
-        Object payload = null;
-        if (ownedBy != null) {
-            try {
-                final DecryptedPayload decryptedPayload = decryptionService.decrypt(new EncryptedPayload(consumerRecord.value()), ownedBy);
-                payload = mapToObject(decryptedPayload.payload(), className);
-            } catch (final UnknownPassphraseException unknownPassphraseException) {
-                LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
-            } catch (final DecryptionException decryptionException) {
-                LOGGER.fine("Fail to decrypt for %s %s - notification will not be sent".formatted(ownedBy.id(), decryptionException.getMessage()));
-            }
-        } else {
-            payload = mapToObject(consumerRecord.value(), className);
-        }
-        if (payload != null) {
-            notifyEventProducer.fire(new NotifyEvent(eventName, payload, ownedBy));
+        try {
+            final DecryptedPayload decryptedPayload = decryptionService.decrypt(new EncryptedPayload(consumerRecord.value()), ownedBy);
+            final Object payload = mapToObject(decryptedPayload.payload(), className);
+            notifyEventProducer.fire(new NotifyEvent(eventName, payload, audience));
+        } catch (final UnknownPassphraseException unknownPassphraseException) {
+            LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
+        } catch (final DecryptionException decryptionException) {
+            LOGGER.fine("Fail to decrypt for %s %s - notification will not be sent".formatted(ownedBy.id(), decryptionException.getMessage()));
         }
     }
 

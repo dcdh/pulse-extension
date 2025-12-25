@@ -1,14 +1,12 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.VersionizedAggregateRoot;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
@@ -46,9 +44,11 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     EventClazzDiscovery eventClazzDiscovery;
 
     @Override
-    public void save(final List<VersionizedEvent> versionizedEvents, final AggregateRoot<K> aggregateRoot) throws EventStoreException {
+    public void save(final List<VersionizedEvent> versionizedEvents, final AggregateRoot<K> aggregateRoot, final ExecutedBy executedBy)
+            throws EventStoreException {
         Objects.requireNonNull(versionizedEvents);
         Objects.requireNonNull(aggregateRoot);
+        Objects.requireNonNull(executedBy);
         if (versionizedEvents.isEmpty()) {
             return;
         }
@@ -56,8 +56,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to) 
-                             VALUES (?, ?, ?, ?, ?, public.pgp_sym_encrypt(?::text, ?), ?, ?)
+                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                             VALUES (?, ?, ?, ?, ?, public.pgp_sym_encrypt(?::text, ?), ?, ?, ?)
                              """);
              final PreparedStatement aggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
@@ -86,6 +86,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy).passphrase()));
                 eventPreparedStatement.setString(8, ownedBy.id());
                 eventPreparedStatement.setString(9, aggregateRoot.belongsTo().aggregateId().id());
+                eventPreparedStatement.setString(10, executedBy.encode());
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }

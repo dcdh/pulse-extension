@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.notifier;
 
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.NotifyEvent;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,7 +19,7 @@ import jakarta.ws.rs.sse.SseEventSink;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 @Path("/notifier/sse")
 @ApplicationScoped
@@ -59,15 +60,10 @@ public class SseBroadcasterEndpoint {
                 .mediaType(MediaType.APPLICATION_JSON_TYPE)
                 .build();
         Log.infov("Broadcasting ''{0}''", notifyEvent.eventName());
-        final Function<Client, Boolean> filterOn;
-        if (notifyEvent.shouldBroadcastToUnknownClients()) {
-            filterOn = Client::isUnknown;
-        } else {
-            final OwnedBy ownedBy = notifyEvent.ownedBy();
-            filterOn = client -> ownedBy.id().equals(client.identifier());
-        }
+        final BiFunction<Client, Audience, Boolean> isEligible = (client, audience) -> audience.eligible(
+                new ExecutedBy.EndUser(client.identifier()));
         SSE_BROADCASTERS_BY_CLIENT.entrySet().stream()
-                .filter(entry -> filterOn.apply(entry.getKey()))
+                .filter(entry -> isEligible.apply(entry.getKey(), notifyEvent.audience()))
                 .map(Map.Entry::getValue)
                 .forEach(sseBroadcaster -> {
                     sseBroadcaster.broadcast(event)

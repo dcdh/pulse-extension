@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.projection.MultipleResultAggregateQuery;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
@@ -24,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcProjectionFromApplicationEventStoreTest {
+
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -146,14 +149,14 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         "IMPORTANT: pulse extension development",
                         Status.IN_PROGRESS,
                         true
-                ));
+                ), BOB);
         todoChecklistEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
                                 new TodoItemAdded("Implement Projection feature"))),
                 new TodoChecklist(
                         new TodoChecklistId(new TodoId("Damien", 1L), 0L),
                         "Implement Projection feature"
-                ));
+                ), BOB);
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
                                 new NewTodoCreated("Organization vacancies"))),
@@ -162,14 +165,14 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         "Organization vacancies",
                         Status.IN_PROGRESS,
                         false
-                ));
+                ), BOB);
         todoChecklistEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
                                 new TodoItemAdded("Go see family"))),
                 new TodoChecklist(
                         new TodoChecklistId(new TodoId("Damien", 2L), 0L),
                         "Go see family"
-                ));
+                ), BOB);
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
                                 new NewTodoCreated("Bob vacancies"))),
@@ -178,7 +181,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         "Bob vacancies",
                         Status.IN_PROGRESS,
                         false
-                ));
+                ), BOB);
 
         // When
         final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(new OwnedBy("Damien"), new TodoId("Damien", 1L), new TodoProjectionSingleResultAggregateQuery());

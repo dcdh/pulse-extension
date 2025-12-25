@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -59,12 +60,13 @@ class TargetEventChannelConsumerTest {
                           String eventType,
                           byte[] eventPayload,
                           String ownedBy,
-                          String belongsTo) implements EventValue {
+                          String belongsTo,
+                          String executedBy) implements EventValue {
 
         public static TodoEventValue of() {
             return new TodoEventValue(
                     1983L, NewTodoCreated.class.getSimpleName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
-                    "Damien", "Damien/0L");
+                    "Damien", "Damien/0L", "EU:bob");
         }
 
         @Override
@@ -85,6 +87,11 @@ class TargetEventChannelConsumerTest {
         @Override
         public OwnedBy toOwnedBy() {
             return new OwnedBy(ownedBy);
+        }
+
+        @Override
+        public ExecutedBy toExecutedBy() {
+            return ExecutedBy.decode(executedBy);
         }
 
         @Override

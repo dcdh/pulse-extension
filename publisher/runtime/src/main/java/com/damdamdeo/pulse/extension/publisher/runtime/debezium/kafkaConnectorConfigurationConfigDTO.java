@@ -193,7 +193,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("transforms.filterFields.include")
     public String getTransformsFilterFieldsInclude() {
-        return "creation_date,event_type,event_payload,owned_by,belongs_to";
+        return "creation_date,event_type,event_payload,owned_by,belongs_to,executed_by";
     }
 
     @JsonProperty("transforms.partitioner.type")

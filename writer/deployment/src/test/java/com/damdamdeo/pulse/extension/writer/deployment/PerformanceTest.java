@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
 import com.damdamdeo.pulse.extension.core.projection.SingleResultAggregateQuery;
@@ -37,6 +38,8 @@ import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
 class PerformanceTest {
+
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
 
     static final Logger LOGGER = Logger.getLogger(PerformanceTest.class.getName());
 
@@ -149,7 +152,7 @@ class PerformanceTest {
                             LOREM_IPSUM,
                             Status.IN_PROGRESS,
                             false
-                    ));
+                    ), BOB);
         }
         watch.stop();
         LOGGER.info("30.000 of NewTodoCreated events created in %d ms".formatted(watch.getTime(TimeUnit.MILLISECONDS)));

@@ -49,8 +49,8 @@ class DebeziumPublisherTest {
         final Timestamp givenCreationDate = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
         // language=sql
         final String sql = """
-                INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(sql)) {
@@ -70,6 +70,7 @@ class DebeziumPublisherTest {
                             """.getBytes(StandardCharsets.UTF_8));
             eventPreparedStatement.setString(7, "Damien");
             eventPreparedStatement.setString(8, "Damien/0");
+            eventPreparedStatement.setString(9, "EU:bob");
             eventPreparedStatement.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -119,7 +120,7 @@ class DebeziumPublisherTest {
                                   "important": false
                                 }
                                 """.getBytes(StandardCharsets.UTF_8),
-                        "Damien", "Damien/0")));
+                        "Damien", "Damien/0", "EU:bob")));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {

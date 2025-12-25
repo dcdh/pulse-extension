@@ -92,7 +92,7 @@ class KafkaConnectorConfigurationGeneratorTest {
                             "transforms.unwrap.operation.header": "true",
                             "transforms.unwrap.add.headers": "source.version,source.connector,source.name,source.ts_ms,source.db,source.schema,source.table,source.txId,source.lsn",
                             "transforms.filterFields.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
-                            "transforms.filterFields.include": "creation_date,event_type,event_payload,owned_by,belongs_to",
+                            "transforms.filterFields.include": "creation_date,event_type,event_payload,owned_by,belongs_to,executed_by",
                             "transforms.partitioner.type": "io.debezium.transforms.partitions.PartitionRouting",
                             "transforms.partitioner.partition.payload.fields": "belongs_to",
                             "transforms.partitioner.partition.topic.num": 1,

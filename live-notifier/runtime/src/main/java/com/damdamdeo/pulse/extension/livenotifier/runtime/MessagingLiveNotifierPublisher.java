@@ -28,6 +28,7 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
     public static final String CONTENT_TYPE_PREFIX = "application/vnd.";
     public static final String CONTENT_TYPE_SUFFIX = ".api+json";
     public static final String OWNED_BY = "owned-by";
+    public static final String AUDIENCE = "audience";
 
     @Inject
     @Channel("live-notification-out")
@@ -43,42 +44,32 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
     PassphraseRepository passphraseRepository;
 
     @Override
-    public void publish(final String eventName, final T payload, final OwnedBy ownedBy) throws PublicationException {
+    public void publish(final String eventName, final T payload, final OwnedBy ownedBy, final Audience audience) throws PublicationException {
         Objects.requireNonNull(eventName);
         Objects.requireNonNull(payload);
+        Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(audience);
         try {
-            byte[] payloadToPublish = null;
-            if (ownedBy != null) {
-                final Optional<Passphrase> retrievedPassphrase = passphraseRepository.retrieve(ownedBy);
-                if (retrievedPassphrase.isPresent()) {
-                    final byte[] jsonPayload = objectMapper.writeValueAsBytes(payload);
-                    final EncryptedPayload encryptedPayload = encryptionService.encrypt(jsonPayload, retrievedPassphrase.get());
-                    payloadToPublish = encryptedPayload.payload();
-                } else {
-                    LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
-                }
-            } else {
-                payloadToPublish = objectMapper.writeValueAsBytes(payload);
-            }
+            final Optional<Passphrase> retrievedPassphrase = passphraseRepository.retrieve(ownedBy);
+            if (retrievedPassphrase.isPresent()) {
+                final byte[] jsonPayload = objectMapper.writeValueAsBytes(payload);
+                final EncryptedPayload encryptedPayload = encryptionService.encrypt(jsonPayload, retrievedPassphrase.get());
 
-            if (payloadToPublish != null) {
                 final String contentType = CONTENT_TYPE_PREFIX + payload.getClass().getName() + CONTENT_TYPE_SUFFIX;
                 emitter.sendMessageAndAwait(
-                        Message.of(payloadToPublish).addMetadata(
+                        Message.of(encryptedPayload.payload()).addMetadata(
                                 OutgoingKafkaRecordMetadata.<String>builder()
                                         .withHeaders(new RecordHeaders()
                                                 .add(EVENT_NAME, eventName.getBytes())
                                                 .add(CONTENT_TYPE, contentType.getBytes(StandardCharsets.UTF_8))
-                                                .add(OWNED_BY, ownedBy == null ? null : ownedBy.id().getBytes(StandardCharsets.UTF_8)))
+                                                .add(OWNED_BY, ownedBy.id().getBytes(StandardCharsets.UTF_8))
+                                                .add(AUDIENCE, audience.encode().getBytes(StandardCharsets.UTF_8)))
                                         .build()));
+            } else {
+                LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
             }
         } catch (final JsonProcessingException exception) {
             throw new PublicationException(exception);
         }
-    }
-
-    @Override
-    public void publish(final String eventName, final T payload) throws PublicationException {
-        publish(eventName, payload, null);
     }
 }

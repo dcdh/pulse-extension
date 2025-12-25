@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.SseConsumer;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.AbstractMessagingTest;
+import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierPublisher;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -38,7 +40,8 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
         final CompletableFuture<List<String>> receivedEvents = sseConsumer.consume(null, Duration.ofSeconds(10));
 
         // When
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("another lorem ipsum"));
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("another lorem ipsum"),
+                new OwnedBy("TodoAnother"), Audience.AllConnected.INSTANCE);
 
         // Then
         final List<String> ssePayload = receivedEvents.get(12, TimeUnit.SECONDS);

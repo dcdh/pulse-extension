@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsExce
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,6 +19,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class QueryEventStoreTest {
+
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -67,7 +70,7 @@ class QueryEventStoreTest {
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
-                ));
+                ), BOB);
 
         // When
         final Optional<Todo> byId = queryEventStore.findById(givenTodoId);
@@ -122,7 +125,7 @@ class QueryEventStoreTest {
                         "lorem ipsum",
                         Status.DONE,
                         false
-                ));
+                ), BOB);
 
         // When
         final Optional<Todo> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);
@@ -154,7 +157,7 @@ class QueryEventStoreTest {
                         "lorem ipsum",
                         Status.DONE,
                         false
-                ));
+                ), BOB);
 
         // When
         final Optional<Todo> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);

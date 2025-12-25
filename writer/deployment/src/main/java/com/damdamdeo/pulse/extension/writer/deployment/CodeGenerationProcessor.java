@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.QueryEventStore;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByProvider;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository;
@@ -136,7 +137,7 @@ public class CodeGenerationProcessor {
                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                        CommandHandlerRegistry.class, EventRepository.class, Transaction.class)) {
+                        CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutedByProvider.class)) {
                     constructor
                             .setSignature(SignatureBuilder.forMethod()
                                     .addParameterType(Type.classType(CommandHandlerRegistry.class))
@@ -144,18 +145,22 @@ public class CodeGenerationProcessor {
                                             Type.classType(EventRepository.class),
                                             Type.classType(aggregateRootBuildItem.aggregateRootClazz()),
                                             Type.classType(aggregateRootBuildItem.aggregateIdClazz())))
-                                    .addParameterType(Type.classType(Transaction.class)).build());
+                                    .addParameterType(Type.classType(Transaction.class))
+                                    .addParameterType(Type.classType(ExecutedByProvider.class))
+                                    .build());
                     constructor.setModifiers(Modifier.PUBLIC);
 
                     constructor.invokeSpecialMethod(
                             MethodDescriptor.ofConstructor(CommandHandler.class,
                                     CommandHandlerRegistry.class,
                                     EventRepository.class,
-                                    Transaction.class),
+                                    Transaction.class,
+                                    ExecutedByProvider.class),
                             constructor.getThis(),
                             constructor.getMethodParam(0),
                             constructor.getMethodParam(1),
-                            constructor.getMethodParam(2)
+                            constructor.getMethodParam(2),
+                            constructor.getMethodParam(3)
                     );
 
                     constructor.returnValue(null);

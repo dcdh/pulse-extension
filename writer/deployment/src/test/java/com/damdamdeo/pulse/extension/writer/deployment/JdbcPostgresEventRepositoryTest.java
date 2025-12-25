@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsExce
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.writer.runtime.InstantProvider;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,7 +22,6 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcPostgresEventRepositoryTest {
+
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -91,14 +93,14 @@ class JdbcPostgresEventRepositoryTest {
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
-                ));
+                ), BOB);
 
         // Then
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by
                                  FROM t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
@@ -124,7 +126,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/1"),
-
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob"),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 "Damien/1"),
                         () -> assertThat(tAggregateRootResultSet.getString(
@@ -154,7 +156,7 @@ class JdbcPostgresEventRepositoryTest {
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
-                ));
+                ), BOB);
 
         // When
         todoEventRepository.save(List.of(
@@ -166,14 +168,14 @@ class JdbcPostgresEventRepositoryTest {
                         "lorem ipsum",
                         Status.DONE,
                         false
-                ));
+                ), BOB);
 
         // Then
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to
+                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by
                                  FROM t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
@@ -197,7 +199,8 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"));
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"),
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
@@ -207,7 +210,8 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("TodoMarkedAsDone"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"));
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"),
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
@@ -243,7 +247,7 @@ class JdbcPostgresEventRepositoryTest {
                         "lorem ipsum",
                         Status.DONE,
                         false
-                ));
+                ), BOB);
 
         // When
         final List<Event> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
@@ -269,7 +273,7 @@ class JdbcPostgresEventRepositoryTest {
                         "lorem ipsum",
                         Status.DONE,
                         false
-                ));
+                ), BOB);
 
         // When
         final List<Event> events = todoEventRepository.loadOrderByVersionASC(
@@ -286,12 +290,12 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000006", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         // When && Then
         assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000006", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien")))
+                new OwnedBy("Damien"), BOB))
                 .isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000006 aggregate_root_type Todo");
     }
@@ -301,13 +305,13 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000007", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         // When && Then
         assertThatThrownBy(() -> {
             insertEvent("00000000-0000-0000-0000-000000000007", "Todo", 2,
                     Instant.parse("2025-10-13T18:01:00Z"), "TodoMarkedAsDone", "\\x",
-                    new OwnedBy("Damien"));
+                    new OwnedBy("Damien"), BOB);
         }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: current version unexpected 2 - expected version 1");
     }
@@ -316,7 +320,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventAggregateType() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000008", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -336,7 +340,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventAggregateId() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000009", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -356,7 +360,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventVersion() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000010", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -375,7 +379,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventCreationDate() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000011", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -397,7 +401,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventType() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000012", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -417,7 +421,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventPayload() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000013", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -434,17 +438,17 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @Test
-    void shouldPreventMutabilityByFailingToUpdateAnEventOwnedBy() throws SQLException {
+    void shouldPreventMutabilityByFailingToUpdateAnEventBelongsTo() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000014", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET owned_by = 'Alban'
+                                 UPDATE t_event SET belongs_to = 'Damien'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000014'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -454,22 +458,162 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @Test
-    void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
+    void shouldPreventMutabilityByFailingToUpdateAnEventOwnedBy() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000015", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                new OwnedBy("Damien"));
+                new OwnedBy("Damien"), BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 DELETE FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000015'
+                                 UPDATE t_event SET owned_by = 'Alban'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000015'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
         }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToUpdateAnEventExecutedBy() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000016", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
+                new OwnedBy("Damien"), BOB);
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 UPDATE t_event SET executed_by = 'EU:alice'
+                                 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000016'
+                                 """);
+                 final ResultSet rs = ps.executeQuery()) {
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
+        insertEvent("00000000-0000-0000-0000-000000000017", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
+                new OwnedBy("Damien"), BOB);
+
+        assertThatThrownBy(() -> {
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement ps = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 DELETE FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000017'
+                                 """);
+                 final ResultSet rs = ps.executeQuery()) {
+            }
+        }).isExactlyInstanceOf(PSQLException.class)
+                .hasMessageContaining("ERROR: not allowed");
+    }
+
+    @Test
+    void shouldStoreExecutedByAnonymous() throws SQLException {
+        // Given
+
+        // When
+        insertEvent("00000000-0000-0000-0000-000000000018", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
+                new OwnedBy("Damien"), ExecutedBy.Anonymous.INSTANCE);
+
+        // Then
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000018'
+                             """)) {
+            try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
+                tEventResultSet.next();
+                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("A");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldStoreExecutedByEndUser() throws SQLException {
+        // Given
+
+        // When
+        insertEvent("00000000-0000-0000-0000-000000000019", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
+                new OwnedBy("Damien"), BOB);
+
+        // Then
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000019'
+                             """)) {
+            try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
+                tEventResultSet.next();
+                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldStoreExecutedByServiceAccount() throws SQLException {
+        // Given
+
+        // When
+        insertEvent("00000000-0000-0000-0000-000000000020", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
+                new OwnedBy("Damien"), new ExecutedBy.ServiceAccount("service-account-quarkus-app"));
+
+        // Then
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000020'
+                             """)) {
+            try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
+                tEventResultSet.next();
+                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("SA:service-account-quarkus-app");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldStoreExecutedByNotAvailable() throws SQLException {
+        // Given
+
+        // When
+        insertEvent("00000000-0000-0000-0000-000000000021", "Todo", 0,
+                Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
+                new OwnedBy("Damien"), ExecutedBy.NotAvailable.INSTANCE);
+
+        // Then
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000021'
+                             """)) {
+            try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
+                tEventResultSet.next();
+                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("NA");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -489,13 +633,13 @@ class JdbcPostgresEventRepositoryTest {
 
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,
                              final Instant creationDate, final String eventType, final String encryptedEventPayload,
-                             final OwnedBy ownedBy) throws SQLException {
+                             final OwnedBy ownedBy, final ExecutedBy executedBy) throws SQLException {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                              """)) {
             preparedStatement.setString(1, aggregateRootId);
             preparedStatement.setString(2, aggregateRootType);
@@ -505,6 +649,7 @@ class JdbcPostgresEventRepositoryTest {
             preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
             preparedStatement.setString(7, ownedBy.id());
             preparedStatement.setString(8, aggregateRootId);
+            preparedStatement.setString(9, executedBy.encode());
             preparedStatement.executeUpdate();
         }
     }

@@ -2,10 +2,13 @@ package com.damdamdeo.pulse.extension.core.command;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutedByProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -22,13 +25,43 @@ class TodoCommandHandlerTest {
     @Mock
     EventRepository<Todo, TodoId> eventRepository;
 
+    @Spy
+    NotAvailableExecutedByProvider notAvailableExecutedByProvider;
+
     @BeforeEach
     void setUp() {
-        todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), eventRepository, new StubTransaction());
+        todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), eventRepository, new StubTransaction(),
+                notAvailableExecutedByProvider);
     }
 
     @Test
     void shouldCreateTodo() {
+        // Given
+        final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 0L), "lorem ipsum");
+        doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
+
+        // When
+        final Todo todoCreated = todoCommandHandler.handle(givenCreateTodo, ExecutedBy.NotAvailable.INSTANCE);
+
+        // Then
+        assertAll(
+                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", 0L)),
+                () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
+                () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE),
+                () -> verify(eventRepository, times(1)).save(
+                        List.of(new VersionizedEvent(
+                                new AggregateVersion(0),
+                                new NewTodoCreated("lorem ipsum"))),
+                        todoCreated,
+                        ExecutedBy.NotAvailable.INSTANCE
+                ),
+                () -> verify(notAvailableExecutedByProvider, times(0)).provide()
+        );
+    }
+
+    @Test
+    void shouldCreateTodoUsingExecutedByProvider() {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 0L), "lorem ipsum");
         doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
@@ -46,8 +79,10 @@ class TodoCommandHandlerTest {
                         List.of(new VersionizedEvent(
                                 new AggregateVersion(0),
                                 new NewTodoCreated("lorem ipsum"))),
-                        todoCreated
-                )
+                        todoCreated,
+                        ExecutedBy.NotAvailable.INSTANCE
+                ),
+                () -> verify(notAvailableExecutedByProvider, times(1)).provide()
         );
     }
 
@@ -73,7 +108,8 @@ class TodoCommandHandlerTest {
                                 new VersionizedEvent(
                                         new AggregateVersion(1),
                                         new ClassifiedAsImportant())),
-                        todoCreated)
+                        todoCreated,
+                        ExecutedBy.NotAvailable.INSTANCE)
         );
     }
 
@@ -97,7 +133,8 @@ class TodoCommandHandlerTest {
                         List.of(new VersionizedEvent(
                                 new AggregateVersion(1),
                                 new TodoMarkedAsDone())),
-                        todoMarkedAsDone
+                        todoMarkedAsDone,
+                        ExecutedBy.NotAvailable.INSTANCE
                 )
         );
     }

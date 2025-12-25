@@ -2,8 +2,10 @@ package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.livenotifier.Consumer;
 import com.damdamdeo.pulse.extension.livenotifier.Record;
+import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierPublisher;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -12,8 +14,6 @@ import org.apache.kafka.common.header.Headers;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,38 +38,13 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
     LiveNotifierPublisher<NewTodoCreated> messagingLiveNotifierPublisher;
 
     @Test
-    void shouldConsumeRecordFromLiveNotificationKafka() {
-        // Given
-
-        // When
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"));
-
-        // Then
-        final List<Record> records = consumer.consume("pulse.live-notification.todotaking_todo");
-        final Headers headers = records.getFirst().getHeaders();
-        final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
-
-        assertAll(
-                () -> assertThat(headersName).containsExactly("event-name", "content-type", "owned-by"),
-                () -> assertThat(getValuesByKey(headers, "event-name")).containsExactly("TodoEvents"),
-                () -> assertThat(getValuesByKey(headers, "content-type")).containsExactly("application/vnd.com.damdamdeo.pulse.extension.core.event.NewTodoCreated.api+json"),
-                () -> assertThat(getValuesByKey(headers, "owned-by")).isEmpty(),
-                () -> assertThat(records.getFirst().getKey()).isNull(),
-                () -> JSONAssert.assertEquals(
-                        // language=json
-                        """
-                                {
-                                  "description" : "lorem ipsum"
-                                }
-                                """, new String(records.getFirst().getValue()), JSONCompareMode.STRICT));
-    }
-
-    @Test
     void shouldConsumeEncryptedRecordFromLiveNotificationKafka() {
         // Given
+        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob")));
 
         // When
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"), new OwnedBy("alice"));
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"),
+                new OwnedBy("Todo"), audienceBob);
 
         // Then
         final List<Record> records = consumer.consume("pulse.live-notification.todotaking_todo");
@@ -77,9 +52,13 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
 
         assertAll(
-                () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("alice"),
-                () -> assertThat(records.getFirst().getValue()).startsWith(-61, 30)
-        );
+                () -> assertThat(headersName).containsExactly("event-name", "content-type", "owned-by", "audience"),
+                () -> assertThat(getValuesByKey(headers, "event-name")).containsExactly("TodoEvents"),
+                () -> assertThat(getValuesByKey(headers, "content-type")).containsExactly("application/vnd.com.damdamdeo.pulse.extension.core.event.NewTodoCreated.api+json"),
+                () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("Todo"),
+                () -> assertThat(getValuesByKey(headers, "audience")).containsExactly("FROM_LIST_OF_ELIGIBILITY:EU:bob"),
+                () -> assertThat(records.getFirst().getKey()).isNull(),
+                () -> assertThat(records.getFirst().getValue()).startsWith(-61, 30));
     }
 
     @Test

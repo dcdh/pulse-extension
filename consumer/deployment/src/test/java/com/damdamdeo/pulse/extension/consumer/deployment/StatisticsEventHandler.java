@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -21,7 +22,7 @@ import java.util.function.Supplier;
                 @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")})
 public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
-    private TargetEventChannelConsumerTest.Call call = null;
+    private Call call = null;
 
     @Override
     public void handleMessage(final FromApplication fromApplication,
@@ -33,15 +34,20 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final EventType eventType,
                               final EncryptedPayload encryptedPayload,
                               final OwnedBy ownedBy,
+                              final ExecutedBy executedBy,
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
-        this.call = new TargetEventChannelConsumerTest.Call(fromApplication,
+        this.call = new Call(fromApplication,
                 target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
-                encryptedPayload, ownedBy, decryptableEventPayload,
+                encryptedPayload, ownedBy, executedBy, decryptableEventPayload,
                 aggregateRootLoadedSupplier.get());
     }
 
-    public TargetEventChannelConsumerTest.Call getCall() {
+    public Call getCall() {
         return call;
+    }
+
+    public void reset() {
+        call = null;
     }
 }

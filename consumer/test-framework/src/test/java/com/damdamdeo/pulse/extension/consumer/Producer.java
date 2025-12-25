@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import io.smallrye.reactive.messaging.kafka.companion.ProducerBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -45,6 +46,7 @@ public class Producer {
                                                                           final String eventPayload,
                                                                           final AggregateId aggregateId,
                                                                           final OwnedBy ownedBy,
+                                                                          final ExecutedBy executedBy,
                                                                           final BelongsTo belongsTo,
                                                                           final Class<A> aggregateRootClass,
                                                                           final Class<B> eventClass) {
@@ -101,7 +103,9 @@ public class Producer {
                                 new JsonNodeEventValue(1_761_335_312_527L,
                                         eventClass.getSimpleName(),
                                         encryptedEvent,
-                                        ownedBy.id(), belongsTo.aggregateId().id())), 1L);
+                                        ownedBy.id(),
+                                        belongsTo.aggregateId().id(),
+                                        executedBy.encode())), 1L);
         return new Response(
                 new EncryptedPayload(encryptedAggregatePayload),
                 new EncryptedPayload(encryptedEvent));

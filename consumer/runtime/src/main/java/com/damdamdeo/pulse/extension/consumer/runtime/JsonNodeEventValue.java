@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.consumer.EventValue;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -17,7 +18,8 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                                  @JsonProperty("event_type") String eventType,
                                  @JsonProperty("event_payload") byte[] eventPayload,
                                  @JsonProperty("owned_by") String ownedBy,
-                                 @JsonProperty("belongs_to") String belongsTo) implements EventValue {
+                                 @JsonProperty("belongs_to") String belongsTo,
+                                 @JsonProperty("executed_by") String executedBy) implements EventValue {
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public JsonNodeEventValue {
@@ -26,6 +28,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
         Objects.requireNonNull(eventPayload);
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(belongsTo);
+        Objects.requireNonNull(executedBy);
     }
 
     @Override
@@ -49,6 +52,11 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
     }
 
     @Override
+    public ExecutedBy toExecutedBy() {
+        return ExecutedBy.decode(executedBy);
+    }
+
+    @Override
     public BelongsTo toBelongsTo() {
         return new BelongsTo(new AnyAggregateId(belongsTo));
     }
@@ -61,12 +69,13 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                 && Objects.equals(createDate, that.createDate)
                 && Objects.equals(eventType, that.eventType)
                 && Arrays.equals(eventPayload, that.eventPayload)
-                && Objects.equals(belongsTo, that.belongsTo);
+                && Objects.equals(belongsTo, that.belongsTo)
+                && Objects.equals(executedBy, that.executedBy);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo);
+        return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo, executedBy);
     }
 
     @Override
@@ -77,6 +86,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                 ", eventPayload=" + Arrays.toString(eventPayload) +
                 ", ownedBy='" + ownedBy + '\'' +
                 ", belongsTo='" + belongsTo + '\'' +
+                ", executedBy='" + executedBy + '\'' +
                 '}';
     }
 }
