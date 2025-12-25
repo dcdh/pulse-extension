@@ -37,6 +37,11 @@ public class SerializerProcessor {
         final Set<DotName> visited = new HashSet<>();
         for (EligibleTypeForSerializationBuildItem eligibleTypeForSerializationBuildItem : eligibleTypeForSerializationBuildItems) {
             if (eligibleTypeForSerializationBuildItem.clazz().isInterface()) {
+                final Collection<ClassInfo> clazzes = index.getAllKnownImplementations(DotName.createSimple(eligibleTypeForSerializationBuildItem.clazz()));
+                for (final ClassInfo clazz : clazzes) {
+                    collectFieldsRecursive(clazz.name(), index, visited, buildItems);
+                }
+            } else if (isAbstractClass(eligibleTypeForSerializationBuildItem.clazz())) {
                 final Collection<ClassInfo> clazzes = index.getAllKnownSubclasses(DotName.createSimple(eligibleTypeForSerializationBuildItem.clazz()));
                 for (final ClassInfo clazz : clazzes) {
                     collectFieldsRecursive(clazz.name(), index, visited, buildItems);
@@ -50,6 +55,11 @@ public class SerializerProcessor {
         }
 
         return buildItems;
+    }
+
+    private static boolean isAbstractClass(final Class<?> clazz) {
+        return Modifier.isAbstract(clazz.getModifiers())
+                && !clazz.isInterface();
     }
 
     private void collectFieldsRecursive(final DotName type, final IndexView index, final Set<DotName> visited,
