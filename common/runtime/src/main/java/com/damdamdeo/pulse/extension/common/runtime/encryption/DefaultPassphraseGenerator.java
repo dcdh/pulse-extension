@@ -13,17 +13,18 @@ import java.security.SecureRandom;
 @DefaultBean
 public final class DefaultPassphraseGenerator implements PassphraseGenerator {
 
+    private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    private static final int LENGTH = 32;
+
     @Override
     public Passphrase generate() {
-        final SecureRandom random = new SecureRandom();
-        final int length = 32; // longueur de la passphrase
-        final char[] passphrase = new char[length];
-
-        final String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
-
-        for (int i = 0; i < length; i++) {
-            final int index = random.nextInt(chars.length());
-            passphrase[i] = chars.charAt(index);
+        final char[] passphrase = new char[LENGTH];
+        for (int i = 0; i < LENGTH; i++) {
+            final int index = RANDOM.nextInt(CHARS.length());
+            passphrase[i] = CHARS.charAt(index);
         }
 
         return new Passphrase(passphrase);
