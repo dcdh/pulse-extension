@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -34,6 +35,7 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
                               final EventType eventType,
                               final EncryptedPayload encryptedPayload,
                               final OwnedBy ownedBy,
+                              final ExecutedBy executedBy,
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
         if (TODO_TAKING_TODO.equals(fromApplication)) {
@@ -47,6 +49,7 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
                     eventType,
                     encryptedPayload,
                     ownedBy,
+                    executedBy.value(),
                     decryptableEventPayload,
                     aggregateRootLoadedSupplier.get());
         }

@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcProjectionFromApplicationEventStoreTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

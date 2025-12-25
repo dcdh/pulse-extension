@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -90,8 +91,8 @@ class TargetEventChannelConsumerTest {
         }
 
         @Override
-        public ExecutedBy toExecutedBy() {
-            return ExecutedBy.decode(executedBy);
+        public ExecutedBy toExecutedBy(final ExecutedByDecoder executedByDecoder) {
+            return ExecutedBy.decode(executedBy, executedByDecoder);
         }
 
         @Override

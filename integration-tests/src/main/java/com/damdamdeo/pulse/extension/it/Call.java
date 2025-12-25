@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.time.Instant;
@@ -20,6 +21,7 @@ public record Call(FromApplication fromApplication,
                    EventType eventType,
                    EncryptedPayload encryptedPayload,
                    OwnedBy ownedBy,
+                   String executedBy,
                    DecryptablePayload<JsonNode> decryptableEventPayload,
                    AggregateRootLoaded<JsonNode> aggregateRootLoaded) {
 
@@ -33,6 +35,7 @@ public record Call(FromApplication fromApplication,
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(encryptedPayload);
         Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(executedBy);
         Objects.requireNonNull(decryptableEventPayload);
         Objects.requireNonNull(aggregateRootLoaded);
     }

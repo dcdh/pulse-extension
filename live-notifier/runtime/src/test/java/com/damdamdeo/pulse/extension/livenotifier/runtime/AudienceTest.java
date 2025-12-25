@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -35,8 +37,8 @@ class AudienceTest {
         final Audience audience = Audience.AllConnected.INSTANCE;
 
         // When
-        final String encoded = audience.encode();
-        final Audience decoded = Audience.decode(encoded);
+        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE);
+        final Audience decoded = Audience.decode(encoded, TestExecutedByDecoder.INSTANCE);
 
         // Then
         assertAll(
@@ -76,9 +78,8 @@ class AudienceTest {
         final Audience audience = new Audience.FromListOfEligibility(List.of(ALICE, BOB));
 
         // When
-        final String encoded = audience.encode();
-        System.out.println(encoded);
-        final Audience decoded = Audience.decode(encoded);
+        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE);
+        final Audience decoded = Audience.decode(encoded, TestExecutedByDecoder.INSTANCE);
 
         // Then
         assertThat(decoded).isInstanceOf(Audience.FromListOfEligibility.class);
@@ -86,7 +87,7 @@ class AudienceTest {
         final Audience.FromListOfEligibility decodedTyped = (Audience.FromListOfEligibility) decoded;
 
         assertAll(
-                () -> assertThat(encoded).isEqualTo("FROM_LIST_OF_ELIGIBILITY:EU:alice,EU:bob"),
+                () -> assertThat(encoded).isEqualTo("FROM_LIST_OF_ELIGIBILITY:EU:encodedalice,EU:encodedbob"),
                 () -> assertThat(decodedTyped.eligibles()).containsExactly(ALICE, BOB),
                 () -> assertThat(decodedTyped.eligible(ALICE)).isTrue(),
                 () -> assertThat(decodedTyped.eligible(BOB)).isTrue());
@@ -98,7 +99,7 @@ class AudienceTest {
 
     @Test
     void decode_should_fail_on_unknown_discriminant() {
-        assertThatThrownBy(() -> Audience.decode("UNKNOWN"))
+        assertThatThrownBy(() -> Audience.decode("UNKNOWN", TestExecutedByDecoder.INSTANCE))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid Audience value");
     }
@@ -109,7 +110,7 @@ class AudienceTest {
         String invalid = Audience.FromListOfEligibility.DISCRIMINANT + Audience.SEPARATOR + "INVALID_FORMAT";
 
         // Then
-        assertThatThrownBy(() -> Audience.decode(invalid))
+        assertThatThrownBy(() -> Audience.decode(invalid, TestExecutedByDecoder.INSTANCE))
                 .isInstanceOf(IllegalStateException.class);
     }
 }

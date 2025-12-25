@@ -39,7 +39,7 @@ import java.util.stream.LongStream;
 
 class PerformanceTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
     static final Logger LOGGER = Logger.getLogger(PerformanceTest.class.getName());
 

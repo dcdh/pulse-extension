@@ -1,21 +1,29 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public sealed interface ExecutedBy
         permits ExecutedBy.Anonymous, ExecutedBy.EndUser, ExecutedBy.ServiceAccount, ExecutedBy.NotAvailable {
 
     String SEPARATOR = ":";
 
-    String encode();
+    String encode(ExecutedByEncoder executedByEncoder);
 
-    static ExecutedBy decode(final String value) {
+    String value();
+
+    boolean decoded();
+
+    static ExecutedBy decode(final String value, final ExecutedByDecoder executedByDecoder) {
         if (value == null || value.equals("NA")) {
             return NotAvailable.INSTANCE;
         } else if (value.equals("A")) {
             return Anonymous.INSTANCE;
         } else if (value.startsWith(EndUser.DISCRIMINANT + SEPARATOR)) {
-            return new EndUser(value.substring((EndUser.DISCRIMINANT + SEPARATOR).length()));
+            final String encodedEndUser = value.substring((EndUser.DISCRIMINANT + SEPARATOR).length());
+            final Optional<String> decoded = executedByDecoder.decode(encodedEndUser);
+            return decoded.map(decodedEndUser -> new EndUser(decodedEndUser, true))
+                    .orElseGet(() -> new EndUser(encodedEndUser, false));
         } else if (value.startsWith(ServiceAccount.DISCRIMINANT + SEPARATOR)) {
             return new ServiceAccount(value.substring((ServiceAccount.DISCRIMINANT + SEPARATOR).length()));
         }
@@ -31,12 +39,22 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode() {
+        public String encode(final ExecutedByEncoder executedByEncoder) {
             return DISCRIMINANT;
+        }
+
+        @Override
+        public String value() {
+            return DISCRIMINANT;
+        }
+
+        @Override
+        public boolean decoded() {
+            return true;
         }
     }
 
-    record EndUser(String by) implements ExecutedBy {
+    record EndUser(String by, boolean decoded) implements ExecutedBy {
         public static final String DISCRIMINANT = "EU";
 
         public EndUser {
@@ -47,8 +65,21 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode() {
+        public String encode(final ExecutedByEncoder executedByEncoder) {
+            if (!decoded) {
+                throw new IllegalStateException("Could not encode not decoded");
+            }
+            return DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by));
+        }
+
+        @Override
+        public String value() {
             return DISCRIMINANT + SEPARATOR + by;
+        }
+
+        @Override
+        public boolean decoded() {
+            return decoded;
         }
     }
 
@@ -63,8 +94,18 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode() {
+        public String encode(final ExecutedByEncoder executedByEncoder) {
             return DISCRIMINANT + SEPARATOR + by;
+        }
+
+        @Override
+        public String value() {
+            return DISCRIMINANT + SEPARATOR + by;
+        }
+
+        @Override
+        public boolean decoded() {
+            return true;
         }
     }
 
@@ -77,8 +118,18 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode() {
+        public String encode(final ExecutedByEncoder executedByEncoder) {
             return DISCRIMINANT;
+        }
+
+        @Override
+        public String value() {
+            return DISCRIMINANT;
+        }
+
+        @Override
+        public boolean decoded() {
+            return true;
         }
     }
 }

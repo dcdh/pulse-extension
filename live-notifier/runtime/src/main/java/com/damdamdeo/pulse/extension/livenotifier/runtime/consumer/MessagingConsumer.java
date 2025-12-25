@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.MessagingLiveNotifierPublisher;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +35,9 @@ public class MessagingConsumer {
     @Inject
     DecryptionService decryptionService;
 
+    @Inject
+    OwnedByExecutedByDecoder ownedByExecutedByDecoder;
+
     @Transactional
     @Blocking
     @Incoming("live-notification-in")
@@ -43,7 +47,8 @@ public class MessagingConsumer {
         final OwnedBy ownedBy = new OwnedBy(new String(consumerRecord.headers()
                 .lastHeader(MessagingLiveNotifierPublisher.OWNED_BY).value()));
         final Audience audience = Audience.decode(new String(consumerRecord.headers()
-                .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()));
+                        .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()),
+                ownedByExecutedByDecoder.executedByDecoder(ownedBy));
         final String className = extractClassName(consumerRecord.headers());
         try {
             final DecryptedPayload decryptedPayload = decryptionService.decrypt(new EncryptedPayload(consumerRecord.value()), ownedBy);

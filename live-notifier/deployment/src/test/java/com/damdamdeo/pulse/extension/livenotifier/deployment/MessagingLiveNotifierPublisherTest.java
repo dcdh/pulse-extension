@@ -40,7 +40,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
     @Test
     void shouldConsumeEncryptedRecordFromLiveNotificationKafka() {
         // Given
-        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob")));
+        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob", true)));
 
         // When
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"),
@@ -56,7 +56,8 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
                 () -> assertThat(getValuesByKey(headers, "event-name")).containsExactly("TodoEvents"),
                 () -> assertThat(getValuesByKey(headers, "content-type")).containsExactly("application/vnd.com.damdamdeo.pulse.extension.core.event.NewTodoCreated.api+json"),
                 () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("Todo"),
-                () -> assertThat(getValuesByKey(headers, "audience")).containsExactly("FROM_LIST_OF_ELIGIBILITY:EU:bob"),
+                () -> assertThat(getValuesByKey(headers, "audience")).isNotEmpty(),
+                () -> assertThat(getValuesByKey(headers, "audience").getFirst()).startsWith("FROM_LIST_OF_ELIGIBILITY:EU:"),// It is encoded and not deterministic
                 () -> assertThat(records.getFirst().getKey()).isNull(),
                 () -> assertThat(records.getFirst().getValue()).startsWith(-61, 30));
     }

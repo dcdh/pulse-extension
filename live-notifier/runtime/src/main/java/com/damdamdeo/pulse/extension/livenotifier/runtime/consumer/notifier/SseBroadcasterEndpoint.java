@@ -61,7 +61,7 @@ public class SseBroadcasterEndpoint {
                 .build();
         Log.infov("Broadcasting ''{0}''", notifyEvent.eventName());
         final BiFunction<Client, Audience, Boolean> isEligible = (client, audience) -> audience.eligible(
-                new ExecutedBy.EndUser(client.identifier()));
+                new ExecutedBy.EndUser(client.identifier(), true));
         SSE_BROADCASTERS_BY_CLIENT.entrySet().stream()
                 .filter(entry -> isEligible.apply(entry.getKey(), notifyEvent.audience()))
                 .map(Map.Entry::getValue)

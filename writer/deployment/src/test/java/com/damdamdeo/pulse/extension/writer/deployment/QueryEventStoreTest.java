@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class QueryEventStoreTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

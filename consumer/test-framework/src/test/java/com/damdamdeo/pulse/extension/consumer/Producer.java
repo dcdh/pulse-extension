@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
 import io.smallrye.reactive.messaging.kafka.companion.ProducerBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -105,7 +106,12 @@ public class Producer {
                                         encryptedEvent,
                                         ownedBy.id(),
                                         belongsTo.aggregateId().id(),
-                                        executedBy.encode())), 1L);
+                                        executedBy.encode(new ExecutedByEncoder() {
+                                            @Override
+                                            public byte[] encode(String value) {
+                                                return ("encoded" + value).getBytes(StandardCharsets.UTF_8);
+                                            }
+                                        }))), 1L);
         return new Response(
                 new EncryptedPayload(encryptedAggregatePayload),
                 new EncryptedPayload(encryptedEvent));

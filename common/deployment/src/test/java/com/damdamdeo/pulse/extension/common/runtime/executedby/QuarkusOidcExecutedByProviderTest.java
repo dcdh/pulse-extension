@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByProvider;
+import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -32,11 +34,11 @@ class QuarkusOidcExecutedByProviderTest {
     public static class ExecutedByProviderEndpoint {
 
         @Inject
-        com.damdamdeo.pulse.extension.core.executedby.ExecutedByProvider executedByProvider;
+        ExecutedByProvider executedByProvider;
 
         @GET
         public String getExecutedBy() {
-            return executedByProvider.provide().encode();
+            return executedByProvider.provide().encode(TestExecutedByEncoder.INSTANCE);
         }
     }
 
@@ -71,7 +73,7 @@ class QuarkusOidcExecutedByProviderTest {
                 .get("/executedByProvider")
                 .then().log().all()
                 .statusCode(200)
-                .body(is("EU:alice"));
+                .body(is("EU:encodedalice"));
     }
 
     @Test

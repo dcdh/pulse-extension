@@ -1,12 +1,16 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateRoot;
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.VersionizedAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
@@ -42,6 +46,9 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
 
     @Inject
     EventClazzDiscovery eventClazzDiscovery;
+
+    @Inject
+    OwnedByExecutedByEncoder ownedByExecutedByEncoder;
 
     @Override
     public void save(final List<VersionizedEvent> versionizedEvents, final AggregateRoot<K> aggregateRoot, final ExecutedBy executedBy)
@@ -86,7 +93,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy).passphrase()));
                 eventPreparedStatement.setString(8, ownedBy.id());
                 eventPreparedStatement.setString(9, aggregateRoot.belongsTo().aggregateId().id());
-                eventPreparedStatement.setString(10, executedBy.encode());
+                eventPreparedStatement.setString(10, executedBy.encode(ownedByExecutedByEncoder.executedByEncoder(ownedBy)));
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }

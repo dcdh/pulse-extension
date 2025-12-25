@@ -21,7 +21,7 @@ public class QuarkusOidcExecutedByProvider implements ExecutedByProvider {
         if (securityIdentity.isAnonymous()) {
             return ExecutedBy.Anonymous.INSTANCE;
         } else if (securityIdentity.getRoles().contains(USER_ROLE)) {
-            return new ExecutedBy.EndUser(securityIdentity.getPrincipal().getName());
+            return new ExecutedBy.EndUser(securityIdentity.getPrincipal().getName(), true);
         } else {
             return new ExecutedBy.ServiceAccount(securityIdentity.getPrincipal().getName());
         }

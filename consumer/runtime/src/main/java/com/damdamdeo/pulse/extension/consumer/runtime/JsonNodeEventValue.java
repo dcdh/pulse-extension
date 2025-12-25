@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -52,8 +53,8 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
     }
 
     @Override
-    public ExecutedBy toExecutedBy() {
-        return ExecutedBy.decode(executedBy);
+    public ExecutedBy toExecutedBy(final ExecutedByDecoder executedByDecoder) {
+        return ExecutedBy.decode(executedBy, executedByDecoder);
     }
 
     @Override

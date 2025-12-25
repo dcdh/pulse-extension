@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
 
 import java.time.Instant;
 
@@ -18,7 +19,7 @@ public interface EventValue {
 
     OwnedBy toOwnedBy();
 
-    ExecutedBy toExecutedBy();
+    ExecutedBy toExecutedBy(ExecutedByDecoder executedByDecoder);
 
     BelongsTo toBelongsTo();
 }

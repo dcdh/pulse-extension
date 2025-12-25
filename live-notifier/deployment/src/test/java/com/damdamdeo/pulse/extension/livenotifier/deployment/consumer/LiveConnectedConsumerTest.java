@@ -70,9 +70,9 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
         final CompletableFuture<List<String>> receivedEvents = sseConsumer.consume(accessToken, Duration.ofSeconds(10));
 
         // When
-        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob")));
-        final Audience audienceDuke = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("duke")));
-        final Audience audienceAlice = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("alice")));
+        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob", true)));
+        final Audience audienceDuke = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("duke", true)));
+        final Audience audienceAlice = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("alice", true)));
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), new OwnedBy("TodoBob"), audienceBob);
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum"), new OwnedBy("TodoDuke"), audienceDuke);
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum"), new OwnedBy("TodoAlice"), audienceAlice);

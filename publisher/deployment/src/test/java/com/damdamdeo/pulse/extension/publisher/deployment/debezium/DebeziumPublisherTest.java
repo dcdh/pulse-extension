@@ -70,7 +70,7 @@ class DebeziumPublisherTest {
                             """.getBytes(StandardCharsets.UTF_8));
             eventPreparedStatement.setString(7, "Damien");
             eventPreparedStatement.setString(8, "Damien/0");
-            eventPreparedStatement.setString(9, "EU:bob");
+            eventPreparedStatement.setString(9, "EU:encodedbob");
             eventPreparedStatement.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -120,7 +120,7 @@ class DebeziumPublisherTest {
                                   "important": false
                                 }
                                 """.getBytes(StandardCharsets.UTF_8),
-                        "Damien", "Damien/0", "EU:bob")));
+                        "Damien", "Damien/0", "EU:encodedbob")));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {

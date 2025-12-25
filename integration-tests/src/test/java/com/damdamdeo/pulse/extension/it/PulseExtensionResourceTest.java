@@ -54,6 +54,7 @@ class PulseExtensionResourceTest {
                 .body("eventType.type", is("NewTodoCreated"))
                 .body("encryptedPayload.payload", notNullValue(String.class))
                 .body("ownedBy.id", is("Damien"))
+                .body("executedBy", is("NA"))
                 .body("decryptableEventPayload.payload.description", is("lorem ipsum"))
                 .body("decryptableEventPayload.decrypted", is(true))
                 .body("aggregateRootLoaded.aggregateRootType.type", is("Todo"))

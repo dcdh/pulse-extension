@@ -7,7 +7,10 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
 import com.damdamdeo.pulse.extension.writer.runtime.InstantProvider;
+import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -32,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcPostgresEventRepositoryTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob");
+    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -45,6 +48,15 @@ class JdbcPostgresEventRepositoryTest {
 
     @Inject
     DataSource dataSource;
+
+    @ApplicationScoped
+    static class StubOwnedByExecutedByEncoder implements OwnedByExecutedByEncoder {
+
+        @Override
+        public ExecutedByEncoder executedByEncoder(final OwnedBy ownedBy) {
+            return TestExecutedByEncoder.INSTANCE;
+        }
+    }
 
     @ApplicationScoped
     static class StubInstantProvider implements InstantProvider {
@@ -126,7 +138,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/1"),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob"),
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 "Damien/1"),
                         () -> assertThat(tAggregateRootResultSet.getString(
@@ -200,7 +212,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob"));
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
@@ -211,7 +223,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob"));
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
@@ -559,7 +571,7 @@ class JdbcPostgresEventRepositoryTest {
                              """)) {
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
-                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bob");
+                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -649,7 +661,7 @@ class JdbcPostgresEventRepositoryTest {
             preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
             preparedStatement.setString(7, ownedBy.id());
             preparedStatement.setString(8, aggregateRootId);
-            preparedStatement.setString(9, executedBy.encode());
+            preparedStatement.setString(9, executedBy.encode(TestExecutedByEncoder.INSTANCE));
             preparedStatement.executeUpdate();
         }
     }

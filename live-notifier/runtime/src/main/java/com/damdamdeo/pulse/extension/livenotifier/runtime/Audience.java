@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Arrays;
@@ -17,10 +19,11 @@ public sealed interface Audience
 
     boolean eligible(ExecutedBy.EndUser executedBy);
 
-    String encode();
+    String encode(ExecutedByEncoder executedByEncoder);
 
-    static Audience decode(final String value) {
+    static Audience decode(final String value, final ExecutedByDecoder executedByDecoder) {
         Objects.requireNonNull(value);
+        Objects.requireNonNull(executedByDecoder);
         if (value.startsWith(AllConnected.DISCRIMINANT)) {
             return AllConnected.INSTANCE;
         } else if (value.startsWith(FromListOfEligibility.DISCRIMINANT)) {
@@ -28,8 +31,9 @@ public sealed interface Audience
                     .split(ELIGIBLE_SEPARATOR))
                     .map(eligible -> {
                         Validate.validState(eligible.startsWith(ExecutedBy.EndUser.DISCRIMINANT + ExecutedBy.EndUser.SEPARATOR));
-                        return (ExecutedBy.EndUser) ExecutedBy.decode(eligible);
+                        return (ExecutedBy.EndUser) ExecutedBy.decode(eligible, executedByDecoder);
                     })
+                    .filter(ExecutedBy.EndUser::decoded)
                     .toList();
             return new FromListOfEligibility(listOfEligibilityEndUser);
         }
@@ -50,7 +54,7 @@ public sealed interface Audience
         }
 
         @Override
-        public String encode() {
+        public String encode(final ExecutedByEncoder executedByEncoder) {
             return DISCRIMINANT;
         }
     }
@@ -68,9 +72,9 @@ public sealed interface Audience
         }
 
         @Override
-        public String encode() {
+        public String encode(final ExecutedByEncoder executedByEncoder) {
             return DISCRIMINANT + SEPARATOR + eligibles.stream()
-                    .map(ExecutedBy.EndUser::encode)
+                    .map(endUser -> endUser.encode(executedByEncoder))
                     .collect(Collectors.joining(ELIGIBLE_SEPARATOR));
         }
     }

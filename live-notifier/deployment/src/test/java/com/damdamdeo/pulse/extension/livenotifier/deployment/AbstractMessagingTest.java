@@ -6,13 +6,20 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsExce
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.TopicManager;
+import io.quarkus.cache.Cache;
+import io.quarkus.cache.CacheName;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.util.Optional;
 
 public abstract class AbstractMessagingTest {
+
+    @Inject
+    @CacheName("passphrase")
+    Cache cache;
 
     @BeforeEach
     @AfterEach

@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
 import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
@@ -26,17 +27,20 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
     private final AggregateRootLoader<T> aggregateRootLoader;
     private final AsyncEventChannelMessageHandlerProvider<T> asyncEventChannelMessageHandlerProvider;
     private final SequentialEventChecker sequentialEventChecker;
+    private final OwnedByExecutedByDecoder ownedByExecutedByDecoder;
 
     public DefaultTargetEventChannelExecutor(final DecryptionService decryptionService,
                                              final DecryptedPayloadToPayloadMapper<T> decryptedPayloadToPayloadMapper,
                                              final AggregateRootLoader<T> aggregateRootLoader,
                                              final AsyncEventChannelMessageHandlerProvider<T> asyncEventChannelMessageHandlerProvider,
-                                             final SequentialEventChecker sequentialEventChecker) {
+                                             final SequentialEventChecker sequentialEventChecker,
+                                             final OwnedByExecutedByDecoder ownedByExecutedByDecoder) {
         this.decryptionService = Objects.requireNonNull(decryptionService);
         this.decryptedPayloadToPayloadMapper = Objects.requireNonNull(decryptedPayloadToPayloadMapper);
         this.aggregateRootLoader = Objects.requireNonNull(aggregateRootLoader);
         this.asyncEventChannelMessageHandlerProvider = Objects.requireNonNull(asyncEventChannelMessageHandlerProvider);
         this.sequentialEventChecker = Objects.requireNonNull(sequentialEventChecker);
+        this.ownedByExecutedByDecoder = Objects.requireNonNull(ownedByExecutedByDecoder);
     }
 
     @Override
@@ -76,7 +80,7 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                     final EventType eventType = eventValue.toEventType();
                     final EncryptedPayload encryptedPayload = eventValue.toEncryptedEventPayload();
                     final OwnedBy ownedBy = eventValue.toOwnedBy();
-                    final ExecutedBy executedBy = eventValue.toExecutedBy();
+                    final ExecutedBy executedBy = eventValue.toExecutedBy(ownedByExecutedByDecoder.executedByDecoder(ownedBy));
                     try {
                         DecryptablePayload<T> decryptableEventPayload;
                         try {
