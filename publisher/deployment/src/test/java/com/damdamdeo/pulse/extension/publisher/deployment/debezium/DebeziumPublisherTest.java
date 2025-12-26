@@ -56,10 +56,10 @@ class DebeziumPublisherTest {
                 // language=json
                 """
                         {
-                              "description": "lorem ipsum",
-                              "status": "DONE",
-                              "important": false
-                            }
+                          "description": "lorem ipsum",
+                          "status": "DONE",
+                          "important": false
+                        }
                         """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """

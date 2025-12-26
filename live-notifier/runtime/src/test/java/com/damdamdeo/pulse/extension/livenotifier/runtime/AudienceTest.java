@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 class AudienceTest {
 
-    private static final ExecutedBy.EndUser ALICE = new ExecutedBy.EndUser("alice");
-    private static final ExecutedBy.EndUser BOB = new ExecutedBy.EndUser("bob");
+    private static final ExecutedBy.EndUser ALICE = new ExecutedBy.EndUser("alice", true);
+    private static final ExecutedBy.EndUser BOB = new ExecutedBy.EndUser("bob", true);
 
     // ----------------------------------------------------------------------
     // AllConnected
