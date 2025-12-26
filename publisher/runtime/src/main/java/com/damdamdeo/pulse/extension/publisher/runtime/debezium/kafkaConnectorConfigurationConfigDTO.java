@@ -118,7 +118,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("table.include.list")
     public String getTableIncludeList() {
-        return "%s.t_event".formatted(schema);
+        return "%1$s.t_event,%1$s.t_aggregate_root".formatted(schema);
     }
 
     @JsonProperty("tombstones.on.delete")
@@ -193,7 +193,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("transforms.filterFields.include")
     public String getTransformsFilterFieldsInclude() {
-        return "creation_date,event_type,event_payload,owned_by,belongs_to,executed_by";
+        return "creation_date,event_type,event_payload,owned_by,belongs_to,executed_by,last_version,aggregate_root_payload";
     }
 
     @JsonProperty("transforms.partitioner.type")

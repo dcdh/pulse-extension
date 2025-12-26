@@ -2,11 +2,9 @@ package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.publisher.JsonNodeEventKey;
-import com.damdamdeo.pulse.extension.publisher.JsonNodeEventValue;
-import com.damdamdeo.pulse.extension.publisher.Consumer;
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.publisher.*;
 import com.damdamdeo.pulse.extension.publisher.Record;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.apache.kafka.common.header.Header;
@@ -40,16 +38,13 @@ class DebeziumPublisherTest {
     DataSource dataSource;
 
     @Inject
-    ObjectMapper objectMapper;
-
-    @Inject
     Consumer consumer;
 
     @Inject
     OpenPGPEncryptionService openPGPEncryptionService;
 
     @Test
-    void shouldConsumeFromKafkaTopic() {
+    void shouldConsumeFromTEventKafkaTopic() {
         // Given
         final Timestamp givenCreationDate = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
         final byte[] payload = openPGPEncryptionService.encrypt(
@@ -83,7 +78,7 @@ class DebeziumPublisherTest {
         }
 
         // When
-        final List<Record> records = consumer.consume("pulse.todotaking_todo.t_event");
+        final List<Record<JsonNodeEventKey, JsonNodeEventValue>> records = consumer.consumeFromTEvent();
         final Headers headers = records.getFirst().getHeaders();
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
         // Then
@@ -118,6 +113,75 @@ class DebeziumPublisherTest {
                         "Damien/0", 0)),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(1003_600_000_000L,// I do not understand the added part ...
                         "NewTodoCreated", payload, "Damien", "Damien/0", "EU:encodedbob")));
+    }
+
+    @Test
+    void shouldConsumeFromTAggregateRootKafkaTopic() {
+        // Given
+        final byte[] payload = openPGPEncryptionService.encrypt(
+                // language=json
+                """
+                        {
+                          "id": "Damien/0",
+                          "description": "lorem ipsum",
+                          "status": "DONE",
+                          "important": false
+                        }
+                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+        // language=sql
+        final String sql = """
+                    INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """;
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, "Damien/0");
+            ps.setString(2, Todo.class.getSimpleName());
+            ps.setLong(3, 1);
+            ps.setBytes(4, payload);
+            ps.setString(5, "Damien");
+            ps.setString(6, "Damien/0");
+            ps.executeUpdate();
+        } catch (final SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        // When
+        final List<Record<JsonNodeAggregateRootKey, JsonNodeAggregateRootValue>> records = consumer.consumeFromTAggregateRoot();
+        final Headers headers = records.getFirst().getHeaders();
+        final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
+        // Then
+        assertAll(
+                () -> assertThat(headersName).containsExactly(
+                        "__debezium.context.connectorLogicalName",
+                        "__debezium.context.taskId",
+                        "__debezium.context.connectorName",
+                        "__source_version",
+                        "__source_connector",
+                        "__source_name",
+                        "__source_ts_ms",
+                        "__source_db",
+                        "__source_schema",
+                        "__source_table",
+                        "__source_txId",
+                        "__source_lsn"),
+                () -> assertThat(getValuesByKey(headers, "__debezium.context.connectorLogicalName")).containsExactly("pulse"),
+                () -> assertThat(getValuesByKey(headers, "__debezium.context.taskId")).containsExactly("0"),
+                () -> assertThat(getValuesByKey(headers, "__debezium.context.connectorName")).containsExactly("postgresql"),
+                () -> assertThat(getValuesByKey(headers, "__source_version")).containsExactly("3.3.1.Final"),
+                () -> assertThat(getValuesByKey(headers, "__source_connector")).containsExactly("postgresql"),
+                () -> assertThat(getValuesByKey(headers, "__source_name")).containsExactly("pulse"),
+                () -> assertThat(getValuesByKey(headers, "__source_ts_ms")).hasSize(1),
+                () -> assertThat(getValuesByKey(headers, "__source_db")).containsExactly("quarkus"),
+                () -> assertThat(getValuesByKey(headers, "__source_schema")).containsExactly("todotaking_todo"),
+                () -> assertThat(getValuesByKey(headers, "__source_table")).containsExactly("t_aggregate_root"),
+                () -> assertThat(getValuesByKey(headers, "__source_txId")).hasSize(1),
+                () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
+                () -> assertThat(records.size()).isEqualTo(1L),
+                () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeAggregateRootKey("Todo",
+                        "Damien/0")),
+                () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeAggregateRootValue(1L,
+                        payload, "Damien", "Damien/0")));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {

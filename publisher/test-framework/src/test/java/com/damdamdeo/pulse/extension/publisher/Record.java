@@ -2,13 +2,13 @@ package com.damdamdeo.pulse.extension.publisher;
 
 import org.apache.kafka.common.header.Headers;
 
-public final class Record {
+public final class Record<K, V> {
 
     private final Headers headers;
-    private final JsonNodeEventKey key;
-    private final JsonNodeEventValue value;
+    private final K key;
+    private final V value;
 
-    public Record(final Headers headers, final JsonNodeEventKey key, final JsonNodeEventValue value) {
+    public Record(final Headers headers, final K key, final V value) {
         this.headers = headers;
         this.key = key;
         this.value = value;
@@ -18,11 +18,11 @@ public final class Record {
         return headers;
     }
 
-    public JsonNodeEventKey getKey() {
+    public K getKey() {
         return key;
     }
 
-    public JsonNodeEventValue getValue() {
+    public V getValue() {
         return value;
     }
 }

@@ -80,3 +80,8 @@ pulse.todotaking_todo.t_event
 ----
 kafka-console-consumer.sh --bootstrap-server kafka:29092 --topic pulse.todotaking_todo.t_event --from-beginning --group debug-reader --property print.key=true --property print.timestamp=true --property print.headers=true
 ----
+
+[source,shell]
+----
+kafka-console-consumer.sh --bootstrap-server kafka:29092 --topic pulse.todotaking_todo.t_aggregate_root --from-beginning --group debug-reader --property print.key=true --property print.timestamp=true --property print.headers=true
+----
