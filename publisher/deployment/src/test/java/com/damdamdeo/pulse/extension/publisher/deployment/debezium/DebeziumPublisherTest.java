@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
+import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
+import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.publisher.JsonNodeEventKey;
 import com.damdamdeo.pulse.extension.publisher.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.publisher.Consumer;
@@ -43,10 +45,22 @@ class DebeziumPublisherTest {
     @Inject
     Consumer consumer;
 
+    @Inject
+    OpenPGPEncryptionService openPGPEncryptionService;
+
     @Test
     void shouldConsumeFromKafkaTopic() {
         // Given
         final Timestamp givenCreationDate = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
+        final byte[] payload = openPGPEncryptionService.encrypt(
+                // language=json
+                """
+                        {
+                              "description": "lorem ipsum",
+                              "status": "DONE",
+                              "important": false
+                            }
+                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
                 INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
@@ -59,15 +73,7 @@ class DebeziumPublisherTest {
             eventPreparedStatement.setLong(3, 0);
             eventPreparedStatement.setObject(4, givenCreationDate);
             eventPreparedStatement.setString(5, "NewTodoCreated");
-            eventPreparedStatement.setBytes(6,
-                    // language=json
-                    """
-                            {
-                              "description": "lorem ipsum",
-                              "status": "DONE",
-                              "important": false
-                            }
-                            """.getBytes(StandardCharsets.UTF_8));
+            eventPreparedStatement.setBytes(6, payload);
             eventPreparedStatement.setString(7, "Damien");
             eventPreparedStatement.setString(8, "Damien/0");
             eventPreparedStatement.setString(9, "EU:encodedbob");
@@ -111,16 +117,7 @@ class DebeziumPublisherTest {
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeEventKey("Todo",
                         "Damien/0", 0)),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(1003_600_000_000L,// I do not understand the added part ...
-                        "NewTodoCreated",
-                        // language=json
-                        """
-                                {
-                                  "description": "lorem ipsum",
-                                  "status": "DONE",
-                                  "important": false
-                                }
-                                """.getBytes(StandardCharsets.UTF_8),
-                        "Damien", "Damien/0", "EU:encodedbob")));
+                        "NewTodoCreated", payload, "Damien", "Damien/0", "EU:encodedbob")));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {
