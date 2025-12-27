@@ -7,12 +7,12 @@ import io.quarkus.builder.item.MultiBuildItem;
 import java.util.List;
 import java.util.Objects;
 
-public final class TargetBuildItem extends MultiBuildItem {
+public final class DiscoveredAsyncEventConsumerChannel extends MultiBuildItem {
 
     private final Target target;
     private final List<FromApplication> fromApplications;
 
-    public TargetBuildItem(final Target target, final List<FromApplication> fromApplications) {
+    public DiscoveredAsyncEventConsumerChannel(final Target target, final List<FromApplication> fromApplications) {
         this.target = Objects.requireNonNull(target);
         this.fromApplications = Objects.requireNonNull(fromApplications);
     }

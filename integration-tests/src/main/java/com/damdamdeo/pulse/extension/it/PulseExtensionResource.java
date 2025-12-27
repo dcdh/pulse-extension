@@ -16,7 +16,7 @@
  */
 package com.damdamdeo.pulse.extension.it;
 
-import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
@@ -75,7 +75,7 @@ public class PulseExtensionResource {
     @Path("/called")
     public Call getCall() {
         final Call call = statisticsEventHandlerInstance
-                .select(EventChannel.Literal.of("statistics")).get().getCall();
+                .select(AsyncEventConsumerChannel.Literal.of("statistics")).get().getCall();
         return Optional.ofNullable(call)
                 .orElseThrow(() -> new NotFoundException("Call not executed yet"));
     }

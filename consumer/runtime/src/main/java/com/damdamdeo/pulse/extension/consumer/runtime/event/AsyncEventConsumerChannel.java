@@ -13,7 +13,7 @@ import java.util.Objects;
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface EventChannel {
+public @interface AsyncEventConsumerChannel {
 
     /**
      * @return target consuming kafka channel likes "statistic"
@@ -36,7 +36,7 @@ public @interface EventChannel {
         String componentName();
     }
 
-    class Literal extends AnnotationLiteral<EventChannel> implements EventChannel {
+    class Literal extends AnnotationLiteral<AsyncEventConsumerChannel> implements AsyncEventConsumerChannel {
 
         public static Literal of(final String target) {
             return new Literal(target);

@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -163,27 +163,41 @@ public class ValidationProcessor {
     }
 
     @BuildStep
-    List<ValidationErrorBuildItem> validate(final CombinedIndexBuildItem combinedIndexBuildItem) {
-        final IndexView computingIndex = combinedIndexBuildItem.getIndex();
-        final List<PreValidationEventChannel> preValidationEventChannels = new ArrayList<>();
-        computingIndex.getAnnotations(EventChannel.class).forEach(eventChannel -> {
-            final List<PreValidationSource> sources = new ArrayList<>();
-            final String target = eventChannel.value("target").asString();
-            eventChannel.value("sources").asArrayList().forEach(source -> {
-                final AnnotationInstance nested = source.asNested();
-                sources.add(new PreValidationSource(
-                        nested.value("functionalDomain").asString(),
-                        nested.value("componentName").asString()));
-            });
-            preValidationEventChannels.add(new PreValidationEventChannel(target, sources));
-        });
+    List<ValidationErrorBuildItem> validate(
+            final List<ConsumerChannelToValidateBuildItem> consumerChannelToValidateBuildItems,
+            final CombinedIndexBuildItem combinedIndexBuildItem) {
+        final IndexView index = combinedIndexBuildItem.getIndex();
+        final List<PreValidationEventChannel> preValidationEventChannels =
+                consumerChannelToValidateBuildItems.stream()
+                        .flatMap(item -> index.getAnnotations(item.clazz()).stream())
+                        .map(asyncConsumerChannel -> {
+                            final String target = asyncConsumerChannel.value("target").asString();
+
+                            final List<PreValidationSource> sources =
+                                    asyncConsumerChannel.value("sources")
+                                            .asArrayList()
+                                            .stream()
+                                            .map(source -> {
+                                                final AnnotationInstance nested = source.asNested();
+                                                return new PreValidationSource(
+                                                        nested.value("functionalDomain").asString(),
+                                                        nested.value("componentName").asString());
+                                            })
+                                            .toList();
+
+                            return new PreValidationEventChannel(target, sources);
+                        })
+                        .toList();
+
         final PreValidation preValidation = new PreValidation(preValidationEventChannels);
+
         return Stream.concat(
                         preValidation.invalidNamings().stream(),
                         preValidation.invalidDuplicates().stream())
                 .map(invalidMessage ->
                         new ValidationErrorBuildItem(
-                                new IllegalArgumentException(invalidMessage.invalidMessage())))
+                                new IllegalArgumentException(
+                                        invalidMessage.invalidMessage())))
                 .toList();
     }
 }

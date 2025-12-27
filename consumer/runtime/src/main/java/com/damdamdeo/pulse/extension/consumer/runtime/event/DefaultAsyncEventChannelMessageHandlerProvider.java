@@ -33,6 +33,6 @@ public final class DefaultAsyncEventChannelMessageHandlerProvider implements Asy
     public List<AsyncEventChannelMessageHandler<JsonNode>> provideForTarget(final Target target) {
         Objects.requireNonNull(target);
         return cache.computeIfAbsent(target, target1 ->
-                eventChannelMessageHandlers.select(EventChannel.Literal.of(target1.name())).stream().toList());
+                eventChannelMessageHandlers.select(AsyncEventConsumerChannel.Literal.of(target1.name())).stream().toList());
     }
 }

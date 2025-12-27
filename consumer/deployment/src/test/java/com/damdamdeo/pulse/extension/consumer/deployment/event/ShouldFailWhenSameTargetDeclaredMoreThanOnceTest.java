@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
-import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.*;
@@ -43,9 +43,9 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @EventChannel(target = "statistics",
+    @AsyncEventConsumerChannel(target = "statistics",
             sources = {
-                    @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
+                    @AsyncEventConsumerChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
@@ -66,9 +66,9 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @EventChannel(target = "statistics",
+    @AsyncEventConsumerChannel(target = "statistics",
             sources = {
-                    @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
+                    @AsyncEventConsumerChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
     static final class StatisticsAgainEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 

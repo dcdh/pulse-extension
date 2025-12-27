@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.event;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.consumer.Producer;
 import com.damdamdeo.pulse.extension.consumer.Response;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class TargetEventChannelConsumerTest {
+class AsyncConsumerChannelEventConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -83,7 +83,7 @@ class TargetEventChannelConsumerTest {
     @BeforeEach
     @AfterEach
     void tearDown() {
-        statisticsEventHandlerInstance.select(EventChannel.Literal.of("statistics")).get().reset();
+        statisticsEventHandlerInstance.select(AsyncEventConsumerChannel.Literal.of("statistics")).get().reset();
     }
 
     @Test
@@ -115,7 +115,7 @@ class TargetEventChannelConsumerTest {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
-                EventChannel.Literal.of("statistics")).get();
+                AsyncEventConsumerChannel.Literal.of("statistics")).get();
 
         // When
         final Response response = producer.produce(
@@ -177,7 +177,7 @@ class TargetEventChannelConsumerTest {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
-                EventChannel.Literal.of("statistics")).get();
+                AsyncEventConsumerChannel.Literal.of("statistics")).get();
 
         // When
         final Response response = producer.produce(

@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.it;
 
-import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.*;
@@ -18,10 +18,10 @@ import java.time.Instant;
 import java.util.function.Supplier;
 
 @ApplicationScoped
-@EventChannel(target = "statistics",
+@AsyncEventConsumerChannel(target = "statistics",
         sources = {
-                @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo"),
-                @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")})
+                @AsyncEventConsumerChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo"),
+                @AsyncEventConsumerChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")})
 public final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
     private Call call = null;

@@ -1,11 +1,11 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
-import com.damdamdeo.pulse.extension.consumer.deployment.items.TargetBuildItem;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKey;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyObjectMapperDeserializer;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventRecordObjectMapperDeserializer;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValue;
-import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
+import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
+import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.*;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.Target;
 import com.damdamdeo.pulse.extension.core.consumer.event.AbstractTargetEventChannelConsumer;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventKey;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
@@ -14,11 +14,13 @@ import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyReposi
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
@@ -27,43 +29,72 @@ import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.IndexView;
 
-import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.stream.Stream;
 
+import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
-public class CodeGenerationProcessor {
+public class AsyncEventConsumerProcessor {
 
-    record TargetWithSource(Target target, FromApplication fromApplication) {
-
-        public TargetWithSource {
-            Objects.requireNonNull(target);
-            Objects.requireNonNull(fromApplication);
-        }
-
-        public String channel() {
-            return "%s-%s-%s-in".formatted(target.name().toLowerCase(),
-                    fromApplication.functionalDomain().toLowerCase(),
-                    fromApplication.componentName().toLowerCase());
+    @BuildStep
+    List<DiscoveredAsyncEventConsumerChannel> discoverAsyncEventConsumerChannels(final List<ValidationErrorBuildItem> validationErrorBuildItems,
+                                                                                 final CombinedIndexBuildItem combinedIndexBuildItem) {
+        if (validationErrorBuildItems.isEmpty()) {
+            final IndexView computingIndex = combinedIndexBuildItem.getIndex();
+            return computingIndex.getAnnotations(AsyncEventConsumerChannel.class)
+                    .stream()
+                    .map(annotationInstance -> {
+                        final Target target = new Target(annotationInstance.value("target").asString());
+                        final List<FromApplication> sources = annotationInstance.value("sources").asArrayList().stream()
+                                .map(annotationValue -> {
+                                    final AnnotationInstance nested = annotationValue.asNested();
+                                    return FromApplication.of(
+                                            nested.value("functionalDomain").asString(),
+                                            nested.value("componentName").asString());
+                                }).toList();
+                        return new DiscoveredAsyncEventConsumerChannel(target, sources);
+                    })
+                    .distinct()
+                    .toList();
+        } else {
+            return List.of();
         }
     }
 
     @BuildStep
-    void generateTargetsEventChannelConsumer(final List<TargetBuildItem> targetBuildItems,
+    ConsumerChannelToValidateBuildItem channelToValidateBuildItemProducer() {
+        return new ConsumerChannelToValidateBuildItem(AsyncEventConsumerChannel.class);
+    }
+
+    @BuildStep
+    List<AdditionalBeanBuildItem> additionalBeans(final List<ValidationErrorBuildItem> validationErrorBuildItems) {
+        if (validationErrorBuildItems.isEmpty()) {
+            return Stream.of(
+                            AsyncEventConsumerChannel.class,
+                            PostgresAggregateRootLoader.class,
+                            JsonNodeTargetEventChannelExecutor.class)
+                    .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
+                    .toList();
+        } else {
+            return List.of();
+        }
+    }
+
+    @BuildStep
+    void generateTargetsEventChannelConsumer(final List<DiscoveredAsyncEventConsumerChannel> discoveredAsyncEventConsumerChannels,
                                              final ApplicationInfoBuildItem applicationInfoBuildItem,
                                              final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
                                              final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
                                              final OutputTargetBuildItem outputTargetBuildItem) {
-        targetBuildItems.stream()
-                .flatMap(targetBuildItem -> targetBuildItem.sources().stream()
-                        .map(src -> new TargetWithSource(targetBuildItem.target(), src))
+        discoveredAsyncEventConsumerChannels.stream()
+                .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream()
+                        .map(src -> new TargetWithSource(discoveredAsyncEventConsumerChannel.target(), src))
                 ).forEach(targetWithSource -> {
                     final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "."
                             + capitalize(targetWithSource.target().name())
@@ -153,9 +184,9 @@ public class CodeGenerationProcessor {
                     }
                 });
 
-        targetBuildItems.stream()
-                .flatMap(targetBuildItem -> targetBuildItem.sources().stream()
-                        .map(src -> new TargetWithSource(targetBuildItem.target(), src))
+        discoveredAsyncEventConsumerChannels.stream()
+                .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream()
+                        .map(src -> new TargetWithSource(discoveredAsyncEventConsumerChannel.target(), src))
                 ).forEach(targetWithSource -> {
                     final String channelNaming = targetWithSource.channel();
                     final String topic = "pulse.%s_%s.t_event".formatted(
@@ -173,19 +204,5 @@ public class CodeGenerationProcessor {
                                     "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), EventValue.class.getName())
                             .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
                 });
-    }
-
-    public static void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {
-        classCreator.writeTo((name, data) -> {
-            final Path classGeneratedPath = outputTargetBuildItem.getOutputDirectory().resolve(name.substring(name.lastIndexOf("/") + 1) + ".class");
-            try {
-                if (Files.notExists(classGeneratedPath)) {
-                    Files.createFile(classGeneratedPath);
-                }
-                Files.write(classGeneratedPath, data, StandardOpenOption.TRUNCATE_EXISTING);
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
     }
 }
