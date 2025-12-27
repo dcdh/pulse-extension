@@ -1,7 +1,9 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.Target;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 
 import java.util.Objects;

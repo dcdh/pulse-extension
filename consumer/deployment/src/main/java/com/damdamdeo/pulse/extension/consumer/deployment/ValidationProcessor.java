@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
-import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
 import io.quarkus.deployment.annotations.BuildStep;

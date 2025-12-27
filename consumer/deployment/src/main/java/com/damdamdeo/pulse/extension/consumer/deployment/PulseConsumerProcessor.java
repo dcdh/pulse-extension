@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBui
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.TargetBuildItem;
-import com.damdamdeo.pulse.extension.consumer.runtime.*;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.*;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;

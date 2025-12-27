@@ -1,8 +1,8 @@
-package com.damdamdeo.pulse.extension.consumer.runtime;
+package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
-import com.damdamdeo.pulse.extension.core.consumer.EventValue;
+import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;

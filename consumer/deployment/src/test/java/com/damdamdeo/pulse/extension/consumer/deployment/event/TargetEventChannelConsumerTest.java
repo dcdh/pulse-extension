@@ -1,12 +1,13 @@
-package com.damdamdeo.pulse.extension.consumer.deployment;
+package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.consumer.Producer;
 import com.damdamdeo.pulse.extension.consumer.Response;
-import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
@@ -99,13 +100,13 @@ class TargetEventChannelConsumerTest {
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-in.topic", String.class))
                         .isEqualTo("pulse.todotaking_todo.t_event"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-in.key.deserializer", String.class))
-                        .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKeyObjectMapperDeserializer"),
+                        .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyObjectMapperDeserializer"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-in.value.deserializer", String.class))
-                        .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventRecordObjectMapperDeserializer"),
+                        .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventRecordObjectMapperDeserializer"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-in.value.deserializer.key-type", String.class))
-                        .isEqualTo("com.damdamdeo.pulse.extension.core.consumer.EventKey"),
+                        .isEqualTo("com.damdamdeo.pulse.extension.core.consumer.event.EventKey"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-in.value.deserializer.value-type", String.class))
-                        .isEqualTo("com.damdamdeo.pulse.extension.core.consumer.EventValue")
+                        .isEqualTo("com.damdamdeo.pulse.extension.core.consumer.event.EventValue")
         );
     }
 

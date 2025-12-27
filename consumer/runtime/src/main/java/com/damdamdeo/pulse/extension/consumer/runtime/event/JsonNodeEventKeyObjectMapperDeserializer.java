@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.consumer.runtime;
+package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import io.quarkus.kafka.client.serialization.ObjectMapperDeserializer;
 

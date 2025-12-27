@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.consumer.deployment;
+package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;

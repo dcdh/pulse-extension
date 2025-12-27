@@ -1,10 +1,14 @@
-package com.damdamdeo.pulse.extension.consumer.runtime;
+package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
+import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoader;
+import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaderException;
+import com.damdamdeo.pulse.extension.core.consumer.event.UnknownAggregateRootException;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;

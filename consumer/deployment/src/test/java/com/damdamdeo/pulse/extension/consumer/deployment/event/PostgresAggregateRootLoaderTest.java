@@ -1,9 +1,11 @@
-package com.damdamdeo.pulse.extension.consumer.deployment;
+package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
-import com.damdamdeo.pulse.extension.consumer.runtime.PostgresAggregateRootLoader;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.PostgresAggregateRootLoader;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
+import com.damdamdeo.pulse.extension.core.consumer.event.UnknownAggregateRootException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;

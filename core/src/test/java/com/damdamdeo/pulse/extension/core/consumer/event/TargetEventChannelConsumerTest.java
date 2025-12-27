@@ -1,6 +1,7 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;

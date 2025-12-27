@@ -16,7 +16,7 @@
  */
 package com.damdamdeo.pulse.extension.it;
 
-import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;

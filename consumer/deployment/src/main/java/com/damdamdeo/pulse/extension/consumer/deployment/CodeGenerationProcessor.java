@@ -1,11 +1,15 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.consumer.deployment.items.TargetBuildItem;
-import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKey;
-import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKeyObjectMapperDeserializer;
-import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventRecordObjectMapperDeserializer;
-import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventValue;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKey;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyObjectMapperDeserializer;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventRecordObjectMapperDeserializer;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.event.AbstractTargetEventChannelConsumer;
+import com.damdamdeo.pulse.extension.core.consumer.event.EventKey;
+import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
+import com.damdamdeo.pulse.extension.core.consumer.event.TargetEventChannelExecutor;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;

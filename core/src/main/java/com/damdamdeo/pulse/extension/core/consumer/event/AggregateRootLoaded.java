@@ -1,9 +1,10 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
+import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 

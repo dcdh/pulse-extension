@@ -1,10 +1,10 @@
-package com.damdamdeo.pulse.extension.consumer.runtime;
+package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
-import com.damdamdeo.pulse.extension.core.consumer.EventKey;
+import com.damdamdeo.pulse.extension.core.consumer.event.EventKey;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

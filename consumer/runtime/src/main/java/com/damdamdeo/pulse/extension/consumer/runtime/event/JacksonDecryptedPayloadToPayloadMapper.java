@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.consumer.runtime;
+package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import com.damdamdeo.pulse.extension.core.consumer.DecryptedPayloadToPayloadMapper;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;

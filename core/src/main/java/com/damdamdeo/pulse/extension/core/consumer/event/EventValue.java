@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;

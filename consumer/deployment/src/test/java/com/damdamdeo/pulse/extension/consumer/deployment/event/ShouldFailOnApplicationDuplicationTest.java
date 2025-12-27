@@ -1,10 +1,12 @@
-package com.damdamdeo.pulse.extension.consumer.deployment;
+package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
-import com.damdamdeo.pulse.extension.consumer.runtime.EventChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.EventChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
+import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -21,7 +23,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
+class ShouldFailOnApplicationDuplicationTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -32,7 +34,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
                     .hasNoSuppressedExceptions()
                     .rootCause()
                     .isExactlyInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Target 'statistics' declared more than once '2'")
+                    .hasMessage("functionalDomain 'TodoTaking' componentName 'Todo' declared more than once '2' in target 'statistics'")
                     .hasNoSuppressedExceptions());
 
     @Test
@@ -43,32 +45,10 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     @ApplicationScoped
     @EventChannel(target = "statistics",
             sources = {
-                    @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
+                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo"),
+                    @EventChannel.Source(functionalDomain = "TodoTaking", componentName = "Todo")
             })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
-
-        @Override
-        public void handleMessage(final FromApplication fromApplication,
-                                  final Target target,
-                                  final AggregateRootType aggregateRootType,
-                                  final AggregateId aggregateId,
-                                  final CurrentVersionInConsumption currentVersionInConsumption,
-                                  final Instant creationDate,
-                                  final EventType eventType,
-                                  final EncryptedPayload encryptedPayload,
-                                  final OwnedBy ownedBy,
-                                  final ExecutedBy executedBy,
-                                  final DecryptablePayload<JsonNode> decryptableEventPayload,
-                                  final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
-        }
-    }
-
-    @ApplicationScoped
-    @EventChannel(target = "statistics",
-            sources = {
-                    @EventChannel.Source(functionalDomain = "TodoClient", componentName = "Registered")
-            })
-    static final class StatisticsAgainEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
         @Override
         public void handleMessage(final FromApplication fromApplication,

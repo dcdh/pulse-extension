@@ -1,16 +1,16 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 
 import java.util.Objects;
 
-public class AggregateRootLoaderException extends RuntimeException {
+public final class UnknownAggregateRootException extends RuntimeException {
+
     private final AggregateRootType aggregateRootType;
     private final AggregateId aggregateId;
 
-    public AggregateRootLoaderException(final AggregateRootType aggregateRootType, final AggregateId aggregateId, final Throwable cause) {
-        super(cause);
+    public UnknownAggregateRootException(final AggregateRootType aggregateRootType, final AggregateId aggregateId) {
         this.aggregateRootType = Objects.requireNonNull(aggregateRootType);
         this.aggregateId = Objects.requireNonNull(aggregateId);
     }

@@ -1,7 +1,7 @@
-package com.damdamdeo.pulse.extension.consumer.runtime;
+package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
-import com.damdamdeo.pulse.extension.core.consumer.AsyncEventChannelMessageHandler;
-import com.damdamdeo.pulse.extension.core.consumer.AsyncEventChannelMessageHandlerProvider;
+import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandler;
+import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandlerProvider;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
