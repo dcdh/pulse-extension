@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
@@ -82,6 +83,7 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                     final EventType eventType = eventValue.toEventType();
                     final EncryptedPayload encryptedPayload = eventValue.toEncryptedEventPayload();
                     final OwnedBy ownedBy = eventValue.toOwnedBy();
+                    final BelongsTo belongsTo = eventValue.toBelongsTo();
                     final ExecutedBy executedBy = eventValue.toExecutedBy(ownedByExecutedByDecoder.executedByDecoder(ownedBy));
                     try {
                         DecryptablePayload<T> decryptableEventPayload;
@@ -95,7 +97,7 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                         final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(fromApplication, aggregateRootType, aggregateId);
                         synchronized (this) {
                             asyncEventChannelMessageHandler.handleMessage(fromApplication, target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy,
-                                    executedBy, decryptableEventPayload, aggregateRootSupplier);
+                                    belongsTo, executedBy, decryptableEventPayload, aggregateRootSupplier);
                         }
                     } catch (final IOException e) {
                         throw new EventChannelMessageHandlerException(

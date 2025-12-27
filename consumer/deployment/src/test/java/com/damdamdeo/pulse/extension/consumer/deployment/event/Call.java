@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
@@ -23,6 +24,7 @@ public record Call(FromApplication fromApplication,
                    EventType eventType,
                    EncryptedPayload encryptedPayload,
                    OwnedBy ownedBy,
+                   BelongsTo belongsTo,
                    ExecutedBy executedBy,
                    DecryptablePayload<JsonNode> decryptableEventPayload,
                    AggregateRootLoaded<JsonNode> aggregateRootLoaded) {
@@ -37,6 +39,7 @@ public record Call(FromApplication fromApplication,
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(encryptedPayload);
         Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(belongsTo);
         Objects.requireNonNull(executedBy);
         Objects.requireNonNull(decryptableEventPayload);
         Objects.requireNonNull(aggregateRootLoaded);

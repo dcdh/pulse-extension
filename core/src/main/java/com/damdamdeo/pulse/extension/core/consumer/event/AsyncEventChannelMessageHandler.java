@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
@@ -25,6 +26,7 @@ public interface AsyncEventChannelMessageHandler<T> {
                        EventType eventType,
                        EncryptedPayload encryptedPayload,
                        OwnedBy ownedBy,
+                       BelongsTo belongsTo,
                        ExecutedBy executedBy,
                        DecryptablePayload<T> decryptableEventPayload,
                        Supplier<AggregateRootLoaded<T>> aggregateRootLoadedSupplier);

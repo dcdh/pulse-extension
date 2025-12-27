@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.event;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
@@ -59,6 +60,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
                                   final EventType eventType,
                                   final EncryptedPayload encryptedPayload,
                                   final OwnedBy ownedBy,
+                                  final BelongsTo belongsTo,
                                   final ExecutedBy executedBy,
                                   final DecryptablePayload<JsonNode> decryptableEventPayload,
                                   final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
@@ -82,6 +84,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
                                   final EventType eventType,
                                   final EncryptedPayload encryptedPayload,
                                   final OwnedBy ownedBy,
+                                  final BelongsTo belongsTo,
                                   final ExecutedBy executedBy,
                                   final DecryptablePayload<JsonNode> decryptableEventPayload,
                                   final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {

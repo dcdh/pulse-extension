@@ -160,6 +160,7 @@ class AsyncConsumerChannelEventConsumerTest {
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Damien"),
+                        new BelongsTo(new AnyAggregateId("Damien/0")),
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
@@ -216,6 +217,7 @@ class AsyncConsumerChannelEventConsumerTest {
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Alban"),
+                        new BelongsTo(new AnyAggregateId("Alban/0")),
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofUndecryptable(),
                         new AggregateRootLoaded<>(
