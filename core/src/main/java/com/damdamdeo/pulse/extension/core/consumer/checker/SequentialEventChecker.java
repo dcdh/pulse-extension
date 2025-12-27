@@ -1,8 +1,8 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.checker;
 
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.CurrentVersionInConsumption;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.LastConsumedAggregateVersion;
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public final class SequentialEventChecker {
 
-    void check(final LastConsumedAggregateVersion lastConsumedAggregateVersion,
+    public void check(final LastConsumedAggregateVersion lastConsumedAggregateVersion,
                final CurrentVersionInConsumption currentVersionInConsumption) throws SequenceNotRespectedException {
         Objects.requireNonNull(lastConsumedAggregateVersion);
         Objects.requireNonNull(currentVersionInConsumption);

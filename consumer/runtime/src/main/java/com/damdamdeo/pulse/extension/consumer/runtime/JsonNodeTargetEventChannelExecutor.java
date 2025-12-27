@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.runtime;
 
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
 import com.fasterxml.jackson.databind.JsonNode;

@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.core.consumer.idempotency;
 
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
+
 import java.util.Optional;
 
 public interface IdempotencyRepository {

@@ -1,8 +1,8 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.checker;
 
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.CurrentVersionInConsumption;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.LastConsumedAggregateVersion;
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

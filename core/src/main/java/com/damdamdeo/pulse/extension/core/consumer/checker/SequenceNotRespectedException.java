@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.checker;
 
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 

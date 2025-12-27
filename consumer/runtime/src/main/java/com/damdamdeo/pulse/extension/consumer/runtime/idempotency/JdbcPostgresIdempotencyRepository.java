@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.runtime.idempotency;
 
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.*;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;

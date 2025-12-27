@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.consumer.deployment.items.TargetBuildItem;
 import com.damdamdeo.pulse.extension.consumer.runtime.*;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.SequentialEventChecker;
+import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;

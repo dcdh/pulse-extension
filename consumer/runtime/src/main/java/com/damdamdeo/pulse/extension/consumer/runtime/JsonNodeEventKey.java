@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.EventKey;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

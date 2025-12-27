@@ -4,9 +4,9 @@ import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresId
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.LastConsumedAggregateVersion;
+import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
