@@ -68,6 +68,10 @@
             <artifactId>quarkus-rest-client-jackson</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-writer-extension</artifactId>
             <version>${project.version}</version>

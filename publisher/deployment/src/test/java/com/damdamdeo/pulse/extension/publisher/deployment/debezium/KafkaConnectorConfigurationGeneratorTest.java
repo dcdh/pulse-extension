@@ -28,7 +28,8 @@ class KafkaConnectorConfigurationGeneratorTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
-            .overrideConfigKey("quarkus.arc.exclude-types", DebeziumConfigurator.class.getName());
+            .overrideConfigKey("quarkus.arc.exclude-types", DebeziumConfigurator.class.getName())
+            .overrideConfigKey("pulse.debezium.topic-creation.default-partitions", "2");
 
     @Inject
     KafkaConnectorConfigurationGenerator kafkaConnectorConfigurationGenerator;
@@ -57,6 +58,12 @@ class KafkaConnectorConfigurationGeneratorTest {
         );
     }
 
+    /**
+     * WARNING order of transformation is fundamental
+     * To make the partitioner works it must be defined before all transformation likes unwrap and filterFields.
+     * unwrap will remove before, after, op ... and the partitioner needs them to work.
+     * Without them this log will be displayed "Skipping tombstone or message without envelope" and partitioner will stop here.
+     */
     @Test
     void shouldGenerateKafkaConnectorConfiguration() throws JsonProcessingException, JSONException {
         // Given
@@ -85,7 +92,7 @@ class KafkaConnectorConfigurationGeneratorTest {
                             "value.converter.schemas.enable": "false",
                             "topic.prefix": "pulse",
                             "plugin.name": "pgoutput",
-                            "transforms": "unwrap,filterFields,partitioner",
+                            "transforms": "partitioner,unwrap,filterFields",
                             "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
                             "transforms.unwrap.drop.tombstones": "false",
                             "transforms.unwrap.delete.handling.mode": "drop",
@@ -94,15 +101,16 @@ class KafkaConnectorConfigurationGeneratorTest {
                             "transforms.filterFields.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
                             "transforms.filterFields.include": "creation_date,event_type,event_payload,owned_by,belongs_to,executed_by,last_version,aggregate_root_payload",
                             "transforms.partitioner.type": "io.debezium.transforms.partitions.PartitionRouting",
-                            "transforms.partitioner.partition.payload.fields": "belongs_to",
-                            "transforms.partitioner.partition.topic.num": 1,
+                            "transforms.partitioner.partition.payload.fields": "change.belongs_to",
+                            "transforms.partitioner.partition.topic.num": 2,
+                            "transforms.partitioner.partition.hash.function": "java",
                             "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
                             "schema.include.list": "todotaking_todo",
                             "table.include.list": "todotaking_todo.t_event,todotaking_todo.t_aggregate_root",
                             "tombstones.on.delete": "false",
                             "compression.type": "zstd",
                             "topic.creation.default.replication.factor": 1,
-                            "topic.creation.default.partitions": 1,
+                            "topic.creation.default.partitions": 2,
                             "topic.creation.default.cleanup.policy": "compact",
                             "topic.creation.default.compression.type": "zstd",
                             "publication.name": "todotaking_todo_publication",

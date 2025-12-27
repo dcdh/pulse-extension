@@ -59,6 +59,7 @@ public final class KafkaConnectorConfigurationGenerator {
                                 .withDatabaseUser(datasourceUsername)
                                 .withDatabasePassword(datasourcePassword)
                                 .withDatabaseDbname(database)
+                                .withTopicCreationDefaultPartitions(debeziumConfiguration.topicCreation().defaultPartitions())
                                 .build())
                 .build();
     }

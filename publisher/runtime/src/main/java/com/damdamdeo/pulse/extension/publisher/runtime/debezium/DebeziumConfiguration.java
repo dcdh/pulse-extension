@@ -21,6 +21,11 @@ public interface DebeziumConfiguration {
      */
     ConnectConfiguration connect();
 
+    /**
+     * Connect Topic creation
+     */
+    TopicCreation topicCreation();
+
     @ConfigGroup
     interface ConnectConfiguration {
 
@@ -35,5 +40,15 @@ public interface DebeziumConfiguration {
          */
         @WithDefault("8083")
         Integer port();
+    }
+
+    @ConfigGroup
+    interface TopicCreation {
+
+        /**
+         * Topic creation default partitions
+         */
+        @WithDefault("1")
+        Integer defaultPartitions();
     }
 }

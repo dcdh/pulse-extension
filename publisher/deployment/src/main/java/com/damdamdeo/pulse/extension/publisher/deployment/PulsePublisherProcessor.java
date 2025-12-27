@@ -25,7 +25,7 @@ public class PulsePublisherProcessor {
     List<AdditionalBeanBuildItem> additionalBeans() {
         return Stream.of(DebeziumConfigurator.class, KafkaConnectorApiExecutor.class,
                         FromApplicationProvider.class, ConnectorNamingProvider.class,
-                        KafkaConnectorConfigurationGenerator.class)
+                        KafkaConnectorConfigurationGenerator.class, PartitionChecker.class)
                 .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                 .toList();
     }
@@ -53,14 +53,15 @@ public class PulsePublisherProcessor {
                                         "GROUP_ID", "1",
                                         "CONFIG_STORAGE_TOPIC", "my_connect_configs",
                                         "OFFSET_STORAGE_TOPIC", "my_connect_offsets",
-                                        "STATUS_STORAGE_TOPIC", "my_connect_statuses")),
+                                        "STATUS_STORAGE_TOPIC", "my_connect_statuses",
+                                        "LOG_LEVEL", "TRACE")),
                         ComposeServiceBuildItem.Command.ofNone(),
                         ComposeServiceBuildItem.Entrypoint.ofNone(),
                         new ComposeServiceBuildItem.HealthCheck(
                                 List.of("CMD", "curl", "-f", "http://localhost:8083/connectors"),
                                 new ComposeServiceBuildItem.Interval(10),
                                 new ComposeServiceBuildItem.Timeout(5),
-                                new ComposeServiceBuildItem.Retries(5),
+                                new ComposeServiceBuildItem.Retries(30),
                                 new ComposeServiceBuildItem.StartPeriod(10)),
                         List.of(),
                         ComposeServiceBuildItem.DependsOn.on(List.of(

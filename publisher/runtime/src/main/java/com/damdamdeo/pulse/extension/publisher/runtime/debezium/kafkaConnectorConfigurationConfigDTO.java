@@ -9,7 +9,8 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
                                                    Integer databasePort,
                                                    String databaseUser,
                                                    String databasePassword,
-                                                   String databaseDbname) {
+                                                   String databaseDbname,
+                                                   Integer topicCreationDefaultPartitions) {
 
     public kafkaConnectorConfigurationConfigDTO {
         Objects.requireNonNull(schema);
@@ -18,6 +19,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
         Objects.requireNonNull(databaseUser);
         Objects.requireNonNull(databasePassword);
         Objects.requireNonNull(databaseDbname);
+        Objects.requireNonNull(topicCreationDefaultPartitions);
     }
 
     private kafkaConnectorConfigurationConfigDTO(final Builder builder) {
@@ -26,7 +28,8 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
                 builder.databasePort,
                 builder.databaseUser,
                 builder.databasePassword,
-                builder.databaseDbname);
+                builder.databaseDbname,
+                builder.topicCreationDefaultPartitions);
     }
 
     public static Builder newBuilder() {
@@ -40,6 +43,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
         private String databaseUser;
         private String databasePassword;
         private String databaseDbname;
+        private Integer topicCreationDefaultPartitions = 1;
 
         public Builder withSchema(final String schema) {
             this.schema = schema;
@@ -68,6 +72,11 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
         public Builder withDatabaseDbname(final String databaseDbname) {
             this.databaseDbname = databaseDbname;
+            return this;
+        }
+
+        public Builder withTopicCreationDefaultPartitions(final Integer topicCreationDefaultPartitions) {
+            this.topicCreationDefaultPartitions = topicCreationDefaultPartitions;
             return this;
         }
 
@@ -158,7 +167,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("transforms")
     public String getTransforms() {
-        return "unwrap,filterFields,partitioner";
+        return "partitioner,unwrap,filterFields";
     }
 
     @JsonProperty("transforms.unwrap.type")
@@ -203,12 +212,17 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("transforms.partitioner.partition.payload.fields")
     public String getTransformsPartitionerPartitionPayloadFields() {
-        return "belongs_to";
+        return "change.belongs_to";
     }
 
     @JsonProperty("transforms.partitioner.partition.topic.num")
     public Integer getTransformsPartitionerPartitionTopicNum() {
-        return 1;
+        return topicCreationDefaultPartitions;
+    }
+
+    @JsonProperty("transforms.partitioner.partition.hash.function")
+    public String getTransformsPartitionerPartitionHashFunction() {
+        return "java";
     }
 
     @JsonProperty("compression.type")
@@ -223,7 +237,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("topic.creation.default.partitions")
     public Integer getTopicCreationDefaultPartitions() {
-        return 1;
+        return topicCreationDefaultPartitions;
     }
 
     @JsonProperty("topic.creation.default.cleanup.policy")

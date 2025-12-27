@@ -48,6 +48,10 @@
             <artifactId>quarkus-rest-client-jackson-deployment</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-messaging-kafka-deployment</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-common-extension-deployment</artifactId>
             <version>${project.version}</version>
