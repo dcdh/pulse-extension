@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.apache.commons.lang3.StringUtils.capitalize;
+
 public class CodeGenerationProcessor {
 
     record TargetWithSource(Target target, FromApplication fromApplication) {
@@ -171,11 +173,6 @@ public class CodeGenerationProcessor {
                                     "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), EventValue.class.getName())
                             .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
                 });
-    }
-
-    private static String capitalize(final String input) {
-        if (input == null || input.isBlank()) return input;
-        return Character.toUpperCase(input.charAt(0)) + input.substring(1);
     }
 
     public static void writeGeneratedClass(final ClassCreator classCreator, final OutputTargetBuildItem outputTargetBuildItem) {
