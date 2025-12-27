@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.consumer;
+package com.damdamdeo.pulse.extension.core.consumer.idempotency;
 
 import java.util.Objects;
 

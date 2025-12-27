@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.core.consumer;
 
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.LastConsumedAggregateVersion;
 
 import java.util.ArrayList;
 import java.util.List;

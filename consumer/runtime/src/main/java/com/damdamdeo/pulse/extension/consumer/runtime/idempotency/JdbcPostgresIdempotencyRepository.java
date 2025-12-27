@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.runtime.idempotency;
 
-import com.damdamdeo.pulse.extension.core.consumer.*;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.*;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.inject.Singleton;
