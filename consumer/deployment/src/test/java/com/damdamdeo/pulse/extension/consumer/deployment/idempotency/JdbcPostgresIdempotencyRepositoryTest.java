@@ -1,10 +1,10 @@
-package com.damdamdeo.pulse.extension.consumer.deployment;
+package com.damdamdeo.pulse.extension.consumer.deployment.idempotency;
 
-import com.damdamdeo.pulse.extension.consumer.runtime.JdbcPostgresIdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
@@ -78,10 +78,11 @@ class JdbcPostgresIdempotencyRepositoryTest {
 
         // When
         final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
-                new Target("statistics"),
-                new FromApplication("TodoTaking", "Todo"),
-                AggregateRootType.from(Todo.class),
-                new AnyAggregateId("Damien/0"));
+                new IdempotencyKey(
+                        new Target("statistics"),
+                        new FromApplication("TodoTaking", "Todo"),
+                        AggregateRootType.from(Todo.class),
+                        new AnyAggregateId("Damien/0")));
 
         // Then
         assertThat(lastAggregateVersionBy).isEmpty();
@@ -109,10 +110,11 @@ class JdbcPostgresIdempotencyRepositoryTest {
 
         // When
         final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
-                new Target("statistics"),
-                new FromApplication("TodoTaking", "Todo"),
-                AggregateRootType.from(Todo.class),
-                new AnyAggregateId("Damien/0"));
+                new IdempotencyKey(
+                        new Target("statistics"),
+                        new FromApplication("TodoTaking", "Todo"),
+                        AggregateRootType.from(Todo.class),
+                        new AnyAggregateId("Damien/0")));
 
         // Then
         assertThat(lastAggregateVersionBy).isEqualTo(Optional.of(
@@ -125,24 +127,11 @@ class JdbcPostgresIdempotencyRepositoryTest {
 
         // When
         jdbcPostgresIdempotencyRepository.upsert(
-                new Target("statistics"),
-                new FromApplication("TodoTaking", "Todo"),
-                new EventKey() {
-                    @Override
-                    public AggregateRootType toAggregateRootType() {
-                        return AggregateRootType.from(Todo.class);
-                    }
-
-                    @Override
-                    public AggregateId toAggregateId() {
-                        return new AnyAggregateId("Damien/0");
-                    }
-
-                    @Override
-                    public CurrentVersionInConsumption toCurrentVersionInConsumption() {
-                        return new CurrentVersionInConsumption(0);
-                    }
-                });
+                new IdempotencyKey(
+                        new Target("statistics"),
+                        new FromApplication("TodoTaking", "Todo"),
+                        AggregateRootType.from(Todo.class),
+                        new AnyAggregateId("Damien/0")), new CurrentVersionInConsumption(0));
 
         // Then
         // language=sql
@@ -187,25 +176,11 @@ class JdbcPostgresIdempotencyRepositoryTest {
 
         // When
         jdbcPostgresIdempotencyRepository.upsert(
-                new Target("statistics"),
-                new FromApplication("TodoTaking", "Todo"),
-                new EventKey() {
-
-                    @Override
-                    public AggregateRootType toAggregateRootType() {
-                        return AggregateRootType.from(Todo.class);
-                    }
-
-                    @Override
-                    public AggregateId toAggregateId() {
-                        return new AnyAggregateId("Damien/0");
-                    }
-
-                    @Override
-                    public CurrentVersionInConsumption toCurrentVersionInConsumption() {
-                        return new CurrentVersionInConsumption(1);
-                    }
-                });
+                new IdempotencyKey(
+                        new Target("statistics"),
+                        new FromApplication("TodoTaking", "Todo"),
+                        AggregateRootType.from(Todo.class),
+                        new AnyAggregateId("Damien/0")), new CurrentVersionInConsumption(1));
 
         // Then
         // language=sql

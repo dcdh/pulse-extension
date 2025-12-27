@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventKeyObjectMapp
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventRecordObjectMapperDeserializer;
 import com.damdamdeo.pulse.extension.consumer.runtime.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;

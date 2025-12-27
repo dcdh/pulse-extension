@@ -2,6 +2,8 @@ package com.damdamdeo.pulse.extension.core.consumer;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -31,15 +33,17 @@ public abstract class AbstractTargetEventChannelConsumer<T> {
         final CurrentVersionInConsumption currentVersionInConsumption = eventKey.toCurrentVersionInConsumption();
 
         final Optional<LastConsumedAggregateVersion> lastConsumedAggregateVersion = idempotencyRepository.findLastAggregateVersionBy(
-                target, fromApplication, aggregateRootType, aggregateId);
+                new IdempotencyKey(target, fromApplication, aggregateRootType, aggregateId));
         if (lastConsumedAggregateVersion.isPresent() && lastConsumedAggregateVersion.get().isBelow(currentVersionInConsumption)) {
             targetEventChannelExecutor.execute(target, fromApplication, eventKey, eventValue, lastConsumedAggregateVersion.get());
-            idempotencyRepository.upsert(target, fromApplication, eventKey);
+            idempotencyRepository.upsert(new IdempotencyKey(target, fromApplication, eventKey.toAggregateRootType(),
+                    eventKey.toAggregateId()), eventKey.toCurrentVersionInConsumption());
         } else if (lastConsumedAggregateVersion.isPresent()) {
             targetEventChannelExecutor.onAlreadyConsumed(target, fromApplication, eventKey, eventValue);
         } else {
             targetEventChannelExecutor.execute(target, fromApplication, eventKey, eventValue);
-            idempotencyRepository.upsert(target, fromApplication, eventKey);
+            idempotencyRepository.upsert(new IdempotencyKey(target, fromApplication, eventKey.toAggregateRootType(),
+                    eventKey.toAggregateId()), eventKey.toCurrentVersionInConsumption());
         }
     }
 }
