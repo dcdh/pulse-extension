@@ -5,7 +5,6 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
@@ -43,6 +42,7 @@ public class Producer {
     @Inject
     OpenPGPEncryptionService openPGPEncryptionService;
 
+    // TODO support chaining events
     public <A extends AggregateRoot<?>, B extends Event> Response produceEvent(final String target,
                                                                                final FromApplication fromApplication,
                                                                                final String aggregateRootPayload,
@@ -74,24 +74,6 @@ public class Producer {
             throw new RuntimeException(sqlException);
         }
 
-        // language=sql
-        final String idempotencySql = """
-                INSERT INTO t_idempotency (target, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """;
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
-            ps.setString(1, target);
-            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
-            ps.setString(3, Topic.EVENT.name());
-            ps.setString(4, aggregateRootClass.getSimpleName());
-            ps.setString(5, aggregateId.id());
-            ps.setLong(6, 0);
-            ps.executeUpdate();
-        } catch (final SQLException sqlException) {
-            throw new RuntimeException(sqlException);
-        }
-
         final byte[] encryptedPayload = openPGPEncryptionService.encrypt(eventPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
 
         // When
@@ -103,7 +85,7 @@ public class Producer {
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeEventKey>(), new ObjectMapperSerializer<JsonNodeEventValue>())
                 .usingGenerator(
                         integer -> new ProducerRecord<>("pulse.%s_%s.t_event".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
-                                new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 1),
+                                new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                                 new JsonNodeEventValue(1_761_335_312_527L,
                                         eventClass.getSimpleName(),
                                         encryptedPayload,
@@ -120,6 +102,7 @@ public class Producer {
                 new EncryptedPayload(encryptedPayload));
     }
 
+    // TODO support chaining events
     public <A extends AggregateRoot<?>> EncryptedPayload produceAggregateRoot(final String target,
                                                                               final FromApplication fromApplication,
                                                                               final String aggregateRootPayload,
@@ -131,9 +114,9 @@ public class Producer {
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
-                    INSERT INTO todotaking_todo.t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    INSERT INTO %s.t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """;
+                """.formatted(fromApplication.value());
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
             ps.setString(1, aggregateRootClass.getSimpleName());
@@ -142,24 +125,6 @@ public class Producer {
             ps.setBytes(4, encryptedAggregatePayload);
             ps.setString(5, ownedBy.id());
             ps.setString(6, belongsTo.aggregateId().id());
-            ps.executeUpdate();
-        } catch (final SQLException sqlException) {
-            throw new RuntimeException(sqlException);
-        }
-
-        // language=sql
-        final String idempotencySql = """
-                INSERT INTO t_idempotency (target, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """;
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
-            ps.setString(1, target);
-            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
-            ps.setString(3, Topic.AGGREGATE_ROOT.name());
-            ps.setString(4, aggregateRootClass.getSimpleName());
-            ps.setString(5, aggregateId.id());
-            ps.setLong(6, 0);
             ps.executeUpdate();
         } catch (final SQLException sqlException) {
             throw new RuntimeException(sqlException);
@@ -176,7 +141,7 @@ public class Producer {
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeAggregateRootKey>(), new ObjectMapperSerializer<JsonNodeAggregateRootValue>())
                 .usingGenerator(
                         integer -> new ProducerRecord<>("pulse.%s_%s.t_aggregate_root".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
-                                new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 1),
+                                new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                                 new JsonNodeAggregateRootValue(1L,
                                         encryptedPayload,
                                         ownedBy.id(),
