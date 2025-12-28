@@ -5,14 +5,15 @@ import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBui
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
+import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncAggregateRootConsumerChannel;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.*;
+import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.*;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
-import com.damdamdeo.pulse.extension.core.consumer.event.AbstractTargetEventChannelConsumer;
-import com.damdamdeo.pulse.extension.core.consumer.event.EventKey;
-import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
-import com.damdamdeo.pulse.extension.core.consumer.event.TargetEventChannelExecutor;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AbstractTargetAggregateRootChannelConsumer;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootKey;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootValue;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.TargetAggregateRootChannelExecutor;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,16 +47,16 @@ import java.util.stream.Stream;
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
-public class AsyncEventConsumerProcessor {
+public class AsyncAggregateRootConsumerProcessor {
 
-    private static final Topic TOPIC = Topic.EVENT;
+    private static final Topic TOPIC = Topic.AGGREGATE_ROOT;
 
     @BuildStep
-    List<DiscoveredAsyncEventConsumerChannel> discoverAsyncEventConsumerChannels(final List<ValidationErrorBuildItem> validationErrorBuildItems,
-                                                                                 final CombinedIndexBuildItem combinedIndexBuildItem) {
+    List<DiscoveredAsyncAggregateRootConsumerChannel> discoverAsyncEventConsumerChannels(final List<ValidationErrorBuildItem> validationErrorBuildItems,
+                                                                                         final CombinedIndexBuildItem combinedIndexBuildItem) {
         if (validationErrorBuildItems.isEmpty()) {
             final IndexView computingIndex = combinedIndexBuildItem.getIndex();
-            return computingIndex.getAnnotations(AsyncEventConsumerChannel.class)
+            return computingIndex.getAnnotations(AsyncAggregateRootConsumerChannel.class)
                     .stream()
                     .map(annotationInstance -> {
                         final Target target = new Target(annotationInstance.value("target").asString());
@@ -66,7 +67,7 @@ public class AsyncEventConsumerProcessor {
                                             nested.value("functionalDomain").asString(),
                                             nested.value("componentName").asString());
                                 }).toList();
-                        return new DiscoveredAsyncEventConsumerChannel(target, sources);
+                        return new DiscoveredAsyncAggregateRootConsumerChannel(target, sources);
                     })
                     .distinct()
                     .toList();
@@ -77,17 +78,16 @@ public class AsyncEventConsumerProcessor {
 
     @BuildStep
     ConsumerChannelToValidateBuildItem channelToValidateBuildItemProducer() {
-        return new ConsumerChannelToValidateBuildItem(AsyncEventConsumerChannel.class);
+        return new ConsumerChannelToValidateBuildItem(AsyncAggregateRootConsumerChannel.class);
     }
 
     @BuildStep
     List<AdditionalBeanBuildItem> additionalBeans(final List<ValidationErrorBuildItem> validationErrorBuildItems) {
         if (validationErrorBuildItems.isEmpty()) {
             return Stream.of(
-                            AsyncEventConsumerChannel.class,
-                            PostgresAggregateRootLoader.class,
-                            DefaultAsyncEventChannelMessageHandlerProvider.class,
-                            JsonNodeTargetEventChannelExecutor.class)
+                            AsyncAggregateRootConsumerChannel.class,
+                            DefaultAsyncAggregateRootChannelMessageHandlerProvider.class,
+                            JsonNodeTargetAggregateRootChannelExecutor.class)
                     .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                     .toList();
         } else {
@@ -97,10 +97,10 @@ public class AsyncEventConsumerProcessor {
 
     @BuildStep
     List<AdditionalVolumeBuildItem> generateAdditionalVolumeBuildItems(final Capabilities capabilities,
-                                                                       final List<DiscoveredAsyncEventConsumerChannel> discoveredAsyncEventConsumerChannels) {
+                                                                       final List<DiscoveredAsyncAggregateRootConsumerChannel> discoveredAsyncAggregateRootConsumerChannels) {
         if (PulseConsumerProcessor.shouldGenerate(capabilities)) {
-            return discoveredAsyncEventConsumerChannels.stream()
-                    .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream())
+            return discoveredAsyncAggregateRootConsumerChannels.stream()
+                    .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream())
                     .distinct()
                     .map(FromApplication::value)
                     .map(String::toLowerCase)
@@ -137,27 +137,27 @@ public class AsyncEventConsumerProcessor {
     }
 
     @BuildStep
-    void generateTargetsEventChannelConsumer(final List<DiscoveredAsyncEventConsumerChannel> discoveredAsyncEventConsumerChannels,
-                                             final ApplicationInfoBuildItem applicationInfoBuildItem,
-                                             final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
-                                             final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
-                                             final OutputTargetBuildItem outputTargetBuildItem) {
-        discoveredAsyncEventConsumerChannels.stream()
-                .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream()
-                        .map(src -> new TargetWithSource(discoveredAsyncEventConsumerChannel.target(), src))
+    void generateTargetsAggregateRootChannelConsumer(final List<DiscoveredAsyncAggregateRootConsumerChannel> discoveredAsyncAggregateRootConsumerChannels,
+                                                     final ApplicationInfoBuildItem applicationInfoBuildItem,
+                                                     final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
+                                                     final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
+                                                     final OutputTargetBuildItem outputTargetBuildItem) {
+        discoveredAsyncAggregateRootConsumerChannels.stream()
+                .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream()
+                        .map(src -> new TargetWithSource(discoveredAsyncAggregateRootConsumerChannel.target(), src))
                 ).forEach(targetWithSource -> {
-                    final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "."
+                    final String className = AbstractTargetAggregateRootChannelConsumer.class.getPackageName() + "."
                             + capitalize(targetWithSource.target().name())
                             + capitalize(targetWithSource.fromApplication().value())
-                            + "TargetEventChannelConsumer";
+                            + "TargetAggregateRootChannelConsumer";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
                             .className(className)
-                            .superClass(AbstractTargetEventChannelConsumer.class)
+                            .superClass(AbstractTargetAggregateRootChannelConsumer.class)
                             .signature(SignatureBuilder.forClass()
                                     .setSuperClass(
                                             Type.parameterizedType(
-                                                    Type.classType(AbstractTargetEventChannelConsumer.class),
+                                                    Type.classType(AbstractTargetAggregateRootChannelConsumer.class),
                                                     Type.classType(JsonNode.class)
                                             )))
                             .build()) {
@@ -166,11 +166,11 @@ public class AsyncEventConsumerProcessor {
                         beanClassCreator.addAnnotation(DefaultBean.class);
 
                         try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                                TargetEventChannelExecutor.class, IdempotencyRepository.class)) {
+                                TargetAggregateRootChannelExecutor.class, IdempotencyRepository.class)) {
                             constructor
                                     .setSignature(SignatureBuilder.forMethod()
                                             .addParameterType(Type.parameterizedType(
-                                                    Type.classType(TargetEventChannelExecutor.class),
+                                                    Type.classType(TargetAggregateRootChannelExecutor.class),
                                                     Type.classType(JsonNode.class)
                                             ))
                                             .addParameterType(Type.classType(IdempotencyRepository.class))
@@ -178,8 +178,8 @@ public class AsyncEventConsumerProcessor {
                             constructor.setModifiers(Modifier.PUBLIC);
 
                             constructor.invokeSpecialMethod(
-                                    MethodDescriptor.ofConstructor(AbstractTargetEventChannelConsumer.class,
-                                            TargetEventChannelExecutor.class, IdempotencyRepository.class),
+                                    MethodDescriptor.ofConstructor(AbstractTargetAggregateRootChannelConsumer.class,
+                                            TargetAggregateRootChannelExecutor.class, IdempotencyRepository.class),
                                     constructor.getThis(),
                                     constructor.getMethodParam(0),
                                     constructor.getMethodParam(1));
@@ -192,8 +192,8 @@ public class AsyncEventConsumerProcessor {
                                     SignatureBuilder.forMethod()
                                             .addParameterType(Type.parameterizedType(
                                                     Type.classType(ConsumerRecord.class),
-                                                    Type.classType(JsonNodeEventKey.class),
-                                                    Type.classType(JsonNodeEventValue.class)
+                                                    Type.classType(JsonNodeAggregateRootKey.class),
+                                                    Type.classType(JsonNodeAggregateRootValue.class)
                                             ))
                                             .build());
                             consume.addAnnotation(Transactional.class);
@@ -208,9 +208,9 @@ public class AsyncEventConsumerProcessor {
                                     MethodDescriptor.ofConstructor(FromApplication.class, String.class, String.class),
                                     consume.load(targetWithSource.fromApplication().functionalDomain()),
                                     consume.load(targetWithSource.fromApplication().componentName()));
-                            final ResultHandle eventKeyParam = consume.invokeVirtualMethod(
+                            final ResultHandle aggregateRootKeyParam = consume.invokeVirtualMethod(
                                     MethodDescriptor.ofMethod(ConsumerRecord.class, "key", Object.class), recordParam);
-                            final ResultHandle eventValueParam = consume.invokeVirtualMethod(
+                            final ResultHandle aggregateRootValueParam = consume.invokeVirtualMethod(
                                     MethodDescriptor.ofMethod(ConsumerRecord.class, "value", Object.class), recordParam);
                             consume.invokeVirtualMethod(
                                     MethodDescriptor.ofMethod(
@@ -219,14 +219,14 @@ public class AsyncEventConsumerProcessor {
                                             void.class,
                                             Target.class,
                                             FromApplication.class,
-                                            EventKey.class,
-                                            EventValue.class
+                                            AggregateRootKey.class,
+                                            AggregateRootValue.class
                                     ),
                                     consume.getThis(),
                                     targetParam,
                                     applicationNamingParam,
-                                    eventKeyParam,
-                                    eventValueParam
+                                    aggregateRootKeyParam,
+                                    aggregateRootValueParam
                             );
                             consume.returnValue(null);
                         }
@@ -234,12 +234,12 @@ public class AsyncEventConsumerProcessor {
                     }
                 });
 
-        discoveredAsyncEventConsumerChannels.stream()
-                .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream()
-                        .map(src -> new TargetWithSource(discoveredAsyncEventConsumerChannel.target(), src))
+        discoveredAsyncAggregateRootConsumerChannels.stream()
+                .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream()
+                        .map(src -> new TargetWithSource(discoveredAsyncAggregateRootConsumerChannel.target(), src))
                 ).forEach(targetWithSource -> {
                     final String channelNaming = targetWithSource.channel(TOPIC);
-                    final String topic = "pulse.%s_%s.t_event".formatted(
+                    final String topic = "pulse.%s_%s.t_aggregate_root".formatted(
                             targetWithSource.fromApplication().functionalDomain().toLowerCase(),
                             targetWithSource.fromApplication().componentName().toLowerCase());
                     Map.of(
@@ -248,10 +248,10 @@ public class AsyncEventConsumerProcessor {
                                     "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",
                                     "mp.messaging.incoming.%s.connector".formatted(channelNaming), "smallrye-kafka",
                                     "mp.messaging.incoming.%s.topic".formatted(channelNaming), topic,
-                                    "mp.messaging.incoming.%s.key.deserializer".formatted(channelNaming), JsonNodeEventKeyDeserializer.class.getName(),
-                                    "mp.messaging.incoming.%s.value.deserializer".formatted(channelNaming), JsonNodeEventValueDeserializer.class.getName(),
-                                    "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(channelNaming), JsonNodeEventKey.class.getName(),
-                                    "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), JsonNodeEventValue.class.getName())
+                                    "mp.messaging.incoming.%s.key.deserializer".formatted(channelNaming), JsonNodeAggregateRootKeyDeserializer.class.getName(),
+                                    "mp.messaging.incoming.%s.value.deserializer".formatted(channelNaming), JsonNodeAggregateRootValueDeserializer.class.getName(),
+                                    "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(channelNaming), JsonNodeAggregateRootKey.class.getName(),
+                                    "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), JsonNodeAggregateRootValue.class.getName())
                             .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
                 });
     }

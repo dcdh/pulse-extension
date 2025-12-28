@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -122,7 +123,7 @@ class TargetEventChannelConsumerTest {
         final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.empty()).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenTarget, givenFromApplication, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId()));
+                        givenTarget, givenFromApplication, Topic.EVENT, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId()));
 
         // When
         todoTargetEventChannelConsumer.handleMessage(givenTarget, givenFromApplication, givenEventKey, givenEventValue);
@@ -134,7 +135,7 @@ class TargetEventChannelConsumerTest {
                 () -> verify(targetEventChannelExecutor, times(0)).execute(
                         any(Target.class), any(FromApplication.class), any(EventKey.class), any(EventValue.class), any(LastConsumedAggregateVersion.class)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
-                        new IdempotencyKey(givenTarget, givenFromApplication, givenEventKey.toAggregateRootType(),
+                        new IdempotencyKey(givenTarget, givenFromApplication, Topic.EVENT, givenEventKey.toAggregateRootType(),
                                 givenEventKey.toAggregateId()), givenEventKey.toCurrentVersionInConsumption()),
                 () -> verify(targetEventChannelExecutor, times(0)).onAlreadyConsumed(
                         any(Target.class), any(FromApplication.class), any(EventKey.class), any(EventValue.class))
@@ -150,7 +151,7 @@ class TargetEventChannelConsumerTest {
         final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(0))).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenTarget, givenFromApplication, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId()));
+                        givenTarget, givenFromApplication, Topic.EVENT, givenEventKey.toAggregateRootType(), givenEventKey.toAggregateId()));
 
         // When
         todoTargetEventChannelConsumer.handleMessage(givenTarget, givenFromApplication, givenEventKey, givenEventValue);
@@ -162,7 +163,7 @@ class TargetEventChannelConsumerTest {
                 () -> verify(targetEventChannelExecutor, times(1)).execute(
                         givenTarget, givenFromApplication, givenEventKey, givenEventValue, new LastConsumedAggregateVersion(0)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
-                        new IdempotencyKey(givenTarget, givenFromApplication, givenEventKey.toAggregateRootType(),
+                        new IdempotencyKey(givenTarget, givenFromApplication, Topic.EVENT, givenEventKey.toAggregateRootType(),
                                 givenEventKey.toAggregateId()), givenEventKey.toCurrentVersionInConsumption()),
                 () -> verify(targetEventChannelExecutor, times(0)).onAlreadyConsumed(
                         any(Target.class), any(FromApplication.class), any(EventKey.class), any(EventValue.class))
@@ -178,7 +179,7 @@ class TargetEventChannelConsumerTest {
         final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(1))).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenTarget, givenFromApplication, givenEventKey.toAggregateRootType(),
+                        givenTarget, givenFromApplication, Topic.EVENT, givenEventKey.toAggregateRootType(),
                         givenEventKey.toAggregateId()));
 
         // When

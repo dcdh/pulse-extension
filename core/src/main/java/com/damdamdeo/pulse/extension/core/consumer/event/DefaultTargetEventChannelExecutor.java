@@ -73,6 +73,7 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
                          final CurrentVersionInConsumption currentVersionInConsumption) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(fromApplication);
+        Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventValue);
         Objects.requireNonNull(currentVersionInConsumption);
         final AggregateRootType aggregateRootType = eventKey.toAggregateRootType();
@@ -109,6 +110,7 @@ public abstract class DefaultTargetEventChannelExecutor<T> implements TargetEven
     @Override
     public void onAlreadyConsumed(final Target target, final FromApplication fromApplication, final EventKey eventKey, final EventValue eventValue) {
         Objects.requireNonNull(target);
+        Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventValue);
         LOGGER.fine("Message from target '%s' - applicationNaming '%s' - aggregateRootType '%s' - aggregateId '%s' - currentVersionInConsumption '%s' - eventType '%s' already consumed"

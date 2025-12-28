@@ -4,10 +4,12 @@ import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
 import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
-import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.*;
+import com.damdamdeo.pulse.extension.consumer.runtime.JacksonDecryptedPayloadToPayloadMapper;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKey;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyDeserializer;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValue;
+import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValueDeserializer;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
@@ -28,8 +30,7 @@ public class PulseConsumerProcessor {
         if (validationErrorBuildItems.isEmpty()) {
             return Stream.of(
                             JdbcPostgresIdempotencyRepository.class,
-                            JacksonDecryptedPayloadToPayloadMapper.class,
-                            DefaultAsyncEventChannelMessageHandlerProvider.class)
+                            JacksonDecryptedPayloadToPayloadMapper.class)
                     .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                     .toList();
         } else {
@@ -47,48 +48,13 @@ public class PulseConsumerProcessor {
 
     @BuildStep
     void generateCompose(final Capabilities capabilities,
-                         final List<DiscoveredAsyncEventConsumerChannel> discoveredAsyncEventConsumerChannels,
                          final ApplicationInfoBuildItem applicationInfoBuildItem,
                          final BuildProducer<ComposeServiceBuildItem> composeServiceBuildItemBuildProducer,
                          final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemBuildProducer) {
-        if (!capabilities.isPresent("com.damdamdeo.pulse-writer-extension")
-                && !capabilities.isPresent("com.damdamdeo.pulse-publisher-extension")) {
+        if (shouldGenerate(capabilities)) {
             composeServiceBuildItemBuildProducer.produce(List.of(
                     PulseCommonProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM,
                     PulseCommonProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM));
-            final List<AdditionalVolumeBuildItem> additionalVolumeBuildItems = discoveredAsyncEventConsumerChannels.stream()
-                    .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream())
-                    .distinct()
-                    .map(FromApplication::value)
-                    .map(String::toLowerCase)
-                    .map(schemaName -> {
-                                final String sqlFileName = "%s_target_consumer.sql".formatted(schemaName);
-                                return new AdditionalVolumeBuildItem(
-                                        PulseCommonProcessor.POSTGRES_SERVICE_NAME,
-                                        new ComposeServiceBuildItem.Volume(
-                                                "./%s".formatted(sqlFileName),
-                                                "/docker-entrypoint-initdb.d/%s".formatted(sqlFileName),
-                                                // language=sql
-                                                """
-                                                        CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
-                                                        CREATE SCHEMA IF NOT EXISTS %1$s;
-                                                        
-                                                        CREATE TABLE IF NOT EXISTS %1$s.t_aggregate_root (
-                                                          aggregate_root_type character varying(255) not null,
-                                                          aggregate_root_id character varying(255) not null,
-                                                          last_version bigint not null,
-                                                          aggregate_root_payload bytea NOT NULL CHECK (octet_length(aggregate_root_payload) <= 1000 * 1024),
-                                                          owned_by character varying(255) not null,
-                                                          belongs_to character varying(255) not null,
-                                                          CONSTRAINT t_aggregate_root_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type)
-                                                        );
-                                                        """.formatted(schemaName).getBytes(
-                                                        StandardCharsets.UTF_8)
-                                        )
-                                );
-                            }
-                    ).toList();
-            additionalVolumeBuildItemBuildProducer.produce(additionalVolumeBuildItems);
         }
         final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
         final String sqlFileName = "%s_idempotency_consumer.sql".formatted(schemaName);
@@ -104,10 +70,12 @@ public class PulseConsumerProcessor {
                                 CREATE TABLE IF NOT EXISTS %1$s.t_idempotency (
                                   target character varying(255) not null,
                                   from_application character varying(255) not null,
+                                  topic character varying(255) not null,
                                   aggregate_root_type character varying(255) not null,
                                   aggregate_root_id character varying(255) not null,
                                   last_consumed_version bigint not null,
-                                  PRIMARY KEY (target, from_application, aggregate_root_type, aggregate_root_id)
+                                  CONSTRAINT idempotency_pkey PRIMARY KEY (target, from_application, topic, aggregate_root_type, aggregate_root_id),
+                                  CONSTRAINT topic_format_chk CHECK (topic = 'EVENT' OR topic = 'AGGREGATE_ROOT')
                                 )
                                 """.formatted(schemaName).getBytes(StandardCharsets.UTF_8)));
         additionalVolumeBuildItemBuildProducer.produce(additionalVolumeBuildItem);
@@ -116,8 +84,13 @@ public class PulseConsumerProcessor {
     @BuildStep
     ReflectiveClassBuildItem reflectiveClassBuildItem() {
         return ReflectiveClassBuildItem
-                .builder(JsonNodeEventRecordObjectMapperDeserializer.class, JsonNodeEventKeyObjectMapperDeserializer.class,
+                .builder(JsonNodeEventValueDeserializer.class, JsonNodeEventKeyDeserializer.class,
                         JsonNodeEventKey.class, JsonNodeEventValue.class)
                 .constructors().build();
+    }
+
+    public static boolean shouldGenerate(final Capabilities capabilities) {
+        return !capabilities.isPresent("com.damdamdeo.pulse-writer-extension")
+                && !capabilities.isPresent("com.damdamdeo.pulse-publisher-extension");
     }
 }

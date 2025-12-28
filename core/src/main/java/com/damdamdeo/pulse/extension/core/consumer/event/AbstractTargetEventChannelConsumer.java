@@ -2,9 +2,13 @@ package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
+import com.damdamdeo.pulse.extension.core.consumer.Target;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -23,7 +27,8 @@ public abstract class AbstractTargetEventChannelConsumer<T> {
         this.idempotencyRepository = Objects.requireNonNull(idempotencyRepository);
     }
 
-    protected void handleMessage(final Target target, final FromApplication fromApplication, final EventKey eventKey, final EventValue eventValue) {
+    protected void handleMessage(final Target target, final FromApplication fromApplication,
+                                 final EventKey eventKey, final EventValue eventValue) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(eventKey);
@@ -32,19 +37,16 @@ public abstract class AbstractTargetEventChannelConsumer<T> {
         final AggregateRootType aggregateRootType = eventKey.toAggregateRootType();
         final AggregateId aggregateId = eventKey.toAggregateId();
         final CurrentVersionInConsumption currentVersionInConsumption = eventKey.toCurrentVersionInConsumption();
-
-        final Optional<LastConsumedAggregateVersion> lastConsumedAggregateVersion = idempotencyRepository.findLastAggregateVersionBy(
-                new IdempotencyKey(target, fromApplication, aggregateRootType, aggregateId));
+        final IdempotencyKey idempotencyKey = new IdempotencyKey(target, fromApplication, Topic.EVENT, aggregateRootType, aggregateId);
+        final Optional<LastConsumedAggregateVersion> lastConsumedAggregateVersion = idempotencyRepository.findLastAggregateVersionBy(idempotencyKey);
         if (lastConsumedAggregateVersion.isPresent() && lastConsumedAggregateVersion.get().isBelow(currentVersionInConsumption)) {
             targetEventChannelExecutor.execute(target, fromApplication, eventKey, eventValue, lastConsumedAggregateVersion.get());
-            idempotencyRepository.upsert(new IdempotencyKey(target, fromApplication, eventKey.toAggregateRootType(),
-                    eventKey.toAggregateId()), eventKey.toCurrentVersionInConsumption());
+            idempotencyRepository.upsert(idempotencyKey, currentVersionInConsumption);
         } else if (lastConsumedAggregateVersion.isPresent()) {
             targetEventChannelExecutor.onAlreadyConsumed(target, fromApplication, eventKey, eventValue);
         } else {
             targetEventChannelExecutor.execute(target, fromApplication, eventKey, eventValue);
-            idempotencyRepository.upsert(new IdempotencyKey(target, fromApplication, eventKey.toAggregateRootType(),
-                    eventKey.toAggregateId()), eventKey.toCurrentVersionInConsumption());
+            idempotencyRepository.upsert(idempotencyKey, eventKey.toCurrentVersionInConsumption());
         }
     }
 }

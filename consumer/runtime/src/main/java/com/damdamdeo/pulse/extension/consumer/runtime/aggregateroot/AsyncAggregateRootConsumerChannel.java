@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.consumer.runtime.event;
+package com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.Source;
 import jakarta.enterprise.util.AnnotationLiteral;
@@ -14,7 +14,7 @@ import java.util.Objects;
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface AsyncEventConsumerChannel {
+public @interface AsyncAggregateRootConsumerChannel {
 
     /**
      * @return target consuming kafka channel likes "statistic"
@@ -27,7 +27,7 @@ public @interface AsyncEventConsumerChannel {
     @Nonbinding
     Source[] sources();
 
-    class Literal extends AnnotationLiteral<AsyncEventConsumerChannel> implements AsyncEventConsumerChannel {
+    class Literal extends AnnotationLiteral<AsyncAggregateRootConsumerChannel> implements AsyncAggregateRootConsumerChannel {
 
         public static Literal of(final String target) {
             return new Literal(target);

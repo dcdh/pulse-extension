@@ -2,9 +2,9 @@ package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import io.quarkus.kafka.client.serialization.ObjectMapperDeserializer;
 
-public final class JsonNodeEventKeyObjectMapperDeserializer extends ObjectMapperDeserializer<JsonNodeEventKey> {
+public final class JsonNodeEventKeyDeserializer extends ObjectMapperDeserializer<JsonNodeEventKey> {
 
-    public JsonNodeEventKeyObjectMapperDeserializer() {
+    public JsonNodeEventKeyDeserializer() {
         super(JsonNodeEventKey.class);
     }
 }

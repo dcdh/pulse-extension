@@ -7,12 +7,12 @@ import com.damdamdeo.pulse.extension.core.consumer.Target;
 
 import java.util.Objects;
 
-// TODO introduce a discriminant via en enum
-public record IdempotencyKey(Target target, FromApplication fromApplication, AggregateRootType aggregateRootType, AggregateId aggregateId) {
+public record IdempotencyKey(Target target, FromApplication fromApplication, Topic topic, AggregateRootType aggregateRootType, AggregateId aggregateId) {
 
     public IdempotencyKey {
         Objects.requireNonNull(target);
         Objects.requireNonNull(fromApplication);
+        Objects.requireNonNull(topic);
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
     }

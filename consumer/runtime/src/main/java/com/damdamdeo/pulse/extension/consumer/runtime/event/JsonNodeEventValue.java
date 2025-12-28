@@ -17,7 +17,7 @@ import java.util.Objects;
 
 public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
                                  @JsonProperty("event_type") String eventType,
-                                 @JsonProperty("event_payload") byte[] eventPayload,
+                                 @JsonProperty("event_payload") byte[] payload,
                                  @JsonProperty("owned_by") String ownedBy,
                                  @JsonProperty("belongs_to") String belongsTo,
                                  @JsonProperty("executed_by") String executedBy) implements EventValue {
@@ -26,7 +26,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
     public JsonNodeEventValue {
         Objects.requireNonNull(createDate);
         Objects.requireNonNull(eventType);
-        Objects.requireNonNull(eventPayload);
+        Objects.requireNonNull(payload);
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(belongsTo);
         Objects.requireNonNull(executedBy);
@@ -44,7 +44,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
 
     @Override
     public EncryptedPayload toEncryptedEventPayload() {
-        return new EncryptedPayload(eventPayload);
+        return new EncryptedPayload(payload);
     }
 
     @Override
@@ -69,14 +69,14 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
         return Objects.equals(ownedBy, that.ownedBy)
                 && Objects.equals(createDate, that.createDate)
                 && Objects.equals(eventType, that.eventType)
-                && Arrays.equals(eventPayload, that.eventPayload)
+                && Arrays.equals(payload, that.payload)
                 && Objects.equals(belongsTo, that.belongsTo)
                 && Objects.equals(executedBy, that.executedBy);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo, executedBy);
+        return Objects.hash(createDate, eventType, Arrays.hashCode(payload), ownedBy, belongsTo, executedBy);
     }
 
     @Override
@@ -84,7 +84,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
         return "JsonNodeEventRecord{" +
                 "createDate=" + createDate +
                 ", eventType='" + eventType + '\'' +
-                ", eventPayload=" + Arrays.toString(eventPayload) +
+                ", payload=" + Arrays.toString(payload) +
                 ", ownedBy='" + ownedBy + '\'' +
                 ", belongsTo='" + belongsTo + '\'' +
                 ", executedBy='" + executedBy + '\'' +

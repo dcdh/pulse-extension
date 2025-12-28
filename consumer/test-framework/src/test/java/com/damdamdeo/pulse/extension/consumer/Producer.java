@@ -5,12 +5,14 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.smallrye.reactive.messaging.kafka.companion.ProducerBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -41,16 +43,16 @@ public class Producer {
     @Inject
     OpenPGPEncryptionService openPGPEncryptionService;
 
-    public <A extends AggregateRoot<?>, B extends Event> Response produce(final String target,
-                                                                          final FromApplication fromApplication,
-                                                                          final String aggregateRootPayload,
-                                                                          final String eventPayload,
-                                                                          final AggregateId aggregateId,
-                                                                          final OwnedBy ownedBy,
-                                                                          final ExecutedBy executedBy,
-                                                                          final BelongsTo belongsTo,
-                                                                          final Class<A> aggregateRootClass,
-                                                                          final Class<B> eventClass) {
+    public <A extends AggregateRoot<?>, B extends Event> Response produceEvent(final String target,
+                                                                               final FromApplication fromApplication,
+                                                                               final String aggregateRootPayload,
+                                                                               final String eventPayload,
+                                                                               final AggregateId aggregateId,
+                                                                               final OwnedBy ownedBy,
+                                                                               final ExecutedBy executedBy,
+                                                                               final BelongsTo belongsTo,
+                                                                               final Class<A> aggregateRootClass,
+                                                                               final Class<B> eventClass) {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
@@ -74,22 +76,23 @@ public class Producer {
 
         // language=sql
         final String idempotencySql = """
-                INSERT INTO t_idempotency (target, from_application, aggregate_root_type, aggregate_root_id, last_consumed_version)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO t_idempotency (target, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
             ps.setString(1, target);
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
-            ps.setString(3, aggregateRootClass.getSimpleName());
-            ps.setString(4, aggregateId.id());
-            ps.setLong(5, 0);
+            ps.setString(3, Topic.EVENT.name());
+            ps.setString(4, aggregateRootClass.getSimpleName());
+            ps.setString(5, aggregateId.id());
+            ps.setLong(6, 0);
             ps.executeUpdate();
         } catch (final SQLException sqlException) {
             throw new RuntimeException(sqlException);
         }
 
-        final byte[] encryptedEvent = openPGPEncryptionService.encrypt(eventPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
+        final byte[] encryptedPayload = openPGPEncryptionService.encrypt(eventPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
 
         // When
         new ProducerBuilder<>(
@@ -97,13 +100,13 @@ public class Producer {
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
                         AUTO_OFFSET_RESET_CONFIG, "latest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
-                Duration.ofSeconds(10), new JsonNodeEventKeyObjectMapperSerializer(), new JsonNodeEventRecordObjectMapperSerializer())
+                Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeEventKey>(), new ObjectMapperSerializer<JsonNodeEventValue>())
                 .usingGenerator(
                         integer -> new ProducerRecord<>("pulse.%s_%s.t_event".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
                                 new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 1),
                                 new JsonNodeEventValue(1_761_335_312_527L,
                                         eventClass.getSimpleName(),
-                                        encryptedEvent,
+                                        encryptedPayload,
                                         ownedBy.id(),
                                         belongsTo.aggregateId().id(),
                                         executedBy.encode(new ExecutedByEncoder() {
@@ -114,6 +117,70 @@ public class Producer {
                                         }))), 1L);
         return new Response(
                 new EncryptedPayload(encryptedAggregatePayload),
-                new EncryptedPayload(encryptedEvent));
+                new EncryptedPayload(encryptedPayload));
+    }
+
+    public <A extends AggregateRoot<?>> EncryptedPayload produceAggregateRoot(final String target,
+                                                                              final FromApplication fromApplication,
+                                                                              final String aggregateRootPayload,
+                                                                              final AggregateId aggregateId,
+                                                                              final OwnedBy ownedBy,
+                                                                              final BelongsTo belongsTo,
+                                                                              final Class<A> aggregateRootClass) {
+        // Given
+        final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
+        // language=sql
+        final String aggregateRootSql = """
+                    INSERT INTO todotaking_todo.t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """;
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
+            ps.setString(1, aggregateRootClass.getSimpleName());
+            ps.setString(2, aggregateId.id());
+            ps.setLong(3, 1);
+            ps.setBytes(4, encryptedAggregatePayload);
+            ps.setString(5, ownedBy.id());
+            ps.setString(6, belongsTo.aggregateId().id());
+            ps.executeUpdate();
+        } catch (final SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
+
+        // language=sql
+        final String idempotencySql = """
+                INSERT INTO t_idempotency (target, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """;
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(idempotencySql)) {
+            ps.setString(1, target);
+            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
+            ps.setString(3, Topic.AGGREGATE_ROOT.name());
+            ps.setString(4, aggregateRootClass.getSimpleName());
+            ps.setString(5, aggregateId.id());
+            ps.setLong(6, 0);
+            ps.executeUpdate();
+        } catch (final SQLException sqlException) {
+            throw new RuntimeException(sqlException);
+        }
+
+        // When
+        final byte[] encryptedPayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
+
+        new ProducerBuilder<>(
+                Map.of(
+                        BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
+                        AUTO_OFFSET_RESET_CONFIG, "latest",
+                        ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
+                Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeAggregateRootKey>(), new ObjectMapperSerializer<JsonNodeAggregateRootValue>())
+                .usingGenerator(
+                        integer -> new ProducerRecord<>("pulse.%s_%s.t_aggregate_root".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
+                                new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 1),
+                                new JsonNodeAggregateRootValue(1L,
+                                        encryptedPayload,
+                                        ownedBy.id(),
+                                        belongsTo.aggregateId().id())));
+        return new EncryptedPayload(encryptedPayload);
     }
 }

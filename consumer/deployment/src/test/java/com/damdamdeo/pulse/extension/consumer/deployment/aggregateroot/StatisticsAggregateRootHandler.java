@@ -1,7 +1,7 @@
-package com.damdamdeo.pulse.extension.consumer.deployment.event;
+package com.damdamdeo.pulse.extension.consumer.deployment.aggregateroot;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.Source;
-import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.AsyncAggregateRootConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
@@ -9,25 +9,19 @@ import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Target;
-import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandler;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateRootChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.time.Instant;
-import java.util.function.Supplier;
-
 @ApplicationScoped
-@AsyncEventConsumerChannel(
+@AsyncAggregateRootConsumerChannel(
         target = "statistics",
         sources = {
                 @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
                 @Source(functionalDomain = "TodoClient", componentName = "Registered")})
-public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
+public class StatisticsAggregateRootHandler implements AsyncAggregateRootChannelMessageHandler<JsonNode> {
 
     private Call call = null;
 
@@ -37,18 +31,12 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
-                              final Instant creationDate,
-                              final EventType eventType,
                               final EncryptedPayload encryptedPayload,
                               final OwnedBy ownedBy,
                               final BelongsTo belongsTo,
-                              final ExecutedBy executedBy,
-                              final DecryptablePayload<JsonNode> decryptableEventPayload,
-                              final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
-        this.call = new Call(fromApplication,
-                target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
-                encryptedPayload, ownedBy, belongsTo, executedBy, decryptableEventPayload,
-                aggregateRootLoadedSupplier.get());
+                              final DecryptablePayload<JsonNode> decryptablePayload) {
+        this.call = new Call(fromApplication, target, aggregateRootType, aggregateId, currentVersionInConsumption,
+                encryptedPayload, ownedBy, belongsTo, decryptablePayload);
     }
 
     public Call getCall() {
