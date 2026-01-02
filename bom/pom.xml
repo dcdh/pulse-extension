@@ -29,6 +29,11 @@
                 <artifactId>quarkus-pulse-consumer-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.damdamdeo.pulse</groupId>
+                <artifactId>quarkus-pulse-live-notifier-extension</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
