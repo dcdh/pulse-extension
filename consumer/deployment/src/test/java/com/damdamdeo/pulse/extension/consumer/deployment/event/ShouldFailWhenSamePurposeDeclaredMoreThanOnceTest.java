@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
+class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -45,7 +45,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @AsyncEventConsumerChannel(target = "statistics",
+    @AsyncEventConsumerChannel(purpose = "statistics",
             sources = {
                     @Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
@@ -53,7 +53,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
 
         @Override
         public void handleMessage(final FromApplication fromApplication,
-                                  final Target target,
+                                  final Purpose purpose,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
@@ -69,7 +69,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @AsyncEventConsumerChannel(target = "statistics",
+    @AsyncEventConsumerChannel(purpose = "statistics",
             sources = {
                     @Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
@@ -77,7 +77,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
 
         @Override
         public void handleMessage(final FromApplication fromApplication,
-                                  final Target target,
+                                  final Purpose purpose,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,

@@ -68,13 +68,13 @@ public class PulseConsumerProcessor {
                                 CREATE SCHEMA IF NOT EXISTS %1$s;
                                 
                                 CREATE TABLE IF NOT EXISTS %1$s.t_idempotency (
-                                  target character varying(255) not null,
+                                  purpose character varying(255) not null,
                                   from_application character varying(255) not null,
                                   topic character varying(255) not null,
                                   aggregate_root_type character varying(255) not null,
                                   aggregate_root_id character varying(255) not null,
                                   last_consumed_version bigint not null,
-                                  CONSTRAINT idempotency_pkey PRIMARY KEY (target, from_application, topic, aggregate_root_type, aggregate_root_id),
+                                  CONSTRAINT idempotency_pkey PRIMARY KEY (purpose, from_application, topic, aggregate_root_type, aggregate_root_id),
                                   CONSTRAINT topic_format_chk CHECK (topic = 'EVENT' OR topic = 'AGGREGATE_ROOT')
                                 )
                                 """.formatted(schemaName).getBytes(StandardCharsets.UTF_8)));

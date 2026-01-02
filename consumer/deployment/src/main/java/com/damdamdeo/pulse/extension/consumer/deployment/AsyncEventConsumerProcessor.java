@@ -8,11 +8,11 @@ import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelTo
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.*;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
-import com.damdamdeo.pulse.extension.core.consumer.event.AbstractTargetEventChannelConsumer;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
+import com.damdamdeo.pulse.extension.core.consumer.event.AbstractPurposeEventChannelConsumer;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventKey;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
-import com.damdamdeo.pulse.extension.core.consumer.event.TargetEventChannelExecutor;
+import com.damdamdeo.pulse.extension.core.consumer.event.PurposeEventChannelExecutor;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -58,7 +58,7 @@ public class AsyncEventConsumerProcessor {
             return computingIndex.getAnnotations(AsyncEventConsumerChannel.class)
                     .stream()
                     .map(annotationInstance -> {
-                        final Target target = new Target(annotationInstance.value("target").asString());
+                        final Purpose purpose = new Purpose(annotationInstance.value("purpose").asString());
                         final List<FromApplication> sources = annotationInstance.value("sources").asArrayList().stream()
                                 .map(annotationValue -> {
                                     final AnnotationInstance nested = annotationValue.asNested();
@@ -66,7 +66,7 @@ public class AsyncEventConsumerProcessor {
                                             nested.value("functionalDomain").asString(),
                                             nested.value("componentName").asString());
                                 }).toList();
-                        return new DiscoveredAsyncEventConsumerChannel(target, sources);
+                        return new DiscoveredAsyncEventConsumerChannel(purpose, sources);
                     })
                     .distinct()
                     .toList();
@@ -87,7 +87,7 @@ public class AsyncEventConsumerProcessor {
                             AsyncEventConsumerChannel.class,
                             PostgresAggregateRootLoader.class,
                             DefaultAsyncEventChannelMessageHandlerProvider.class,
-                            JsonNodeTargetEventChannelExecutor.class)
+                            JsonNodePurposeEventChannelExecutor.class)
                     .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                     .toList();
         } else {
@@ -146,18 +146,18 @@ public class AsyncEventConsumerProcessor {
                 .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream()
                         .map(src -> new TargetWithSource(discoveredAsyncEventConsumerChannel.target(), src))
                 ).forEach(targetWithSource -> {
-                    final String className = AbstractTargetEventChannelConsumer.class.getPackageName() + "."
-                            + capitalize(targetWithSource.target().name())
+                    final String className = AbstractPurposeEventChannelConsumer.class.getPackageName() + "."
+                            + capitalize(targetWithSource.purpose().name())
                             + capitalize(targetWithSource.fromApplication().value())
                             + "TargetEventChannelConsumer";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
                             .className(className)
-                            .superClass(AbstractTargetEventChannelConsumer.class)
+                            .superClass(AbstractPurposeEventChannelConsumer.class)
                             .signature(SignatureBuilder.forClass()
                                     .setSuperClass(
                                             Type.parameterizedType(
-                                                    Type.classType(AbstractTargetEventChannelConsumer.class),
+                                                    Type.classType(AbstractPurposeEventChannelConsumer.class),
                                                     Type.classType(JsonNode.class)
                                             )))
                             .build()) {
@@ -166,11 +166,11 @@ public class AsyncEventConsumerProcessor {
                         beanClassCreator.addAnnotation(DefaultBean.class);
 
                         try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                                TargetEventChannelExecutor.class, IdempotencyRepository.class)) {
+                                PurposeEventChannelExecutor.class, IdempotencyRepository.class)) {
                             constructor
                                     .setSignature(SignatureBuilder.forMethod()
                                             .addParameterType(Type.parameterizedType(
-                                                    Type.classType(TargetEventChannelExecutor.class),
+                                                    Type.classType(PurposeEventChannelExecutor.class),
                                                     Type.classType(JsonNode.class)
                                             ))
                                             .addParameterType(Type.classType(IdempotencyRepository.class))
@@ -178,8 +178,8 @@ public class AsyncEventConsumerProcessor {
                             constructor.setModifiers(Modifier.PUBLIC);
 
                             constructor.invokeSpecialMethod(
-                                    MethodDescriptor.ofConstructor(AbstractTargetEventChannelConsumer.class,
-                                            TargetEventChannelExecutor.class, IdempotencyRepository.class),
+                                    MethodDescriptor.ofConstructor(AbstractPurposeEventChannelConsumer.class,
+                                            PurposeEventChannelExecutor.class, IdempotencyRepository.class),
                                     constructor.getThis(),
                                     constructor.getMethodParam(0),
                                     constructor.getMethodParam(1));
@@ -202,8 +202,8 @@ public class AsyncEventConsumerProcessor {
 
                             final ResultHandle recordParam = consume.getMethodParam(0);
                             final ResultHandle targetParam = consume.newInstance(
-                                    MethodDescriptor.ofConstructor(Target.class, String.class),
-                                    consume.load(targetWithSource.target().name()));
+                                    MethodDescriptor.ofConstructor(Purpose.class, String.class),
+                                    consume.load(targetWithSource.purpose().name()));
                             final ResultHandle applicationNamingParam = consume.newInstance(
                                     MethodDescriptor.ofConstructor(FromApplication.class, String.class, String.class),
                                     consume.load(targetWithSource.fromApplication().functionalDomain()),
@@ -217,7 +217,7 @@ public class AsyncEventConsumerProcessor {
                                             className,
                                             "handleMessage",
                                             void.class,
-                                            Target.class,
+                                            Purpose.class,
                                             FromApplication.class,
                                             EventKey.class,
                                             EventValue.class

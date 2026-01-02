@@ -36,7 +36,7 @@ class ShouldFailOnApplicationDuplicationTest {
                     .hasNoSuppressedExceptions()
                     .rootCause()
                     .isExactlyInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("functionalDomain 'TodoTaking' componentName 'Todo' declared more than once '2' in target 'statistics'")
+                    .hasMessage("functionalDomain 'TodoTaking' componentName 'Todo' declared more than once '2' in purpose 'statistics'")
                     .hasNoSuppressedExceptions());
 
     @Test
@@ -45,7 +45,7 @@ class ShouldFailOnApplicationDuplicationTest {
     }
 
     @ApplicationScoped
-    @AsyncEventConsumerChannel(target = "statistics",
+    @AsyncEventConsumerChannel(purpose = "statistics",
             sources = {
                     @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
                     @Source(functionalDomain = "TodoTaking", componentName = "Todo")
@@ -54,7 +54,7 @@ class ShouldFailOnApplicationDuplicationTest {
 
         @Override
         public void handleMessage(final FromApplication fromApplication,
-                                  final Target target,
+                                  final Purpose purpose,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,

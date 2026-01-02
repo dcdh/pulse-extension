@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateRootChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -32,7 +32,7 @@ class ShouldFailOnApplicationDuplicationTest {
                     .hasNoSuppressedExceptions()
                     .rootCause()
                     .isExactlyInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("functionalDomain 'TodoTaking' componentName 'Todo' declared more than once '2' in target 'statistics'")
+                    .hasMessage("functionalDomain 'TodoTaking' componentName 'Todo' declared more than once '2' in purpose 'statistics'")
                     .hasNoSuppressedExceptions());
 
     @Test
@@ -41,7 +41,7 @@ class ShouldFailOnApplicationDuplicationTest {
     }
 
     @ApplicationScoped
-    @AsyncAggregateRootConsumerChannel(target = "statistics",
+    @AsyncAggregateRootConsumerChannel(purpose = "statistics",
             sources = {
                     @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
                     @Source(functionalDomain = "TodoTaking", componentName = "Todo")
@@ -50,7 +50,7 @@ class ShouldFailOnApplicationDuplicationTest {
 
         @Override
         public void handleMessage(final FromApplication fromApplication,
-                                  final Target target,
+                                  final Purpose purpose,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,

@@ -80,7 +80,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        new Target("statistics"),
+                        new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
                         Topic.EVENT,
                         AggregateRootType.from(Todo.class),
@@ -95,7 +95,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (target, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO t_idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -114,7 +114,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        new Target("statistics"),
+                        new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
                         Topic.EVENT,
                         AggregateRootType.from(Todo.class),
@@ -132,7 +132,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         jdbcPostgresIdempotencyRepository.upsert(
                 new IdempotencyKey(
-                        new Target("statistics"),
+                        new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
                         Topic.EVENT,
                         AggregateRootType.from(Todo.class),
@@ -142,7 +142,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // language=sql
         final String sql = """
                     SELECT last_consumed_version FROM t_idempotency
-                    WHERE target = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
+                    WHERE purpose = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -165,7 +165,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (target, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO t_idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -184,7 +184,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // When
         jdbcPostgresIdempotencyRepository.upsert(
                 new IdempotencyKey(
-                        new Target("statistics"),
+                        new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
                         Topic.EVENT,
                         AggregateRootType.from(Todo.class),
@@ -194,7 +194,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // language=sql
         final String querySql = """
                     SELECT last_consumed_version FROM t_idempotency
-                    WHERE target = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
+                    WHERE purpose = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(querySql)) {

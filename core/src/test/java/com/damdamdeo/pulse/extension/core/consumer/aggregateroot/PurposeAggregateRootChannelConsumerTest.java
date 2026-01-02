@@ -21,13 +21,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TargetAggregateRootChannelConsumerTest {
+class PurposeAggregateRootChannelConsumerTest {
 
-    private static class TodoTargetAggregateRootChannelConsumer extends AbstractTargetAggregateRootChannelConsumer<Todo> {
+    private static class TodoPurposeAggregateRootChannelConsumer extends AbstractPurposeAggregateRootChannelConsumer<Todo> {
 
-        public TodoTargetAggregateRootChannelConsumer(final TargetAggregateRootChannelExecutor<Todo> targetAggregateRootChannelExecutor,
-                                                      final IdempotencyRepository idempotencyRepository) {
-            super(targetAggregateRootChannelExecutor, idempotencyRepository);
+        public TodoPurposeAggregateRootChannelConsumer(final PurposeAggregateRootChannelExecutor<Todo> purposeAggregateRootChannelExecutor,
+                                                       final IdempotencyRepository idempotencyRepository) {
+            super(purposeAggregateRootChannelExecutor, idempotencyRepository);
         }
 
     }
@@ -82,96 +82,96 @@ class TargetAggregateRootChannelConsumerTest {
     }
 
     @Mock
-    TargetAggregateRootChannelExecutor<Todo> targetAggregateRootChannelExecutor;
+    PurposeAggregateRootChannelExecutor<Todo> purposeAggregateRootChannelExecutor;
 
     @Mock
     IdempotencyRepository idempotencyRepository;
 
     @InjectMocks
-    TodoTargetAggregateRootChannelConsumer todoTargetAggregateRootChannelConsumer;
+    TodoPurposeAggregateRootChannelConsumer todoTargetAggregateRootChannelConsumer;
 
     @Test
     void shouldExecuteWhenNotConsumedYetOnFirstEvent() {
         // Given
-        final Target givenTarget = new Target("statistics");
+        final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
         final AggregateRootKey givenAggregateRootKey = TodoAggregateRootKey.of();
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.empty()).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenTarget, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
+                        givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
 
         // When
-        todoTargetAggregateRootChannelConsumer.handleMessage(givenTarget, givenFromApplication, givenAggregateRootKey,
+        todoTargetAggregateRootChannelConsumer.handleMessage(givenPurpose, givenFromApplication, givenAggregateRootKey,
                 givenTodoAggregateRootValue);
 
         // Then
         assertAll(
-                () -> verify(targetAggregateRootChannelExecutor, times(1)).execute(
-                        givenTarget, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue),
-                () -> verify(targetAggregateRootChannelExecutor, times(0)).execute(
-                        any(Target.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class), any(LastConsumedAggregateVersion.class)),
+                () -> verify(purposeAggregateRootChannelExecutor, times(1)).execute(
+                        givenPurpose, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue),
+                () -> verify(purposeAggregateRootChannelExecutor, times(0)).execute(
+                        any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class), any(LastConsumedAggregateVersion.class)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
-                        new IdempotencyKey(givenTarget, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
+                        new IdempotencyKey(givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
                                 givenAggregateRootKey.toAggregateId()), givenAggregateRootKey.toCurrentVersionInConsumption()),
-                () -> verify(targetAggregateRootChannelExecutor, times(0)).onAlreadyConsumed(
-                        any(Target.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class))
+                () -> verify(purposeAggregateRootChannelExecutor, times(0)).onAlreadyConsumed(
+                        any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class))
         );
     }
 
     @Test
     void shouldExecuteWhenNotConsumedYetOnNextEvent() {
         // Given
-        final Target givenTarget = new Target("statistics");
+        final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
         final AggregateRootKey givenAggregateRootKey = TodoAggregateRootKey.of();
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(0))).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenTarget, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
+                        givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
 
         // When
-        todoTargetAggregateRootChannelConsumer.handleMessage(givenTarget, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue);
+        todoTargetAggregateRootChannelConsumer.handleMessage(givenPurpose, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue);
 
         // Then
         assertAll(
-                () -> verify(targetAggregateRootChannelExecutor, times(0)).execute(
-                        any(Target.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class)),
-                () -> verify(targetAggregateRootChannelExecutor, times(1)).execute(
-                        givenTarget, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue, new LastConsumedAggregateVersion(0)),
+                () -> verify(purposeAggregateRootChannelExecutor, times(0)).execute(
+                        any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class)),
+                () -> verify(purposeAggregateRootChannelExecutor, times(1)).execute(
+                        givenPurpose, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue, new LastConsumedAggregateVersion(0)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
-                        new IdempotencyKey(givenTarget, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
+                        new IdempotencyKey(givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
                                 givenAggregateRootKey.toAggregateId()), givenAggregateRootKey.toCurrentVersionInConsumption()),
-                () -> verify(targetAggregateRootChannelExecutor, times(0)).onAlreadyConsumed(
-                        any(Target.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class))
+                () -> verify(purposeAggregateRootChannelExecutor, times(0)).onAlreadyConsumed(
+                        any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class))
         );
     }
 
     @Test
     void shouldNotConsumeWhenAlreadyConsumed() {
         // Given
-        final Target givenTarget = new Target("statistics");
+        final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
         final AggregateRootKey givenAggregateRootKey = TodoAggregateRootKey.of();
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(1))).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenTarget, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
+                        givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
                         givenAggregateRootKey.toAggregateId()));
 
         // When
-        todoTargetAggregateRootChannelConsumer.handleMessage(givenTarget, givenFromApplication, givenAggregateRootKey,
+        todoTargetAggregateRootChannelConsumer.handleMessage(givenPurpose, givenFromApplication, givenAggregateRootKey,
                 givenTodoAggregateRootValue);
 
         // Then
         assertAll(
-                () -> verify(targetAggregateRootChannelExecutor, times(0)).execute(
-                        any(Target.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class)),
-                () -> verify(targetAggregateRootChannelExecutor, times(0)).execute(
-                        any(Target.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class), any(LastConsumedAggregateVersion.class)),
+                () -> verify(purposeAggregateRootChannelExecutor, times(0)).execute(
+                        any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class)),
+                () -> verify(purposeAggregateRootChannelExecutor, times(0)).execute(
+                        any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class), any(LastConsumedAggregateVersion.class)),
                 () -> verify(idempotencyRepository, times(0)).upsert(any(IdempotencyKey.class), any(CurrentVersionInConsumption.class)),
-                () -> verify(targetAggregateRootChannelExecutor, times(1)).onAlreadyConsumed(
-                        givenTarget, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue)
+                () -> verify(purposeAggregateRootChannelExecutor, times(1)).onAlreadyConsumed(
+                        givenPurpose, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue)
         );
     }
 }

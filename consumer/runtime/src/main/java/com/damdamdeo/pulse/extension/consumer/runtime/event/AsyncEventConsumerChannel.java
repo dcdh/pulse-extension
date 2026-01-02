@@ -19,7 +19,7 @@ public @interface AsyncEventConsumerChannel {
     /**
      * @return target consuming kafka channel likes "statistic"
      */
-    String target();
+    String purpose();
 
     /**
      * @return array of sources associated with this event channel
@@ -29,19 +29,19 @@ public @interface AsyncEventConsumerChannel {
 
     class Literal extends AnnotationLiteral<AsyncEventConsumerChannel> implements AsyncEventConsumerChannel {
 
-        public static Literal of(final String target) {
-            return new Literal(target);
+        public static Literal of(final String purpose) {
+            return new Literal(purpose);
         }
 
-        private final String target;
+        private final String purpose;
 
-        private Literal(final String target) {
-            this.target = Objects.requireNonNull(target);
+        private Literal(final String purpose) {
+            this.purpose = Objects.requireNonNull(purpose);
         }
 
         @Override
-        public String target() {
-            return target;
+        public String purpose() {
+            return purpose;
         }
 
         @Override

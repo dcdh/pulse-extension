@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 
 @ApplicationScoped
 @AsyncEventConsumerChannel(
-        target = "statistics",
+        purpose = "statistics",
         sources = {
                 @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
                 @Source(functionalDomain = "TodoClient", componentName = "Registered")})
@@ -33,7 +33,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
 
     @Override
     public void handleMessage(final FromApplication fromApplication,
-                              final Target target,
+                              final Purpose purpose,
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
@@ -46,7 +46,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
         this.call = new Call(fromApplication,
-                target, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
+                purpose, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
                 encryptedPayload, ownedBy, belongsTo, executedBy, decryptableEventPayload,
                 aggregateRootLoadedSupplier.get());
     }

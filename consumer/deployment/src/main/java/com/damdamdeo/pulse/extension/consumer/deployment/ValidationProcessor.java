@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import org.jboss.jandex.AnnotationInstance;
@@ -92,7 +92,7 @@ public class ValidationProcessor {
 
         @Override
         public String invalidMessage() {
-            return "functionalDomain '%s' componentName '%s' declared more than once '%d' in target '%s'"
+            return "functionalDomain '%s' componentName '%s' declared more than once '%d' in purpose '%s'"
                     .formatted(functionalDomain, componentName, count, target);
         }
     }
@@ -106,8 +106,8 @@ public class ValidationProcessor {
         public List<InvalidNaming> invalidNamings() {
             final List<InvalidNaming> invalidNamings = new ArrayList<>();
             for (final PreValidationEventChannel preValidationEventChannel : preValidationEventChannels) {
-                if (!Target.TARGET_PATTERN.matcher(preValidationEventChannel.target()).matches()) {
-                    invalidNamings.add(InvalidNaming.ofTarget(preValidationEventChannel.target(), Target.TARGET_PATTERN));
+                if (!Purpose.TARGET_PATTERN.matcher(preValidationEventChannel.purpose()).matches()) {
+                    invalidNamings.add(InvalidNaming.ofTarget(preValidationEventChannel.purpose(), Purpose.TARGET_PATTERN));
                 }
                 for (final PreValidationSource preValidationSource : preValidationEventChannel.sources()) {
                     if (!FromApplication.PART_PATTERN.matcher(preValidationSource.functionalDomain()).matches()) {
@@ -126,7 +126,7 @@ public class ValidationProcessor {
 
             preValidationEventChannels
                     .stream()
-                    .map(PreValidationEventChannel::target)
+                    .map(PreValidationEventChannel::purpose)
                     .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                     .entrySet().stream()
                     .filter(tc -> tc.getValue() > 1L)
@@ -134,7 +134,7 @@ public class ValidationProcessor {
                             new InvalidTargetDuplicates(tc.getKey(), tc.getValue())));
 
             for (final PreValidationEventChannel preValidationEventChannel : preValidationEventChannels) {
-                final String target = preValidationEventChannel.target();
+                final String target = preValidationEventChannel.purpose();
                 preValidationEventChannel.sources().stream()
                         .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                         .entrySet().stream()
@@ -146,10 +146,10 @@ public class ValidationProcessor {
         }
     }
 
-    record PreValidationEventChannel(String target, List<PreValidationSource> sources) {
+    record PreValidationEventChannel(String purpose, List<PreValidationSource> sources) {
 
         PreValidationEventChannel {
-            Objects.requireNonNull(target);
+            Objects.requireNonNull(purpose);
             Objects.requireNonNull(sources);
         }
     }
@@ -171,7 +171,7 @@ public class ValidationProcessor {
                 consumerChannelToValidateBuildItems.stream()
                         .flatMap(item -> index.getAnnotations(item.clazz()).stream())
                         .map(asyncConsumerChannel -> {
-                            final String target = asyncConsumerChannel.value("target").asString();
+                            final String target = asyncConsumerChannel.value("purpose").asString();
 
                             final List<PreValidationSource> sources =
                                     asyncConsumerChannel.value("sources")

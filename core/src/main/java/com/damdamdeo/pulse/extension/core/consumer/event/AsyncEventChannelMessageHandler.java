@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public interface AsyncEventChannelMessageHandler<T> {
 
     void handleMessage(FromApplication fromApplication,
-                       Target target,
+                       Purpose purpose,
                        AggregateRootType aggregateRootType,
                        AggregateId aggregateId,
                        CurrentVersionInConsumption currentVersionInConsumption,

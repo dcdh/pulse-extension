@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateRootChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -17,7 +17,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 @AsyncAggregateRootConsumerChannel(
-        target = "statistics",
+        purpose = "statistics",
         sources = {
                 @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
                 @Source(functionalDomain = "TodoClient", componentName = "Registered")})
@@ -27,7 +27,7 @@ public class StatisticsAggregateRootHandler implements AsyncAggregateRootChannel
 
     @Override
     public void handleMessage(final FromApplication fromApplication,
-                              final Target target,
+                              final Purpose purpose,
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
@@ -35,7 +35,7 @@ public class StatisticsAggregateRootHandler implements AsyncAggregateRootChannel
                               final OwnedBy ownedBy,
                               final BelongsTo belongsTo,
                               final DecryptablePayload<JsonNode> decryptablePayload) {
-        this.call = new Call(fromApplication, target, aggregateRootType, aggregateId, currentVersionInConsumption,
+        this.call = new Call(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption,
                 encryptedPayload, ownedBy, belongsTo, decryptablePayload);
     }
 

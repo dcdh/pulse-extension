@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 public record Call(FromApplication fromApplication,
-                   Target target,
+                   Purpose purpose,
                    AggregateRootType aggregateRootType,
                    AggregateId aggregateId,
                    CurrentVersionInConsumption currentVersionInConsumption,
@@ -30,7 +30,7 @@ public record Call(FromApplication fromApplication,
 
     public Call {
         Objects.requireNonNull(fromApplication);
-        Objects.requireNonNull(target);
+        Objects.requireNonNull(purpose);
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(currentVersionInConsumption);

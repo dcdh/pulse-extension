@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot;
 
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateRootChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateRootChannelMessageHandlerProvider;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +22,7 @@ public final class DefaultAsyncAggregateRootChannelMessageHandlerProvider implem
 
     private final Instance<AsyncAggregateRootChannelMessageHandler<JsonNode>> aggregateRootChannelMessageHandlers;
 
-    private final Map<Target, List<AsyncAggregateRootChannelMessageHandler<JsonNode>>> cache;
+    private final Map<Purpose, List<AsyncAggregateRootChannelMessageHandler<JsonNode>>> cache;
 
     public DefaultAsyncAggregateRootChannelMessageHandlerProvider(@Any final Instance<AsyncAggregateRootChannelMessageHandler<JsonNode>> aggregateRootChannelMessageHandlers) {
         this.aggregateRootChannelMessageHandlers = Objects.requireNonNull(aggregateRootChannelMessageHandlers);
@@ -30,9 +30,9 @@ public final class DefaultAsyncAggregateRootChannelMessageHandlerProvider implem
     }
 
     @Override
-    public List<AsyncAggregateRootChannelMessageHandler<JsonNode>> provideForTarget(final Target target) {
-        Objects.requireNonNull(target);
-        return cache.computeIfAbsent(target, target1 ->
+    public List<AsyncAggregateRootChannelMessageHandler<JsonNode>> provideForTarget(final Purpose purpose) {
+        Objects.requireNonNull(purpose);
+        return cache.computeIfAbsent(purpose, target1 ->
                 aggregateRootChannelMessageHandlers.select(AsyncAggregateRootConsumerChannel.Literal.of(target1.name())).stream().toList());
     }
 }

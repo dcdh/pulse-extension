@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateRootChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
+class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -41,7 +41,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @AsyncAggregateRootConsumerChannel(target = "statistics",
+    @AsyncAggregateRootConsumerChannel(purpose = "statistics",
             sources = {
                     @Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
@@ -49,7 +49,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
 
         @Override
         public void handleMessage(final FromApplication fromApplication,
-                                  final Target target,
+                                  final Purpose purpose,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
@@ -61,7 +61,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
     }
 
     @ApplicationScoped
-    @AsyncAggregateRootConsumerChannel(target = "statistics",
+    @AsyncAggregateRootConsumerChannel(purpose = "statistics",
             sources = {
                     @Source(functionalDomain = "TodoClient", componentName = "Registered")
             })
@@ -69,7 +69,7 @@ class ShouldFailWhenSameTargetDeclaredMoreThanOnceTest {
 
         @Override
         public void handleMessage(final FromApplication fromApplication,
-                                  final Target target,
+                                  final Purpose purpose,
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,

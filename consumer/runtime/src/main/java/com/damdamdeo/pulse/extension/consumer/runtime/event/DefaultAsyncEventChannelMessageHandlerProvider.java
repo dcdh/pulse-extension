@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandler;
 import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandlerProvider;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -22,7 +22,7 @@ public final class DefaultAsyncEventChannelMessageHandlerProvider implements Asy
 
     private final Instance<AsyncEventChannelMessageHandler<JsonNode>> eventChannelMessageHandlers;
 
-    private final Map<Target, List<AsyncEventChannelMessageHandler<JsonNode>>> cache;
+    private final Map<Purpose, List<AsyncEventChannelMessageHandler<JsonNode>>> cache;
 
     public DefaultAsyncEventChannelMessageHandlerProvider(@Any final Instance<AsyncEventChannelMessageHandler<JsonNode>> eventChannelMessageHandlers) {
         this.eventChannelMessageHandlers = Objects.requireNonNull(eventChannelMessageHandlers);
@@ -30,9 +30,9 @@ public final class DefaultAsyncEventChannelMessageHandlerProvider implements Asy
     }
 
     @Override
-    public List<AsyncEventChannelMessageHandler<JsonNode>> provideForTarget(final Target target) {
-        Objects.requireNonNull(target);
-        return cache.computeIfAbsent(target, target1 ->
+    public List<AsyncEventChannelMessageHandler<JsonNode>> provideForTarget(final Purpose purpose) {
+        Objects.requireNonNull(purpose);
+        return cache.computeIfAbsent(purpose, target1 ->
                 eventChannelMessageHandlers.select(AsyncEventConsumerChannel.Literal.of(target1.name())).stream().toList());
     }
 }

@@ -6,14 +6,13 @@ import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuild
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncAggregateRootConsumerChannel;
-import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.*;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Target;
-import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AbstractTargetAggregateRootChannelConsumer;
+import com.damdamdeo.pulse.extension.core.consumer.Purpose;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AbstractPurposeAggregateRootChannelConsumer;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootKey;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootValue;
-import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.TargetAggregateRootChannelExecutor;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.PurposeAggregateRootChannelExecutor;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -59,7 +58,7 @@ public class AsyncAggregateRootConsumerProcessor {
             return computingIndex.getAnnotations(AsyncAggregateRootConsumerChannel.class)
                     .stream()
                     .map(annotationInstance -> {
-                        final Target target = new Target(annotationInstance.value("target").asString());
+                        final Purpose purpose = new Purpose(annotationInstance.value("purpose").asString());
                         final List<FromApplication> sources = annotationInstance.value("sources").asArrayList().stream()
                                 .map(annotationValue -> {
                                     final AnnotationInstance nested = annotationValue.asNested();
@@ -67,7 +66,7 @@ public class AsyncAggregateRootConsumerProcessor {
                                             nested.value("functionalDomain").asString(),
                                             nested.value("componentName").asString());
                                 }).toList();
-                        return new DiscoveredAsyncAggregateRootConsumerChannel(target, sources);
+                        return new DiscoveredAsyncAggregateRootConsumerChannel(purpose, sources);
                     })
                     .distinct()
                     .toList();
@@ -87,7 +86,7 @@ public class AsyncAggregateRootConsumerProcessor {
             return Stream.of(
                             AsyncAggregateRootConsumerChannel.class,
                             DefaultAsyncAggregateRootChannelMessageHandlerProvider.class,
-                            JsonNodeTargetAggregateRootChannelExecutor.class)
+                            JsonNodePurposeAggregateRootChannelExecutor.class)
                     .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                     .toList();
         } else {
@@ -146,18 +145,18 @@ public class AsyncAggregateRootConsumerProcessor {
                 .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream()
                         .map(src -> new TargetWithSource(discoveredAsyncAggregateRootConsumerChannel.target(), src))
                 ).forEach(targetWithSource -> {
-                    final String className = AbstractTargetAggregateRootChannelConsumer.class.getPackageName() + "."
-                            + capitalize(targetWithSource.target().name())
+                    final String className = AbstractPurposeAggregateRootChannelConsumer.class.getPackageName() + "."
+                            + capitalize(targetWithSource.purpose().name())
                             + capitalize(targetWithSource.fromApplication().value())
                             + "TargetAggregateRootChannelConsumer";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
                             .className(className)
-                            .superClass(AbstractTargetAggregateRootChannelConsumer.class)
+                            .superClass(AbstractPurposeAggregateRootChannelConsumer.class)
                             .signature(SignatureBuilder.forClass()
                                     .setSuperClass(
                                             Type.parameterizedType(
-                                                    Type.classType(AbstractTargetAggregateRootChannelConsumer.class),
+                                                    Type.classType(AbstractPurposeAggregateRootChannelConsumer.class),
                                                     Type.classType(JsonNode.class)
                                             )))
                             .build()) {
@@ -166,11 +165,11 @@ public class AsyncAggregateRootConsumerProcessor {
                         beanClassCreator.addAnnotation(DefaultBean.class);
 
                         try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                                TargetAggregateRootChannelExecutor.class, IdempotencyRepository.class)) {
+                                PurposeAggregateRootChannelExecutor.class, IdempotencyRepository.class)) {
                             constructor
                                     .setSignature(SignatureBuilder.forMethod()
                                             .addParameterType(Type.parameterizedType(
-                                                    Type.classType(TargetAggregateRootChannelExecutor.class),
+                                                    Type.classType(PurposeAggregateRootChannelExecutor.class),
                                                     Type.classType(JsonNode.class)
                                             ))
                                             .addParameterType(Type.classType(IdempotencyRepository.class))
@@ -178,8 +177,8 @@ public class AsyncAggregateRootConsumerProcessor {
                             constructor.setModifiers(Modifier.PUBLIC);
 
                             constructor.invokeSpecialMethod(
-                                    MethodDescriptor.ofConstructor(AbstractTargetAggregateRootChannelConsumer.class,
-                                            TargetAggregateRootChannelExecutor.class, IdempotencyRepository.class),
+                                    MethodDescriptor.ofConstructor(AbstractPurposeAggregateRootChannelConsumer.class,
+                                            PurposeAggregateRootChannelExecutor.class, IdempotencyRepository.class),
                                     constructor.getThis(),
                                     constructor.getMethodParam(0),
                                     constructor.getMethodParam(1));
@@ -202,8 +201,8 @@ public class AsyncAggregateRootConsumerProcessor {
 
                             final ResultHandle recordParam = consume.getMethodParam(0);
                             final ResultHandle targetParam = consume.newInstance(
-                                    MethodDescriptor.ofConstructor(Target.class, String.class),
-                                    consume.load(targetWithSource.target().name()));
+                                    MethodDescriptor.ofConstructor(Purpose.class, String.class),
+                                    consume.load(targetWithSource.purpose().name()));
                             final ResultHandle applicationNamingParam = consume.newInstance(
                                     MethodDescriptor.ofConstructor(FromApplication.class, String.class, String.class),
                                     consume.load(targetWithSource.fromApplication().functionalDomain()),
@@ -217,7 +216,7 @@ public class AsyncAggregateRootConsumerProcessor {
                                             className,
                                             "handleMessage",
                                             void.class,
-                                            Target.class,
+                                            Purpose.class,
                                             FromApplication.class,
                                             AggregateRootKey.class,
                                             AggregateRootValue.class

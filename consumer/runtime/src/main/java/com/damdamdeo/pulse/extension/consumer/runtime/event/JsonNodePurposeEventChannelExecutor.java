@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoader;
 import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandlerProvider;
-import com.damdamdeo.pulse.extension.core.consumer.event.DefaultTargetEventChannelExecutor;
+import com.damdamdeo.pulse.extension.core.consumer.event.DefaultPurposeEventChannelExecutor;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,14 +15,14 @@ import jakarta.inject.Singleton;
 @Singleton
 @Unremovable
 @DefaultBean
-public final class JsonNodeTargetEventChannelExecutor extends DefaultTargetEventChannelExecutor<JsonNode> {
+public final class JsonNodePurposeEventChannelExecutor extends DefaultPurposeEventChannelExecutor<JsonNode> {
 
-    public JsonNodeTargetEventChannelExecutor(final DecryptionService decryptionService,
-                                              final DecryptedPayloadToPayloadMapper<JsonNode> decryptedPayloadToPayloadMapper,
-                                              final AggregateRootLoader<JsonNode> aggregateRootLoader,
-                                              final AsyncEventChannelMessageHandlerProvider<JsonNode> asyncEventChannelMessageHandlerProvider,
-                                              final SequentialEventChecker sequentialEventChecker,
-                                              final OwnedByExecutedByDecoder ownedByExecutedByDecoder) {
+    public JsonNodePurposeEventChannelExecutor(final DecryptionService decryptionService,
+                                               final DecryptedPayloadToPayloadMapper<JsonNode> decryptedPayloadToPayloadMapper,
+                                               final AggregateRootLoader<JsonNode> aggregateRootLoader,
+                                               final AsyncEventChannelMessageHandlerProvider<JsonNode> asyncEventChannelMessageHandlerProvider,
+                                               final SequentialEventChecker sequentialEventChecker,
+                                               final OwnedByExecutedByDecoder ownedByExecutedByDecoder) {
         super(decryptionService, decryptedPayloadToPayloadMapper, aggregateRootLoader, asyncEventChannelMessageHandlerProvider,
                 sequentialEventChecker, ownedByExecutedByDecoder);
     }

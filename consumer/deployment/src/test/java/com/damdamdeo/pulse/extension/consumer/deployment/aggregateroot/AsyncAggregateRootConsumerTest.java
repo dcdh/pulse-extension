@@ -142,7 +142,7 @@ class AsyncAggregateRootConsumerTest {
         assertThat(statisticsAggregateRootHandler.getCall()).isEqualTo(
                 new Call(
                         new FromApplication("TodoTaking", "Todo"),
-                        new Target("statistics"),
+                        new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
                         new CurrentVersionInConsumption(0),
@@ -182,7 +182,7 @@ class AsyncAggregateRootConsumerTest {
         assertThat(statisticsAggregateRootHandler.getCall()).isEqualTo(
                 new Call(
                         new FromApplication("TodoTaking", "Todo"),
-                        new Target("statistics"),
+                        new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Alban/0"),
                         new CurrentVersionInConsumption(0),

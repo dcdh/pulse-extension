@@ -20,7 +20,7 @@ import java.time.Instant;
 import java.util.function.Supplier;
 
 @ApplicationScoped
-@AsyncEventConsumerChannel(target = "statistics",
+@AsyncEventConsumerChannel(purpose = "statistics",
         sources = {
                 @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
                 @Source(functionalDomain = "TodoClient", componentName = "Registered")})
@@ -32,7 +32,7 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
 
     @Override
     public void handleMessage(final FromApplication fromApplication,
-                              final Target target,
+                              final Purpose purpose,
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
@@ -47,7 +47,7 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
         if (TODO_TAKING_TODO.equals(fromApplication)) {
             this.call = new Call(
                     fromApplication,
-                    target,
+                    purpose,
                     aggregateRootType,
                     aggregateId,
                     currentVersionInConsumption,
