@@ -15,7 +15,9 @@ public final class DefaultPassphraseGenerator implements PassphraseGenerator {
 
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
 
-    private static final SecureRandom RANDOM = new SecureRandom();
+    // Never static ! not supported by GraalVM
+    // Caused by: com.oracle.graal.pointsto.constraints.UnsupportedFeatureException: Detected an instance of Random/SplittableRandom class in the image heap. Instances created during image generation have cached seed values and don't behave as expected. If these objects should not be stored in the image heap, you can use
+    private final SecureRandom RANDOM = new SecureRandom();
 
     private static final int LENGTH = 32;
 
