@@ -51,7 +51,7 @@ public class EventScannerProcessor {
         }
 
         try {
-            return Class.forName(eventType.name().toString());
+            return Thread.currentThread().getContextClassLoader().loadClass(eventType.name().toString());
         } catch (final ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
