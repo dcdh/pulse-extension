@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>AsciiDoc + Reveal.js Live</title>
+
+    <!-- Reveal.js CSS -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/reveal.js/dist/theme/black.css">
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js/plugin/markdown/markdown.js"></script>
+
+    <style>
+        .reveal section {
+            text-align: left;
+            padding: 2em;
+        }
+    </style>
+</head>
+
+<body>
+<div class="reveal">
+    <div class="slides">
+        <section>
+            <h2>Quoi streamer ?</h2>
+            <section>
+                <h2>Un état</h2>
+            </section>
+            <section>
+                <h2>Un changement</h2>
+            </section>
+        </section>
+        <section>
+            <h2>Bienvenue sur Reveal.js</h2>
+            <p>Un outil puissant pour créer des présentations web.</p>
+        </section>
+        <section>
+            <h2>Pourquoi utiliser Reveal.js ?</h2>
+            <ul>
+                <li>Écriture en HTML et Markdown</li>
+                <li>Transitions et animations dynamiques</li>
+                <li>Hébergement et partage simplifiés</li>
+            </ul>
+        </section>
+        <section data-markdown>
+            <script type="text/template">
+                ## Titre du slide en Markdown
+                - Point 1
+                - Point 2
+                - **Texte en gras**
+            </script>
+        </section>
+    </div>
+</div>
+
+<script>
+    Reveal.initialize({
+        plugins: [RevealMarkdown],
+    });
+</script>
+</body>
+</html>
