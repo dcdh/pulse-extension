@@ -86,7 +86,7 @@ public class Producer {
                 .usingGenerator(
                         integer -> new ProducerRecord<>("pulse.%s_%s.t_event".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
                                 new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
-                                new JsonNodeEventValue(1_761_335_312_527L,
+                                new JsonNodeEventValue(1_761_335_312_527L * 1000,
                                         eventClass.getSimpleName(),
                                         encryptedPayload,
                                         ownedBy.id(),
