@@ -45,7 +45,7 @@ class PulseExtensionResourceTest {
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("target.name", is("statistics"))
+                .body("purpose.name", is("statistics"))
                 .body("aggregateRootType.type", is("Todo"))
                 .body("aggregateId.id", is("Damien/20"))
                 .body("currentVersionInConsumption.version", is(0))
