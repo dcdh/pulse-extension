@@ -10,8 +10,6 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
 import com.damdamdeo.pulse.extension.core.projection.SingleResultAggregateQuery;
-import io.quarkus.cache.Cache;
-import io.quarkus.cache.CacheName;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.context.api.ManagedExecutorConfig;
 import jakarta.inject.Inject;
@@ -47,11 +45,6 @@ class PerformanceTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
             .overrideConfigKey("quarkus.log.category.\"com.damdamdeo.pulse.extension.writer.runtime.projection\".level", "INFO");
-
-    // https://github.com/quarkusio/quarkus/issues/19676
-    @Inject
-    @CacheName("passphrase")
-    Cache cache;
 
     @Inject
     EventRepository<Todo, TodoId> todoEventRepository;

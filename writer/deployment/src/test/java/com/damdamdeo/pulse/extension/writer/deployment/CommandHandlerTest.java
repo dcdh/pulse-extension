@@ -5,8 +5,6 @@ import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
-import io.quarkus.cache.Cache;
-import io.quarkus.cache.CacheName;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -26,11 +24,6 @@ class CommandHandlerTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties");
-
-    // https://github.com/quarkusio/quarkus/issues/19676
-    @Inject
-    @CacheName("passphrase")
-    Cache cache;
 
     @Inject
     CommandHandler<Todo, TodoId> commandHandler;
