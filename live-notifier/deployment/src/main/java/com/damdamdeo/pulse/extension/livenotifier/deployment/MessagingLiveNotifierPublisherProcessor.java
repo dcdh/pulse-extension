@@ -1,7 +1,9 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.EligibleTypeForSerializationBuildItem;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.items.EventBuildItem;
+import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierTopicNaming;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.MessagingLiveNotifierPublisher;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -27,7 +29,7 @@ public class MessagingLiveNotifierPublisherProcessor {
 
     @BuildStep
     List<RunTimeConfigurationDefaultBuildItem> generateChannelPublisher(final ApplicationInfoBuildItem applicationInfoBuildItem) {
-        final String topic = "pulse.live-notification.%s".formatted(applicationInfoBuildItem.getName().toLowerCase());
+        final String topic = new LiveNotifierTopicNaming(FromApplication.from(applicationInfoBuildItem.getName())).name();
         return List.of(
                 new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.group.id", applicationInfoBuildItem.getName()),
                 new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.enable.auto.commit", "true"),

@@ -7,14 +7,15 @@ import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuil
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.*;
+import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Purpose;
+import com.damdamdeo.pulse.extension.core.consumer.Table;
 import com.damdamdeo.pulse.extension.core.consumer.event.AbstractPurposeEventChannelConsumer;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventKey;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
 import com.damdamdeo.pulse.extension.core.consumer.event.PurposeEventChannelExecutor;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -48,7 +49,7 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 
 public class AsyncEventConsumerProcessor {
 
-    private static final Topic TOPIC = Topic.EVENT;
+    private static final Table TABLE = Table.EVENT;
 
     @BuildStep
     List<DiscoveredAsyncEventConsumerChannel> discoverAsyncEventConsumerChannels(final List<ValidationErrorBuildItem> validationErrorBuildItems,
@@ -198,7 +199,7 @@ public class AsyncEventConsumerProcessor {
                                             .build());
                             consume.addAnnotation(Transactional.class);
                             consume.addAnnotation(Blocking.class);
-                            consume.addAnnotation(Incoming.class).addValue("value", targetWithSource.channel(TOPIC));
+                            consume.addAnnotation(Incoming.class).addValue("value", targetWithSource.channel(TABLE));
 
                             final ResultHandle recordParam = consume.getMethodParam(0);
                             final ResultHandle targetParam = consume.newInstance(
@@ -238,10 +239,8 @@ public class AsyncEventConsumerProcessor {
                 .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream()
                         .map(src -> new TargetWithSource(discoveredAsyncEventConsumerChannel.target(), src))
                 ).forEach(targetWithSource -> {
-                    final String channelNaming = targetWithSource.channel(TOPIC);
-                    final String topic = "pulse.%s_%s.event".formatted(
-                            targetWithSource.fromApplication().functionalDomain().toLowerCase(),
-                            targetWithSource.fromApplication().componentName().toLowerCase());
+                    final String channelNaming = targetWithSource.channel(TABLE);
+                    final String topic = new CdcTopicNaming(targetWithSource.fromApplication(), Table.EVENT).name();
                     Map.of(
                                     "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName(),
                                     "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",

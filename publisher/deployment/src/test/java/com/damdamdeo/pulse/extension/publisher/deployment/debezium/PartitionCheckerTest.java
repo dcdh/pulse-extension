@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
+import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.Table;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.DebeziumConfigurator;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.InvalidTopic;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.InvalidTopicsException;
@@ -38,9 +41,10 @@ public class PartitionCheckerTest {
         // Given
         try (final AdminClient adminClient = AdminClient.create(Map.of(
                 AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class)))) {
+            final FromApplication fromApplication = new FromApplication("TodoTaking", "Todo");
             final CreateTopicsResult topics = adminClient.createTopics(List.of(
-                    new NewTopic("pulse.todotaking_todo.event", 3, (short) 1),
-                    new NewTopic("pulse.todotaking_todo.aggregate_root", 4, (short) 1)));
+                    new NewTopic(new CdcTopicNaming(fromApplication, Table.EVENT).name(), 3, (short) 1),
+                    new NewTopic(new CdcTopicNaming(fromApplication, Table.AGGREGATE_ROOT).name(), 4, (short) 1)));
             topics.all().get();
         } catch (final ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);

@@ -5,7 +5,6 @@ import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
@@ -82,7 +81,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                 new IdempotencyKey(
                         new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
-                        Topic.EVENT,
+                        Table.EVENT,
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0")));
 
@@ -95,14 +94,14 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO idempotency (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
-            ps.setString(3, Topic.EVENT.name());
+            ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, "Damien/0");
             ps.setInt(6, 0);
@@ -116,7 +115,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                 new IdempotencyKey(
                         new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
-                        Topic.EVENT,
+                        Table.EVENT,
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0")));
 
@@ -134,7 +133,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                 new IdempotencyKey(
                         new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
-                        Topic.EVENT,
+                        Table.EVENT,
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0")), new CurrentVersionInConsumption(0));
 
@@ -142,13 +141,13 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // language=sql
         final String sql = """
                     SELECT last_consumed_version FROM idempotency
-                    WHERE purpose = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
+                    WHERE purpose = ? AND from_application = ? AND table_name = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
-            ps.setString(3, Topic.EVENT.name());
+            ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, "Damien/0");
             try (final ResultSet rs = ps.executeQuery()) {
@@ -165,14 +164,14 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO idempotency (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
-            ps.setString(3, Topic.EVENT.name());
+            ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, "Damien/0");
             ps.setInt(6, 0);
@@ -186,7 +185,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                 new IdempotencyKey(
                         new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
-                        Topic.EVENT,
+                        Table.EVENT,
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0")), new CurrentVersionInConsumption(1));
 
@@ -194,13 +193,13 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // language=sql
         final String querySql = """
                     SELECT last_consumed_version FROM idempotency
-                    WHERE purpose = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
+                    WHERE purpose = ? AND from_application = ? AND table_name = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(querySql)) {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
-            ps.setString(3, Topic.EVENT.name());
+            ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, "Damien/0");
             try (final ResultSet rs = ps.executeQuery()) {

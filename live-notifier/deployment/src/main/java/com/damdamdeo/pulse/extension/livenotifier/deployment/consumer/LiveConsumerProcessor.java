@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierTopicNaming;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.MessagingConsumer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -14,7 +16,7 @@ public class LiveConsumerProcessor {
 
     @BuildStep
     List<RunTimeConfigurationDefaultBuildItem> generateChannelConsumer(final ApplicationInfoBuildItem applicationInfoBuildItem) {
-        final String topic = "pulse.live-notification.%s".formatted(applicationInfoBuildItem.getName().toLowerCase());
+        final String topic = new LiveNotifierTopicNaming(FromApplication.from(applicationInfoBuildItem.getName())).name();
         return List.of(
                 new RunTimeConfigurationDefaultBuildItem("mp.messaging.incoming.live-notification-in.group.id", "%s_%s".formatted(applicationInfoBuildItem.getName(), UUID.randomUUID())),
                 new RunTimeConfigurationDefaultBuildItem("mp.messaging.incoming.live-notification-in.enable.auto.commit", "true"),

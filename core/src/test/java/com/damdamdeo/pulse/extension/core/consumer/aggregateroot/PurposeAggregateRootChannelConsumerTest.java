@@ -4,7 +4,6 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.junit.jupiter.api.Test;
@@ -99,7 +98,7 @@ class PurposeAggregateRootChannelConsumerTest {
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.empty()).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
+                        givenPurpose, givenFromApplication, Table.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
 
         // When
         todoTargetAggregateRootChannelConsumer.handleMessage(givenPurpose, givenFromApplication, givenAggregateRootKey,
@@ -112,7 +111,7 @@ class PurposeAggregateRootChannelConsumerTest {
                 () -> verify(purposeAggregateRootChannelExecutor, times(0)).execute(
                         any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class), any(LastConsumedAggregateVersion.class)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
-                        new IdempotencyKey(givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
+                        new IdempotencyKey(givenPurpose, givenFromApplication, Table.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
                                 givenAggregateRootKey.toAggregateId()), givenAggregateRootKey.toCurrentVersionInConsumption()),
                 () -> verify(purposeAggregateRootChannelExecutor, times(0)).onAlreadyConsumed(
                         any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class))
@@ -128,7 +127,7 @@ class PurposeAggregateRootChannelConsumerTest {
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(0))).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
+                        givenPurpose, givenFromApplication, Table.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(), givenAggregateRootKey.toAggregateId()));
 
         // When
         todoTargetAggregateRootChannelConsumer.handleMessage(givenPurpose, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue);
@@ -140,7 +139,7 @@ class PurposeAggregateRootChannelConsumerTest {
                 () -> verify(purposeAggregateRootChannelExecutor, times(1)).execute(
                         givenPurpose, givenFromApplication, givenAggregateRootKey, givenTodoAggregateRootValue, new LastConsumedAggregateVersion(0)),
                 () -> verify(idempotencyRepository, times(1)).upsert(
-                        new IdempotencyKey(givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
+                        new IdempotencyKey(givenPurpose, givenFromApplication, Table.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
                                 givenAggregateRootKey.toAggregateId()), givenAggregateRootKey.toCurrentVersionInConsumption()),
                 () -> verify(purposeAggregateRootChannelExecutor, times(0)).onAlreadyConsumed(
                         any(Purpose.class), any(FromApplication.class), any(AggregateRootKey.class), any(AggregateRootValue.class))
@@ -156,7 +155,7 @@ class PurposeAggregateRootChannelConsumerTest {
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(1))).when(idempotencyRepository).findLastAggregateVersionBy(
                 new IdempotencyKey(
-                        givenPurpose, givenFromApplication, Topic.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
+                        givenPurpose, givenFromApplication, Table.AGGREGATE_ROOT, givenAggregateRootKey.toAggregateRootType(),
                         givenAggregateRootKey.toAggregateId()));
 
         // When

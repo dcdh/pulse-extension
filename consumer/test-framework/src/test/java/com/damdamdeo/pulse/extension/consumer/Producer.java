@@ -4,7 +4,9 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryption
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
+import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.Table;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
@@ -84,7 +86,7 @@ public class Producer {
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeEventKey>(), new ObjectMapperSerializer<JsonNodeEventValue>())
                 .usingGenerator(
-                        integer -> new ProducerRecord<>("pulse.%s_%s.event".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
+                        integer -> new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.EVENT).name(),
                                 new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                                 new JsonNodeEventValue(1_761_335_312_527L * 1000,
                                         eventClass.getSimpleName(),
@@ -140,7 +142,7 @@ public class Producer {
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeAggregateRootKey>(), new ObjectMapperSerializer<JsonNodeAggregateRootValue>())
                 .usingGenerator(
-                        integer -> new ProducerRecord<>("pulse.%s_%s.aggregate_root".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
+                        integer -> new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.AGGREGATE_ROOT).name(),
                                 new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                                 new JsonNodeAggregateRootValue(1L,
                                         encryptedPayload,

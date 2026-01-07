@@ -2,13 +2,9 @@ package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
-import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.LastConsumedAggregateVersion;
-import com.damdamdeo.pulse.extension.core.consumer.Purpose;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.consumer.idempotency.Topic;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -37,7 +33,7 @@ public abstract class AbstractPurposeEventChannelConsumer<T> {
         final AggregateRootType aggregateRootType = eventKey.toAggregateRootType();
         final AggregateId aggregateId = eventKey.toAggregateId();
         final CurrentVersionInConsumption currentVersionInConsumption = eventKey.toCurrentVersionInConsumption();
-        final IdempotencyKey idempotencyKey = new IdempotencyKey(purpose, fromApplication, Topic.EVENT, aggregateRootType, aggregateId);
+        final IdempotencyKey idempotencyKey = new IdempotencyKey(purpose, fromApplication, Table.EVENT, aggregateRootType, aggregateId);
         final Optional<LastConsumedAggregateVersion> lastConsumedAggregateVersion = idempotencyRepository.findLastAggregateVersionBy(idempotencyKey);
         if (lastConsumedAggregateVersion.isPresent() && lastConsumedAggregateVersion.get().isBelow(currentVersionInConsumption)) {
             purposeEventChannelExecutor.execute(purpose, fromApplication, eventKey, eventValue, lastConsumedAggregateVersion.get());

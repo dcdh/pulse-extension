@@ -3,6 +3,9 @@ package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.Table;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,8 +51,10 @@ class PartitionTest {
     private static final String OWNED_BY_A = "OwnedByA";
     private static final String OWNED_BY_B = "OwnedByB";
 
-    private static final String EVENT_TOPIC = "pulse.todotaking_todo.event";
-    private static final String AGGREGATE_ROOT_TOPIC = "pulse.todotaking_todo.aggregate_root";
+    private static final FromApplication FROM_APPLICATION = new FromApplication("TodoTaking", "Todo");
+
+    private static final String EVENT_TOPIC = new CdcTopicNaming(FROM_APPLICATION, Table.EVENT).name();
+    private static final String AGGREGATE_ROOT_TOPIC = new CdcTopicNaming(FROM_APPLICATION, Table.AGGREGATE_ROOT).name();
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

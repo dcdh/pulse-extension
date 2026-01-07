@@ -38,7 +38,7 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
                     FROM idempotency
                     WHERE purpose = ?
                       AND from_application = ?
-                      AND topic = ?
+                      AND table_name = ?
                       AND aggregate_root_type = ?
                       AND aggregate_root_id = ?
                 """;
@@ -46,7 +46,7 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, idempotencyKey.purpose().name());
             ps.setString(2, idempotencyKey.fromApplication().value());
-            ps.setString(3, idempotencyKey.topic().name());
+            ps.setString(3, idempotencyKey.table().name());
             ps.setString(4, idempotencyKey.aggregateRootType().type());
             ps.setString(5, idempotencyKey.aggregateId().id());
             try (final ResultSet rs = ps.executeQuery()) {
@@ -68,16 +68,16 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
         Objects.requireNonNull(currentVersionInConsumption);
         // language=sql
         final String sql = """
-                    INSERT INTO idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO idempotency (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
-                    ON CONFLICT (purpose, from_application, topic, aggregate_root_type, aggregate_root_id)
+                    ON CONFLICT (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id)
                     DO UPDATE SET last_consumed_version = EXCLUDED.last_consumed_version
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, idempotencyKey.purpose().name());
             ps.setString(2, idempotencyKey.fromApplication().value());
-            ps.setString(3, idempotencyKey.topic().name());
+            ps.setString(3, idempotencyKey.table().name());
             ps.setString(4, idempotencyKey.aggregateRootType().type());
             ps.setString(5, idempotencyKey.aggregateId().id());
             ps.setInt(6, currentVersionInConsumption.version());

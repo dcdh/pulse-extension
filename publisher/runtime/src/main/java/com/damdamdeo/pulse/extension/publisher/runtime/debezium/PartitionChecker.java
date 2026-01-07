@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
+import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.Table;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.Priority;
@@ -33,8 +36,8 @@ public class PartitionChecker {
             try (final AdminClient adminClient = AdminClient.create(Map.of(
                     AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
                 final List<String> topicsToCheck = List.of(
-                        "pulse.%s.event".formatted(quarkusApplicationName.toLowerCase()),
-                        "pulse.%s.aggregate_root".formatted(quarkusApplicationName.toLowerCase()));
+                        new CdcTopicNaming(FromApplication.from(quarkusApplicationName), Table.EVENT).name(),
+                        new CdcTopicNaming(FromApplication.from(quarkusApplicationName), Table.AGGREGATE_ROOT).name());
                 final List<String> topicsPresents = adminClient.listTopics().listings().get()
                         .stream().map(TopicListing::name)
                         .filter(topicsToCheck::contains)
