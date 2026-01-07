@@ -39,7 +39,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
     void tearDown() {
         try (final Connection connection = dataSource.getConnection();
              final Statement stmt = connection.createStatement()) {
-            stmt.execute("TRUNCATE TABLE t_idempotency");
+            stmt.execute("TRUNCATE TABLE idempotency");
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
@@ -70,7 +70,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.t_idempotency");
+        assertThat(tables).contains("todotaking_todo.idempotency");
     }
 
     @Test
@@ -95,7 +95,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -141,7 +141,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Then
         // language=sql
         final String sql = """
-                    SELECT last_consumed_version FROM t_idempotency
+                    SELECT last_consumed_version FROM idempotency
                     WHERE purpose = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -165,7 +165,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Given
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -193,7 +193,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
         // Then
         // language=sql
         final String querySql = """
-                    SELECT last_consumed_version FROM t_idempotency
+                    SELECT last_consumed_version FROM idempotency
                     WHERE purpose = ? AND from_application = ? AND topic = ? AND aggregate_root_type = ? AND aggregate_root_id = ?
                 """;
         try (final Connection connection = dataSource.getConnection();

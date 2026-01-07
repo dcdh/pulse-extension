@@ -95,7 +95,7 @@ class AsyncAggregateRootConsumerTest {
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.connector", String.class))
                         .isEqualTo("smallrye-kafka"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.topic", String.class))
-                        .isEqualTo("pulse.todotaking_todo.t_aggregate_root"),
+                        .isEqualTo("pulse.todotaking_todo.aggregate_root"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.key.deserializer", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.JsonNodeAggregateRootKeyDeserializer"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.value.deserializer", String.class))

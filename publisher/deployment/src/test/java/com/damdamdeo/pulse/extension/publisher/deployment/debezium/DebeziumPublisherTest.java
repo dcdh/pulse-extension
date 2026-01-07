@@ -58,7 +58,7 @@ class DebeziumPublisherTest {
                         """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
-                INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -105,7 +105,7 @@ class DebeziumPublisherTest {
                 () -> assertThat(getValuesByKey(headers, "__source_ts_ms")).hasSize(1),
                 () -> assertThat(getValuesByKey(headers, "__source_db")).containsExactly("quarkus"),
                 () -> assertThat(getValuesByKey(headers, "__source_schema")).containsExactly("todotaking_todo"),
-                () -> assertThat(getValuesByKey(headers, "__source_table")).containsExactly("t_event"),
+                () -> assertThat(getValuesByKey(headers, "__source_table")).containsExactly("event"),
                 () -> assertThat(getValuesByKey(headers, "__source_txId")).hasSize(1),
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.size()).isEqualTo(1L),
@@ -130,7 +130,7 @@ class DebeziumPublisherTest {
                         """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
-                    INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    INSERT INTO aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -174,7 +174,7 @@ class DebeziumPublisherTest {
                 () -> assertThat(getValuesByKey(headers, "__source_ts_ms")).hasSize(1),
                 () -> assertThat(getValuesByKey(headers, "__source_db")).containsExactly("quarkus"),
                 () -> assertThat(getValuesByKey(headers, "__source_schema")).containsExactly("todotaking_todo"),
-                () -> assertThat(getValuesByKey(headers, "__source_table")).containsExactly("t_aggregate_root"),
+                () -> assertThat(getValuesByKey(headers, "__source_table")).containsExactly("aggregate_root"),
                 () -> assertThat(getValuesByKey(headers, "__source_txId")).hasSize(1),
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.size()).isEqualTo(1L),

@@ -58,7 +58,7 @@ public class Producer {
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
-                    INSERT INTO todotaking_todo.t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    INSERT INTO todotaking_todo.aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -84,7 +84,7 @@ public class Producer {
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeEventKey>(), new ObjectMapperSerializer<JsonNodeEventValue>())
                 .usingGenerator(
-                        integer -> new ProducerRecord<>("pulse.%s_%s.t_event".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
+                        integer -> new ProducerRecord<>("pulse.%s_%s.event".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
                                 new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                                 new JsonNodeEventValue(1_761_335_312_527L * 1000,
                                         eventClass.getSimpleName(),
@@ -114,7 +114,7 @@ public class Producer {
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
-                    INSERT INTO %s.t_aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    INSERT INTO %s.aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """.formatted(fromApplication.value());
         try (final Connection connection = dataSource.getConnection();
@@ -140,7 +140,7 @@ public class Producer {
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeAggregateRootKey>(), new ObjectMapperSerializer<JsonNodeAggregateRootValue>())
                 .usingGenerator(
-                        integer -> new ProducerRecord<>("pulse.%s_%s.t_aggregate_root".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
+                        integer -> new ProducerRecord<>("pulse.%s_%s.aggregate_root".formatted(fromApplication.functionalDomain().toLowerCase(), fromApplication.componentName().toLowerCase()),
                                 new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                                 new JsonNodeAggregateRootValue(1L,
                                         encryptedPayload,

@@ -56,7 +56,7 @@ class CommandHandlerTest {
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT COUNT(*) AS count FROM t_event
+                             SELECT COUNT(*) AS count FROM event
                              """);
              final ResultSet rs = ps.executeQuery()) {
             rs.next();

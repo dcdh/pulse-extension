@@ -39,8 +39,8 @@ public class PartitionCheckerTest {
         try (final AdminClient adminClient = AdminClient.create(Map.of(
                 AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class)))) {
             final CreateTopicsResult topics = adminClient.createTopics(List.of(
-                    new NewTopic("pulse.todotaking_todo.t_event", 3, (short) 1),
-                    new NewTopic("pulse.todotaking_todo.t_aggregate_root", 4, (short) 1)));
+                    new NewTopic("pulse.todotaking_todo.event", 3, (short) 1),
+                    new NewTopic("pulse.todotaking_todo.aggregate_root", 4, (short) 1)));
             topics.all().get();
         } catch (final ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -50,7 +50,7 @@ public class PartitionCheckerTest {
         assertThatThrownBy(() -> partitionChecker.onStart(new StartupEvent()))
                 .isExactlyInstanceOf(InvalidTopicsException.class)
                 .hasFieldOrPropertyWithValue("invalidTopics", Set.of(
-                        new InvalidTopic("pulse.todotaking_todo.t_aggregate_root", 4),
-                        new InvalidTopic("pulse.todotaking_todo.t_event", 3)));
+                        new InvalidTopic("pulse.todotaking_todo.aggregate_root", 4),
+                        new InvalidTopic("pulse.todotaking_todo.event", 3)));
     }
 }

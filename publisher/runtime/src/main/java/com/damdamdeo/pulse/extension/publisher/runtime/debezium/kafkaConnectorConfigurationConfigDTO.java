@@ -127,7 +127,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("table.include.list")
     public String getTableIncludeList() {
-        return "%1$s.t_event,%1$s.t_aggregate_root".formatted(schema);
+        return "%1$s.event,%1$s.aggregate_root".formatted(schema);
     }
 
     @JsonProperty("tombstones.on.delete")

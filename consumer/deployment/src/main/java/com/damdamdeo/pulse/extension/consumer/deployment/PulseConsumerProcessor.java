@@ -67,7 +67,7 @@ public class PulseConsumerProcessor {
                                 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
                                 CREATE SCHEMA IF NOT EXISTS %1$s;
                                 
-                                CREATE TABLE IF NOT EXISTS %1$s.t_idempotency (
+                                CREATE TABLE IF NOT EXISTS %1$s.idempotency (
                                   purpose character varying(255) not null,
                                   from_application character varying(255) not null,
                                   topic character varying(255) not null,

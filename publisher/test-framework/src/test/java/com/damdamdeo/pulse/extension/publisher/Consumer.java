@@ -24,7 +24,7 @@ public class Consumer {
     String quarkusApplicationName;
 
     public List<Record<JsonNodeEventKey, JsonNodeEventValue>> consumeFromTEvent() {
-        final String topic = "pulse.%s.t_event".formatted(quarkusApplicationName.toLowerCase());
+        final String topic = "pulse.%s.event".formatted(quarkusApplicationName.toLowerCase());
         try (final ConsumerBuilder<JsonNodeEventKey, JsonNodeEventValue> consumer = new ConsumerBuilder<>(
                 Map.of(
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
@@ -42,7 +42,7 @@ public class Consumer {
     }
 
     public List<Record<JsonNodeAggregateRootKey, JsonNodeAggregateRootValue>> consumeFromTAggregateRoot() {
-        final String topic = "pulse.%s.t_aggregate_root".formatted(quarkusApplicationName.toLowerCase());
+        final String topic = "pulse.%s.aggregate_root".formatted(quarkusApplicationName.toLowerCase());
         try (final ConsumerBuilder<JsonNodeAggregateRootKey, JsonNodeAggregateRootValue> consumer = new ConsumerBuilder<>(
                 Map.of(
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),

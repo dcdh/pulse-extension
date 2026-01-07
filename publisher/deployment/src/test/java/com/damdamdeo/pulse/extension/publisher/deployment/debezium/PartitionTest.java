@@ -48,8 +48,8 @@ class PartitionTest {
     private static final String OWNED_BY_A = "OwnedByA";
     private static final String OWNED_BY_B = "OwnedByB";
 
-    private static final String EVENT_TOPIC = "pulse.todotaking_todo.t_event";
-    private static final String AGGREGATE_ROOT_TOPIC = "pulse.todotaking_todo.t_aggregate_root";
+    private static final String EVENT_TOPIC = "pulse.todotaking_todo.event";
+    private static final String AGGREGATE_ROOT_TOPIC = "pulse.todotaking_todo.aggregate_root";
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -111,12 +111,12 @@ class PartitionTest {
         for (final String ownedBy : List.of(OWNED_BY_A, OWNED_BY_B)) {
             // language=sql
             final String tEventSql = """
-                    INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                    INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
             // language=sql
             final String tAggregateRootSql = """
-                        INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
+                        INSERT INTO aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
                         VALUES (?, ?, ?, ?, ?, ?)
                     """;
             try (final Connection connection = dataSource.getConnection();

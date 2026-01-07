@@ -63,13 +63,13 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                             INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
                              VALUES (?, ?, ?, ?, ?, public.pgp_sym_encrypt(?::text, ?), ?, ?, ?)
                              """);
              final PreparedStatement aggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
+                             INSERT INTO aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
                              VALUES (?,?,?, public.pgp_sym_encrypt(?::text, ?), ?, ?)
                              ON CONFLICT (aggregate_root_id, aggregate_root_type)
                              DO UPDATE
@@ -120,12 +120,12 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement nbOfEventsStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT COUNT(*) AS nb_of_events FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ?
+                             SELECT COUNT(*) AS nb_of_events FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ?
                              """);
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
+                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             nbOfEventsStmt.setString(1, id.id());
@@ -163,7 +163,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM t_event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND e.version <= ? ORDER BY e.version ASC
+                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND e.version <= ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             loadStmt.setString(1, id.id());
@@ -195,7 +195,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement aggregateRootStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT e.last_version AS last_version, e.aggregate_root_payload AS aggregate_root_payload, e.owned_by AS owned_by FROM t_aggregate_root e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.last_version DESC
+                             SELECT e.last_version AS last_version, e.aggregate_root_payload AS aggregate_root_payload, e.owned_by AS owned_by FROM aggregate_root e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.last_version DESC
                              """)) {
             connection.setAutoCommit(false);
             aggregateRootStmt.setString(1, id.id());

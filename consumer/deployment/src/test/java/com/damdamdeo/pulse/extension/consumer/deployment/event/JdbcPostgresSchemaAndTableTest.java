@@ -53,7 +53,7 @@ class JdbcPostgresSchemaAndTableTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.t_aggregate_root", "todoclient_registered.t_aggregate_root");
+        assertThat(tables).contains("todotaking_todo.aggregate_root", "todoclient_registered.aggregate_root");
     }
 
 }

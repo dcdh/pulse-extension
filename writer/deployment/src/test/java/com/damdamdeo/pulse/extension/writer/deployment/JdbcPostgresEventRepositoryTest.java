@@ -113,13 +113,13 @@ class JdbcPostgresEventRepositoryTest {
                      // language=sql
                      """
                                  SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by
-                                 FROM t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                                 FROM event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
                                  SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to
-                                 FROM t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                                 FROM aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, "Damien/1");
             tEventPreparedStatement.setString(2, "Todo");
@@ -188,13 +188,13 @@ class JdbcPostgresEventRepositoryTest {
                      // language=sql
                      """
                                  SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by
-                                 FROM t_event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                                 FROM event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
                                  SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to
-                                 FROM t_aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                                 FROM aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, "Damien/2");
             tEventPreparedStatement.setString(2, "Todo");
@@ -339,7 +339,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET event_payload = '{\"description\": \"lorem ipsum\"}'
+                                 UPDATE event SET event_payload = '{\"description\": \"lorem ipsum\"}'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000008'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -359,7 +359,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET aggregate_root_id = '00000000-0000-0000-0000-000000000019'
+                                 UPDATE event SET aggregate_root_id = '00000000-0000-0000-0000-000000000019'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000009'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -379,7 +379,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET version = 1 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000010'
+                                 UPDATE event SET version = 1 WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000010'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
@@ -398,7 +398,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET creation_date = ?
+                                 UPDATE event SET creation_date = ?
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000011'
                                  """)) {
                 ps.setTimestamp(1, Timestamp.from(Instant.now()));
@@ -420,7 +420,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET event_type = 'boom'
+                                 UPDATE event SET event_type = 'boom'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000012'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -440,7 +440,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET event_payload = '{\"description\": \"lorem ipsum\"}'
+                                 UPDATE event SET event_payload = '{\"description\": \"lorem ipsum\"}'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000013'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -460,7 +460,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET belongs_to = 'Damien'
+                                 UPDATE event SET belongs_to = 'Damien'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000014'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -480,7 +480,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET owned_by = 'Alban'
+                                 UPDATE event SET owned_by = 'Alban'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000015'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -500,7 +500,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE t_event SET executed_by = 'EU:alice'
+                                 UPDATE event SET executed_by = 'EU:alice'
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000016'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
@@ -520,7 +520,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 DELETE FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000017'
+                                 DELETE FROM event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000017'
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
@@ -542,7 +542,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000018'
+                             SELECT executed_by FROM event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000018'
                              """)) {
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
@@ -567,7 +567,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000019'
+                             SELECT executed_by FROM event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000019'
                              """)) {
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
@@ -592,7 +592,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000020'
+                             SELECT executed_by FROM event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000020'
                              """)) {
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
@@ -617,7 +617,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT executed_by FROM t_event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000021'
+                             SELECT executed_by FROM event WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000021'
                              """)) {
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
@@ -635,7 +635,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 TRUNCATE TABLE t_event
+                                 TRUNCATE TABLE event
                                  """);
                  final ResultSet rs = ps.executeQuery()) {
             }
@@ -650,7 +650,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement preparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO t_event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                             INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                              """)) {
             preparedStatement.setString(1, aggregateRootId);

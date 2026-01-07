@@ -73,7 +73,7 @@ class PerformanceTest {
                         aggregate_root_type,
                         public.pgp_sym_decrypt(aggregate_root_payload, '%1$s')::jsonb AS decrypted_aggregate_root_payload,
                         belongs_to
-                      FROM t_aggregate_root
+                      FROM aggregate_root
                       WHERE belongs_to = '%2$s'
                     )
                     SELECT jsonb_build_object(
@@ -175,29 +175,29 @@ class PerformanceTest {
              final PreparedStatement perfEventTablePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT pg_size_pretty(pg_table_size('t_event')) AS table_size,
-                                     pg_size_pretty(pg_indexes_size('t_event')) AS indexes_size,
-                                     pg_size_pretty(pg_total_relation_size('t_event')) AS total_size
+                             SELECT pg_size_pretty(pg_table_size('event')) AS table_size,
+                                     pg_size_pretty(pg_indexes_size('event')) AS indexes_size,
+                                     pg_size_pretty(pg_total_relation_size('event')) AS total_size
                              """
              );
              final PreparedStatement perfAggregateRootTablePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT pg_size_pretty(pg_table_size('t_aggregate_root')) AS table_size,
-                                     pg_size_pretty(pg_indexes_size('t_aggregate_root')) AS indexes_size,
-                                     pg_size_pretty(pg_total_relation_size('t_aggregate_root')) AS total_size
+                             SELECT pg_size_pretty(pg_table_size('aggregate_root')) AS table_size,
+                                     pg_size_pretty(pg_indexes_size('aggregate_root')) AS indexes_size,
+                                     pg_size_pretty(pg_total_relation_size('aggregate_root')) AS total_size
                              """
              );
              final ResultSet perfEventTableResultSet = perfEventTablePreparedStatement.executeQuery();
              final ResultSet perfAggregateRootTableResultSet = perfAggregateRootTablePreparedStatement.executeQuery();
         ) {
             perfEventTableResultSet.next();
-            LOGGER.info("t_event - table_size '%s' - indexes_size '%s' - total_size '%s'"
+            LOGGER.info("event - table_size '%s' - indexes_size '%s' - total_size '%s'"
                     .formatted(perfEventTableResultSet.getString("table_size"),
                             perfEventTableResultSet.getString("indexes_size"),
                             perfEventTableResultSet.getString("total_size")));
             perfAggregateRootTableResultSet.next();
-            LOGGER.info("t_event - table_size '%s' - indexes_size '%s' - total_size '%s'"
+            LOGGER.info("event - table_size '%s' - indexes_size '%s' - total_size '%s'"
                     .formatted(perfAggregateRootTableResultSet.getString("table_size"),
                             perfAggregateRootTableResultSet.getString("indexes_size"),
                             perfAggregateRootTableResultSet.getString("total_size")));
@@ -245,7 +245,7 @@ class PerformanceTest {
 2025-11-15 19:35:46,836 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) P90: 92 in ms
 2025-11-15 19:35:46,836 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) P99: 1542 in ms
 2025-11-15 19:35:46,836 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) max: 1620 in ms
-2025-11-15 19:35:46,838 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) t_event - table_size '20 MB' - indexes_size '4616 kB' - total_size '24 MB'
-2025-11-15 19:35:46,838 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) t_event - table_size '21 MB' - indexes_size '2072 kB' - total_size '23 MB'
+2025-11-15 19:35:46,838 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) event - table_size '20 MB' - indexes_size '4616 kB' - total_size '24 MB'
+2025-11-15 19:35:46,838 INFO  [com.dam.pul.ext.wri.dep.PerformanceTest] (main) event - table_size '21 MB' - indexes_size '2072 kB' - total_size '23 MB'
 */
 }

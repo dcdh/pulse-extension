@@ -56,7 +56,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         aggregate_root_type,
                         public.pgp_sym_decrypt(aggregate_root_payload, '%1$s')::jsonb AS decrypted_aggregate_root_payload,
                         belongs_to
-                      FROM t_aggregate_root
+                      FROM aggregate_root
                       WHERE belongs_to = '%2$s'
                     )
                     SELECT jsonb_build_object(
@@ -94,7 +94,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         public.pgp_sym_decrypt(aggregate_root_payload, '%1$s')::jsonb AS decrypted_aggregate_root_payload,
                         belongs_to,
                         owned_by
-                      FROM t_aggregate_root
+                      FROM aggregate_root
                       WHERE owned_by = '%2$s'
                     )
                     SELECT jsonb_build_object(

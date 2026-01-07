@@ -35,7 +35,7 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
         Objects.requireNonNull(idempotencyKey);
         final String sql = """
                     SELECT last_consumed_version
-                    FROM t_idempotency
+                    FROM idempotency
                     WHERE purpose = ?
                       AND from_application = ?
                       AND topic = ?
@@ -68,7 +68,7 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
         Objects.requireNonNull(currentVersionInConsumption);
         // language=sql
         final String sql = """
-                    INSERT INTO t_idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
+                    INSERT INTO idempotency (purpose, from_application, topic, aggregate_root_type, aggregate_root_id, last_consumed_version)
                     VALUES (?, ?, ?, ?, ?, ?)
                     ON CONFLICT (purpose, from_application, topic, aggregate_root_type, aggregate_root_id)
                     DO UPDATE SET last_consumed_version = EXCLUDED.last_consumed_version

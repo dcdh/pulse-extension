@@ -2,7 +2,7 @@
 
 == Build
 
-Race condition on test - seeing in **consumer** module because sql files to create schema and t_aggregate_root table is are not executed.
+Race condition on test - seeing in **consumer** module because sql files to create schema and aggregate_root table is are not executed.
 
 Instead of using the generated **compose-devservices-pulse.yml** docker compose file it will start a **dev service redpanda** and a **dev service postgres**.
 

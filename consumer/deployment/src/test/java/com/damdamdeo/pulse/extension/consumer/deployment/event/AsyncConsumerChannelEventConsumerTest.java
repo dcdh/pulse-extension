@@ -97,7 +97,7 @@ class AsyncConsumerChannelEventConsumerTest {
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.connector", String.class))
                         .isEqualTo("smallrye-kafka"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.topic", String.class))
-                        .isEqualTo("pulse.todotaking_todo.t_event"),
+                        .isEqualTo("pulse.todotaking_todo.event"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.key.deserializer", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyDeserializer"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.value.deserializer", String.class))

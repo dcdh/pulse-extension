@@ -106,7 +106,7 @@ class KafkaConnectorConfigurationGeneratorTest {
                             "transforms.partitioner.partition.hash.function": "java",
                             "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
                             "schema.include.list": "todotaking_todo",
-                            "table.include.list": "todotaking_todo.t_event,todotaking_todo.t_aggregate_root",
+                            "table.include.list": "todotaking_todo.event,todotaking_todo.aggregate_root",
                             "tombstones.on.delete": "false",
                             "compression.type": "zstd",
                             "topic.creation.default.replication.factor": 1,

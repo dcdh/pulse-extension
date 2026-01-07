@@ -33,8 +33,8 @@ public class PartitionChecker {
             try (final AdminClient adminClient = AdminClient.create(Map.of(
                     AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
                 final List<String> topicsToCheck = List.of(
-                        "pulse.%s.t_event".formatted(quarkusApplicationName.toLowerCase()),
-                        "pulse.%s.t_aggregate_root".formatted(quarkusApplicationName.toLowerCase()));
+                        "pulse.%s.event".formatted(quarkusApplicationName.toLowerCase()),
+                        "pulse.%s.aggregate_root".formatted(quarkusApplicationName.toLowerCase()));
                 final List<String> topicsPresents = adminClient.listTopics().listings().get()
                         .stream().map(TopicListing::name)
                         .filter(topicsToCheck::contains)
