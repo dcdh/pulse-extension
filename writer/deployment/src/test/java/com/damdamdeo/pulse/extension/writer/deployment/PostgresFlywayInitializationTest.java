@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import io.quarkus.builder.Version;
+import io.quarkus.logging.Log;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -24,6 +25,8 @@ class PostgresFlywayInitializationTest {
             .withEmptyApplication()
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
+            .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".min-level", "DEBUG")
+            .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".level", "DEBUG")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-flyway", Version.getVersion()),
@@ -73,7 +76,7 @@ class PostgresFlywayInitializationTest {
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT version, description, success
+                             SELECT version, description, script, installed_by, success
                              FROM todotaking_todo.flyway_schema_history
                              ORDER BY installed_rank
                              """
@@ -83,7 +86,12 @@ class PostgresFlywayInitializationTest {
             while (rs.next()) {
                 final String version = rs.getString("version");
                 final String description = rs.getString("description");
+                final String script = rs.getString("script");
+                final String installedBy = rs.getString("installed_by");
                 final boolean success = rs.getBoolean("success");
+
+                Log.infov("version ''{0}'' - description ''{1}'' - script ''{2}'' - installed_by ''{3}'' - success ''{4}''",
+                        version, description, script, installedBy, success);
 
                 if ("0".equals(version)
                         && "pulse initialisation".equalsIgnoreCase(description)
