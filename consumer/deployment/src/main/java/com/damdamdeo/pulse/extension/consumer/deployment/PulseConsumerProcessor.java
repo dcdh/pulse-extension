@@ -72,7 +72,7 @@ public class PulseConsumerProcessor {
                           last_consumed_version bigint not null,
                           CONSTRAINT idempotency_pkey PRIMARY KEY (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id),
                           CONSTRAINT table_name_format_chk CHECK (table_name = 'EVENT' OR table_name = 'AGGREGATE_ROOT')
-                        )
+                        );
                         """.formatted(schemaName)
         );
         sqlScriptBuildItemProducer.produce(postgresSqlScriptBuildItem);
