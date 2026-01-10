@@ -23,6 +23,7 @@ import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
+import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
 import org.yaml.snakeyaml.DumperOptions;
@@ -217,6 +218,21 @@ public class PulseCommonProcessor {
         if (capabilities.isPresent(Capability.FLYWAY)) {
             runTimeConfigurationDefaultBuildItemProducer.produce(
                     new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.migrate-at-start", "true"));
+        }
+    }
+
+    private static final String ORG_FLYWAYDB_GROUP_ID = "org.flywaydb";
+    private static final String FLYWAY_DATABASE_POSTGRESQL_ARTIFACT_ID = "flyway-database-postgresql";
+
+    @BuildStep
+    void validateFlywayDependency(final Capabilities capabilities,
+                                  final CurateOutcomeBuildItem curateOutcomeBuildItem,
+                                  final BuildProducer<ValidationErrorBuildItem> validationErrorBuildItemProducer) {
+        if (capabilities.isPresent(Capability.FLYWAY) && curateOutcomeBuildItem.getApplicationModel().getDependencies().stream()
+                .noneMatch(dep -> ORG_FLYWAYDB_GROUP_ID.equals(dep.getGroupId())
+                        && FLYWAY_DATABASE_POSTGRESQL_ARTIFACT_ID.equals(dep.getArtifactId()))) {
+            validationErrorBuildItemProducer.produce(new ValidationErrorBuildItem(
+                    new IllegalStateException("Missing maven dependency %s:%s".formatted(ORG_FLYWAYDB_GROUP_ID, FLYWAY_DATABASE_POSTGRESQL_ARTIFACT_ID))));
         }
     }
 
