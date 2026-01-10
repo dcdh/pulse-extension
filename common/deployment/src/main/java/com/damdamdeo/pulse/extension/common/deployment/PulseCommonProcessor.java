@@ -212,9 +212,12 @@ public class PulseCommonProcessor {
     }
 
     @BuildStep
-    List<RunTimeConfigurationDefaultBuildItem> defineFlywayConfiguration() {
-        return List.of(
-                new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.migrate-at-start", "true"));
+    void defineFlywayConfiguration(final Capabilities capabilities,
+                                   final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemProducer) {
+        if (capabilities.isPresent(Capability.FLYWAY)) {
+            runTimeConfigurationDefaultBuildItemProducer.produce(
+                    new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.migrate-at-start", "true"));
+        }
     }
 
     @BuildStep
