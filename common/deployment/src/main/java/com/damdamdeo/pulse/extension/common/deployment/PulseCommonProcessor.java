@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.common.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.InitScriptUsageChecker;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
@@ -29,6 +30,7 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -179,6 +181,20 @@ public class PulseCommonProcessor {
         public InlineList(List<T> list) {
             super(list);
         }
+    }
+
+    @BuildStep
+    List<AdditionalVolumeBuildItem> generatePostgresAdditionalVolumeBuildItems(final List<PostgresSqlScriptBuildItem> postgresSqlScriptBuildItems) {
+        return postgresSqlScriptBuildItems.stream()
+                .map(sqlScriptBuildItem -> new AdditionalVolumeBuildItem(
+                        PulseCommonProcessor.POSTGRES_SERVICE_NAME,
+                        new ComposeServiceBuildItem.Volume(
+                                "./" + sqlScriptBuildItem.getName(),
+                                "/docker-entrypoint-initdb.d/" + sqlScriptBuildItem.getName(),
+                                sqlScriptBuildItem.getContent().getBytes(StandardCharsets.UTF_8)
+                        )
+                ))
+                .toList();
     }
 
     @BuildStep

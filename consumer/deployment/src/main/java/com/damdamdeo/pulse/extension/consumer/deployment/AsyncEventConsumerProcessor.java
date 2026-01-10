@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
-import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
-import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
-import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
@@ -39,7 +37,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -97,40 +94,32 @@ public class AsyncEventConsumerProcessor {
     }
 
     @BuildStep
-    List<AdditionalVolumeBuildItem> generateAdditionalVolumeBuildItems(final Capabilities capabilities,
-                                                                       final List<DiscoveredAsyncEventConsumerChannel> discoveredAsyncEventConsumerChannels) {
+    List<PostgresSqlScriptBuildItem> generatePostgresSqlScriptBuildItems(final Capabilities capabilities,
+                                                                         final List<DiscoveredAsyncEventConsumerChannel> discoveredAsyncEventConsumerChannels) {
         if (PulseConsumerProcessor.shouldGenerate(capabilities)) {
             return discoveredAsyncEventConsumerChannels.stream()
                     .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream())
                     .distinct()
                     .map(FromApplication::value)
                     .map(String::toLowerCase)
-                    .map(schemaName -> {
-                                final String sqlFileName = "%s_target_consumer.sql".formatted(schemaName);
-                                return new AdditionalVolumeBuildItem(
-                                        PulseCommonProcessor.POSTGRES_SERVICE_NAME,
-                                        new ComposeServiceBuildItem.Volume(
-                                                "./%s".formatted(sqlFileName),
-                                                "/docker-entrypoint-initdb.d/%s".formatted(sqlFileName),
-                                                // language=sql
-                                                """
-                                                        CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
-                                                        CREATE SCHEMA IF NOT EXISTS %1$s;
-                                                        
-                                                        CREATE TABLE IF NOT EXISTS %1$s.aggregate_root (
-                                                          aggregate_root_type character varying(255) not null,
-                                                          aggregate_root_id character varying(255) not null,
-                                                          last_version bigint not null,
-                                                          aggregate_root_payload bytea NOT NULL CHECK (octet_length(aggregate_root_payload) <= 1000 * 1024),
-                                                          owned_by character varying(255) not null,
-                                                          belongs_to character varying(255) not null,
-                                                          CONSTRAINT aggregate_root_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type)
-                                                        );
-                                                        """.formatted(schemaName).getBytes(
-                                                        StandardCharsets.UTF_8)
-                                        )
-                                );
-                            }
+                    .map(schemaName -> new PostgresSqlScriptBuildItem(
+                                    "%s_target_consumer.sql".formatted(schemaName),
+                                    // language=sql
+                                    """
+                                            CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+                                            CREATE SCHEMA IF NOT EXISTS %1$s;
+                                            
+                                            CREATE TABLE IF NOT EXISTS %1$s.aggregate_root (
+                                              aggregate_root_type character varying(255) not null,
+                                              aggregate_root_id character varying(255) not null,
+                                              last_version bigint not null,
+                                              aggregate_root_payload bytea NOT NULL CHECK (octet_length(aggregate_root_payload) <= 1000 * 1024),
+                                              owned_by character varying(255) not null,
+                                              belongs_to character varying(255) not null,
+                                              CONSTRAINT aggregate_root_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type)
+                                            );
+                                            """.formatted(schemaName)
+                            )
                     ).toList();
         } else {
             return List.of();

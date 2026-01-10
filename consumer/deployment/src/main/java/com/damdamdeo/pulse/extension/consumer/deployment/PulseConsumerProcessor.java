@@ -1,8 +1,8 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
-import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.runtime.JacksonDecryptedPayloadToPayloadMapper;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKey;
@@ -19,7 +19,6 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -50,35 +49,33 @@ public class PulseConsumerProcessor {
     void generateCompose(final Capabilities capabilities,
                          final ApplicationInfoBuildItem applicationInfoBuildItem,
                          final BuildProducer<ComposeServiceBuildItem> composeServiceBuildItemBuildProducer,
-                         final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemBuildProducer) {
+                         final BuildProducer<PostgresSqlScriptBuildItem> sqlScriptBuildItemProducer) {
         if (shouldGenerate(capabilities)) {
             composeServiceBuildItemBuildProducer.produce(List.of(
                     PulseCommonProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM,
                     PulseCommonProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM));
         }
         final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
-        final String sqlFileName = "%s_idempotency_consumer.sql".formatted(schemaName);
-        AdditionalVolumeBuildItem additionalVolumeBuildItem = new AdditionalVolumeBuildItem(PulseCommonProcessor.POSTGRES_SERVICE_NAME,
-                new ComposeServiceBuildItem.Volume(
-                        "./%s".formatted(sqlFileName),
-                        "/docker-entrypoint-initdb.d/%s".formatted(sqlFileName),
-                        // language=sql
-                        """
-                                CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
-                                CREATE SCHEMA IF NOT EXISTS %1$s;
-                                
-                                CREATE TABLE IF NOT EXISTS %1$s.idempotency (
-                                  purpose character varying(255) not null,
-                                  from_application character varying(255) not null,
-                                  table_name character varying(255) not null,
-                                  aggregate_root_type character varying(255) not null,
-                                  aggregate_root_id character varying(255) not null,
-                                  last_consumed_version bigint not null,
-                                  CONSTRAINT idempotency_pkey PRIMARY KEY (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id),
-                                  CONSTRAINT table_name_format_chk CHECK (table_name = 'EVENT' OR table_name = 'AGGREGATE_ROOT')
-                                )
-                                """.formatted(schemaName).getBytes(StandardCharsets.UTF_8)));
-        additionalVolumeBuildItemBuildProducer.produce(additionalVolumeBuildItem);
+        final PostgresSqlScriptBuildItem postgresSqlScriptBuildItem = new PostgresSqlScriptBuildItem(
+                "%s_idempotency_consumer.sql".formatted(schemaName),
+                // language=sql
+                """
+                        CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+                        CREATE SCHEMA IF NOT EXISTS %1$s;
+                        
+                        CREATE TABLE IF NOT EXISTS %1$s.idempotency (
+                          purpose character varying(255) not null,
+                          from_application character varying(255) not null,
+                          table_name character varying(255) not null,
+                          aggregate_root_type character varying(255) not null,
+                          aggregate_root_id character varying(255) not null,
+                          last_consumed_version bigint not null,
+                          CONSTRAINT idempotency_pkey PRIMARY KEY (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id),
+                          CONSTRAINT table_name_format_chk CHECK (table_name = 'EVENT' OR table_name = 'AGGREGATE_ROOT')
+                        )
+                        """.formatted(schemaName)
+        );
+        sqlScriptBuildItemProducer.produce(postgresSqlScriptBuildItem);
     }
 
     @BuildStep
