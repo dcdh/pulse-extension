@@ -24,7 +24,6 @@ class PostgresFlywayInitializationTest {
             .withEmptyApplication()
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.flyway.migrate-at-start", "true")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-flyway", Version.getVersion()),

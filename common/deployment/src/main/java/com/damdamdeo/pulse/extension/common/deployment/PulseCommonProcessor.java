@@ -212,6 +212,12 @@ public class PulseCommonProcessor {
     }
 
     @BuildStep
+    List<RunTimeConfigurationDefaultBuildItem> defineFlywayConfiguration() {
+        return List.of(
+                new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.migrate-at-start", "true"));
+    }
+
+    @BuildStep
     void generateDockerCompose(final List<ComposeServiceBuildItem> composeServiceBuildItems,
                                final List<AdditionalVolumeBuildItem> additionalVolumeBuildItems,
                                final OutputTargetBuildItem outputTargetBuildItem,
