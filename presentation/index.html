@@ -15,7 +15,15 @@
     <style>
         .reveal section {
             text-align: left;
-            padding: 2em;
+            font-size: 0.85em;
+        }
+
+        .reveal h2 {
+            margin-bottom: 0.5em;
+        }
+
+        .reveal ul {
+            margin-top: 0.5em;
         }
     </style>
 </head>
@@ -23,41 +31,316 @@
 <body>
 <div class="reveal">
     <div class="slides">
+
+        <!-- INTRO -->
         <section>
-            <h2>Quoi streamer ?</h2>
-            <section>
-                <h2>Un état</h2>
-            </section>
-            <section>
-                <h2>Un changement</h2>
-            </section>
+            <h1>Architecture orientée métier</h1>
+            <h3>Microservices, DDD, Event-Driven, Encryption</h3>
+            <p>Objectif : découpler, scaler et faire évoluer le système sans le casser</p>
         </section>
+
+        <!-- OBJECTIFS -->
         <section>
-            <h2>Bienvenue sur Reveal.js</h2>
-            <p>Un outil puissant pour créer des présentations web.</p>
-        </section>
-        <section>
-            <h2>Pourquoi utiliser Reveal.js ?</h2>
+            <h2>Objectifs de l’architecture</h2>
             <ul>
-                <li>Écriture en HTML et Markdown</li>
-                <li>Transitions et animations dynamiques</li>
-                <li>Hébergement et partage simplifiés</li>
+                <li>Aligner le système sur le métier</li>
+                <li>Réduire les couplages techniques</li>
+                <li>Permettre l’évolution indépendante des composants</li>
+                <li>Garantir la traçabilité et la compréhension du système</li>
+                <li>Prise en compte du RGPD</li>
             </ul>
         </section>
-        <section data-markdown>
-            <script type="text/template">
-                ## Titre du slide en Markdown
-                - Point 1
-                - Point 2
-                - **Texte en gras**
-            </script>
+
+        <!-- MICROSERVICES -->
+        <section>
+            <h2>Microservices</h2>
+            <p>
+                Un microservice est une <strong>unité autonome</strong> qui porte une responsabilité métier claire.
+            </p>
+            <ul>
+                <li>Déployable indépendamment</li>
+                <li>Possède son propre modèle de données</li>
+                <li>Expose des API ou publie des événements</li>
+            </ul>
+            <p>
+                👉 Les microservices ne sont pas un découpage technique, mais un <strong>découpage métier</strong>.
+            </p>
+        </section>
+
+        <!-- DDD -->
+        <section>
+            <h2>Domain-Driven Design (DDD)</h2>
+            <section>
+                <p>
+                    Le DDD place le <strong>langage métier</strong> et la <strong>compréhension du domaine</strong>
+                    au cœur de l’architecture.
+                </p>
+                <ul>
+                    <li>Modèle aligné avec le métier</li>
+                    <li>Ubiquitous Language partagé</li>
+                    <li>Décisions techniques guidées par le domaine</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Ubiquitous Language partagé</h2>
+                <section>
+                    <p>
+                        Dans une application de <strong>gestion de patrimoine française</strong>, qu'est-ce que la
+                        <strong>Federal Tax</strong> ?
+                    </p>
+                </section>
+            </section>
+            <section>
+                <p>C'est la <strong>taxe foncière</strong> lol </p>
+                <p>Donc</p>
+                <ul>
+                    <li>J'apprends que la France est une fédération...</li>
+                </ul>
+                <p>Alors que</p>
+                <ul>
+                    <li>La taxe foncière est perçue par la commune, le département et la région</li>
+                    <li>Il existe deux taxes foncières :
+                        <ul>
+                            <li>La taxe foncière sur les propriétés bâties (TFPB)</li>
+                            <li>La taxe foncière sur les propriétés non bâties (TFPNB)</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+        </section>
+
+        <!-- BOUNDED CONTEXT -->
+        <section>
+            <h2>Contextes Bornés</h2>
+            <p>
+                Un <strong>contexte borné</strong> définit une frontière claire dans laquelle un modèle métier est
+                cohérent.
+            </p>
+            <ul>
+                <li>Un modèle = un contexte</li>
+                <li>Pas de partage de modèle entre contextes</li>
+                <li>Communication explicite entre contextes</li>
+            </ul>
+            <p>
+                👉 En pratique, <strong>un microservice correspond souvent à un contexte borné</strong>.
+            </p>
+        </section>
+
+        <!-- DECOUPAGE METIER -->
+        <section>
+            <h2>Découpage par domaine métier</h2>
+            <p>
+                Le système est découpé selon les responsabilités fonctionnelles :
+            </p>
+            <ul>
+                <li>Commande</li>
+                <li>Paiement</li>
+                <li>Livraison</li>
+                <li>Facturation</li>
+            </ul>
+            <p>
+                Chaque domaine est autonome et évolue sans dépendre des autres.
+            </p>
+        </section>
+
+        <!-- EVENT DRIVEN -->
+        <section>
+            <h2>Architecture Event-Driven</h2>
+            <p>
+                Les microservices communiquent via des <strong>événements métier</strong>
+                plutôt que par des appels synchrones.
+            </p>
+            <ul>
+                <li>Faible couplage</li>
+                <li>Scalabilité naturelle</li>
+                <li>Résilience accrue</li>
+            </ul>
+        </section>
+
+        <!-- WHAT TO STREAM -->
+        <section>
+            <h2>Que streamer ?</h2>
+            <p>
+                Dans une architecture event-driven, un événement représente
+                <strong>quelque chose qui s’est produit</strong>.
+            </p>
+        </section>
+
+        <!-- STATE -->
+        <section>
+            <h2>Streamer un état</h2>
+            <p>
+                Diffuser l’état courant d’une entité.
+            </p>
+            <ul>
+                <li>Facile à consommer</li>
+                <li>Moins expressif métier</li>
+                <li>Risque d’ambiguïté sur l’intention</li>
+            </ul>
+        </section>
+
+        <!-- CHANGE -->
+        <section>
+            <h2>Streamer un changement</h2>
+            <p>
+                Diffuser une transition métier :
+                <strong>« Commande validée », « Paiement accepté »</strong>.
+            </p>
+            <ul>
+                <li>Très expressif métier</li>
+                <li>Idéal pour la propagation d’effets</li>
+                <li>Favorise l’autonomie des consommateurs</li>
+            </ul>
+            <p>
+                👉 C’est l’approche privilégiée en DDD.
+            </p>
+        </section>
+
+        <!-- BOTH -->
+        <section>
+            <h2>Les deux</h2>
+            <p>
+                Certains systèmes combinent :
+            </p>
+            <ul>
+                <li>Événements de changement pour le métier</li>
+                <li>Snapshots d’état pour la reconstruction ou le read-model</li>
+            </ul>
+        </section>
+
+        <!-- QUERY SIDE -->
+        <section>
+            <h2>Lecture des données (Query Side)</h2>
+            <p>
+                Les besoins de lecture sont souvent différents des besoins d’écriture.
+            </p>
+            <ul>
+                <li>Vues optimisées pour le frontend</li>
+                <li>Données issues de plusieurs microservices</li>
+                <li>Pas de logique métier critique</li>
+            </ul>
+        </section>
+
+        <!-- API COMPOSITION -->
+        <section>
+            <h2>API Composition</h2>
+            <p>
+                L’API Composition consiste à agréger les données
+                de plusieurs microservices pour répondre à une requête.
+            </p>
+            <ul>
+                <li>Orchestration côté backend</li>
+                <li>Pas de fuite de modèles internes</li>
+                <li>Lecture sans impact sur l’écriture</li>
+            </ul>
+            <p>
+                👉 Utilisée uniquement pour la <strong>query</strong>, jamais pour modifier l’état.
+            </p>
+        </section>
+
+        <!-- STATE CHANGE -->
+        <section>
+            <h2>Changer l’état d’un microservice</h2>
+            <p>
+                Un microservice est le <strong>seul responsable</strong> de son état.
+            </p>
+            <ul>
+                <li>Commande → validation interne</li>
+                <li>Changement d’état local</li>
+                <li>Publication d’un événement métier</li>
+            </ul>
+            <p>
+                Les autres services réagissent, mais ne pilotent jamais cet état.
+            </p>
+        </section>
+
+        <!-- AUDIT -->
+        <section>
+            <h2>Piste d’audit</h2>
+            <p>
+                Les événements métier forment une <strong>trace complète et chronologique</strong>.
+            </p>
+            <ul>
+                <li>Qui a fait quoi</li>
+                <li>Quand et pourquoi</li>
+                <li>Reconstruction d’un état passé</li>
+            </ul>
+        </section>
+
+        <!-- Quarkus Pulse Extension -->
+        <section>
+            <h2>Quarkus Pulse Extension</h2>
+            <h3>Postgres, Debezium, Kafka, Encryption</h3>
+            <section>
+                <h2>Writer</h2>
+                <ul>
+                    <li>CommandHandlers</li>
+                    <li>Event sourcing</li>
+                    <li>Encryption des events et aggregates</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Publisher</h2>
+                <h3>Debezium</h3>
+                <ul>
+                    <li>Push events into Kafka topic</li>
+                    <li>Push aggregates into Kafka topic</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Consumer</h2>
+                <ul>
+                    <li>Consume events</li>
+                    <li>Consume aggregates</li>
+                    <li>Decryption events et Aggregate</li>
+                </ul>
+            </section>
+            <section>
+                <h2>Live notifier</h2>
+                <ul>
+                    <li>Message fire</li>
+                    <li>Forget if not consumed</li>
+                    <li>Audience</li>
+                    <li>SSE</li>
+                </ul>
+            </section>
+        </section>
+
+        <!-- CONCLUSION -->
+        <section>
+            <h2>En résumé</h2>
+            <ul>
+                <li>Microservices alignés sur les contextes métiers</li>
+                <li>DDD pour structurer la complexité</li>
+                <li>Événements pour propager les changements</li>
+                <li>API Composition pour les besoins de lecture</li>
+            </ul>
+            <p>
+                Une architecture pensée pour durer et évoluer.
+            </p>
+        </section>
+
+        <!-- DEMO -->
+        <section>
+            <h2>Démo</h2>
+            <p>Créperie</p>
+            <ul>
+                <li>Salle : prise de commande</li>
+                <li>Cuisine : production</li>
+                <li>Gestion : statistics</li>
+            </ul>
         </section>
     </div>
 </div>
 
 <script>
     Reveal.initialize({
-        plugins: [RevealMarkdown],
+        plugins: [RevealMarkdown], slideNumber: 'c/t',
+        width: 1280,
+        height: 720,
+        margin: 0.08,
+        center: false,
+        scroll: true
     });
 </script>
 </body>
