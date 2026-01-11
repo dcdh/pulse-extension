@@ -25,7 +25,9 @@ import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
+import io.quarkus.runtime.util.ClassPathUtils;
 import io.quarkus.security.deployment.BouncyCastleProviderBuildItem;
+import org.jboss.logging.Logger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -40,6 +42,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,6 +50,8 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 public class PulseCommonProcessor {
+
+    private static Logger LOG = Logger.getLogger(PulseCommonProcessor.class);
 
     private static final String DOCKER_COMPOSE_FILE = "../compose-devservices-pulse.yml";
 
@@ -194,7 +199,7 @@ public class PulseCommonProcessor {
             final OutputTargetBuildItem outputTargetBuildItem,
             final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemProducer) throws IOException {
         if (capabilities.isPresent(Capability.FLYWAY)) {
-            final Path scriptPulseInitialisationSql = outputTargetBuildItem.getOutputDirectory().resolve("classes/db/migration/V0__pulse_initialisation.sql");
+            final Path scriptPulseInitialisationSql = outputTargetBuildItem.getOutputDirectory().resolve("classes/db/migration/V0__pulse_initialization.sql");
             Files.createDirectories(scriptPulseInitialisationSql.getParent());
             final String content = postgresSqlScriptBuildItems.stream().map(PostgresSqlScriptBuildItem::getContent).collect(Collectors.joining("\r\n"));
             Files.writeString(scriptPulseInitialisationSql, content, CREATE, TRUNCATE_EXISTING);
@@ -218,6 +223,8 @@ public class PulseCommonProcessor {
         if (capabilities.isPresent(Capability.FLYWAY)) {
             runTimeConfigurationDefaultBuildItemProducer.produce(
                     new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.migrate-at-start", "true"));
+            runTimeConfigurationDefaultBuildItemProducer.produce(
+                    new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.baseline-on-migrate", "true"));
         }
     }
 
@@ -233,6 +240,32 @@ public class PulseCommonProcessor {
                         && FLYWAY_DATABASE_POSTGRESQL_ARTIFACT_ID.equals(dep.getArtifactId()))) {
             validationErrorBuildItemProducer.produce(new ValidationErrorBuildItem(
                     new IllegalStateException("Missing maven dependency %s:%s".formatted(ORG_FLYWAYDB_GROUP_ID, FLYWAY_DATABASE_POSTGRESQL_ARTIFACT_ID))));
+        }
+    }
+
+    public static final String FLYWAY_V0_LOCATION = "db/migration/V0__pulse_initialization.sql";
+
+    @BuildStep
+    void validateVoPresence(final Capabilities capabilities,
+                            final BuildProducer<ValidationErrorBuildItem> validationErrorBuildItemProducer) throws IOException {
+        if (capabilities.isPresent(Capability.FLYWAY)) {
+            final AtomicBoolean found = new AtomicBoolean(false);
+            ClassPathUtils.consumeAsStreams(
+                    Thread.currentThread().getContextClassLoader(),
+                    FLYWAY_V0_LOCATION,
+                    inputStream -> {
+                        found.set(true);
+                    }
+            );
+            if (!found.get()) {
+                validationErrorBuildItemProducer.produce(
+                        new ValidationErrorBuildItem(
+                                new IllegalStateException(
+                                        "Missing required Flyway migration: " + FLYWAY_V0_LOCATION
+                                )
+                        )
+                );
+            }
         }
     }
 

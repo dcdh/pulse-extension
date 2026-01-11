@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.common.runtime.flyway;
 
+import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -15,7 +17,7 @@ class ShouldFailWhenFlywayDatabasePostgresqlIsMissingTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            .withApplicationRoot(root -> root.addAsResource(EmptyAsset.INSTANCE, PulseCommonProcessor.FLYWAY_V0_LOCATION))
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties")
