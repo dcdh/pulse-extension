@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PostgresFlywayInitializationTest {
+class PostgresFlywayTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -93,9 +93,7 @@ class PostgresFlywayInitializationTest {
                 Log.infov("version ''{0}'' - description ''{1}'' - script ''{2}'' - installed_by ''{3}'' - success ''{4}''",
                         version, description, script, installedBy, success);
 
-                if ("0".equals(version)
-                        && "pulse initialisation".equalsIgnoreCase(description)
-                        && success) {
+                if ("<< Flyway Schema Creation >>".equalsIgnoreCase(description) && success) {
                     found = true;
                     break;
                 }

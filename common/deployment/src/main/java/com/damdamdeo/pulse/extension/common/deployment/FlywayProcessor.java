@@ -7,10 +7,6 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
-import io.quarkus.runtime.util.ClassPathUtils;
-
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlywayProcessor {
 
@@ -37,32 +33,6 @@ public class FlywayProcessor {
                     new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.migrate-at-start", "true"));
             runTimeConfigurationDefaultBuildItemProducer.produce(
                     new RunTimeConfigurationDefaultBuildItem("quarkus.flyway.baseline-on-migrate", "true"));
-        }
-    }
-
-    public static final String FLYWAY_V0_LOCATION = "db/migration/V0__pulse_initialization.sql";
-
-    @BuildStep
-    void validateVoPresence(final Capabilities capabilities,
-                            final BuildProducer<ValidationErrorBuildItem> validationErrorBuildItemProducer) throws IOException {
-        if (capabilities.isPresent(Capability.FLYWAY)) {
-            final AtomicBoolean found = new AtomicBoolean(false);
-            ClassPathUtils.consumeAsStreams(
-                    Thread.currentThread().getContextClassLoader(),
-                    FLYWAY_V0_LOCATION,
-                    inputStream -> {
-                        found.set(true);
-                    }
-            );
-            if (!found.get()) {
-                validationErrorBuildItemProducer.produce(
-                        new ValidationErrorBuildItem(
-                                new IllegalStateException(
-                                        "Missing required Flyway migration: " + FLYWAY_V0_LOCATION
-                                )
-                        )
-                );
-            }
         }
     }
 }

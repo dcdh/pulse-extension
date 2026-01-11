@@ -2,7 +2,6 @@ package com.damdamdeo.pulse.extension.common.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
-import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.InitScriptUsageChecker;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
@@ -15,8 +14,6 @@ import com.damdamdeo.pulse.extension.common.runtime.vault.VaultPassphraseReposit
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
-import io.quarkus.deployment.Capabilities;
-import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
@@ -33,14 +30,12 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -186,31 +181,6 @@ public class PulseCommonProcessor {
     public static class InlineList<T> extends ArrayList<T> {
         public InlineList(List<T> list) {
             super(list);
-        }
-    }
-
-    @BuildStep
-    void generateSqlScripts(
-            final Capabilities capabilities,
-            final List<PostgresSqlScriptBuildItem> postgresSqlScriptBuildItems,
-            final OutputTargetBuildItem outputTargetBuildItem,
-            final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemProducer) throws IOException {
-        if (capabilities.isPresent(Capability.FLYWAY)) {
-            final Path scriptPulseInitialisationSql = outputTargetBuildItem.getOutputDirectory().resolve("classes/db/migration/V0__pulse_initialization.sql");
-            Files.createDirectories(scriptPulseInitialisationSql.getParent());
-            final String content = postgresSqlScriptBuildItems.stream().map(PostgresSqlScriptBuildItem::getContent).collect(Collectors.joining("\r\n"));
-            Files.writeString(scriptPulseInitialisationSql, content, CREATE, TRUNCATE_EXISTING);
-        } else {
-            postgresSqlScriptBuildItems.stream()
-                    .map(sqlScriptBuildItem -> new AdditionalVolumeBuildItem(
-                            PulseCommonProcessor.POSTGRES_SERVICE_NAME,
-                            new ComposeServiceBuildItem.Volume(
-                                    "./" + sqlScriptBuildItem.getName(),
-                                    "/docker-entrypoint-initdb.d/" + sqlScriptBuildItem.getName(),
-                                    sqlScriptBuildItem.getContent().getBytes(StandardCharsets.UTF_8)
-                            )
-                    ))
-                    .forEach(additionalVolumeBuildItemProducer::produce);
         }
     }
 

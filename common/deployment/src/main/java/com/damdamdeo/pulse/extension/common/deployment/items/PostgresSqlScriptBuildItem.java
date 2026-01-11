@@ -12,7 +12,7 @@ public final class PostgresSqlScriptBuildItem extends MultiBuildItem {
 
     public PostgresSqlScriptBuildItem(final String name, final String content) {
         this.name = Objects.requireNonNull(name);
-        Validate.validState(name.matches("[a-zA-Z_0-9]+\\.sql"));
+        Validate.validState(name.matches("[a-zA-Z_0-9\\-]+\\.sql"));
         this.content = Objects.requireNonNull(content);
     }
 
