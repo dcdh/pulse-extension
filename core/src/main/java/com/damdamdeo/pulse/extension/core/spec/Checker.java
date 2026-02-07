@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
+import com.damdamdeo.pulse.extension.core.ExecutionContext;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,30 +33,33 @@ public final class Checker<T> {
         return this;
     }
 
-    public void check(final T t) {
+    public void check(final T t, final ExecutionContext executionContext) {
+        Objects.requireNonNull(executionContext);
         for (final Step<T> step : steps) {
-            if (!step.spec.isSatisfiedBy(t)) {
+            if (!step.spec.isSatisfiedBy(t, executionContext)) {
                 throw step.exceptionProvider.apply(t);
             }
         }
     }
 
-    public void check(final Supplier<T> supplier) {
+    public void check(final Supplier<T> supplier, final ExecutionContext executionContext) {
         Objects.requireNonNull(supplier);
-        this.check(supplier.get());
+        Objects.requireNonNull(executionContext);
+        this.check(supplier.get(), executionContext);
     }
 
-    public boolean isSatisfiedBy(final T t) {
+    public boolean isSatisfiedBy(final T t, final ExecutionContext executionContext) {
+        Objects.requireNonNull(executionContext);
         for (final Step<T> step : steps) {
-            if (!step.spec.isSatisfiedBy(t)) {
+            if (!step.spec.isSatisfiedBy(t, executionContext)) {
                 return false;
             }
         }
         return true;
     }
 
-    public boolean isSatisfiedBy(final Supplier<T> supplier) {
+    public boolean isSatisfiedBy(final Supplier<T> supplier, final ExecutionContext executionContext) {
         Objects.requireNonNull(supplier);
-        return this.isSatisfiedBy(supplier.get());
+        return this.isSatisfiedBy(supplier.get(), executionContext);
     }
 }

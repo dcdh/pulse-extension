@@ -1,11 +1,16 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
+import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.Todo;
 
-public class TodoIsInProgressSpec  extends CompositeSpecification<Todo> {
+import java.util.Objects;
+
+public final class TodoIsInProgressSpec extends CompositeSpecification<Todo> {
 
     @Override
-    public boolean isSatisfiedBy(final Todo todo) {
+    public boolean isSatisfiedBy(final Todo todo, final ExecutionContext executionContext) {
+        Objects.requireNonNull(todo);
+        Objects.requireNonNull(executionContext);
         return todo.isInProgress();
     }
 }

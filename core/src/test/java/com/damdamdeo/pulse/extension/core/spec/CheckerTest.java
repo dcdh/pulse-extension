@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
+import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import org.junit.jupiter.api.Test;
 
 import java.util.function.Supplier;
@@ -11,6 +13,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 class CheckerTest {
+
+    private static ExecutionContext EXECUTION_CONTEXT = new NotAvailableExecutionContextProvider().provide();
 
     private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = new Checker<Todo>(new NullableInputSpecification<>(), (todo) -> new IllegalStateException("la todo est inconnu"))
             .next(new TodoIsImportantSpec(), (todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
@@ -23,8 +27,8 @@ class CheckerTest {
 
         // When && Then
         assertAll(
-                () -> assertThatCode(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo)).doesNotThrowAnyException(),
-                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo)).isTrue());
+                () -> assertThatCode(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT)).doesNotThrowAnyException(),
+                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isTrue());
     }
 
     @Test
@@ -33,10 +37,10 @@ class CheckerTest {
 
         // When && Then
         assertAll(
-                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check((Todo) null))
+                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check((Todo) null, EXECUTION_CONTEXT))
                         .isInstanceOf(IllegalStateException.class)
                         .hasMessage("la todo est inconnu"),
-                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy((Todo) null)).isFalse());
+                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy((Todo) null, EXECUTION_CONTEXT)).isFalse());
     }
 
     @Test
@@ -46,10 +50,10 @@ class CheckerTest {
 
         // When && Then
         assertAll(
-                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(supplier))
+                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(supplier, EXECUTION_CONTEXT))
                         .isInstanceOf(IllegalStateException.class)
                         .hasMessage("la todo est inconnu"),
-                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(supplier)).isFalse());
+                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(supplier, EXECUTION_CONTEXT)).isFalse());
     }
 
     @Test
@@ -59,10 +63,10 @@ class CheckerTest {
 
         // When && Then
         assertAll(
-                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo))
+                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
                         .isInstanceOf(IllegalStateException.class)
                         .hasMessage("la todo Damien/0 doit être importante"),
-                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo)).isFalse());
+                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 
     @Test
@@ -72,9 +76,9 @@ class CheckerTest {
 
         // When && Then
         assertAll(
-                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo))
+                () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
                         .isInstanceOf(IllegalStateException.class)
                         .hasMessage("la todo Damien/0 doit être in progress"),
-                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo)).isFalse());
+                () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 }
