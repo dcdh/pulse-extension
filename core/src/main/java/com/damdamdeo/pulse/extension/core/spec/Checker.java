@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 // Chain of responsibility pattern.
 // The first Specification returning false will throw the supplied exception.
@@ -32,5 +33,10 @@ public final class Checker<T> {
                 throw step.exceptionProvider.apply(t);
             }
         }
+    }
+
+    public void check(final Supplier<T> supplier) {
+        Objects.requireNonNull(supplier);
+        this.check(supplier.get());
     }
 }

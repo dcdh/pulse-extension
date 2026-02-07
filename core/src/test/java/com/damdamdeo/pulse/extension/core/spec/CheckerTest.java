@@ -29,7 +29,17 @@ class CheckerTest {
         // Given
 
         // When && Then
-        assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(null))
+        assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check((Todo) null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("la todo est inconnu");
+    }
+
+    @Test
+    void shouldFailWhenTodoIsUnknownUsingSuppler() {
+        // Given
+
+        // When && Then
+        assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(() -> null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("la todo est inconnu");
     }
