@@ -1,19 +1,25 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-public class OrSpecification<T> extends CompositeSpecification<T> implements Specification<T> {
+public final class OrSpecification<T> extends CompositeSpecification<T> implements Specification<T> {
 
-    private final Specification<T> left;
-    private final Specification<T> right;
+    private final List<Specification<T>> specifications;
 
-    public OrSpecification(final Specification<T> left, final Specification<T> right) {
-        this.left = Objects.requireNonNull(left);
-        this.right = Objects.requireNonNull(right);
+    @SafeVarargs
+    public OrSpecification(final Specification<T> first, final Specification<T>... others) {
+        Objects.requireNonNull(first);
+        Objects.requireNonNull(others);
+
+        this.specifications = new ArrayList<>(others.length + 1);
+        specifications.add(first);
+        specifications.addAll(List.of(others));
     }
 
     public boolean isSatisfiedBy(final T t) {
         Objects.requireNonNull(t);
-        return left.isSatisfiedBy(t) || right.isSatisfiedBy(t);
+        return specifications.stream().anyMatch(specification -> specification.isSatisfiedBy(t));
     }
 }
