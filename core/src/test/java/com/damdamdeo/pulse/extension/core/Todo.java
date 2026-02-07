@@ -82,6 +82,10 @@ public final class Todo extends AggregateRoot<TodoId> {
         return important;
     }
 
+    public boolean isInProgress() {
+        return Status.IN_PROGRESS.equals(status);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
