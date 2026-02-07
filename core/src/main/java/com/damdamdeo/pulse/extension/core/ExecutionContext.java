@@ -11,4 +11,9 @@ public record ExecutionContext(ExecutedBy executedBy, Set<String> roles) {
         Objects.requireNonNull(executedBy);
         Objects.requireNonNull(roles);
     }
+
+    public boolean hasRole(final String role) {
+        Objects.requireNonNull(role);
+        return roles.contains(role);
+    }
 }
