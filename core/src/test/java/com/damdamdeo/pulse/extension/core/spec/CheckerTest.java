@@ -16,9 +16,11 @@ class CheckerTest {
 
     private static ExecutionContext EXECUTION_CONTEXT = new NotAvailableExecutionContextProvider().provide();
 
-    private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = new Checker<Todo>(new NullableInputSpecification<>(), (todo) -> new IllegalStateException("la todo est inconnu"))
-            .next(new TodoIsImportantSpec(), (todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
-            .next(new TodoIsInProgressSpec(), (todo) -> new IllegalStateException("la todo %s doit être in progress".formatted(todo.id().id())));
+    private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = Checker.<Todo>builder()
+            .step(new NullableInputSpecification<>(), (todo) -> new IllegalStateException("la todo est inconnu"))
+            .step(new TodoIsImportantSpec(), (todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
+            .step(new TodoIsInProgressSpec(), (todo) -> new IllegalStateException("la todo %s doit être in progress".formatted(todo.id().id())))
+            .build();
 
     @Test
     void shouldNotFailWhenTodoIsImportantAndInProgress() {

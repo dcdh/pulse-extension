@@ -12,10 +12,15 @@ import java.util.function.Supplier;
 // The first Specification returning false will throw the supplied exception.
 public final class Checker<T> {
 
-    private final List<Step<T>> steps = new ArrayList<>();
+    private final List<Step<T>> steps;
 
-    public Checker(final Specification<T> firstSpec, final Function<T, ? extends RuntimeException> exceptionProvider) {
-        next(firstSpec, exceptionProvider);
+    private Checker() {
+        throw new UnsupportedOperationException("Use builder");
+    }
+
+    private Checker(final List<Step<T>> steps) {
+        Objects.requireNonNull(steps);
+        this.steps = steps;
     }
 
     private record Step<T>(Specification<T> spec, Function<T, ? extends RuntimeException> exceptionProvider) {
@@ -24,13 +29,6 @@ public final class Checker<T> {
             Objects.requireNonNull(spec);
             Objects.requireNonNull(exceptionProvider);
         }
-    }
-
-    public Checker<T> next(final Specification<T> spec, final Function<T, ? extends RuntimeException> exceptionProvider) {
-        Objects.requireNonNull(spec);
-        Objects.requireNonNull(exceptionProvider);
-        steps.add(new Step<>(spec, exceptionProvider));
-        return this;
     }
 
     public void check(final T t, final ExecutionContext executionContext) {
@@ -61,5 +59,36 @@ public final class Checker<T> {
     public boolean isSatisfiedBy(final Supplier<T> supplier, final ExecutionContext executionContext) {
         Objects.requireNonNull(supplier);
         return this.isSatisfiedBy(supplier.get(), executionContext);
+    }
+
+    // ----------------------------
+    // Builder
+    // ----------------------------
+
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+
+    public static final class Builder<T> {
+
+        private final List<Step<T>> steps = new ArrayList<>();
+
+        private Builder() {
+        }
+
+        public Builder<T> step(final Specification<T> spec,
+                               final Function<T, ? extends RuntimeException> exceptionProvider) {
+            Objects.requireNonNull(spec);
+            Objects.requireNonNull(exceptionProvider);
+            steps.add(new Step<>(spec, exceptionProvider));
+            return this;
+        }
+
+        public Checker<T> build() {
+            if (steps.isEmpty()) {
+                throw new IllegalStateException("Checker must contain at least one step.");
+            }
+            return new Checker<>(steps);
+        }
     }
 }
