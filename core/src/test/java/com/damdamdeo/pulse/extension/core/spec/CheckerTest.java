@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class CheckerTest {
 
     private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = new Checker<Todo>()
+            .next(new NullableInputSpecification<>(), (todo) -> new IllegalStateException("la todo est inconnu"))
             .next(new TodoIsImportantSpec(), (todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
             .next(new TodoIsInProgressSpec(), (todo) -> new IllegalStateException("la todo %s doit être in progress".formatted(todo.id().id())));
 
@@ -21,6 +22,16 @@ class CheckerTest {
 
         // When && Then
         assertThatCode(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldFailWhenTodoIsUnknown() {
+        // Given
+
+        // When && Then
+        assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(null))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("la todo est inconnu");
     }
 
     @Test

@@ -27,7 +27,6 @@ public final class Checker<T> {
     }
 
     public void check(final T t) {
-        Objects.requireNonNull(t);
         for (final Step<T> step : steps) {
             if (!step.spec.isSatisfiedBy(t)) {
                 throw step.exceptionProvider.apply(t);
