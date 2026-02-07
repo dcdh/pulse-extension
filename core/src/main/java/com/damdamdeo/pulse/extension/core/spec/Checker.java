@@ -39,4 +39,18 @@ public final class Checker<T> {
         Objects.requireNonNull(supplier);
         this.check(supplier.get());
     }
+
+    public boolean isSatisfiedBy(final T t) {
+        for (final Step<T> step : steps) {
+            if (!step.spec.isSatisfiedBy(t)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isSatisfiedBy(final Supplier<T> supplier) {
+        Objects.requireNonNull(supplier);
+        return this.isSatisfiedBy(supplier.get());
+    }
 }
