@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.AggregateRootInstanceCreator;
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.Command;
 
 import java.lang.reflect.Method;
@@ -33,9 +30,10 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         // This should be defined globally elsewhere
         this.cacheCommandHandlerMethods = Arrays.stream(aggregateRootClass.getDeclaredMethods())
                 .filter(m -> COMMAND_HANDLER_METHOD_NAMING.equals(m.getName()))
-                .filter(m -> m.getParameterCount() == 2)
+                .filter(m -> m.getParameterCount() == 3)
                 .filter(m -> Command.class.isAssignableFrom(m.getParameterTypes()[0]))
-                .filter(m -> EventAppender.class.isAssignableFrom(m.getParameterTypes()[1]))
+                .filter(m -> ExecutionContext.class.isAssignableFrom(m.getParameterTypes()[1]))
+                .filter(m -> EventAppender.class.isAssignableFrom(m.getParameterTypes()[2]))
                 .filter(m -> m.canAccess(aggregate))
                 .collect(Collectors.toMap(
                         m -> (Class<Command<K>>) m.getParameterTypes()[0],
@@ -65,10 +63,11 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         this.aggregateVersion = this.aggregateVersion.increment();
     }
 
-    public A executeCommand(final Command<K> command) {
+    public A executeCommand(final Command<K> command, final ExecutionContext executionContext) {
         Objects.requireNonNull(command);
+        Objects.requireNonNull(executionContext);
         try {
-            this.cacheCommandHandlerMethods.get(command.getClass()).invoke(aggregate, command, this);
+            this.cacheCommandHandlerMethods.get(command.getClass()).invoke(aggregate, command, executionContext, this);
         } catch (Exception e) {
             throw new RuntimeException("Error invoking event sourcing handler", e);
         }

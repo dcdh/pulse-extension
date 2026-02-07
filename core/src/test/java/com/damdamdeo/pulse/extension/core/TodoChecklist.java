@@ -21,9 +21,10 @@ public final class TodoChecklist extends AggregateRoot<TodoChecklistId> {
         this.description = Objects.requireNonNull(description);
     }
 
-    public void handle(final AddNewTodoItem addNewTodoItem, final EventAppender eventAppender) {
+    public void handle(final AddNewTodoItem addNewTodoItem, final ExecutionContext executionContext, final EventAppender eventAppender) {
         Objects.requireNonNull(addNewTodoItem);
         Objects.requireNonNull(eventAppender);
+        Objects.requireNonNull(executionContext);
         eventAppender.append(new TodoItemAdded(addNewTodoItem.description()));
     }
 

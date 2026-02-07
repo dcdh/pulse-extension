@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByProvider;
-import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -14,11 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.List;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
-class QuarkusOidcExecutedByProviderTest {
+class QuarkusOidcExecutionContextProviderTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -34,12 +35,18 @@ class QuarkusOidcExecutedByProviderTest {
     public static class ExecutedByProviderEndpoint {
 
         @Inject
-        ExecutedByProvider executedByProvider;
+        ExecutionContextProvider executionContextProvider;
 
         @GET
-        public String getExecutedBy() {
-            return executedByProvider.provide().encode(TestExecutedByEncoder.INSTANCE);
+        public ExecutionContextDTO getExecutionContextDTO() {
+            final ExecutionContext executionContext = executionContextProvider.provide();
+            return new ExecutionContextDTO(
+                    executionContext.executedBy().value(),
+                    executionContext.roles());
         }
+    }
+
+    public record ExecutionContextDTO(String executedBy, Set<String> roles) {
     }
 
     @Test
@@ -73,7 +80,8 @@ class QuarkusOidcExecutedByProviderTest {
                 .get("/executedByProvider")
                 .then().log().all()
                 .statusCode(200)
-                .body(is("EU:encodedalice"));
+                .body("executedBy", is("EU:alice"))
+                .body("roles", hasItems("admin", "user"));
     }
 
     @Test
@@ -103,7 +111,8 @@ class QuarkusOidcExecutedByProviderTest {
                 .get("/executedByProvider")
                 .then().log().all()
                 .statusCode(200)
-                .body(is("SA:service-account-quarkus-app"));
+                .body("executedBy", is("SA:service-account-quarkus-app"))
+                .body("roles", hasItems("offline_access", "default-roles-quarkus", "uma_authorization"));
     }
 
     @Test
@@ -114,6 +123,7 @@ class QuarkusOidcExecutedByProviderTest {
                 .get("/executedByProvider")
                 .then().log().all()
                 .statusCode(200)
-                .body(is("A"));
+                .body("executedBy", is("A"))
+                .body("roles", empty());
     }
 }

@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.QueryEventStore;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByProvider;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository;
@@ -137,7 +137,7 @@ public class CodeGenerationProcessor {
                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                        CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutedByProvider.class)) {
+                        CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutionContextProvider.class)) {
                     constructor
                             .setSignature(SignatureBuilder.forMethod()
                                     .addParameterType(Type.classType(CommandHandlerRegistry.class))
@@ -146,7 +146,7 @@ public class CodeGenerationProcessor {
                                             Type.classType(aggregateRootBuildItem.aggregateRootClazz()),
                                             Type.classType(aggregateRootBuildItem.aggregateIdClazz())))
                                     .addParameterType(Type.classType(Transaction.class))
-                                    .addParameterType(Type.classType(ExecutedByProvider.class))
+                                    .addParameterType(Type.classType(ExecutionContextProvider.class))
                                     .build());
                     constructor.setModifiers(Modifier.PUBLIC);
 
@@ -155,7 +155,7 @@ public class CodeGenerationProcessor {
                                     CommandHandlerRegistry.class,
                                     EventRepository.class,
                                     Transaction.class,
-                                    ExecutedByProvider.class),
+                                    ExecutionContextProvider.class),
                             constructor.getThis(),
                             constructor.getMethodParam(0),
                             constructor.getMethodParam(1),

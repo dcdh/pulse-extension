@@ -28,18 +28,20 @@ public final class Todo extends AggregateRoot<TodoId> {
         this.important = important;
     }
 
-    public void handle(final CreateTodo createTodo, final EventAppender eventAppender) {
+    public void handle(final CreateTodo createTodo, final ExecutionContext executionContext, final EventAppender eventAppender) {
         Objects.requireNonNull(createTodo);
         Objects.requireNonNull(eventAppender);
+        Objects.requireNonNull(executionContext);
         eventAppender.append(new NewTodoCreated(createTodo.description()));
         if (description.startsWith(IMPORTANT)) {
             eventAppender.append(new ClassifiedAsImportant());
         }
     }
 
-    public void handle(final MarkTodoAsDone markTodoAsDone, final EventAppender eventAppender) {
+    public void handle(final MarkTodoAsDone markTodoAsDone, final ExecutionContext executionContext, final EventAppender eventAppender) {
         Objects.requireNonNull(markTodoAsDone);
         Objects.requireNonNull(eventAppender);
+        Objects.requireNonNull(executionContext);
         eventAppender.append(new TodoMarkedAsDone());
     }
 

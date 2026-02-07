@@ -1,14 +1,17 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
+import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
-class NotAvailableExecutedByProviderTest {
+class NotAvailableExecutionContextProviderTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -16,16 +19,19 @@ class NotAvailableExecutedByProviderTest {
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false");
 
     @Inject
-    com.damdamdeo.pulse.extension.core.executedby.ExecutedByProvider executedByProvider;
+    ExecutionContextProvider executionContextProvider;
 
     @Test
     void shouldReturnUnknown() {
         // Given
 
         // When
-        final ExecutedBy executedBy = executedByProvider.provide();
+        final ExecutionContext executionContext = executionContextProvider.provide();
 
         // Then
-        assertThat(executedBy).isEqualTo(ExecutedBy.NotAvailable.INSTANCE);
+        assertAll(
+                () -> assertThat(executionContext.executedBy()).isEqualTo(ExecutedBy.NotAvailable.INSTANCE),
+                () -> assertThat(executionContext.roles()).isEmpty()
+        );
     }
 }

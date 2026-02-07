@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.core.command;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutedByProvider;
+import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +12,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -26,7 +27,7 @@ class TodoCommandHandlerTest {
     EventRepository<Todo, TodoId> eventRepository;
 
     @Spy
-    NotAvailableExecutedByProvider notAvailableExecutedByProvider;
+    NotAvailableExecutionContextProvider notAvailableExecutedByProvider;
 
     @BeforeEach
     void setUp() {
@@ -41,7 +42,7 @@ class TodoCommandHandlerTest {
         doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
 
         // When
-        final Todo todoCreated = todoCommandHandler.handle(givenCreateTodo, ExecutedBy.NotAvailable.INSTANCE);
+        final Todo todoCreated = todoCommandHandler.handle(givenCreateTodo, new ExecutionContext(ExecutedBy.NotAvailable.INSTANCE, Set.of()));
 
         // Then
         assertAll(
