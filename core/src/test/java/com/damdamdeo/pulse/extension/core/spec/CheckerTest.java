@@ -12,8 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 class CheckerTest {
 
-    private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = new Checker<Todo>()
-            .next(new NullableInputSpecification<>(), (todo) -> new IllegalStateException("la todo est inconnu"))
+    private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = new Checker<Todo>(new NullableInputSpecification<>(), (todo) -> new IllegalStateException("la todo est inconnu"))
             .next(new TodoIsImportantSpec(), (todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
             .next(new TodoIsInProgressSpec(), (todo) -> new IllegalStateException("la todo %s doit être in progress".formatted(todo.id().id())));
 

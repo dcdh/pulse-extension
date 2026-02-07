@@ -12,6 +12,10 @@ public final class Checker<T> {
 
     private final List<Step<T>> steps = new ArrayList<>();
 
+    public Checker(final Specification<T> firstSpec, final Function<T, ? extends RuntimeException> exceptionProvider) {
+        next(firstSpec, exceptionProvider);
+    }
+
     private record Step<T>(Specification<T> spec, Function<T, ? extends RuntimeException> exceptionProvider) {
 
         private Step {
