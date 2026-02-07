@@ -7,9 +7,9 @@ public class OrSpecification<T> extends CompositeSpecification<T> implements Spe
     private final Specification<T> left;
     private final Specification<T> right;
 
-    public OrSpecification(final Specification<T> pLeft, final Specification<T> pRight) {
-        this.left = Objects.requireNonNull(pLeft);
-        this.right = Objects.requireNonNull(pRight);
+    public OrSpecification(final Specification<T> left, final Specification<T> right) {
+        this.left = Objects.requireNonNull(left);
+        this.right = Objects.requireNonNull(right);
     }
 
     public boolean isSatisfiedBy(final T t) {

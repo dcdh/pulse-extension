@@ -7,9 +7,9 @@ public final class AndSpecification<T> extends CompositeSpecification<T> {
     private final Specification<T> left;
     private final Specification<T> right;
 
-    public AndSpecification(final Specification<T> pLeft, final Specification<T> pRight) {
-        this.left = Objects.requireNonNull(pLeft);
-        this.right = Objects.requireNonNull(pRight);
+    public AndSpecification(final Specification<T> left, final Specification<T> right) {
+        this.left = Objects.requireNonNull(left);
+        this.right = Objects.requireNonNull(right);
     }
 
     public boolean isSatisfiedBy(final T t) {
