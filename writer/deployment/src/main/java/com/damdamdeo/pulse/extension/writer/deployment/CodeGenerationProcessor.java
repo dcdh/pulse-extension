@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
+import com.damdamdeo.pulse.extension.core.event.EventNotifier;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.QueryEventStore;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -137,7 +138,8 @@ public class CodeGenerationProcessor {
                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                        CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutionContextProvider.class)) {
+                        CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutionContextProvider.class,
+                        EventNotifier.class)) {
                     constructor
                             .setSignature(SignatureBuilder.forMethod()
                                     .addParameterType(Type.classType(CommandHandlerRegistry.class))
@@ -147,6 +149,7 @@ public class CodeGenerationProcessor {
                                             Type.classType(aggregateRootBuildItem.aggregateIdClazz())))
                                     .addParameterType(Type.classType(Transaction.class))
                                     .addParameterType(Type.classType(ExecutionContextProvider.class))
+                                    .addParameterType(Type.classType(EventNotifier.class))
                                     .build());
                     constructor.setModifiers(Modifier.PUBLIC);
 
@@ -155,12 +158,14 @@ public class CodeGenerationProcessor {
                                     CommandHandlerRegistry.class,
                                     EventRepository.class,
                                     Transaction.class,
-                                    ExecutionContextProvider.class),
+                                    ExecutionContextProvider.class,
+                                    EventNotifier.class),
                             constructor.getThis(),
                             constructor.getMethodParam(0),
                             constructor.getMethodParam(1),
                             constructor.getMethodParam(2),
-                            constructor.getMethodParam(3)
+                            constructor.getMethodParam(3),
+                            constructor.getMethodParam(4)
                     );
 
                     constructor.returnValue(null);

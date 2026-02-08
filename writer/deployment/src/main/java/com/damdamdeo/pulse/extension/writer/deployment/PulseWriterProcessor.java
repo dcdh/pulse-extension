@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBu
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
+import com.damdamdeo.pulse.extension.writer.runtime.JakartaEventNotifier;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -32,7 +33,7 @@ public class PulseWriterProcessor {
                 // TODO it is not possible to define the bean with @DefaultBean
                 // Should conditionally add it if no other implementation is present.
                 AdditionalBeanBuildItem.builder()
-                        .addBeanClass(JvmCommandHandlerRegistry.class)
+                        .addBeanClasses(JvmCommandHandlerRegistry.class, JakartaEventNotifier.class)
                         .setUnremovable()
                         .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .build()

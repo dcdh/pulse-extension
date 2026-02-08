@@ -31,10 +31,13 @@ class TodoCommandHandlerTest {
     @Spy
     NotAvailableExecutionContextProvider notAvailableExecutedByProvider;
 
+    @Mock
+    EventNotifier eventNotifier;
+
     @BeforeEach
     void setUp() {
         todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), eventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider);
+                notAvailableExecutedByProvider, eventNotifier);
     }
 
     @Test

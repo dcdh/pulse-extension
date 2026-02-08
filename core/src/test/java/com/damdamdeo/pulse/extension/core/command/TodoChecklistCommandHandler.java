@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.command;
 
 import com.damdamdeo.pulse.extension.core.TodoChecklist;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
+import com.damdamdeo.pulse.extension.core.event.EventNotifier;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 
@@ -10,8 +11,9 @@ public final class TodoChecklistCommandHandler extends CommandHandler<TodoCheckl
     public TodoChecklistCommandHandler(final CommandHandlerRegistry commandHandlerRegistry,
                                        final EventRepository<TodoChecklist, TodoChecklistId> eventRepository,
                                        final Transaction transaction,
-                                       final ExecutionContextProvider executionContextProvider) {
-        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider);
+                                       final ExecutionContextProvider executionContextProvider,
+                                       final EventNotifier eventNotifier) {
+        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, eventNotifier);
     }
 
     @Override
