@@ -34,10 +34,6 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         return execute(command, executionContextProvider.provide());
     }
 
-    public A handle(final Command<K> command, final ExecutionContext executionContext) {
-        return execute(command, executionContext);
-    }
-
     private A execute(final Command<K> command, final ExecutionContext executionContext) {
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
