@@ -15,6 +15,11 @@ import java.util.function.Supplier;
 public final class DefaultQuarkusTransaction implements Transaction {
 
     @Override
+    public <A extends AggregateRoot<?>> A requiringNew(final Supplier<A> callable) {
+        return QuarkusTransaction.requiringNew().call(callable::get);
+    }
+
+    @Override
     public <A extends AggregateRoot<?>> A joiningExisting(final Supplier<A> callable) {
         return QuarkusTransaction.joiningExisting().call(callable::get);
     }
