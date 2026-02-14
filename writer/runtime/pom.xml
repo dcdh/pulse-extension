@@ -50,6 +50,22 @@
             <artifactId>quarkus-jackson</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.resteasy-problem</groupId>
+            <artifactId>quarkus-resteasy-problem</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkiverse.vault</groupId>
             <artifactId>quarkus-vault</artifactId>
             <version>${quarkus-vault.version}</version>

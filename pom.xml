@@ -28,6 +28,7 @@
         <quarkus.version>3.30.5</quarkus.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <quarkus-vault.version>4.4.0</quarkus-vault.version>
+        <quarkus-resteasy-problem.version>3.21.0</quarkus-resteasy-problem.version>
     </properties>
 
     <dependencyManagement>
@@ -38,6 +39,16 @@
                 <version>${quarkus.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkiverse.resteasy-problem</groupId>
+                <artifactId>quarkus-resteasy-problem</artifactId>
+                <version>${quarkus-resteasy-problem.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkiverse.resteasy-problem</groupId>
+                <artifactId>quarkus-resteasy-problem-deployment</artifactId>
+                <version>${quarkus-resteasy-problem.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.skyscreamer</groupId>
