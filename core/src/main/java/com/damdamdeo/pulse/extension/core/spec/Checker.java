@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
+import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 
 import java.util.ArrayList;
@@ -31,16 +32,16 @@ public final class Checker<T> {
         }
     }
 
-    public void check(final T t, final ExecutionContext executionContext) {
+    public void check(final T t, final ExecutionContext executionContext) throws BusinessException {
         Objects.requireNonNull(executionContext);
         for (final Step<T> step : steps) {
             if (!step.spec.isSatisfiedBy(t, executionContext)) {
-                throw step.exceptionProvider.apply(t);
+                throw new BusinessException(step.exceptionProvider.apply(t));
             }
         }
     }
 
-    public void check(final Supplier<T> supplier, final ExecutionContext executionContext) {
+    public void check(final Supplier<T> supplier, final ExecutionContext executionContext) throws BusinessException {
         Objects.requireNonNull(supplier);
         Objects.requireNonNull(executionContext);
         this.check(supplier.get(), executionContext);

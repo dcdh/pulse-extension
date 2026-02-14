@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
-import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import org.junit.jupiter.api.Test;
 
@@ -40,8 +37,9 @@ class CheckerTest {
         // When && Then
         assertAll(
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check((Todo) null, EXECUTION_CONTEXT))
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessage("la todo est inconnu"),
+                        .isInstanceOf(BusinessException.class)
+                        .hasRootCauseInstanceOf(IllegalStateException.class)
+                        .hasRootCauseMessage("la todo est inconnu"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy((Todo) null, EXECUTION_CONTEXT)).isFalse());
     }
 
@@ -53,8 +51,9 @@ class CheckerTest {
         // When && Then
         assertAll(
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(supplier, EXECUTION_CONTEXT))
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessage("la todo est inconnu"),
+                        .isInstanceOf(BusinessException.class)
+                        .hasRootCauseInstanceOf(IllegalStateException.class)
+                        .hasRootCauseMessage("la todo est inconnu"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(supplier, EXECUTION_CONTEXT)).isFalse());
     }
 
@@ -66,8 +65,9 @@ class CheckerTest {
         // When && Then
         assertAll(
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessage("la todo Damien/0 doit être importante"),
+                        .isInstanceOf(BusinessException.class)
+                        .hasRootCauseInstanceOf(IllegalStateException.class)
+                        .hasRootCauseMessage("la todo Damien/0 doit être importante"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 
@@ -79,8 +79,9 @@ class CheckerTest {
         // When && Then
         assertAll(
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
-                        .isInstanceOf(IllegalStateException.class)
-                        .hasMessage("la todo Damien/0 doit être in progress"),
+                        .isInstanceOf(BusinessException.class)
+                        .hasRootCauseInstanceOf(IllegalStateException.class)
+                        .hasRootCauseMessage("la todo Damien/0 doit être in progress"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 }
