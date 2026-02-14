@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core;
 
+import com.damdamdeo.pulse.extension.core.command.CommandWithoutOnEvent;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.FailTodo;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
@@ -51,6 +52,13 @@ public final class Todo extends AggregateRoot<TodoId> {
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
         throw new BusinessException(new IllegalStateException("Fail !"));
+    }
+
+    public void handle(final CommandWithoutOnEvent commandWithoutOnEvent, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
+        Objects.requireNonNull(commandWithoutOnEvent);
+        Objects.requireNonNull(eventAppender);
+        Objects.requireNonNull(executionContext);
+        eventAppender.append(new Missing());
     }
 
     public void on(final NewTodoCreated newTodoCreated) {

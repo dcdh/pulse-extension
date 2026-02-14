@@ -118,7 +118,7 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldThrowBusinessException() throws BusinessException {
+    void shouldThrowBusinessException() {
         // Given
         final FailTodo failTodo = new FailTodo(new TodoId("Damien", 0L));
 
@@ -127,5 +127,27 @@ class TodoCommandHandlerTest {
                 .isInstanceOf(BusinessException.class)
                 .hasRootCauseInstanceOf(IllegalStateException.class)
                 .hasRootCauseMessage("Fail !");
+    }
+
+    @Test
+    void shouldFailWhenCommandIsNotHandled() {
+        // Given
+        final UnhandledTodo unhandledTodo = new UnhandledTodo(new TodoId("Damien", 0L));
+
+        // When && Then
+        assertThatThrownBy(() -> todoCommandHandler.handle(unhandledTodo))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessage("Missing 'handle' method for command class - you must implement the method 'public void handle(final UnhandledTodo unhandledTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException' in 'Todo'");
+    }
+
+    @Test
+    void shouldFailWhenEventIsNotHandled() {
+        // Given
+        final CommandWithoutOnEvent commandWithoutOnEvent = new CommandWithoutOnEvent(new TodoId("Damien", 0L));
+
+        // When && Then
+        assertThatThrownBy(() -> todoCommandHandler.handle(commandWithoutOnEvent))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessage("Missing 'on' method for event class - you must implement the method 'public void on(final Missing missing)' in 'Todo'");
     }
 }

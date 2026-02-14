@@ -2,11 +2,11 @@ package com.damdamdeo.pulse.extension.core.event;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.Command;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateId> implements EventAppender {
@@ -74,13 +74,21 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
         try {
-            this.cacheCommandHandlerMethods.get(command.getClass()).invoke(aggregate, command, executionContext, this);
+            if (!this.cacheCommandHandlerMethods.containsKey(command.getClass())) {
+                throw new UnsupportedOperationException("Missing 'handle' method for command class - you must implement the method 'public void handle(final %s %s, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException' in '%s'"
+                        .formatted(command.getClass().getSimpleName(), StringUtils.uncapitalize(command.getClass().getSimpleName()), aggregate.getClass().getSimpleName()));
+            } else {
+                this.cacheCommandHandlerMethods.get(command.getClass()).invoke(aggregate, command, executionContext, this);
+            }
         } catch (final InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof BusinessException businessException) {
                 throw businessException;
+            } else if (cause instanceof UnsupportedOperationException unsupportedOperationException) {// FCKmrche pas
+                throw unsupportedOperationException;
+            } else {
+                throw new RuntimeException("Error invoking event sourcing command handler", cause);
             }
-            throw new RuntimeException("Error invoking event sourcing command handler", cause);
         } catch (final IllegalAccessException e) {
             throw new RuntimeException("Cannot access event sourcing command handler method", e);
         }
@@ -88,7 +96,11 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
     }
 
     private void apply(final Event event) {
-        if (this.cacheEventMethods.containsKey(event.getClass())) {
+        Objects.requireNonNull(event);
+        if (!this.cacheEventMethods.containsKey(event.getClass())) {
+            throw new UnsupportedOperationException("Missing 'on' method for event class - you must implement the method 'public void on(final %s %s)' in '%s'"
+                    .formatted(event.getClass().getSimpleName(), StringUtils.uncapitalize(event.getClass().getSimpleName()), aggregate.getClass().getSimpleName()));
+        } else {
             try {
                 this.cacheEventMethods.get(event.getClass()).invoke(aggregate, event);
             } catch (final Exception e) {
