@@ -3,8 +3,10 @@ package com.damdamdeo.pulse.extension.core.event;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.Command;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateId> implements EventAppender {
@@ -25,6 +27,9 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
                         final K aggregateId) {
         Objects.requireNonNull(aggregateRootInstanceCreator);
         Objects.requireNonNull(events);
+        Objects.requireNonNull(aggregateRootClass);
+        Objects.requireNonNull(aggregateIdClass);
+        Objects.requireNonNull(aggregateId);
         this.aggregate = aggregateRootInstanceCreator.create(aggregateRootClass, aggregateIdClass, aggregateId);
         // TODO will be created each time a StateApplier is created thus each time an Aggregate is created, loaded
         // This should be defined globally elsewhere
@@ -34,6 +39,8 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
                 .filter(m -> Command.class.isAssignableFrom(m.getParameterTypes()[0]))
                 .filter(m -> ExecutionContext.class.isAssignableFrom(m.getParameterTypes()[1]))
                 .filter(m -> EventAppender.class.isAssignableFrom(m.getParameterTypes()[2]))
+                .filter(m -> m.getExceptionTypes().length == 1)
+                .filter(m -> m.getExceptionTypes()[0].equals(BusinessException.class))
                 .filter(m -> m.canAccess(aggregate))
                 .collect(Collectors.toMap(
                         m -> (Class<Command<K>>) m.getParameterTypes()[0],
@@ -63,13 +70,19 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         this.aggregateVersion = this.aggregateVersion.increment();
     }
 
-    public A executeCommand(final Command<K> command, final ExecutionContext executionContext) {
+    public A executeCommand(final Command<K> command, final ExecutionContext executionContext) throws BusinessException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
         try {
             this.cacheCommandHandlerMethods.get(command.getClass()).invoke(aggregate, command, executionContext, this);
-        } catch (Exception e) {
-            throw new RuntimeException("Error invoking event sourcing handler", e);
+        } catch (final InvocationTargetException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof BusinessException businessException) {
+                throw businessException;
+            }
+            throw new RuntimeException("Error invoking event sourcing command handler", cause);
+        } catch (final IllegalAccessException e) {
+            throw new RuntimeException("Cannot access event sourcing command handler method", e);
         }
         return this.aggregate;
     }
@@ -78,8 +91,8 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         if (this.cacheEventMethods.containsKey(event.getClass())) {
             try {
                 this.cacheEventMethods.get(event.getClass()).invoke(aggregate, event);
-            } catch (Exception e) {
-                throw new RuntimeException("Error invoking event sourcing handler", e);
+            } catch (final Exception e) {
+                throw new RuntimeException("Error invoking event sourcing event handler", e);
             }
         }
     }

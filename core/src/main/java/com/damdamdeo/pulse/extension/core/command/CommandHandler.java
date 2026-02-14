@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.core.command;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.ReflectionAggregateRootInstanceCreator;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 
@@ -30,11 +27,11 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         this.eventNotifier = Objects.requireNonNull(eventNotifier);
     }
 
-    public A handle(final Command<K> command) {
+    public A handle(final Command<K> command) throws BusinessException {
         return execute(command, executionContextProvider.provide());
     }
 
-    private A execute(final Command<K> command, final ExecutionContext executionContext) {
+    private A execute(final Command<K> command, final ExecutionContext executionContext) throws BusinessException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
         return commandHandlerRegistry.execute(command.id(), () -> transaction.joiningExisting(() -> {

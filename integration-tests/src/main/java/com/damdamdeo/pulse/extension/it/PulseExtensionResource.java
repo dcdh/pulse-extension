@@ -17,6 +17,7 @@
 package com.damdamdeo.pulse.extension.it;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
+import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
@@ -60,7 +61,7 @@ public class PulseExtensionResource {
 
     @POST
     @Path("/createTodo")
-    public TodoDTO createTodo() {
+    public TodoDTO createTodo() throws BusinessException {
         return TodoDTO.from(todoCommandHandler.handle(new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum")));
     }
 

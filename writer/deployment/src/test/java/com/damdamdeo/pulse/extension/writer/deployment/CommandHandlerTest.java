@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
@@ -32,7 +33,7 @@ class CommandHandlerTest {
     DataSource dataSource;
 
     @Test
-    void shouldExecuteCommand() {
+    void shouldExecuteCommand() throws BusinessException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum");
 

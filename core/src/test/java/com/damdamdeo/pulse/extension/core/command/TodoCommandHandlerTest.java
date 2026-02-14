@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.core.command;
 
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
@@ -17,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.*;
 
@@ -41,7 +39,7 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldCreateTodoUsingExecutedByProvider() {
+    void shouldCreateTodoUsingExecutedByProvider() throws BusinessException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 0L), "lorem ipsum");
         doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
@@ -67,7 +65,7 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldClassifieAsImportant() {
+    void shouldClassifieAsImportant() throws BusinessException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 0L), "IMPORTANT lorem ipsum");
         doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
@@ -94,7 +92,7 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldMarkTodoAsDone() {
+    void shouldMarkTodoAsDone() throws BusinessException {
         // Given
         final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", 0L));
         doReturn(List.of(new NewTodoCreated("lorem ipsum")))
@@ -117,5 +115,17 @@ class TodoCommandHandlerTest {
                         ExecutedBy.NotAvailable.INSTANCE
                 )
         );
+    }
+
+    @Test
+    void shouldThrowBusinessException() throws BusinessException {
+        // Given
+        final FailTodo failTodo = new FailTodo(new TodoId("Damien", 0L));
+
+        // When && Then
+        assertThatThrownBy(() -> todoCommandHandler.handle(failTodo))
+                .isInstanceOf(BusinessException.class)
+                .hasRootCauseInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage("Fail !");
     }
 }

@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core;
 
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.command.FailTodo;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.event.*;
 
@@ -28,7 +29,7 @@ public final class Todo extends AggregateRoot<TodoId> {
         this.important = important;
     }
 
-    public void handle(final CreateTodo createTodo, final ExecutionContext executionContext, final EventAppender eventAppender) {
+    public void handle(final CreateTodo createTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
         Objects.requireNonNull(createTodo);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
@@ -38,11 +39,18 @@ public final class Todo extends AggregateRoot<TodoId> {
         }
     }
 
-    public void handle(final MarkTodoAsDone markTodoAsDone, final ExecutionContext executionContext, final EventAppender eventAppender) {
+    public void handle(final MarkTodoAsDone markTodoAsDone, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
         Objects.requireNonNull(markTodoAsDone);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
         eventAppender.append(new TodoMarkedAsDone());
+    }
+
+    public void handle(final FailTodo failTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
+        Objects.requireNonNull(failTodo);
+        Objects.requireNonNull(eventAppender);
+        Objects.requireNonNull(executionContext);
+        throw new BusinessException(new IllegalStateException("Fail !"));
     }
 
     public void on(final NewTodoCreated newTodoCreated) {

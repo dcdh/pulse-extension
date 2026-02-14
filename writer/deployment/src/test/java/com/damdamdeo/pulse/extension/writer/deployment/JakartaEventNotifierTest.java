@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
@@ -45,7 +46,7 @@ class JakartaEventNotifierTest {
     }
 
     @Test
-    void shouldListenToEvent() {
+    void shouldListenToEvent() throws BusinessException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum");
 
