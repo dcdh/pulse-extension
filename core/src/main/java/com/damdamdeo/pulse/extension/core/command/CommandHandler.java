@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public abstract class CommandHandler<A extends AggregateRoot<K>, K extends AggregateId> {
 
@@ -28,14 +29,22 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
     }
 
     public A handle(final Command<K> command) throws BusinessException {
-        return execute(command, executionContextProvider.provide());
+        return execute(command, executionContextProvider.provide(), null);
     }
 
-    private A execute(final Command<K> command, final ExecutionContext executionContext) throws BusinessException {
+    public A handle(final Command<K> command, final Supplier<MissingAggregateException> missingAggregateExceptionSupplier) throws BusinessException {
+        return execute(command, executionContextProvider.provide(), missingAggregateExceptionSupplier);
+    }
+
+    private A execute(final Command<K> command, final ExecutionContext executionContext,
+                      final Supplier<MissingAggregateException> missingAggregateExceptionSupplier) throws BusinessException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
         return commandHandlerRegistry.execute(command.id(), () -> transaction.joiningExisting(() -> {
             final List<ExecutedByEvent> events = eventRepository.loadOrderByVersionASC(command.id());
+            if (events.isEmpty() && missingAggregateExceptionSupplier != null) {
+                throw new BusinessException(missingAggregateExceptionSupplier.get());
+            }
             final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
             final A aggregate = stateApplier.executeCommand(command, executionContext);
             List<VersionizedEvent> newEvents = stateApplier.getNewEvents();

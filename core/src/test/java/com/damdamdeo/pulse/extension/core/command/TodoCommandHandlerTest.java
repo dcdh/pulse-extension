@@ -12,6 +12,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -151,5 +152,28 @@ class TodoCommandHandlerTest {
         assertThatThrownBy(() -> todoCommandHandler.handle(commandWithoutOnEvent))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessage("Missing 'on' method for event class - you must implement the method 'public void on(final Missing missing, final ExecutedBy executedBy)' in 'Todo'");
+    }
+
+    static final class UnknownTodoException extends MissingAggregateException {
+
+        private final TodoId todoId;
+
+        public UnknownTodoException(final TodoId todoId) {
+            this.todoId = Objects.requireNonNull(todoId);
+        }
+    }
+
+    @Test
+    void shouldThrowBusinessExceptionHavingTodoMissingExceptionCauseWhenMissing() {
+        // Given
+        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", 0L));
+        doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
+
+        // When && Then
+        assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(new TodoId("Damien", 0L))))
+                .isInstanceOf(BusinessException.class)
+                .rootCause()
+                .isInstanceOf(MissingAggregateException.class)
+                .hasFieldOrPropertyWithValue("todoId", new TodoId("Damien", 0L));
     }
 }
