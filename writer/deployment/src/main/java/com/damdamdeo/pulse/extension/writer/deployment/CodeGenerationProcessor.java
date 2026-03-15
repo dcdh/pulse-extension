@@ -81,20 +81,22 @@ public class CodeGenerationProcessor {
                 beanClassCreator.addAnnotation(DefaultBean.class);
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                        EventRepository.class)) {
+                        EventRepository.class, ExecutionContextProvider.class)) {
                     constructor
                             .setSignature(SignatureBuilder.forMethod()
                                     .addParameterType(Type.parameterizedType(
                                             Type.classType(EventRepository.class),
                                             Type.classType(aggregateRootBuildItem.aggregateRootClazz()),
                                             Type.classType(aggregateRootBuildItem.aggregateIdClazz())))
+                                    .addParameterType(Type.classType(ExecutionContextProvider.class))
                                     .build());
                     constructor.setModifiers(Modifier.PUBLIC);
 
                     constructor.invokeSpecialMethod(
-                            MethodDescriptor.ofConstructor(QueryEventStore.class, EventRepository.class),
+                            MethodDescriptor.ofConstructor(QueryEventStore.class, EventRepository.class, ExecutionContextProvider.class),
                             constructor.getThis(),
-                            constructor.getMethodParam(0)
+                            constructor.getMethodParam(0),
+                            constructor.getMethodParam(1)
                     );
 
                     constructor.returnValue(null);

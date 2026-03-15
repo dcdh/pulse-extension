@@ -143,7 +143,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
-                                new NewTodoCreated("IMPORTANT: pulse extension development"))),
+                                new ExecutedByEvent(new NewTodoCreated("IMPORTANT: pulse extension development"), ExecutedBy.NotAvailable.INSTANCE))),
                 new Todo(
                         new TodoId("Damien", 1L),
                         "IMPORTANT: pulse extension development",
@@ -152,14 +152,14 @@ class JdbcProjectionFromApplicationEventStoreTest {
                 ), BOB);
         todoChecklistEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
-                                new TodoItemAdded("Implement Projection feature"))),
+                                new ExecutedByEvent(new TodoItemAdded("Implement Projection feature"), ExecutedBy.NotAvailable.INSTANCE))),
                 new TodoChecklist(
                         new TodoChecklistId(new TodoId("Damien", 1L), 0L),
                         "Implement Projection feature"
                 ), BOB);
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
-                                new NewTodoCreated("Organization vacancies"))),
+                                new ExecutedByEvent(new NewTodoCreated("Organization vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
                 new Todo(
                         new TodoId("Damien", 2L),
                         "Organization vacancies",
@@ -168,14 +168,14 @@ class JdbcProjectionFromApplicationEventStoreTest {
                 ), BOB);
         todoChecklistEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
-                                new TodoItemAdded("Go see family"))),
+                                new ExecutedByEvent(new TodoItemAdded("Go see family"), ExecutedBy.NotAvailable.INSTANCE))),
                 new TodoChecklist(
                         new TodoChecklistId(new TodoId("Damien", 2L), 0L),
                         "Go see family"
                 ), BOB);
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
-                                new NewTodoCreated("Bob vacancies"))),
+                                new ExecutedByEvent(new NewTodoCreated("Bob vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
                 new Todo(
                         new TodoId("Bob", 0L),
                         "Bob vacancies",

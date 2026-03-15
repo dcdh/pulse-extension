@@ -2,10 +2,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.event.EventRepository;
-import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
+import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
@@ -138,7 +135,7 @@ class PerformanceTest {
             final TodoId givenTodoId = new TodoId("Performance", i);
             final List<VersionizedEvent> givenTodoEvents = List.of(
                     new VersionizedEvent(new AggregateVersion(0),
-                            new NewTodoCreated(LOREM_IPSUM)));
+                            new ExecutedByEvent(new NewTodoCreated(LOREM_IPSUM), ExecutedBy.NotAvailable.INSTANCE)));
             todoEventRepository.save(givenTodoEvents,
                     new Todo(
                             givenTodoId,

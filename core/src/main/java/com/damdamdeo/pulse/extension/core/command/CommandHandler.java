@@ -35,7 +35,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
         return commandHandlerRegistry.execute(command.id(), () -> transaction.joiningExisting(() -> {
-            final List<Event> events = eventRepository.loadOrderByVersionASC(command.id());
+            final List<ExecutedByEvent> events = eventRepository.loadOrderByVersionASC(command.id());
             final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
             final A aggregate = stateApplier.executeCommand(command, executionContext);
             List<VersionizedEvent> newEvents = stateApplier.getNewEvents();
@@ -50,10 +50,10 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
 
     abstract protected Class<K> getAggregateIdClass();
 
-    private StateApplier<A, K> stateApplier(final List<Event> events, final K aggregateId) {
+    private StateApplier<A, K> stateApplier(final List<ExecutedByEvent> executedByEvents, final K aggregateId) {
         Objects.requireNonNull(aggregateId);
-        Objects.requireNonNull(events);
-        return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), events, getAggregateRootClass(),
-                getAggregateIdClass(), aggregateId);
+        Objects.requireNonNull(executedByEvents);
+        return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), executionContextProvider,
+                executedByEvents, getAggregateRootClass(), getAggregateIdClass(), aggregateId);
     }
 }

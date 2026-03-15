@@ -96,7 +96,7 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         final List<VersionizedEvent> givenTodoEvents = List.of(
                 new VersionizedEvent(new AggregateVersion(0),
-                        new NewTodoCreated("lorem ipsum")));
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), BOB)));
 
         // When
         todoEventRepository.save(givenTodoEvents,
@@ -161,8 +161,7 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
-                                new NewTodoCreated("lorem ipsum")
-                        )),
+                                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), BOB))),
                 new Todo(
                         new TodoId("Damien", 2L),
                         "lorem ipsum",
@@ -173,8 +172,7 @@ class JdbcPostgresEventRepositoryTest {
         // When
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(1),
-                                new TodoMarkedAsDone()
-                        )),
+                                new ExecutedByEvent(new TodoMarkedAsDone(), BOB))),
                 new Todo(
                         new TodoId("Damien", 2L),
                         "lorem ipsum",
@@ -250,24 +248,24 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         List<VersionizedEvent> givenTodoEvents = List.of(
                 new VersionizedEvent(new AggregateVersion(0),
-                        new NewTodoCreated("lorem ipsum")),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
                 new VersionizedEvent(new AggregateVersion(1),
-                        new TodoMarkedAsDone()));
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 3L),
                         "lorem ipsum",
                         Status.DONE,
                         false
-                ), BOB);
+                ), ExecutedBy.NotAvailable.INSTANCE);
 
         // When
-        final List<Event> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
+        final List<ExecutedByEvent> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
 
         // Then
         assertThat(events).containsExactly(
-                new NewTodoCreated("lorem ipsum"),
-                new TodoMarkedAsDone());
+                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
+                new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
@@ -276,25 +274,25 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         List<VersionizedEvent> givenTodoEvents = List.of(
                 new VersionizedEvent(new AggregateVersion(0),
-                        new NewTodoCreated("lorem ipsum")),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
                 new VersionizedEvent(new AggregateVersion(1),
-                        new TodoMarkedAsDone()));
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 4L),
                         "lorem ipsum",
                         Status.DONE,
                         false
-                ), BOB);
+                ), ExecutedBy.NotAvailable.INSTANCE);
 
         // When
-        final List<Event> events = todoEventRepository.loadOrderByVersionASC(
+        final List<ExecutedByEvent> events = todoEventRepository.loadOrderByVersionASC(
                 new TodoId("Damien", 4L), new AggregateVersion(1));
 
         // Then
         assertThat(events).containsExactly(
-                new NewTodoCreated("lorem ipsum"),
-                new TodoMarkedAsDone());
+                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
+                new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test

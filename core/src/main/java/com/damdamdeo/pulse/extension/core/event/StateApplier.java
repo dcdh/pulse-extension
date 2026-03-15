@@ -2,6 +2,8 @@ package com.damdamdeo.pulse.extension.core.event;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -18,14 +20,17 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
     private final List<VersionizedEvent> newEvents;
     private final Map<Class<Command<K>>, Method> cacheCommandHandlerMethods;
     private final Map<Class<Event>, Method> cacheEventMethods;
+    private final ExecutionContextProvider executionContextProvider;
     private AggregateVersion aggregateVersion;
 
     public StateApplier(final AggregateRootInstanceCreator aggregateRootInstanceCreator,
-                        final List<Event> events,
+                        final ExecutionContextProvider executionContextProvider,
+                        final List<ExecutedByEvent> events,
                         final Class<A> aggregateRootClass,
                         final Class<K> aggregateIdClass,
                         final K aggregateId) {
         Objects.requireNonNull(aggregateRootInstanceCreator);
+        this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         Objects.requireNonNull(events);
         Objects.requireNonNull(aggregateRootClass);
         Objects.requireNonNull(aggregateIdClass);
@@ -49,8 +54,9 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
                 ));
         this.cacheEventMethods = Arrays.stream(aggregateRootClass.getDeclaredMethods())
                 .filter(m -> EVENT_HANDLER_METHOD_NAMING.equals(m.getName()))
-                .filter(m -> m.getParameterCount() == 1)
+                .filter(m -> m.getParameterCount() == 2)
                 .filter(m -> Event.class.isAssignableFrom(m.getParameterTypes()[0]))
+                .filter(m -> ExecutedBy.class.isAssignableFrom(m.getParameterTypes()[1]))
                 .filter(m -> m.canAccess(aggregate))
                 .collect(Collectors.toMap(
                         m -> (Class<Event>) m.getParameterTypes()[0],
@@ -65,8 +71,10 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
     @Override
     public void append(final Event event) {
         Objects.requireNonNull(event);
-        apply(event);
-        this.newEvents.add(new VersionizedEvent(this.aggregateVersion, event));
+        final ExecutedByEvent executedByEvent = new ExecutedByEvent(
+                event, executionContextProvider.provide().executedBy());
+        apply(executedByEvent);
+        this.newEvents.add(new VersionizedEvent(this.aggregateVersion, executedByEvent));
         this.aggregateVersion = this.aggregateVersion.increment();
     }
 
@@ -95,14 +103,15 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         return this.aggregate;
     }
 
-    private void apply(final Event event) {
-        Objects.requireNonNull(event);
+    private void apply(final ExecutedByEvent executedByEvent) {
+        Objects.requireNonNull(executedByEvent);
+        final Event event = executedByEvent.event();
         if (!this.cacheEventMethods.containsKey(event.getClass())) {
-            throw new UnsupportedOperationException("Missing 'on' method for event class - you must implement the method 'public void on(final %s %s)' in '%s'"
+            throw new UnsupportedOperationException("Missing 'on' method for event class - you must implement the method 'public void on(final %s %s, final ExecutedBy executedBy)' in '%s'"
                     .formatted(event.getClass().getSimpleName(), StringUtils.uncapitalize(event.getClass().getSimpleName()), aggregate.getClass().getSimpleName()));
         } else {
             try {
-                this.cacheEventMethods.get(event.getClass()).invoke(aggregate, event);
+                this.cacheEventMethods.get(event.getClass()).invoke(aggregate, event, executedByEvent.executedBy());
             } catch (final Exception e) {
                 throw new RuntimeException("Error invoking event sourcing event handler", e);
             }

@@ -56,11 +56,11 @@ class TodoCommandHandlerTest {
                 () -> verify(eventRepository, times(1)).save(
                         List.of(new VersionizedEvent(
                                 new AggregateVersion(0),
-                                new NewTodoCreated("lorem ipsum"))),
+                                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))),
                         todoCreated,
                         ExecutedBy.NotAvailable.INSTANCE
                 ),
-                () -> verify(notAvailableExecutedByProvider, times(1)).provide()
+                () -> verify(notAvailableExecutedByProvider, times(2)).provide()
         );
     }
 
@@ -82,10 +82,12 @@ class TodoCommandHandlerTest {
                 () -> verify(eventRepository, times(1)).save(
                         List.of(new VersionizedEvent(
                                         new AggregateVersion(0),
-                                        new NewTodoCreated("IMPORTANT lorem ipsum")),
+                                        new ExecutedByEvent(new NewTodoCreated("IMPORTANT lorem ipsum"),
+                                                ExecutedBy.NotAvailable.INSTANCE)),
                                 new VersionizedEvent(
                                         new AggregateVersion(1),
-                                        new ClassifiedAsImportant())),
+                                        new ExecutedByEvent(new ClassifiedAsImportant(),
+                                                ExecutedBy.NotAvailable.INSTANCE))),
                         todoCreated,
                         ExecutedBy.NotAvailable.INSTANCE)
         );
@@ -95,7 +97,7 @@ class TodoCommandHandlerTest {
     void shouldMarkTodoAsDone() throws BusinessException {
         // Given
         final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", 0L));
-        doReturn(List.of(new NewTodoCreated("lorem ipsum")))
+        doReturn(List.of(new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
                 .when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
 
         // When
@@ -110,7 +112,7 @@ class TodoCommandHandlerTest {
                 () -> verify(eventRepository, times(1)).save(
                         List.of(new VersionizedEvent(
                                 new AggregateVersion(1),
-                                new TodoMarkedAsDone())),
+                                new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE))),
                         todoMarkedAsDone,
                         ExecutedBy.NotAvailable.INSTANCE
                 )
@@ -148,6 +150,6 @@ class TodoCommandHandlerTest {
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(commandWithoutOnEvent))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessage("Missing 'on' method for event class - you must implement the method 'public void on(final Missing missing)' in 'Todo'");
+                .hasMessage("Missing 'on' method for event class - you must implement the method 'public void on(final Missing missing, final ExecutedBy executedBy)' in 'Todo'");
     }
 }

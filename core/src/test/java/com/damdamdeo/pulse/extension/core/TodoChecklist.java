@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.command.AddNewTodoItem;
 import com.damdamdeo.pulse.extension.core.event.EventAppender;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
 import java.util.Objects;
 
@@ -28,8 +29,9 @@ public final class TodoChecklist extends AggregateRoot<TodoChecklistId> {
         eventAppender.append(new TodoItemAdded(addNewTodoItem.description()));
     }
 
-    public void on(final TodoItemAdded todoItemAdded) {
+    public void on(final TodoItemAdded todoItemAdded, final ExecutedBy executedBy) {
         Objects.requireNonNull(todoItemAdded);
+        Objects.requireNonNull(executedBy);
         this.description = todoItemAdded.description();
     }
 

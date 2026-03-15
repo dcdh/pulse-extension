@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.core.event;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -10,16 +12,18 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 class StateApplierTest {
 
+    ExecutionContextProvider executionContextProvider = new NotAvailableExecutionContextProvider();
+
     @Test
     void shouldApplyEvents() {
         // Given
-        final List<Event> givenEvents = List.of(
-                new NewTodoCreated("lorem ipsum"),
-                new TodoMarkedAsDone());
+        final List<ExecutedByEvent> givenExecutedByEvents = List.of(
+                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), executionContextProvider.provide().executedBy()),
+                new ExecutedByEvent(new TodoMarkedAsDone(), executionContextProvider.provide().executedBy()));
 
         // When
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
-                new ReflectionAggregateRootInstanceCreator(), givenEvents, Todo.class,
+                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, Todo.class,
                 TodoId.class, new TodoId("Damien", 0L));
 
         // Then
@@ -32,13 +36,13 @@ class StateApplierTest {
     @Test
     void shouldNewVersionizedEventsIsEmptyWhenCommandsNotCalled() {
         // Given
-        final List<Event> givenEvents = List.of(
-                new NewTodoCreated("lorem ipsum"),
-                new TodoMarkedAsDone());
+        final List<ExecutedByEvent> givenExecutedByEvents = List.of(
+                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), executionContextProvider.provide().executedBy()),
+                new ExecutedByEvent(new TodoMarkedAsDone(), executionContextProvider.provide().executedBy()));
 
         // When
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
-                new ReflectionAggregateRootInstanceCreator(), givenEvents, Todo.class,
+                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, Todo.class,
                 TodoId.class, new TodoId("Damien", 0L));
 
         // Then
@@ -48,11 +52,11 @@ class StateApplierTest {
     @Test
     void shouldIncrementOnAppendANewEvent() {
         // Given
-        final List<Event> givenEvents = List.of(
-                new NewTodoCreated("lorem ipsum")
+        final List<ExecutedByEvent> givenEvents = List.of(
+                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), executionContextProvider.provide().executedBy())
         );
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
-                new ReflectionAggregateRootInstanceCreator(), givenEvents, Todo.class,
+                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenEvents, Todo.class,
                 TodoId.class, new TodoId("Damien", 0L));
 
         // When
@@ -60,7 +64,8 @@ class StateApplierTest {
 
         // Then
         assertThat(todoStateApplier.getNewEvents()).containsExactly(
-                new VersionizedEvent(new AggregateVersion(1), new TodoMarkedAsDone())
+                new VersionizedEvent(new AggregateVersion(1),
+                        new ExecutedByEvent(new TodoMarkedAsDone(), executionContextProvider.provide().executedBy()))
         );
     }
 }

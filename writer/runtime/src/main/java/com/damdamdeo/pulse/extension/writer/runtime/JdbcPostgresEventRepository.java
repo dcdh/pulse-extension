@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +50,9 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
 
     @Inject
     OwnedByExecutedByEncoder ownedByExecutedByEncoder;
+
+    @Inject
+    OwnedByExecutedByDecoder ownedByExecutedByDecoder;
 
     @Override
     public void save(final List<VersionizedEvent> versionizedEvents, final AggregateRoot<K> aggregateRoot, final ExecutedBy executedBy)
@@ -114,7 +118,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     }
 
     @Override
-    public List<Event> loadOrderByVersionASC(K id) throws EventStoreException {
+    public List<ExecutedByEvent> loadOrderByVersionASC(K id) throws EventStoreException {
         Objects.requireNonNull(id);
         try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement nbOfEventsStmt = connection.prepareStatement(
@@ -125,7 +129,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
+                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by, e.executed_by as executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             nbOfEventsStmt.setString(1, id.id());
@@ -135,15 +139,17 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 final int nbOfEvents = nbOfEventsResultSet.getInt("nb_of_events");
                 loadStmt.setString(1, id.id());
                 loadStmt.setString(2, getAggregateClass().getSimpleName());
-                final List<Event> events = new ArrayList<>(nbOfEvents);
+                final List<ExecutedByEvent> events = new ArrayList<>(nbOfEvents);
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
+                        final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
                         final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
                         LOGGER.fine(new String(decryptedEventPayload.payload()));
-                        events.add((Event)
+                        final Event event = (Event)
                                 objectMapper.readValue(decryptedEventPayload.payload(),
-                                        eventClazzDiscovery.from(resultSet.getString("event_type"))));
+                                        eventClazzDiscovery.from(resultSet.getString("event_type")));
+                        events.add(new ExecutedByEvent(event, executedBy));
                     }
                 } catch (ClassNotFoundException | IOException e) {
                     throw new EventStoreException(e);
@@ -156,28 +162,30 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     }
 
     @Override
-    public List<Event> loadOrderByVersionASC(final K id, final AggregateVersion aggregateVersionRequested) throws EventStoreException {
+    public List<ExecutedByEvent> loadOrderByVersionASC(final K id, final AggregateVersion aggregateVersionRequested) throws EventStoreException {
         Objects.requireNonNull(id);
         Objects.requireNonNull(aggregateVersionRequested);
         try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement loadStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND e.version <= ? ORDER BY e.version ASC
+                             SELECT e.event_payload AS event_payload, e.event_type AS event_type, e.owned_by AS owned_by, e.executed_by as executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND e.version <= ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             loadStmt.setString(1, id.id());
             loadStmt.setString(2, getAggregateClass().getSimpleName());
             loadStmt.setInt(3, aggregateVersionRequested.version());
-            final List<Event> events = new ArrayList<>(aggregateVersionRequested.version());
+            final List<ExecutedByEvent> events = new ArrayList<>(aggregateVersionRequested.version());
             try (final ResultSet resultSet = loadStmt.executeQuery()) {
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
+                    final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
                     final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
                     LOGGER.fine(new String(decryptedEventPayload.payload()));
-                    events.add((Event)
+                    final Event event = (Event)
                             objectMapper.readValue(decryptedEventPayload.payload(),
-                                    eventClazzDiscovery.from(resultSet.getString("event_type"))));
+                                    eventClazzDiscovery.from(resultSet.getString("event_type")));
+                    events.add(new ExecutedByEvent(event, executedBy));
                 }
             } catch (ClassNotFoundException | IOException e) {
                 throw new EventStoreException(e);

@@ -63,7 +63,7 @@ class QueryEventStoreTest {
         final TodoId givenTodoId = new TodoId("Damien", 10L);
         final List<VersionizedEvent> givenTodoEvents = List.of(
                 new VersionizedEvent(new AggregateVersion(0),
-                        new NewTodoCreated("lorem ipsum")));
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,
@@ -116,9 +116,9 @@ class QueryEventStoreTest {
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
         final List<VersionizedEvent> givenTodoEvents = List.of(
                 new VersionizedEvent(new AggregateVersion(0),
-                        new NewTodoCreated("lorem ipsum")),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
                 new VersionizedEvent(new AggregateVersion(1),
-                        new TodoMarkedAsDone()));
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,
@@ -148,9 +148,9 @@ class QueryEventStoreTest {
         final AggregateVersion aggregateVersion = new AggregateVersion(0);
         final List<VersionizedEvent> givenTodoEvents = List.of(
                 new VersionizedEvent(new AggregateVersion(0),
-                        new NewTodoCreated("lorem ipsum")),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
                 new VersionizedEvent(new AggregateVersion(1),
-                        new TodoMarkedAsDone()));
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,

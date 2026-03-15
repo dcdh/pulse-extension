@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.FailTodo;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
 import java.util.Objects;
 
@@ -61,18 +62,20 @@ public final class Todo extends AggregateRoot<TodoId> {
         eventAppender.append(new Missing());
     }
 
-    public void on(final NewTodoCreated newTodoCreated) {
+    public void on(final NewTodoCreated newTodoCreated, final ExecutedBy executedBy) {
         Objects.requireNonNull(newTodoCreated);
+        Objects.requireNonNull(executedBy);
         this.description = newTodoCreated.description();
         this.status = Status.IN_PROGRESS;
     }
 
-    public void on(final TodoMarkedAsDone todoMarkedAsDone) {
+    public void on(final TodoMarkedAsDone todoMarkedAsDone, final ExecutedBy executedBy) {
         Objects.requireNonNull(todoMarkedAsDone);
+        Objects.requireNonNull(executedBy);
         this.status = Status.DONE;
     }
 
-    public void on(final ClassifiedAsImportant classifiedAsImportant) {
+    public void on(final ClassifiedAsImportant classifiedAsImportant, final ExecutedBy executedBy) {
         this.important = true;
     }
 
