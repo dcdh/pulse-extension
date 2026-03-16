@@ -121,6 +121,23 @@ class TodoCommandHandlerTest {
     }
 
     @Test
+    void shouldFailWhenMarkingATodoDoneAlreadyDone() {
+        // Given
+        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", 0L));
+        doReturn(List.of(
+                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
+                new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)))
+                .when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
+
+        // When && Then
+        assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone))
+                .isInstanceOf(BusinessException.class)
+                .rootCause()
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("la todo Damien/0 doit être in progress");
+    }
+
+    @Test
     void shouldThrowBusinessException() {
         // Given
         final FailTodo failTodo = new FailTodo(new TodoId("Damien", 0L));

@@ -45,6 +45,7 @@ public final class Todo extends AggregateRoot<TodoId> {
         Objects.requireNonNull(markTodoAsDone);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
+        TodoChecker.TODO_IN_PROGRESS.check(this, executionContext);
         eventAppender.append(new TodoMarkedAsDone());
     }
 
