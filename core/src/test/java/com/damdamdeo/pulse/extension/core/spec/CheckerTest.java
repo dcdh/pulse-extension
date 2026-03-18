@@ -9,11 +9,17 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 class CheckerTest {
 
-    private static ExecutionContext EXECUTION_CONTEXT = new NotAvailableExecutionContextProvider().provide();
+    private static final ExecutionContext EXECUTION_CONTEXT = new NotAvailableExecutionContextProvider().provide();
 
     private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = Checker.<Todo>builder()
-            .step(new TodoIsImportantSpec(), (todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
-            .step(new TodoIsInProgressSpec(), (todo) -> new IllegalStateException("la todo %s doit être in progress".formatted(todo.id().id())))
+            .step(Step.<Todo>builder()
+                    .spec(new TodoIsImportantSpec())
+                    .exceptionProvider((todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
+                    .build())
+            .step(Step.<Todo>builder()
+                    .spec(new TodoIsInProgressSpec())
+                    .exceptionProvider((todo) -> new IllegalStateException("la todo %s doit être in progress".formatted(todo.id().id())))
+                    .build())
             .build();
 
     @Test

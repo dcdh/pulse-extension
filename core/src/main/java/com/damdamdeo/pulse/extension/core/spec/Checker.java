@@ -6,7 +6,6 @@ import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 // Chain of responsibility pattern.
@@ -24,19 +23,11 @@ public final class Checker<T> {
         this.steps = steps;
     }
 
-    private record Step<T>(Specification<T> spec, Function<T, ? extends RuntimeException> exceptionProvider) {
-
-        private Step {
-            Objects.requireNonNull(spec);
-            Objects.requireNonNull(exceptionProvider);
-        }
-    }
-
     public void check(final T t, final ExecutionContext executionContext) throws BusinessException {
         Objects.requireNonNull(executionContext);
         for (final Step<T> step : steps) {
-            if (!step.spec.isSatisfiedBy(t, executionContext)) {
-                throw new BusinessException(step.exceptionProvider.apply(t));
+            if (!step.spec().isSatisfiedBy(t, executionContext)) {
+                throw new BusinessException(step.exceptionProvider().apply(t));
             }
         }
     }
@@ -50,7 +41,7 @@ public final class Checker<T> {
     public boolean isSatisfiedBy(final T t, final ExecutionContext executionContext) {
         Objects.requireNonNull(executionContext);
         for (final Step<T> step : steps) {
-            if (!step.spec.isSatisfiedBy(t, executionContext)) {
+            if (!step.spec().isSatisfiedBy(t, executionContext)) {
                 return false;
             }
         }
@@ -77,11 +68,9 @@ public final class Checker<T> {
         private Builder() {
         }
 
-        public Builder<T> step(final Specification<T> spec,
-                               final Function<T, ? extends RuntimeException> exceptionProvider) {
-            Objects.requireNonNull(spec);
-            Objects.requireNonNull(exceptionProvider);
-            steps.add(new Step<>(spec, exceptionProvider));
+        public Builder<T> step(final Step<T> step) {
+            Objects.requireNonNull(step);
+            steps.add(step);
             return this;
         }
 
