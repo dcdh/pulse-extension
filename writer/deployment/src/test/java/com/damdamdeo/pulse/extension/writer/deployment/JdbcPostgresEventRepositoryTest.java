@@ -641,6 +641,29 @@ class JdbcPostgresEventRepositoryTest {
                 .hasMessageContaining("ERROR: not allowed");
     }
 
+    @Test
+    void shouldFindLastVersionById() {
+        // Given
+        List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        todoEventRepository.save(givenTodoEvents,
+                new Todo(
+                        new TodoId("Damien", 5L),
+                        "lorem ipsum",
+                        Status.DONE,
+                        false
+                ), ExecutedBy.NotAvailable.INSTANCE);
+
+        // When
+        final Optional<AggregateVersion> version = todoEventRepository.findLastAggregateVersionById(new TodoId("Damien", 5L));
+
+        // Then
+        assertThat(version).hasValue(new AggregateVersion(1));
+    }
+
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,
                              final Instant creationDate, final String eventType, final String encryptedEventPayload,
                              final OwnedBy ownedBy, final ExecutedBy executedBy) throws SQLException {

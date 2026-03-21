@@ -1,6 +1,9 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateRoot;
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.VersionizedAggregateRoot;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
 import java.util.List;
@@ -15,4 +18,6 @@ public interface EventRepository<A extends AggregateRoot<K>, K extends Aggregate
     List<ExecutedByEvent> loadOrderByVersionASC(K id, AggregateVersion aggregateVersionRequested) throws EventStoreException;
 
     Optional<VersionizedAggregateRoot<A>> findLastVersionById(K id);
+
+    Optional<AggregateVersion> findLastAggregateVersionById(K id);
 }

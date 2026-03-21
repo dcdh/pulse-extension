@@ -228,5 +228,29 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
         }
     }
 
+    @Override
+    public Optional<AggregateVersion> findLastAggregateVersionById(final K id) {
+        Objects.requireNonNull(id);
+        try (final Connection connection = dataSource.get().getConnection();
+             final PreparedStatement aggregateRootStmt = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT e.last_version AS last_version FROM aggregate_root e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.last_version DESC
+                             """)) {
+            connection.setAutoCommit(false);
+            aggregateRootStmt.setString(1, id.id());
+            aggregateRootStmt.setString(2, getAggregateClass().getSimpleName());
+            try (final ResultSet aggregateRootStmtResultSet = aggregateRootStmt.executeQuery()) {
+                if (aggregateRootStmtResultSet.next()) {
+                    return Optional.of(new AggregateVersion(aggregateRootStmtResultSet.getInt("last_version")));
+                } else {
+                    return Optional.empty();
+                }
+            }
+        } catch (final SQLException e) {
+            throw new EventStoreException(e);
+        }
+    }
+
     abstract protected Class<A> getAggregateClass();
 }
