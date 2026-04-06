@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.event;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Objects;
@@ -18,5 +19,9 @@ public record OwnedBy(String id) {
     public static OwnedBy from(final AggregateId ownedBy) {
         Objects.requireNonNull(ownedBy);
         return new OwnedBy(ownedBy.id());
+    }
+
+    public static OwnedBy himself(final AggregateRoot<?> aggregateRoot) {
+        return OwnedBy.from(aggregateRoot.id());
     }
 }
