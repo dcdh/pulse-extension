@@ -20,4 +20,8 @@ public interface EventRepository<A extends AggregateRoot<K>, K extends Aggregate
     Optional<VersionizedAggregateRoot<A>> findLastVersionById(K id);
 
     Optional<AggregateVersion> findLastAggregateVersionById(K id);
+
+    List<EventMetadata> findEventMetadataByIdOrderByVersionASC(K id);
+
+    List<EventMetadata> findEventMetadataByIdAndEventsOrderByVersionASC(K id, List<Class<? extends Event>> events);
 }

@@ -1,9 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.VersionizedAggregateRoot;
+import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
@@ -25,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K extends AggregateId> implements EventRepository<A, K> {
 
@@ -249,6 +248,82 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             }
         } catch (final SQLException e) {
             throw new EventStoreException(e);
+        }
+    }
+
+    @Override
+    public List<EventMetadata> findEventMetadataByIdOrderByVersionASC(final K id) {
+        Objects.requireNonNull(id);
+        try (final Connection connection = dataSource.get().getConnection();
+             final PreparedStatement findStmt = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.creation_date as creation_date, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
+                             """)) {
+            connection.setAutoCommit(false);
+            findStmt.setString(1, id.id());
+            findStmt.setString(2, getAggregateClass().getSimpleName());
+            final List<EventMetadata> eventsMetadata = new ArrayList<>();
+            try (final ResultSet resultSet = findStmt.executeQuery()) {
+                while (resultSet.next()) {
+                    final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
+                    final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
+                    eventsMetadata.add(new EventMetadata(
+                            resultSet.getString("aggregate_root_type"),
+                            resultSet.getString("event_type"),
+                            new AggregateVersion(resultSet.getInt("version")),
+                            Timestamp.from(resultSet.getTimestamp("creation_date").toInstant()),
+                            ownedBy,
+                            new BelongsTo(new AnyAggregateId(resultSet.getString("belongs_to"))),
+                            executedBy
+                    ));
+                }
+            }
+            return eventsMetadata;
+        } catch (final SQLException e) {
+            throw new EventStoreException(e);
+        }
+    }
+
+    @Override
+    public List<EventMetadata> findEventMetadataByIdAndEventsOrderByVersionASC(final K id, final List<Class<? extends Event>> events) {
+        Objects.requireNonNull(id);
+        Objects.requireNonNull(events);
+        if (events.isEmpty()) {
+            return List.of();
+        } else {
+            try (final Connection connection = dataSource.get().getConnection();
+                 final PreparedStatement findStmt = connection.prepareStatement(
+                         // language=sql
+                         """
+                                 SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.creation_date as creation_date, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND event_type IN (%s) ORDER BY e.version ASC
+                                 """.formatted(events.stream().map(v -> "?").collect(Collectors.joining(", "))))) {
+                connection.setAutoCommit(false);
+                findStmt.setString(1, id.id());
+                findStmt.setString(2, getAggregateClass().getSimpleName());
+                for (int i = 0; i < events.size(); i++) {
+                    findStmt.setString(i + 3, events.get(i).getSimpleName());
+                }
+                final List<EventMetadata> eventsMetadata = new ArrayList<>();
+                try (final ResultSet resultSet = findStmt.executeQuery()) {
+                    while (resultSet.next()) {
+                        final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
+                        final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
+                        eventsMetadata.add(new EventMetadata(
+                                resultSet.getString("aggregate_root_type"),
+                                resultSet.getString("event_type"),
+                                new AggregateVersion(resultSet.getInt("version")),
+                                Timestamp.from(resultSet.getTimestamp("creation_date").toInstant()),
+                                ownedBy,
+                                new BelongsTo(new AnyAggregateId(resultSet.getString("belongs_to"))),
+                                executedBy
+                        ));
+                    }
+                }
+                return eventsMetadata;
+            } catch (final SQLException e) {
+                throw new EventStoreException(e);
+            }
         }
     }
 

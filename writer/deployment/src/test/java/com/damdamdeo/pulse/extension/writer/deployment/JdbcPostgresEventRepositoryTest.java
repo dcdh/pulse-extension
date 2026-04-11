@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
@@ -8,9 +9,9 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
 import com.damdamdeo.pulse.extension.writer.runtime.InstantProvider;
-import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,6 +26,8 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 
@@ -133,7 +136,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/1"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
-                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
+                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
@@ -205,7 +208,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
-                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
+                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
@@ -216,7 +219,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
-                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00"),
+                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("TodoMarkedAsDone"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
@@ -662,6 +665,65 @@ class JdbcPostgresEventRepositoryTest {
 
         // Then
         assertThat(version).hasValue(new AggregateVersion(1));
+    }
+
+    @Test
+    void shouldFindEventMetadataByIdOrderByVersionASC() throws SQLException {
+        // Given
+        List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        todoEventRepository.save(givenTodoEvents,
+                new Todo(
+                        new TodoId("Damien", 6L),
+                        "lorem ipsum",
+                        Status.DONE,
+                        false
+                ), ExecutedBy.NotAvailable.INSTANCE);
+
+        // When
+        final List<EventMetadata> eventMetadataByIdOrderByVersionASC = todoEventRepository.findEventMetadataByIdOrderByVersionASC(
+                new TodoId("Damien", 6L));
+
+        // Then
+        assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(
+                new EventMetadata(
+                        "Todo", "NewTodoCreated", new AggregateVersion(0),
+                        Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
+                        new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien/6")), ExecutedBy.NotAvailable.INSTANCE),
+                new EventMetadata(
+                        "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
+                        Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
+                        new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien/6")), ExecutedBy.NotAvailable.INSTANCE));
+    }
+
+    @Test
+    void shouldFindEventMetadataByIdAndEventsOrderByVersionASC() {
+        // Given
+        List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        todoEventRepository.save(givenTodoEvents,
+                new Todo(
+                        new TodoId("Damien", 7L),
+                        "lorem ipsum",
+                        Status.DONE,
+                        false
+                ), ExecutedBy.NotAvailable.INSTANCE);
+
+        // When
+        final List<EventMetadata> eventMetadataByIdOrderByVersionASC = todoEventRepository.findEventMetadataByIdAndEventsOrderByVersionASC(
+                new TodoId("Damien", 7L), List.of(TodoMarkedAsDone.class));
+
+        // Then
+        assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(new EventMetadata(
+                "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
+                Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
+                new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien/7")), ExecutedBy.NotAvailable.INSTANCE));
     }
 
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,
