@@ -50,7 +50,7 @@ class PulseExtensionResourceTest {
                 .body("aggregateId.id", is("Damien/20"))
                 .body("currentVersionInConsumption.version", is(0))
                 .body("currentVersionInConsumption.firstEvent", is(true))
-                .body("creationDate", notNullValue())
+                .body("storedAt", notNullValue())
                 .body("eventType.type", is("NewTodoCreated"))
                 .body("encryptedPayload.payload", notNullValue(String.class))
                 .body("ownedBy.id", is("Damien"))

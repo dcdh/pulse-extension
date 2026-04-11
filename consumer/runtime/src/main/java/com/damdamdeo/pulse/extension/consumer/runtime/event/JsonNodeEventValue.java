@@ -15,7 +15,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 
-public record JsonNodeEventValue(@JsonProperty("creation_date") Long creationDateInMicroSecond,
+public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAtInMicroSecond,
                                  @JsonProperty("event_type") String eventType,
                                  @JsonProperty("event_payload") byte[] payload,
                                  @JsonProperty("owned_by") String ownedBy,
@@ -24,7 +24,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long creationDat
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public JsonNodeEventValue {
-        Objects.requireNonNull(creationDateInMicroSecond);
+        Objects.requireNonNull(storedAtInMicroSecond);
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(payload);
         Objects.requireNonNull(ownedBy);
@@ -33,8 +33,8 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long creationDat
     }
 
     @Override
-    public Instant toCreationDate() {
-        return Instant.ofEpochMilli(creationDateInMicroSecond / 1000);
+    public Instant toStoredAt() {
+        return Instant.ofEpochMilli(storedAtInMicroSecond / 1000);
     }
 
     @Override
@@ -67,7 +67,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long creationDat
         if (o == null || getClass() != o.getClass()) return false;
         JsonNodeEventValue that = (JsonNodeEventValue) o;
         return Objects.equals(ownedBy, that.ownedBy)
-                && Objects.equals(creationDateInMicroSecond, that.creationDateInMicroSecond)
+                && Objects.equals(storedAtInMicroSecond, that.storedAtInMicroSecond)
                 && Objects.equals(eventType, that.eventType)
                 && Arrays.equals(payload, that.payload)
                 && Objects.equals(belongsTo, that.belongsTo)
@@ -76,13 +76,13 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long creationDat
 
     @Override
     public int hashCode() {
-        return Objects.hash(creationDateInMicroSecond, eventType, Arrays.hashCode(payload), ownedBy, belongsTo, executedBy);
+        return Objects.hash(storedAtInMicroSecond, eventType, Arrays.hashCode(payload), ownedBy, belongsTo, executedBy);
     }
 
     @Override
     public String toString() {
         return "JsonNodeEventRecord{" +
-                "creationDateInMicroSecond=" + creationDateInMicroSecond +
+                "storedAtInMicroSecond=" + storedAtInMicroSecond +
                 ", eventType='" + eventType + '\'' +
                 ", payload=" + Arrays.toString(payload) +
                 ", ownedBy='" + ownedBy + '\'' +

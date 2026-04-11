@@ -80,7 +80,7 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
         final AggregateId aggregateId = eventKey.toAggregateId();
         asyncEventChannelMessageHandlerProvider.provideForTarget(purpose)
                 .forEach(asyncEventChannelMessageHandler -> {
-                    final Instant creationDate = eventValue.toCreationDate();
+                    final Instant storedAt = eventValue.toStoredAt();
                     final EventType eventType = eventValue.toEventType();
                     final EncryptedPayload encryptedPayload = eventValue.toEncryptedEventPayload();
                     final OwnedBy ownedBy = eventValue.toOwnedBy();
@@ -97,7 +97,7 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
                         }
                         final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(fromApplication, aggregateRootType, aggregateId);
                         synchronized (this) {
-                            asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType, encryptedPayload, ownedBy,
+                            asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, storedAt, eventType, encryptedPayload, ownedBy,
                                     belongsTo, executedBy, decryptableEventPayload, aggregateRootSupplier);
                         }
                     } catch (final IOException e) {

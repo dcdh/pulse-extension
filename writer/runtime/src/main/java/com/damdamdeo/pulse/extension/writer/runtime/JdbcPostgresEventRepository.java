@@ -66,7 +66,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                             INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by) 
                              VALUES (?, ?, ?, ?, ?, public.pgp_sym_encrypt(?::text, ?), ?, ?, ?)
                              """);
              final PreparedStatement aggregatePreparedStatement = connection.prepareStatement(
@@ -258,7 +258,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
              final PreparedStatement findStmt = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.creation_date as creation_date, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
+                             SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.stored_at as stored_at, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? ORDER BY e.version ASC
                              """)) {
             connection.setAutoCommit(false);
             findStmt.setString(1, id.id());
@@ -272,7 +272,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                             resultSet.getString("aggregate_root_type"),
                             resultSet.getString("event_type"),
                             new AggregateVersion(resultSet.getInt("version")),
-                            Timestamp.from(resultSet.getTimestamp("creation_date").toInstant()),
+                            Timestamp.from(resultSet.getTimestamp("stored_at").toInstant()),
                             ownedBy,
                             new BelongsTo(new AnyAggregateId(resultSet.getString("belongs_to"))),
                             executedBy
@@ -296,7 +296,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                  final PreparedStatement findStmt = connection.prepareStatement(
                          // language=sql
                          """
-                                 SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.creation_date as creation_date, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND event_type IN (%s) ORDER BY e.version ASC
+                                 SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.stored_at as stored_at, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND event_type IN (%s) ORDER BY e.version ASC
                                  """.formatted(events.stream().map(v -> "?").collect(Collectors.joining(", "))))) {
                 connection.setAutoCommit(false);
                 findStmt.setString(1, id.id());
@@ -313,7 +313,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                 resultSet.getString("aggregate_root_type"),
                                 resultSet.getString("event_type"),
                                 new AggregateVersion(resultSet.getInt("version")),
-                                Timestamp.from(resultSet.getTimestamp("creation_date").toInstant()),
+                                Timestamp.from(resultSet.getTimestamp("stored_at").toInstant()),
                                 ownedBy,
                                 new BelongsTo(new AnyAggregateId(resultSet.getString("belongs_to"))),
                                 executedBy

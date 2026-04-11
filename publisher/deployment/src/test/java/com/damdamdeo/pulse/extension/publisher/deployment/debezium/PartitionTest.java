@@ -116,7 +116,7 @@ class PartitionTest {
         for (final String ownedBy : List.of(OWNED_BY_A, OWNED_BY_B)) {
             // language=sql
             final String tEventSql = """
-                    INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                    INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
             // language=sql

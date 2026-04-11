@@ -22,6 +22,6 @@ class JsonNodeEventValueTest {
                 "executedBy");
 
         // Then
-        assertThat(jsonNodeEventValue.toCreationDate().toString()).isEqualTo("2026-01-02T19:50:49.340Z");
+        assertThat(jsonNodeEventValue.toStoredAt().toString()).isEqualTo("2026-01-02T19:50:49.340Z");
     }
 }

@@ -60,7 +60,7 @@ class PurposeEventChannelConsumerTest {
         }
     }
 
-    record TodoEventValue(Long createDate,
+    record TodoEventValue(Long storedAt,
                           String eventType,
                           byte[] eventPayload,
                           String ownedBy,
@@ -74,8 +74,8 @@ class PurposeEventChannelConsumerTest {
         }
 
         @Override
-        public Instant toCreationDate() {
-            return Instant.ofEpochMilli(createDate);
+        public Instant toStoredAt() {
+            return Instant.ofEpochMilli(storedAt);
         }
 
         @Override

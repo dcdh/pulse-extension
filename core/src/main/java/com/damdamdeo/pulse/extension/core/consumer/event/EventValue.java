@@ -11,7 +11,7 @@ import java.time.Instant;
 
 public interface EventValue {
 
-    Instant toCreationDate();
+    Instant toStoredAt();
 
     EventType toEventType();
 

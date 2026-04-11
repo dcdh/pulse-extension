@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.Objects;
 
-public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
+public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAt,
                                  @JsonProperty("event_type") String eventType,
                                  @JsonProperty("event_payload") byte[] eventPayload,
                                  @JsonProperty("owned_by") String ownedBy,
@@ -15,7 +15,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public JsonNodeEventValue {
-        Objects.requireNonNull(createDate);
+        Objects.requireNonNull(storedAt);
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(eventPayload);
         Objects.requireNonNull(ownedBy);
@@ -28,7 +28,7 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
         if (o == null || getClass() != o.getClass()) return false;
         JsonNodeEventValue that = (JsonNodeEventValue) o;
         return Objects.equals(ownedBy, that.ownedBy)
-                && Objects.equals(createDate, that.createDate)
+                && Objects.equals(storedAt, that.storedAt)
                 && Objects.equals(eventType, that.eventType)
                 && Arrays.equals(eventPayload, that.eventPayload)
                 && Objects.equals(belongsTo, that.belongsTo)
@@ -37,13 +37,13 @@ public record JsonNodeEventValue(@JsonProperty("creation_date") Long createDate,
 
     @Override
     public int hashCode() {
-        return Objects.hash(createDate, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo, executedBy);
+        return Objects.hash(storedAt, eventType, Arrays.hashCode(eventPayload), ownedBy, belongsTo, executedBy);
     }
 
     @Override
     public String toString() {
         return "JsonNodeEventRecord{" +
-                "createDate=" + createDate +
+                "storedAt=" + storedAt +
                 ", eventType='" + eventType + '\'' +
                 ", eventPayload=" + Arrays.toString(eventPayload) +
                 ", ownedBy='" + ownedBy + '\'' +

@@ -19,7 +19,7 @@ public record Call(FromApplication fromApplication,
                    AggregateRootType aggregateRootType,
                    AggregateId aggregateId,
                    CurrentVersionInConsumption currentVersionInConsumption,
-                   Instant creationDate,
+                   Instant storedAt,
                    EventType eventType,
                    EncryptedPayload encryptedPayload,
                    OwnedBy ownedBy,
@@ -34,7 +34,7 @@ public record Call(FromApplication fromApplication,
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(currentVersionInConsumption);
-        Objects.requireNonNull(creationDate);
+        Objects.requireNonNull(storedAt);
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(encryptedPayload);
         Objects.requireNonNull(ownedBy);

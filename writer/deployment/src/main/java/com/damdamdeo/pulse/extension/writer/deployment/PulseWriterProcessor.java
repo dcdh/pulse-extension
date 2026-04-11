@@ -72,7 +72,7 @@ public class PulseWriterProcessor {
                             aggregate_root_type character varying(255) not null,
                             aggregate_root_id character varying(255) not null,
                             version bigint not null,
-                            creation_date timestamptz not null,
+                            stored_at timestamptz not null,
                             event_type character varying(255) not null,
                             event_payload bytea not null CHECK (octet_length(event_payload) <= 1000 * 1024),
                             owned_by character varying(255) not null,

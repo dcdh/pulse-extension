@@ -58,7 +58,7 @@ class ShouldFailOnApplicationDuplicationTest {
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
-                                  final Instant creationDate,
+                                  final Instant storedAt,
                                   final EventType eventType,
                                   final EncryptedPayload encryptedPayload,
                                   final OwnedBy ownedBy,

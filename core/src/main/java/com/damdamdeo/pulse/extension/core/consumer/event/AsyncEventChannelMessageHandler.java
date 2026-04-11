@@ -22,7 +22,7 @@ public interface AsyncEventChannelMessageHandler<T> {
                        AggregateRootType aggregateRootType,
                        AggregateId aggregateId,
                        CurrentVersionInConsumption currentVersionInConsumption,
-                       Instant creationDate,
+                       Instant storedAt,
                        EventType eventType,
                        EncryptedPayload encryptedPayload,
                        OwnedBy ownedBy,

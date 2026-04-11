@@ -46,7 +46,7 @@ class DebeziumPublisherTest {
     @Test
     void shouldConsumeFromTEventKafkaTopic() {
         // Given
-        final Timestamp givenCreationDate = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
+        final Timestamp givenStoredAt = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
         final byte[] payload = openPGPEncryptionService.encrypt(
                 // language=json
                 """
@@ -58,7 +58,7 @@ class DebeziumPublisherTest {
                         """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
-                INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -66,7 +66,7 @@ class DebeziumPublisherTest {
             eventPreparedStatement.setString(1, "Damien/0");
             eventPreparedStatement.setString(2, "Todo");
             eventPreparedStatement.setLong(3, 0);
-            eventPreparedStatement.setObject(4, givenCreationDate);
+            eventPreparedStatement.setObject(4, givenStoredAt);
             eventPreparedStatement.setString(5, "NewTodoCreated");
             eventPreparedStatement.setBytes(6, payload);
             eventPreparedStatement.setString(7, "Damien");

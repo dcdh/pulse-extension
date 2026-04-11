@@ -37,7 +37,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
-                              final Instant creationDate,
+                              final Instant storedAt,
                               final EventType eventType,
                               final EncryptedPayload encryptedPayload,
                               final OwnedBy ownedBy,
@@ -46,7 +46,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
         this.call = new Call(fromApplication,
-                purpose, aggregateRootType, aggregateId, currentVersionInConsumption, creationDate, eventType,
+                purpose, aggregateRootType, aggregateId, currentVersionInConsumption, storedAt, eventType,
                 encryptedPayload, ownedBy, belongsTo, executedBy, decryptableEventPayload,
                 aggregateRootLoadedSupplier.get());
     }

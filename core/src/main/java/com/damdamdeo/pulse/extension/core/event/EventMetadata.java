@@ -8,12 +8,13 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 public record EventMetadata(String aggregateRootType, String eventType, AggregateVersion aggregateVersion,
-                            Timestamp creationDate, OwnedBy ownedBy, BelongsTo belongsTo, ExecutedBy executedBy) {
+                            Timestamp storedAt, OwnedBy ownedBy, BelongsTo belongsTo, ExecutedBy executedBy) {
 
     public EventMetadata {
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(aggregateVersion);
+        Objects.requireNonNull(storedAt);
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(belongsTo);
         Objects.requireNonNull(executedBy);

@@ -115,7 +115,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by
+                                 SELECT aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by
                                  FROM event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
@@ -136,7 +136,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/1"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
-                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00+02"),
+                        () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
@@ -188,7 +188,7 @@ class JdbcPostgresEventRepositoryTest {
              final PreparedStatement tEventPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by
+                                 SELECT aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by
                                  FROM event WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """);
              final PreparedStatement tAggregateRootPreparedStatement = connection.prepareStatement(
@@ -208,7 +208,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
-                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00+02"),
+                        () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
@@ -219,7 +219,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
-                        () -> assertThat(tEventResultSet.getString("creation_date")).isEqualTo("2025-10-13 20:00:00+02"),
+                        () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("TodoMarkedAsDone"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
@@ -389,7 +389,7 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @Test
-    void shouldPreventMutabilityByFailingToUpdateAnEventCreationDate() throws SQLException {
+    void shouldPreventMutabilityByFailingToUpdateAnEventStoredAt() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000011", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
                 new OwnedBy("Damien"), BOB);
@@ -399,7 +399,7 @@ class JdbcPostgresEventRepositoryTest {
                  final PreparedStatement ps = connection.prepareStatement(
                          // language=sql
                          """
-                                 UPDATE event SET creation_date = ?
+                                 UPDATE event SET stored_at = ?
                                  WHERE aggregate_root_id = '00000000-0000-0000-0000-000000000011'
                                  """)) {
                 ps.setTimestamp(1, Timestamp.from(Instant.now()));
@@ -727,19 +727,19 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,
-                             final Instant creationDate, final String eventType, final String encryptedEventPayload,
+                             final Instant storedAt, final String eventType, final String encryptedEventPayload,
                              final OwnedBy ownedBy, final ExecutedBy executedBy) throws SQLException {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             INSERT INTO event (aggregate_root_id, aggregate_root_type, version, creation_date, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                             INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by) 
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                              """)) {
             preparedStatement.setString(1, aggregateRootId);
             preparedStatement.setString(2, aggregateRootType);
             preparedStatement.setLong(3, version);
-            preparedStatement.setTimestamp(4, Timestamp.from(creationDate));
+            preparedStatement.setTimestamp(4, Timestamp.from(storedAt));
             preparedStatement.setString(5, eventType);
             preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
             preparedStatement.setString(7, ownedBy.id());
