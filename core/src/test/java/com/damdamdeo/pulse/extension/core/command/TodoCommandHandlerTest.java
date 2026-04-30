@@ -42,11 +42,12 @@ class TodoCommandHandlerTest {
     @Test
     void shouldCreateTodoUsingExecutedByProvider() throws BusinessException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 0L), "lorem ipsum");
-        doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
+        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
+        doReturn(false).when(eventRepository).hasEventsFor(new TodoId("Damien", 0L));
 
         // When
-        final Todo todoCreated = todoCommandHandler.handle(givenCreateTodo);
+        final Todo todoCreated = todoCommandHandler.handle(new TodoId("Damien", 0L), givenCreateTodo,
+                () -> new DuplicateTodoException(new TodoId("Damien", 0L)));
 
         // Then
         assertAll(
@@ -68,11 +69,12 @@ class TodoCommandHandlerTest {
     @Test
     void shouldClassifieAsImportant() throws BusinessException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 0L), "IMPORTANT lorem ipsum");
-        doReturn(List.of()).when(eventRepository).loadOrderByVersionASC(new TodoId("Damien", 0L));
+        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
+        doReturn(false).when(eventRepository).hasEventsFor(new TodoId("Damien", 0L));
 
         // When
-        final Todo todoCreated = todoCommandHandler.handle(givenCreateTodo);
+        final Todo todoCreated = todoCommandHandler.handle(new TodoId("Damien", 0L), givenCreateTodo,
+                () -> new DuplicateTodoException(new TodoId("Damien", 0L)));
 
         // Then
         assertAll(
@@ -180,6 +182,15 @@ class TodoCommandHandlerTest {
         }
     }
 
+    static final class DuplicateTodoException extends DuplicateAggregateException {
+
+        private final TodoId todoId;
+
+        public DuplicateTodoException(final TodoId todoId) {
+            this.todoId = Objects.requireNonNull(todoId);
+        }
+    }
+
     @Test
     void shouldThrowBusinessExceptionHavingTodoMissingExceptionCauseWhenMissing() {
         // Given
@@ -192,5 +203,31 @@ class TodoCommandHandlerTest {
                 .rootCause()
                 .isInstanceOf(MissingAggregateException.class)
                 .hasFieldOrPropertyWithValue("todoId", new TodoId("Damien", 0L));
+    }
+
+    @Test
+    void shouldThrowBusinessExceptionHavingDuplicateTodoExceptionWhenDuplicate() {
+        // Given
+        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
+        doReturn(true).when(eventRepository).hasEventsFor(new TodoId("Damien", 0L));
+
+        // When && Then
+        assertThatThrownBy(() -> todoCommandHandler.handle(new TodoId("Damien", 0L), givenCreateTodo,
+                () -> new DuplicateTodoException(new TodoId("Damien", 0L))))
+                .isInstanceOf(BusinessException.class)
+                .rootCause()
+                .isInstanceOf(DuplicateTodoException.class)
+                .hasFieldOrPropertyWithValue("todoId", new TodoId("Damien", 0L));
+    }
+
+    @Test
+    void shouldFailFastWhenCreationalCommandCallByCommandHandler() {
+        // Given
+        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
+
+        // When && Then
+        assertThatThrownBy(() -> todoCommandHandler.handle(givenCreateTodo))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessage("You must use handle(final K id, final CreationalCommand<K> creationalCommand, final Supplier<DuplicateAggregateException> duplicateAggregateExceptionSupplier)");
     }
 }

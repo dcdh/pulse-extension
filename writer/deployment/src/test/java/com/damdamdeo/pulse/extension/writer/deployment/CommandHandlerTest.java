@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import io.quarkus.test.QuarkusUnitTest;
@@ -16,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -35,10 +33,11 @@ class CommandHandlerTest {
     @Test
     void shouldExecuteCommand() throws BusinessException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 
         // When
-        final Todo todoCreated = commandHandler.handle(givenCreateTodo);
+        final Todo todoCreated = commandHandler.handle(new TodoId("Damien", 20L), givenCreateTodo,
+                () -> new DuplicateTodoException(new TodoId("Damien", 20L)));
 
         // Then
         assertAll(
@@ -64,6 +63,15 @@ class CommandHandlerTest {
             return rs.getInt("count");
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    static final class DuplicateTodoException extends DuplicateAggregateException {
+
+        private final TodoId todoId;
+
+        public DuplicateTodoException(final TodoId todoId) {
+            this.todoId = Objects.requireNonNull(todoId);
         }
     }
 }

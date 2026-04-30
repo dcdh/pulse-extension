@@ -24,4 +24,6 @@ public interface EventRepository<A extends AggregateRoot<K>, K extends Aggregate
     List<EventMetadata> findEventMetadataByIdOrderByVersionASC(K id);
 
     List<EventMetadata> findEventMetadataByIdAndEventsOrderByVersionASC(K id, List<Class<? extends Event>> events);
+
+    boolean hasEventsFor(K id);
 }

@@ -28,6 +28,26 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         this.eventNotifier = Objects.requireNonNull(eventNotifier);
     }
 
+    public A handle(final K id, final CreationalCommand<K> creationalCommand,
+                    final Supplier<DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException {
+        Objects.requireNonNull(id);
+        Objects.requireNonNull(creationalCommand);
+        Objects.requireNonNull(duplicateAggregateExceptionSupplier);
+        final ExecutionContext executionContext = executionContextProvider.provide();
+        return commandHandlerRegistry.execute(id, () -> transaction.joiningExisting(() -> {
+            if (eventRepository.hasEventsFor(id)) {
+                throw new BusinessException(duplicateAggregateExceptionSupplier.get());
+            }
+            final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
+            final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
+            List<VersionizedEvent> newEvents = stateApplier.getNewEvents();
+            newEvents.forEach(newEvent -> eventNotifier.notify(
+                    new IdentifiableEvent(id.id(), newEvent.event())));
+            eventRepository.save(newEvents, aggregate, executionContext.executedBy());
+            return aggregate;
+        }));
+    }
+
     public A handle(final Command<K> command) throws BusinessException {
         return execute(command, executionContextProvider.provide(), null);
     }

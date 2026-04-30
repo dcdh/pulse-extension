@@ -726,6 +726,40 @@ class JdbcPostgresEventRepositoryTest {
                 new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien/7")), ExecutedBy.NotAvailable.INSTANCE));
     }
 
+    @Test
+    void shouldReturnFalseWhenNoEventIsPresent() {
+        // Given
+
+        // When
+        final boolean hasEventsFor = todoEventRepository.hasEventsFor(new TodoId("Damien", 8L));
+
+        // Then
+        assertThat(hasEventsFor).isFalse();
+    }
+
+    @Test
+    void shouldReturnTrueWhenAtLeastOneEventIsPresent() {
+        // Given
+        List<VersionizedEvent> givenTodoEvents = List.of(
+                new VersionizedEvent(new AggregateVersion(0),
+                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent(new AggregateVersion(1),
+                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        todoEventRepository.save(givenTodoEvents,
+                new Todo(
+                        new TodoId("Damien", 9L),
+                        "lorem ipsum",
+                        Status.DONE,
+                        false
+                ), ExecutedBy.NotAvailable.INSTANCE);
+
+        // When
+        final boolean hasEventsFor = todoEventRepository.hasEventsFor(new TodoId("Damien", 9L));
+
+        // Then
+        assertThat(hasEventsFor).isTrue();
+    }
+
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,
                              final Instant storedAt, final String eventType, final String encryptedEventPayload,
                              final OwnedBy ownedBy, final ExecutedBy executedBy) throws SQLException {

@@ -11,6 +11,8 @@ import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -24,6 +26,7 @@ class JakartaEventNotifierTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(CommandHandlerTest.DuplicateTodoException.class))
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .withConfigurationResource("application.properties");
 
@@ -48,10 +51,11 @@ class JakartaEventNotifierTest {
     @Test
     void shouldListenToEvent() throws BusinessException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 
         // When
-        commandHandler.handle(givenCreateTodo);
+        commandHandler.handle(new TodoId("Damien", 20L), givenCreateTodo,
+                () -> new CommandHandlerTest.DuplicateTodoException(new TodoId("Damien", 20L)));
 
         // Then
         assertAll(

@@ -17,10 +17,7 @@
 package com.damdamdeo.pulse.extension.it;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
-import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,6 +30,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Path("/pulse-extension")
@@ -62,7 +60,8 @@ public class PulseExtensionResource {
     @POST
     @Path("/createTodo")
     public TodoDTO createTodo() throws BusinessException {
-        return TodoDTO.from(todoCommandHandler.handle(new CreateTodo(new TodoId("Damien", 20L), "lorem ipsum")));
+        return TodoDTO.from(todoCommandHandler.handle(new TodoId("Damien", 20L), new CreateTodo("lorem ipsum"),
+                () -> new DuplicateTodoException(new TodoId("Damien", 20L))));
     }
 
     @POST
@@ -72,5 +71,14 @@ public class PulseExtensionResource {
                 .select(AsyncEventConsumerChannel.Literal.of("statistics")).get().getCall();
         return Optional.ofNullable(call)
                 .orElseThrow(() -> new NotFoundException("Call not executed yet"));
+    }
+
+    static final class DuplicateTodoException extends DuplicateAggregateException {
+
+        private final TodoId todoId;
+
+        public DuplicateTodoException(final TodoId todoId) {
+            this.todoId = Objects.requireNonNull(todoId);
+        }
     }
 }

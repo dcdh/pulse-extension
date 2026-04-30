@@ -327,5 +327,28 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
         }
     }
 
+    @Override
+    public boolean hasEventsFor(final K id) {
+        Objects.requireNonNull(id);
+        try (final Connection connection = dataSource.get().getConnection();
+             final PreparedStatement findStmt = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT EXISTS (SELECT 1 FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ?)
+                             """)) {
+            connection.setAutoCommit(false);
+            findStmt.setString(1, id.id());
+            findStmt.setString(2, getAggregateClass().getSimpleName());
+            try (final ResultSet resultSet = findStmt.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getBoolean(1);
+                }
+                return false;
+            }
+        } catch (final SQLException e) {
+            throw new EventStoreException(e);
+        }
+    }
+
     abstract protected Class<A> getAggregateClass();
 }
