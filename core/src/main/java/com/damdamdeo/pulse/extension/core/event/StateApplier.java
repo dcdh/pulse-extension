@@ -11,21 +11,21 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateId> implements EventAppender {
+public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateId> implements EventAppender<K> {
 
     private static final String COMMAND_HANDLER_METHOD_NAMING = "handle";
     private static final String EVENT_HANDLER_METHOD_NAMING = "on";
 
     private final A aggregate;
-    private final List<VersionizedEvent> newEvents;
+    private final List<VersionizedEvent<K>> newEvents;
     private final Map<Class<Command<K>>, Method> cacheCommandHandlerMethods;
-    private final Map<Class<Event>, Method> cacheEventMethods;
+    private final Map<Class<Event<K>>, Method> cacheEventMethods;
     private final ExecutionContextProvider executionContextProvider;
     private AggregateVersion aggregateVersion;
 
     public StateApplier(final AggregateRootInstanceCreator aggregateRootInstanceCreator,
                         final ExecutionContextProvider executionContextProvider,
-                        final List<ExecutedByEvent> events,
+                        final List<ExecutedByEvent<K>> events,
                         final Class<A> aggregateRootClass,
                         final Class<K> aggregateIdClass,
                         final K aggregateId) {
@@ -59,7 +59,7 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
                 .filter(m -> ExecutedBy.class.isAssignableFrom(m.getParameterTypes()[1]))
                 .filter(m -> m.canAccess(aggregate))
                 .collect(Collectors.toMap(
-                        m -> (Class<Event>) m.getParameterTypes()[0],
+                        m -> (Class<Event<K>>) m.getParameterTypes()[0],
                         m -> m,
                         (m1, m2) -> m1
                 ));
@@ -69,12 +69,12 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
     }
 
     @Override
-    public void append(final Event event) {
+    public void append(final Event<K> event) {
         Objects.requireNonNull(event);
-        final ExecutedByEvent executedByEvent = new ExecutedByEvent(
+        final ExecutedByEvent<K> executedByEvent = new ExecutedByEvent<>(
                 event, executionContextProvider.provide().executedBy());
         apply(executedByEvent);
-        this.newEvents.add(new VersionizedEvent(this.aggregateVersion, executedByEvent));
+        this.newEvents.add(new VersionizedEvent<>(this.aggregateVersion, executedByEvent));
         this.aggregateVersion = this.aggregateVersion.increment();
     }
 
@@ -103,9 +103,9 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         return this.aggregate;
     }
 
-    private void apply(final ExecutedByEvent executedByEvent) {
+    private void apply(final ExecutedByEvent<K> executedByEvent) {
         Objects.requireNonNull(executedByEvent);
-        final Event event = executedByEvent.event();
+        final Event<K> event = executedByEvent.event();
         if (!this.cacheEventMethods.containsKey(event.getClass())) {
             throw new UnsupportedOperationException("Missing 'on' method for event class - you must implement the method 'public void on(final %s %s, final ExecutedBy executedBy)' in '%s'"
                     .formatted(event.getClass().getSimpleName(), StringUtils.uncapitalize(event.getClass().getSimpleName()), aggregate.getClass().getSimpleName()));
@@ -122,7 +122,7 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
         return aggregate;
     }
 
-    public List<VersionizedEvent> getNewEvents() {
+    public List<VersionizedEvent<K>> getNewEvents() {
         return newEvents;
     }
 }

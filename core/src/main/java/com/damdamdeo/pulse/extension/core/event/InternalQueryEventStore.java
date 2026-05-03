@@ -30,7 +30,7 @@ public abstract class InternalQueryEventStore<A extends AggregateRoot<K>, K exte
                 .filter(lastVersionById -> lastVersionById.aggregateVersion().equals(aggregateVersion))
                 .map(VersionizedAggregateRoot::aggregateRoot)
                 .or(() -> {
-                    List<ExecutedByEvent> executedByEvents = eventStore.loadOrderByVersionASC(id, aggregateVersion);
+                    List<ExecutedByEvent<K>> executedByEvents = eventStore.loadOrderByVersionASC(id, aggregateVersion);
                     if (executedByEvents.isEmpty()) {
                         return Optional.empty();
                     } else {
@@ -43,7 +43,7 @@ public abstract class InternalQueryEventStore<A extends AggregateRoot<K>, K exte
 
     abstract protected Class<K> getAggregateIdClass();
 
-    private StateApplier<A, K> stateApplier(final List<ExecutedByEvent> executedByEvents, final K aggregateId) {
+    private StateApplier<A, K> stateApplier(final List<ExecutedByEvent<K>> executedByEvents, final K aggregateId) {
         Objects.requireNonNull(executedByEvents);
         Objects.requireNonNull(aggregateId);
         return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), executionContextProvider,

@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-public record TodoMarkedAsDone() implements Event {
+import com.damdamdeo.pulse.extension.core.TodoId;
+
+public record TodoMarkedAsDone() implements Event<TodoId> {
 
 }

@@ -11,11 +11,11 @@ import java.util.Optional;
 
 public interface EventRepository<A extends AggregateRoot<K>, K extends AggregateId> {
 
-    void save(List<VersionizedEvent> events, AggregateRoot<K> aggregateRoot, ExecutedBy executed_by) throws EventStoreException;
+    void save(List<VersionizedEvent<K>> events, AggregateRoot<K> aggregateRoot, ExecutedBy executed_by) throws EventStoreException;
 
-    List<ExecutedByEvent> loadOrderByVersionASC(K id) throws EventStoreException;
+    List<ExecutedByEvent<K>> loadOrderByVersionASC(K id) throws EventStoreException;
 
-    List<ExecutedByEvent> loadOrderByVersionASC(K id, AggregateVersion aggregateVersionRequested) throws EventStoreException;
+    List<ExecutedByEvent<K>> loadOrderByVersionASC(K id, AggregateVersion aggregateVersionRequested) throws EventStoreException;
 
     Optional<VersionizedAggregateRoot<A>> findLastVersionById(K id);
 
@@ -23,7 +23,7 @@ public interface EventRepository<A extends AggregateRoot<K>, K extends Aggregate
 
     List<EventMetadata> findEventMetadataByIdOrderByVersionASC(K id);
 
-    List<EventMetadata> findEventMetadataByIdAndEventsOrderByVersionASC(K id, List<Class<? extends Event>> events);
+    List<EventMetadata> findEventMetadataByIdAndEventsOrderByVersionASC(K id, List<Class<? extends Event<K>>> events);
 
     boolean hasEventsFor(K id);
 }

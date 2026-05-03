@@ -1,4 +1,6 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-public interface Event {
+import com.damdamdeo.pulse.extension.core.AggregateId;
+
+public interface Event<K extends AggregateId> {
 }

@@ -113,7 +113,7 @@ class SerializerTest {
         }
     }
 
-    public record CommandeEnCoursDePrise(NombreDeConvives nombreDeConvives) implements Event {
+    public record CommandeEnCoursDePrise(NombreDeConvives nombreDeConvives) implements Event<TodoId> {
 
         public CommandeEnCoursDePrise {
             Objects.requireNonNull(nombreDeConvives);

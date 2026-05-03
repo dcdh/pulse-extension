@@ -97,9 +97,9 @@ class JdbcPostgresEventRepositoryTest {
     @Order(1)
     void shouldSave() {
         // Given
-        final List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), BOB)));
+        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), BOB)));
 
         // When
         todoEventRepository.save(givenTodoEvents,
@@ -163,8 +163,8 @@ class JdbcPostgresEventRepositoryTest {
     void shouldUpsertAggregateRoot() {
         // Given
         todoEventRepository.save(List.of(
-                        new VersionizedEvent(new AggregateVersion(0),
-                                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), BOB))),
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), BOB))),
                 new Todo(
                         new TodoId("Damien", 2L),
                         "lorem ipsum",
@@ -174,8 +174,8 @@ class JdbcPostgresEventRepositoryTest {
 
         // When
         todoEventRepository.save(List.of(
-                        new VersionizedEvent(new AggregateVersion(1),
-                                new ExecutedByEvent(new TodoMarkedAsDone(), BOB))),
+                        new VersionizedEvent<>(new AggregateVersion(1),
+                                new ExecutedByEvent<>(new TodoMarkedAsDone(), BOB))),
                 new Todo(
                         new TodoId("Damien", 2L),
                         "lorem ipsum",
@@ -249,11 +249,11 @@ class JdbcPostgresEventRepositoryTest {
     @Order(3)
     void shouldLoadOrderByVersionASC() {
         // Given
-        List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 3L),
@@ -263,23 +263,23 @@ class JdbcPostgresEventRepositoryTest {
                 ), ExecutedBy.NotAvailable.INSTANCE);
 
         // When
-        final List<ExecutedByEvent> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
+        final List<ExecutedByEvent<TodoId>> events = todoEventRepository.loadOrderByVersionASC(new TodoId("Damien", 3L));
 
         // Then
         assertThat(events).containsExactly(
-                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
-                new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE));
+                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
+                new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
     @Order(4)
     void shouldPartialLoadAggregate() {
         // Given
-        List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 4L),
@@ -289,13 +289,13 @@ class JdbcPostgresEventRepositoryTest {
                 ), ExecutedBy.NotAvailable.INSTANCE);
 
         // When
-        final List<ExecutedByEvent> events = todoEventRepository.loadOrderByVersionASC(
+        final List<ExecutedByEvent<TodoId>> events = todoEventRepository.loadOrderByVersionASC(
                 new TodoId("Damien", 4L), new AggregateVersion(1));
 
         // Then
         assertThat(events).containsExactly(
-                new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
-                new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE));
+                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
+                new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
@@ -647,11 +647,11 @@ class JdbcPostgresEventRepositoryTest {
     @Test
     void shouldFindLastVersionById() {
         // Given
-        List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 5L),
@@ -670,11 +670,11 @@ class JdbcPostgresEventRepositoryTest {
     @Test
     void shouldFindEventMetadataByIdOrderByVersionASC() throws SQLException {
         // Given
-        List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 6L),
@@ -702,11 +702,11 @@ class JdbcPostgresEventRepositoryTest {
     @Test
     void shouldFindEventMetadataByIdAndEventsOrderByVersionASC() {
         // Given
-        List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 7L),
@@ -740,11 +740,11 @@ class JdbcPostgresEventRepositoryTest {
     @Test
     void shouldReturnTrueWhenAtLeastOneEventIsPresent() {
         // Given
-        List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         new TodoId("Damien", 9L),

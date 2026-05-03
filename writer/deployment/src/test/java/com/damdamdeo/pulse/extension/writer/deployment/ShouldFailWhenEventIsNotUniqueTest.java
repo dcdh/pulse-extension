@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import io.quarkus.test.QuarkusUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +29,7 @@ public class ShouldFailWhenEventIsNotUniqueTest {
         Assertions.fail("Startup should have failed");
     }
 
-    public record NewTodoCreated(String description) implements Event {
+    public record NewTodoCreated(String description) implements Event<TodoId> {
 
         public NewTodoCreated {
             Objects.requireNonNull(description);

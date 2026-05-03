@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core.command;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.saga.Saga;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,18 +15,18 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
     private final EventRepository<A, K> eventRepository;
     private final Transaction transaction;
     private final ExecutionContextProvider executionContextProvider;
-    private final EventNotifier eventNotifier;
+    private final List<Saga<K, Event<K>>> sagas;
 
     public CommandHandler(final CommandHandlerRegistry commandHandlerRegistry,
                           final EventRepository<A, K> eventRepository,
                           final Transaction transaction,
                           final ExecutionContextProvider executionContextProvider,
-                          final EventNotifier eventNotifier) {
+                          final List<Saga<K, Event<K>>> sagas) {
         this.commandHandlerRegistry = Objects.requireNonNull(commandHandlerRegistry);
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.transaction = Objects.requireNonNull(transaction);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
-        this.eventNotifier = Objects.requireNonNull(eventNotifier);
+        this.sagas = Objects.requireNonNull(sagas);
     }
 
     public A handle(final K id, final CreationalCommand<K> creationalCommand,
@@ -40,9 +41,8 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
             }
             final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
             final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
-            List<VersionizedEvent> newEvents = stateApplier.getNewEvents();
-            newEvents.forEach(newEvent -> eventNotifier.notify(
-                    new IdentifiableEvent(id.id(), newEvent.event())));
+            List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+            newEvents.forEach(newEvent -> sagas.forEach(saga -> saga.execute(id, newEvent.event())));
             eventRepository.save(newEvents, aggregate, executionContext.executedBy());
             return aggregate;
         }));
@@ -61,15 +61,14 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
         return commandHandlerRegistry.execute(command.id(), () -> transaction.joiningExisting(() -> {
-            final List<ExecutedByEvent> events = eventRepository.loadOrderByVersionASC(command.id());
+            final List<ExecutedByEvent<K>> events = eventRepository.loadOrderByVersionASC(command.id());
             if (events.isEmpty() && missingAggregateExceptionSupplier != null) {
                 throw new BusinessException(missingAggregateExceptionSupplier.get());
             }
             final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
             final A aggregate = stateApplier.executeCommand(command, executionContext);
-            List<VersionizedEvent> newEvents = stateApplier.getNewEvents();
-            newEvents.forEach(newEvent -> eventNotifier.notify(
-                    new IdentifiableEvent(command.id().id(), newEvent.event())));
+            List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+            newEvents.forEach(newEvent -> sagas.forEach(saga -> saga.execute(command.id(), newEvent.event())));
             eventRepository.save(newEvents, aggregate, executionContext.executedBy());
             return aggregate;
         }));
@@ -79,7 +78,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
 
     abstract protected Class<K> getAggregateIdClass();
 
-    private StateApplier<A, K> stateApplier(final List<ExecutedByEvent> executedByEvents, final K aggregateId) {
+    private StateApplier<A, K> stateApplier(final List<ExecutedByEvent<K>> executedByEvents, final K aggregateId) {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(executedByEvents);
         return new StateApplier<>(new ReflectionAggregateRootInstanceCreator(), executionContextProvider,

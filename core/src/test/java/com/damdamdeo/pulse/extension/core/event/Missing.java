@@ -1,4 +1,6 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-public record Missing() implements Event {
+import com.damdamdeo.pulse.extension.core.TodoId;
+
+public record Missing() implements Event<TodoId> {
 }

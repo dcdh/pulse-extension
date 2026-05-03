@@ -61,9 +61,9 @@ class QueryEventStoreTest {
     void shouldFindByIdReturnAggregateWhenExists() {
         // Given
         final TodoId givenTodoId = new TodoId("Damien", 10L);
-        final List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)));
+        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,
@@ -114,11 +114,11 @@ class QueryEventStoreTest {
         // Given
         final TodoId givenTodoId = new TodoId("Damien", 13L);
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
-        final List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,
@@ -146,11 +146,11 @@ class QueryEventStoreTest {
         // Given
         final TodoId givenTodoId = new TodoId("Damien", 14L);
         final AggregateVersion aggregateVersion = new AggregateVersion(0);
-        final List<VersionizedEvent> givenTodoEvents = List.of(
-                new VersionizedEvent(new AggregateVersion(0),
-                        new ExecutedByEvent(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
-                new VersionizedEvent(new AggregateVersion(1),
-                        new ExecutedByEvent(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
+        final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
+                new VersionizedEvent<>(new AggregateVersion(0),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                new VersionizedEvent<>(new AggregateVersion(1),
+                        new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,

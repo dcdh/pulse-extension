@@ -35,7 +35,7 @@ class ShouldFailWhenEventNotARecordTest {
 
     // NOT needed to use addClass
     // Will be registered automatically
-    private static final class InvalidEvent implements Event {
+    private static final class InvalidEvent implements Event<TodoId> {
     }
 
 }

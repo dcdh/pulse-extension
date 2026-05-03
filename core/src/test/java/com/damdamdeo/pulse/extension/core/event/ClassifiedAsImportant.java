@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-public record ClassifiedAsImportant() implements Event {
+import com.damdamdeo.pulse.extension.core.TodoId;
+
+public record ClassifiedAsImportant() implements Event<TodoId> {
 
     public ClassifiedAsImportant {
     }

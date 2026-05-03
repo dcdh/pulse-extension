@@ -5,12 +5,11 @@ import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
-import com.damdamdeo.pulse.extension.core.event.IdentifiableEvent;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.saga.Saga;
+import io.quarkus.arc.All;
 import io.quarkus.test.QuarkusUnitTest;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
@@ -18,11 +17,12 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class JakartaEventNotifierTest {
+class SagaTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -34,17 +34,31 @@ class JakartaEventNotifierTest {
     CommandHandler<Todo, TodoId> commandHandler;
 
     @Inject
-    EventListener eventListener;
+    @All
+//    List<Saga<TodoId, Event<TodoId>>> sagas; not working ! will return empty
+    List<Saga<TodoId, ?>> sagas;// It's ok
 
-    @Singleton
-    static class EventListener {
+    @Inject
+    OnNewTodoCreated onNewTodoCreated;
 
-        final List<IdentifiableEvent> identifiableEvents = new ArrayList<>();
-        NewTodoCreated newTodoCreated = null;
+    record On(TodoId id, NewTodoCreated event) {
+    }
 
-        void on(@Observes final IdentifiableEvent identifiableEvent) {
-            identifiableEvents.add(identifiableEvent);
-            identifiableEvent.executeOn(NewTodoCreated.class, (event) -> newTodoCreated = event);
+    static class OnNewTodoCreated implements Saga<TodoId, NewTodoCreated> {
+
+        final List<On> events = new ArrayList<>();
+
+        @Override
+        public void on(final TodoId id, final NewTodoCreated event) {
+            Objects.requireNonNull(id);
+            Objects.requireNonNull(event);
+            // On a real sample it should call a ComandHandler
+            events.add(new On(id, event));
+        }
+
+        @Override
+        public Class<NewTodoCreated> eventType() {
+            return NewTodoCreated.class;
         }
     }
 
@@ -59,10 +73,10 @@ class JakartaEventNotifierTest {
 
         // Then
         assertAll(
-                () -> assertThat(eventListener.identifiableEvents.size()).isEqualTo(1),
-                () -> assertThat(eventListener.identifiableEvents.getFirst().id()).isEqualTo("Damien/20"),
-                () -> assertThat(eventListener.identifiableEvents.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum")),
-                () -> assertThat(eventListener.newTodoCreated).isEqualTo(new NewTodoCreated("lorem ipsum"))
+                () -> assertThat(sagas.size()).isEqualTo(1),
+                () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
+                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId("Damien", 20L)),
+                () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))
         );
     }
 }

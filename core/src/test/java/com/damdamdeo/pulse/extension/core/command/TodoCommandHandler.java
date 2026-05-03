@@ -2,9 +2,12 @@ package com.damdamdeo.pulse.extension.core.command;
 
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.event.EventNotifier;
+import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.saga.Saga;
+
+import java.util.List;
 
 public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
 
@@ -12,8 +15,8 @@ public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
                               final EventRepository<Todo, TodoId> eventRepository,
                               final Transaction transaction,
                               final ExecutionContextProvider executionContextProvider,
-                              final EventNotifier eventNotifier) {
-        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, eventNotifier);
+                              final List<Saga<TodoId, Event<TodoId>>> sagas) {
+        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, sagas);
     }
 
     @Override

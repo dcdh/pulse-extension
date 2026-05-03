@@ -3,14 +3,15 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
-import com.damdamdeo.pulse.extension.core.event.EventNotifier;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.InternalQueryEventStore;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
+import com.damdamdeo.pulse.extension.core.saga.Saga;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository;
 import com.damdamdeo.pulse.extension.writer.runtime.projection.JdbcProjectionFromEventStore;
+import io.quarkus.arc.All;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
@@ -141,7 +142,7 @@ public class CodeGenerationProcessor {
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
                         CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutionContextProvider.class,
-                        EventNotifier.class)) {
+                        List.class)) {
                     constructor
                             .setSignature(SignatureBuilder.forMethod()
                                     .addParameterType(Type.classType(CommandHandlerRegistry.class))
@@ -151,9 +152,19 @@ public class CodeGenerationProcessor {
                                             Type.classType(aggregateRootBuildItem.aggregateIdClazz())))
                                     .addParameterType(Type.classType(Transaction.class))
                                     .addParameterType(Type.classType(ExecutionContextProvider.class))
-                                    .addParameterType(Type.classType(EventNotifier.class))
+                                    .addParameterType(Type.parameterizedType(
+                                            Type.classType(List.class),
+//                                            Type.parameterizedType(Type.classType(Saga.class),
+//                                                    Type.classType(aggregateRootBuildItem.aggregateIdClazz()),
+//                                                    Type.parameterizedType(
+//                                                            Type.classType(Event.class),
+//                                                            Type.classType(aggregateRootBuildItem.aggregateIdClazz())))))
+                                            Type.parameterizedType(Type.classType(Saga.class),
+                                                    Type.classType(aggregateRootBuildItem.aggregateIdClazz()),
+                                                    Type.wildcardTypeUnbounded())))
                                     .build());
                     constructor.setModifiers(Modifier.PUBLIC);
+                    constructor.getParameterAnnotations(4).addAnnotation(All.class);
 
                     constructor.invokeSpecialMethod(
                             MethodDescriptor.ofConstructor(CommandHandler.class,
@@ -161,7 +172,7 @@ public class CodeGenerationProcessor {
                                     EventRepository.class,
                                     Transaction.class,
                                     ExecutionContextProvider.class,
-                                    EventNotifier.class),
+                                    List.class),
                             constructor.getThis(),
                             constructor.getMethodParam(0),
                             constructor.getMethodParam(1),
