@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
 import com.damdamdeo.pulse.extension.core.event.EventNotifier;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
-import com.damdamdeo.pulse.extension.core.event.QueryEventStore;
+import com.damdamdeo.pulse.extension.core.event.InternalQueryEventStore;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
@@ -71,7 +71,7 @@ public class CodeGenerationProcessor {
                     .signature(SignatureBuilder.forClass()
                             .setSuperClass(
                                     Type.parameterizedType(
-                                            Type.classType(QueryEventStore.class),
+                                            Type.classType(InternalQueryEventStore.class),
                                             Type.classType(aggregateRootBuildItem.aggregateRootClazz()),
                                             Type.classType(aggregateRootBuildItem.aggregateIdClazz()))))
                     .setFinal(true)
@@ -93,7 +93,7 @@ public class CodeGenerationProcessor {
                     constructor.setModifiers(Modifier.PUBLIC);
 
                     constructor.invokeSpecialMethod(
-                            MethodDescriptor.ofConstructor(QueryEventStore.class, EventRepository.class, ExecutionContextProvider.class),
+                            MethodDescriptor.ofConstructor(InternalQueryEventStore.class, EventRepository.class, ExecutionContextProvider.class),
                             constructor.getThis(),
                             constructor.getMethodParam(0),
                             constructor.getMethodParam(1)
