@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.common.runtime.hashing;
 import com.damdamdeo.pulse.extension.core.hashing.Algorithm;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
+import com.damdamdeo.pulse.extension.core.hashing.HasherExecutor;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;

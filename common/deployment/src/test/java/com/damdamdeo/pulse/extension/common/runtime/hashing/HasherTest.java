@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.common.runtime.hashing;
 
 import com.damdamdeo.pulse.extension.core.hashing.Algorithm;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
+import com.damdamdeo.pulse.extension.core.hashing.HasherExecutor;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
