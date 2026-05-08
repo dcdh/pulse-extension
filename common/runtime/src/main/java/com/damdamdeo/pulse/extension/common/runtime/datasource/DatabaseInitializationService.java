@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.datasource;
 
+import com.damdamdeo.pulse.extension.common.runtime.CommonConfiguration;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,6 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 
 @ApplicationScoped
 @Unremovable
@@ -26,8 +28,16 @@ public class DatabaseInitializationService {
     @Inject
     Provider<DataSource> dataSource;
 
-    void onStart(@Observes StartupEvent ev) {
-        executeScripts();
+    private final CommonConfiguration commonConfiguration;
+
+    public DatabaseInitializationService(final CommonConfiguration commonConfiguration) {
+        this.commonConfiguration = Objects.requireNonNull(commonConfiguration);
+    }
+
+    void onStart(@Observes final StartupEvent ev) {
+        if (commonConfiguration.datasource().initAtStartup()) {
+            executeScripts();
+        }
     }
 
     private void executeScripts() {

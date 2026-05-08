@@ -27,6 +27,8 @@ class PostgresEncryptionTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
+            .overrideConfigKey("quarkus.devservices.enabled", "true")
+            .overrideConfigKey("pulse.datasource.init-at-startup", "true")
             .withConfigurationResource("application.properties");
 
     @Inject
