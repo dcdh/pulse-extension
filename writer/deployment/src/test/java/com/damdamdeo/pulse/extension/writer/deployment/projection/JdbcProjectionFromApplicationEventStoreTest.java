@@ -116,7 +116,8 @@ class JdbcProjectionFromApplicationEventStoreTest {
                      AND i.aggregate_root_type = 'TodoChecklist'
                     WHERE d.aggregate_root_type = 'Todo'
                       AND d.owned_by = '%2$s'
-                    GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.belongs_to;
+                    GROUP BY d.aggregate_root_id, d.aggregate_root_type, d.decrypted_aggregate_root_payload, d.belongs_to
+                    ORDER BY d.aggregate_root_id ASC;
                     """.formatted(new String(passphrase.passphrase()), ownedBy.id());
         }
     }
