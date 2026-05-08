@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.common.runtime.hashing;
 
 import com.damdamdeo.pulse.extension.core.hashing.Algorithm;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
-import com.damdamdeo.pulse.extension.core.hashing.HasherExecutor;
+import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class HasherTest {
             .overrideConfigKey("quarkus.devservices.enabled", "false");
 
     @Inject
-    HasherExecutor hasherExecutor;
+    Hasher hasher;
 
     @Test
     void shouldHashUsingSHA3_256Test() {
@@ -26,7 +26,7 @@ class HasherTest {
         final byte[] givenOriginal = "test".getBytes();
 
         // When
-        final Hash hash = hasherExecutor.hash(Algorithm.SHA3_256, givenOriginal);
+        final Hash hash = hasher.hash(Algorithm.SHA3_256, givenOriginal);
 
         // Then
         assertThat(hash).isEqualTo(new Hash(Algorithm.SHA3_256, "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"));

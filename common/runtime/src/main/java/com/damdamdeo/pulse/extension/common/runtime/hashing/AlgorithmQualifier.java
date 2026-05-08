@@ -13,11 +13,11 @@ import java.util.Objects;
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER, ElementType.TYPE})
-public @interface HasherAlgorithmQualifier {
+public @interface AlgorithmQualifier {
 
     Algorithm value();
 
-    class Literal extends AnnotationLiteral<HasherAlgorithmQualifier> implements HasherAlgorithmQualifier {
+    class Literal extends AnnotationLiteral<AlgorithmQualifier> implements AlgorithmQualifier {
 
         private final Algorithm value;
 
