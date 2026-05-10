@@ -7,11 +7,11 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 public interface EventValue {
 
-    Instant toStoredAt();
+    ZonedDateTime toStoredAt();
 
     EventType toEventType();
 

@@ -3,10 +3,11 @@ package com.damdamdeo.pulse.extension.consumer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
-public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAt,
+public record JsonNodeEventValue(@JsonProperty("stored_at") ZonedDateTime storedAt,
                                  @JsonProperty("event_type") String eventType,
                                  @JsonProperty("event_payload") byte[] eventPayload,
                                  @JsonProperty("owned_by") String ownedBy,

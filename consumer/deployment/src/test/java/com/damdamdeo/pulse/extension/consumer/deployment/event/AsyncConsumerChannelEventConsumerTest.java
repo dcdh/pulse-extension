@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
-import java.time.Instant;
+import java.time.*;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -155,7 +155,7 @@ class AsyncConsumerChannelEventConsumerTest {
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Damien/0"),
                         new CurrentVersionInConsumption(0),
-                        Instant.ofEpochMilli(1_761_335_312_527L),
+                        ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Damien"),
@@ -212,7 +212,7 @@ class AsyncConsumerChannelEventConsumerTest {
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId("Alban/0"),
                         new CurrentVersionInConsumption(0),
-                        Instant.ofEpochMilli(1_761_335_312_527L),
+                        ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Alban"),

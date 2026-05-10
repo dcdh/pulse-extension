@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime.event;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.time.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,7 +15,7 @@ class JsonNodeEventValueTest {
 
         // When
         final JsonNodeEventValue jsonNodeEventValue = new JsonNodeEventValue(
-                1767383449340168L,
+                ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                 "eventType",
                 "payload".getBytes(StandardCharsets.UTF_8),
                 "ownedBy",
@@ -22,6 +23,6 @@ class JsonNodeEventValueTest {
                 "executedBy");
 
         // Then
-        assertThat(jsonNodeEventValue.toStoredAt().toString()).isEqualTo("2026-01-02T19:50:49.340Z");
+        assertThat(jsonNodeEventValue.toStoredAt().toString()).isEqualTo("1970-01-12T13:46:40Z");
     }
 }

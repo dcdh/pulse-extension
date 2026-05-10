@@ -12,7 +12,7 @@ import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.function.Supplier;
 
 public interface AsyncEventChannelMessageHandler<T> {
@@ -22,7 +22,7 @@ public interface AsyncEventChannelMessageHandler<T> {
                        AggregateRootType aggregateRootType,
                        AggregateId aggregateId,
                        CurrentVersionInConsumption currentVersionInConsumption,
-                       Instant storedAt,
+                       ZonedDateTime storedAt,
                        EventType eventType,
                        EncryptedPayload encryptedPayload,
                        OwnedBy ownedBy,

@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.Duration;
+import java.time.*;
 import java.util.Map;
 import java.util.UUID;
 
@@ -87,7 +87,8 @@ public class Producer {
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeEventKey>(), new ObjectMapperSerializer<JsonNodeEventValue>())
                 .fromRecords(new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.EVENT).name(),
                         new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
-                        new JsonNodeEventValue(1_761_335_312_527L * 1000,
+                        new JsonNodeEventValue(
+                                ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                                 eventClass.getSimpleName(),
                                 encryptedPayload,
                                 ownedBy.id(),

@@ -12,10 +12,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Objects;
 
-public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAtInMicroSecond,
+public record JsonNodeEventValue(@JsonProperty("stored_at") ZonedDateTime storedAt,
                                  @JsonProperty("event_type") String eventType,
                                  @JsonProperty("event_payload") byte[] payload,
                                  @JsonProperty("owned_by") String ownedBy,
@@ -24,7 +25,7 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAtInMicro
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public JsonNodeEventValue {
-        Objects.requireNonNull(storedAtInMicroSecond);
+        Objects.requireNonNull(storedAt);
         Objects.requireNonNull(eventType);
         Objects.requireNonNull(payload);
         Objects.requireNonNull(ownedBy);
@@ -33,8 +34,8 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAtInMicro
     }
 
     @Override
-    public Instant toStoredAt() {
-        return Instant.ofEpochMilli(storedAtInMicroSecond / 1000);
+    public ZonedDateTime toStoredAt() {
+        return storedAt;
     }
 
     @Override
@@ -67,7 +68,7 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAtInMicro
         if (o == null || getClass() != o.getClass()) return false;
         JsonNodeEventValue that = (JsonNodeEventValue) o;
         return Objects.equals(ownedBy, that.ownedBy)
-                && Objects.equals(storedAtInMicroSecond, that.storedAtInMicroSecond)
+                && Objects.equals(storedAt, that.storedAt)
                 && Objects.equals(eventType, that.eventType)
                 && Arrays.equals(payload, that.payload)
                 && Objects.equals(belongsTo, that.belongsTo)
@@ -76,13 +77,13 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") Long storedAtInMicro
 
     @Override
     public int hashCode() {
-        return Objects.hash(storedAtInMicroSecond, eventType, Arrays.hashCode(payload), ownedBy, belongsTo, executedBy);
+        return Objects.hash(storedAt, eventType, Arrays.hashCode(payload), ownedBy, belongsTo, executedBy);
     }
 
     @Override
     public String toString() {
         return "JsonNodeEventRecord{" +
-                "storedAtInMicroSecond=" + storedAtInMicroSecond +
+                "storedAt=" + storedAt +
                 ", eventType='" + eventType + '\'' +
                 ", payload=" + Arrays.toString(payload) +
                 ", ownedBy='" + ownedBy + '\'' +

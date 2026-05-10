@@ -18,7 +18,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.function.Supplier;
 
 @ApplicationScoped
@@ -37,7 +37,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final AggregateRootType aggregateRootType,
                               final AggregateId aggregateId,
                               final CurrentVersionInConsumption currentVersionInConsumption,
-                              final Instant storedAt,
+                              final ZonedDateTime storedAt,
                               final EventType eventType,
                               final EncryptedPayload encryptedPayload,
                               final OwnedBy ownedBy,

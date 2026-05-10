@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import java.time.*;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -60,7 +60,7 @@ class PurposeEventChannelConsumerTest {
         }
     }
 
-    record TodoEventValue(Long storedAt,
+    record TodoEventValue(ZonedDateTime storedAt,
                           String eventType,
                           byte[] eventPayload,
                           String ownedBy,
@@ -69,13 +69,14 @@ class PurposeEventChannelConsumerTest {
 
         public static TodoEventValue of() {
             return new TodoEventValue(
-                    1983L, NewTodoCreated.class.getSimpleName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
+                    ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
+                    NewTodoCreated.class.getSimpleName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
                     "Damien", "Damien/0L", "EU:bob");
         }
 
         @Override
-        public Instant toStoredAt() {
-            return Instant.ofEpochMilli(storedAt);
+        public ZonedDateTime toStoredAt() {
+            return storedAt;
         }
 
         @Override

@@ -16,7 +16,7 @@ import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
 import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -80,7 +80,7 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
         final AggregateId aggregateId = eventKey.toAggregateId();
         asyncEventChannelMessageHandlerProvider.provideForTarget(purpose)
                 .forEach(asyncEventChannelMessageHandler -> {
-                    final Instant storedAt = eventValue.toStoredAt();
+                    final ZonedDateTime storedAt = eventValue.toStoredAt();
                     final EventType eventType = eventValue.toEventType();
                     final EncryptedPayload encryptedPayload = eventValue.toEncryptedEventPayload();
                     final OwnedBy ownedBy = eventValue.toOwnedBy();
