@@ -39,12 +39,12 @@ class DebeziumConfiguratorTest {
                 .body("name", is("todotaking_todo"))
                 .body("connector.state", is("RUNNING"))
                 .body("connector.worker_id", notNullValue())
-                .body("connector.version", is("3.3.1.Final"))
+                .body("connector.version", is("3.5.0.Final"))
                 .body("tasks", hasSize(1))
                 .body("tasks[0].id", is(0))
                 .body("tasks[0].state", is("RUNNING"))
                 .body("tasks[0].worker_id", notNullValue())
-                .body("tasks[0].version", is("3.3.1.Final"))
+                .body("tasks[0].version", is("3.5.0.Final"))
                 .body("type", is("source"));
     }
 }

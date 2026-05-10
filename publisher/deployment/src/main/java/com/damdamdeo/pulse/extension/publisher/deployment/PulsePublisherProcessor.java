@@ -41,7 +41,7 @@ public class PulsePublisherProcessor {
                 PulseCommonProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM,
                 new ComposeServiceBuildItem(
                         new ComposeServiceBuildItem.ServiceName("connect"),
-                        new ComposeServiceBuildItem.ImageName("quay.io/debezium/connect:3.3.1.Final"),
+                        new ComposeServiceBuildItem.ImageName("quay.io/debezium/connect:3.5.0.Final"),
                         new ComposeServiceBuildItem.Labels(
                                 Map.of("io.quarkus.devservices.compose.config_map.port.8083", "pulse.debezium.connect.port")),
                         new ComposeServiceBuildItem.Ports(List.of("8083")),

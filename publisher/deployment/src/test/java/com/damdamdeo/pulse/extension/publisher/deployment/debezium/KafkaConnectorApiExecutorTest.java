@@ -54,7 +54,7 @@ class KafkaConnectorApiExecutorTest {
                 () -> assertThat(kafkaConnectorStatusDTO.name()).isEqualTo("todotaking_todo"),
                 () -> assertThat(kafkaConnectorStatusDTO.connector().state()).isEqualTo("RUNNING"),
                 () -> assertThat(kafkaConnectorStatusDTO.connector().workerId()).isNotNull(),
-                () -> assertThat(kafkaConnectorStatusDTO.connector().version()).isEqualTo("3.3.1.Final"),
+                () -> assertThat(kafkaConnectorStatusDTO.connector().version()).isEqualTo("3.5.0.Final"),
                 () -> assertThat(kafkaConnectorStatusDTO.tasks().size()).isEqualTo(0),
                 () -> assertThat(kafkaConnectorStatusDTO.type()).isEqualTo("source"));
     }
