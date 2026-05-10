@@ -10,6 +10,6 @@ public record TodoId(String user, Long sequence) implements AggregateId {
     }
 
     public String id() {
-        return user + "/" + sequence;
+        return user + SEPARATOR + sequence;
     }
 }

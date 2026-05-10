@@ -11,6 +11,6 @@ public record TodoChecklistId(TodoId todoId, Long index) implements AggregateId 
 
     @Override
     public String id() {
-        return todoId.id() + "/" + index;
+        return todoId.id() + SEPARATOR + index;
     }
 }
