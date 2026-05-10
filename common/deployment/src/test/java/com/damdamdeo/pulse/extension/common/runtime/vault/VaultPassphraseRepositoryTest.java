@@ -1,8 +1,12 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
+import com.damdamdeo.pulse.extension.common.runtime.hashing.AlgorithmQualifier;
+import com.damdamdeo.pulse.extension.common.runtime.hashing.InternalHasher;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.hashing.Algorithm;
+import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import io.quarkus.test.QuarkusUnitTest;
 import io.quarkus.vault.VaultKVSecretEngine;
 import jakarta.inject.Inject;
@@ -22,7 +26,7 @@ class VaultPassphraseRepositoryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties");
 
-    private static final String SECRET_PATH = "secret/owner/Damien";
+    private static final String SECRET_PATH = "secret/owner/df20d988f004d3c742aef4bb86c7ac4735e93c0c81596f5807b641ea0ce1179c";
 
     @Inject
     VaultKVSecretEngine vaultKVSecretEngine;
@@ -30,9 +34,25 @@ class VaultPassphraseRepositoryTest {
     @Inject
     VaultPassphraseRepository vaultPassphraseRepository;
 
+    @Inject
+    @AlgorithmQualifier(Algorithm.SHA3_256)
+    InternalHasher internalHasher;
+
     @BeforeEach
     void setup() {
         vaultKVSecretEngine.deleteSecret(SECRET_PATH);
+    }
+
+    @Test
+    void shouldComputeDamienHash() {
+        // Given
+        final String original = "Damien";
+
+        // When
+        Hash hash = internalHasher.hash(original);
+
+        // Then
+        assertThat(hash).isEqualTo(new Hash(Algorithm.SHA3_256, "df20d988f004d3c742aef4bb86c7ac4735e93c0c81596f5807b641ea0ce1179c"));
     }
 
     @Test
