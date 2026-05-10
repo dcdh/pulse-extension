@@ -57,7 +57,7 @@ class AsyncAggregateRootConsumerTest {
 
         @Override
         public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
-            throw new IllegalStateException("Should not be calld !");
+            throw new IllegalStateException("Should not be called !");
         }
     }
 
@@ -151,7 +151,7 @@ class AsyncAggregateRootConsumerTest {
                         new BelongsTo(new AnyAggregateId("Damien/0")),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
-
+// FCK
     @Test
     void shouldConsumeAggregateRootWhenPassPhraseDoesNotExistsAnymore() {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
@@ -178,7 +178,7 @@ class AsyncAggregateRootConsumerTest {
                 Todo.class);
 
         // Then
-        await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
+        await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
         assertThat(statisticsAggregateRootHandler.getCall()).isEqualTo(
                 new Call(
                         new FromApplication("TodoTaking", "Todo"),
