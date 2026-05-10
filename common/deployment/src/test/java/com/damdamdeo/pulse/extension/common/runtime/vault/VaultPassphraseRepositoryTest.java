@@ -26,7 +26,9 @@ class VaultPassphraseRepositoryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties");
 
-    private static final String SECRET_PATH = "secret/owner/df20d988f004d3c742aef4bb86c7ac4735e93c0c81596f5807b641ea0ce1179c";
+    private static final String DAMIEN_SHA3_256 = "df20d988f004d3c742aef4bb86c7ac4735e93c0c81596f5807b641ea0ce1179c";
+
+    private static final String SECRET_PATH = "secret/owner/" + DAMIEN_SHA3_256;
 
     @Inject
     VaultKVSecretEngine vaultKVSecretEngine;
@@ -52,7 +54,7 @@ class VaultPassphraseRepositoryTest {
         Hash hash = hasherImplementation.hash(original);
 
         // Then
-        assertThat(hash).isEqualTo(new Hash(Algorithm.SHA3_256, "df20d988f004d3c742aef4bb86c7ac4735e93c0c81596f5807b641ea0ce1179c"));
+        assertThat(hash).isEqualTo(new Hash(Algorithm.SHA3_256, DAMIEN_SHA3_256));
     }
 
     @Test
