@@ -19,7 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -111,7 +111,8 @@ class DebeziumPublisherTest {
                 () -> assertThat(records.size()).isEqualTo(1L),
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeEventKey("Todo",
                         "Damien/0", 0)),
-                () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(1003_600_000_000L,// I do not understand the added part ...
+                () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(
+                        ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),// I do not understand the added part ...
                         "NewTodoCreated", payload, "Damien", "Damien/0", "EU:encodedbob")));
     }
 
