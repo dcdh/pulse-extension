@@ -20,15 +20,16 @@
     </modules>
 
     <properties>
-        <compiler-plugin.version>3.14.0</compiler-plugin.version>
+        <compiler-plugin.version>3.15.0</compiler-plugin.version>
         <failsafe-plugin.version>${surefire-plugin.version}</failsafe-plugin.version>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.version>3.30.5</quarkus.version>
+        <quarkus.version>3.33.1.1</quarkus.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
-        <quarkus-vault.version>4.4.0</quarkus-vault.version>
-        <quarkus-resteasy-problem.version>3.21.0</quarkus-resteasy-problem.version>
+        <quarkus-vault.version>4.7.0</quarkus-vault.version>
+        <quarkus-resteasy-problem.version>3.32.1</quarkus-resteasy-problem.version>
+        <jsonassert.version>1.5.3</jsonassert.version>
     </properties>
 
     <dependencyManagement>
@@ -53,7 +54,7 @@
             <dependency>
                 <groupId>org.skyscreamer</groupId>
                 <artifactId>jsonassert</artifactId>
-                <version>1.5.3</version>
+                <version>${jsonassert.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -99,19 +100,6 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.4.0</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
