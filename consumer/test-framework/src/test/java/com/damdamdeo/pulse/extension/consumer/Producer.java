@@ -85,20 +85,19 @@ public class Producer {
                         AUTO_OFFSET_RESET_CONFIG, "latest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeEventKey>(), new ObjectMapperSerializer<JsonNodeEventValue>())
-                .usingGenerator(
-                        integer -> new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.EVENT).name(),
-                                new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
-                                new JsonNodeEventValue(1_761_335_312_527L * 1000,
-                                        eventClass.getSimpleName(),
-                                        encryptedPayload,
-                                        ownedBy.id(),
-                                        belongsTo.aggregateId().id(),
-                                        executedBy.encode(new ExecutedByEncoder() {
-                                            @Override
-                                            public byte[] encode(String value) {
-                                                return ("encoded" + value).getBytes(StandardCharsets.UTF_8);
-                                            }
-                                        }))), 1L);
+                .fromRecords(new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.EVENT).name(),
+                        new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
+                        new JsonNodeEventValue(1_761_335_312_527L * 1000,
+                                eventClass.getSimpleName(),
+                                encryptedPayload,
+                                ownedBy.id(),
+                                belongsTo.aggregateId().id(),
+                                executedBy.encode(new ExecutedByEncoder() {
+                                    @Override
+                                    public byte[] encode(String value) {
+                                        return ("encoded" + value).getBytes(StandardCharsets.UTF_8);
+                                    }
+                                }))));
         return new Response(
                 new EncryptedPayload(encryptedAggregatePayload),
                 new EncryptedPayload(encryptedPayload));
@@ -141,13 +140,12 @@ public class Producer {
                         AUTO_OFFSET_RESET_CONFIG, "latest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeAggregateRootKey>(), new ObjectMapperSerializer<JsonNodeAggregateRootValue>())
-                .usingGenerator(
-                        integer -> new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.AGGREGATE_ROOT).name(),
-                                new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
-                                new JsonNodeAggregateRootValue(1L,
-                                        encryptedPayload,
-                                        ownedBy.id(),
-                                        belongsTo.aggregateId().id())), 1);
+                .fromRecords(new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.AGGREGATE_ROOT).name(),
+                        new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
+                        new JsonNodeAggregateRootValue(1L,
+                                encryptedPayload,
+                                ownedBy.id(),
+                                belongsTo.aggregateId().id())));
         return new EncryptedPayload(encryptedPayload);
     }
 }
