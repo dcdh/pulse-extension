@@ -33,10 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -306,6 +303,26 @@ class PartitionTest {
 
         public void add(final ConsumerRecord<String, String> record) {
             records.add(record);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            TopicInfo topicInfo = (TopicInfo) o;
+            return Objects.equals(topicPartition, topicInfo.topicPartition) && Objects.equals(records, topicInfo.records);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(topicPartition, records);
+        }
+
+        @Override
+        public String toString() {
+            return "TopicInfo{" +
+                    "topicPartition=" + topicPartition +
+                    ", records=" + records +
+                    '}';
         }
     }
 }

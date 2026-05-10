@@ -227,7 +227,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("compression.type")
     public String getCompressionType() {
-        return "zstd";
+        return "lz4";
     }
 
     @JsonProperty("topic.creation.default.replication.factor")
@@ -247,7 +247,7 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
 
     @JsonProperty("topic.creation.default.compression.type")
     public String getTopicCreationDefaultCompressionType() {
-        return "zstd";
+        return "lz4";
     }
 
     @JsonProperty("publication.name")

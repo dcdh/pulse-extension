@@ -1,4 +1,4 @@
-FROM quay.io/debezium/kafka:3.3.1.Final
+FROM apache/kafka-native:4.2.0
 
 COPY --chmod=755 kafka.sh /kafka.sh
 

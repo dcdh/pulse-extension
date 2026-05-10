@@ -1,5 +1,9 @@
 = DEBEZIUM
 
+The image **apache/kafka-native:4.2.0** do not expose binary to list topics, produce and consume messages.
+
+Docker compose Healthcheck has been removed.
+
 [source,shell]
 ----
 docker pull quay.io/debezium/connect:3.3.1.Final
@@ -22,7 +26,7 @@ docker pull quay.io/ogunalp/kafka-native:latest
 
 [source,shell]
 ----
-docker pull quay.io/debezium/kafka:3.3.1.Final
+docker pull apache/kafka-native:4.2.0
 ----
 
 == kafka + Quarkus
@@ -37,12 +41,12 @@ Launch a container in bash mode directly without running the default command.
 
 [source,shell]
 ----
-docker run -it --rm --entrypoint bash quay.io/debezium/kafka:3.3.1.Final
+docker run -it --rm --entrypoint bash apache/kafka-native:4.2.0
 ----
 
 [source,shell]
 ----
-docker image inspect quay.io/debezium/kafka:3.3.1.Final
+docker image inspect apache/kafka-native:4.2.0
 ----
 
 check why container is unhealthy

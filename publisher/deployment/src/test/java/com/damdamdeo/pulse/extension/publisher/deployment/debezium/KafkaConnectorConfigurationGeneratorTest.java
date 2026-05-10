@@ -10,7 +10,6 @@ import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.json.JSONException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -108,11 +107,11 @@ class KafkaConnectorConfigurationGeneratorTest {
                             "schema.include.list": "todotaking_todo",
                             "table.include.list": "todotaking_todo.event,todotaking_todo.aggregate_root",
                             "tombstones.on.delete": "false",
-                            "compression.type": "zstd",
+                            "compression.type": "lz4",
                             "topic.creation.default.replication.factor": 1,
                             "topic.creation.default.partitions": 2,
                             "topic.creation.default.cleanup.policy": "compact",
-                            "topic.creation.default.compression.type": "zstd",
+                            "topic.creation.default.compression.type": "lz4",
                             "publication.name": "todotaking_todo_publication",
                             "publication.autocreate.mode": "all_tables",
                             "slot.name": "todotaking_todo_slot",

@@ -34,10 +34,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -136,7 +133,7 @@ public class PulseCommonProcessor {
 
     public static ComposeServiceBuildItem KAFKA_COMPOSE_SERVICE_BUILD_ITEM = new ComposeServiceBuildItem(
             KAFKA_SERVICE_NAME,
-            new ComposeServiceBuildItem.ImageName("debezium-for-dev-service/kafka:3.3.1.Final"),
+            new ComposeServiceBuildItem.ImageName("debezium-for-dev-service/kafka:4.2.0"),
             new ComposeServiceBuildItem.Labels(
                     Map.of("io.quarkus.devservices.compose.exposed_ports", "/tmp/ports")),
             new ComposeServiceBuildItem.Ports(List.of("9092", "29092")),
@@ -147,12 +144,7 @@ public class PulseCommonProcessor {
                             "KAFKA_CONTROLLER_QUORUM_VOTERS", "1@kafka:9093")),
             ComposeServiceBuildItem.Command.ofNone(),
             ComposeServiceBuildItem.Entrypoint.ofNone(),
-            new ComposeServiceBuildItem.HealthCheck(
-                    List.of("CMD", "./bin/kafka-topics.sh", "--bootstrap-server", "kafka:29092", "--list"),
-                    new ComposeServiceBuildItem.Interval(10),
-                    new ComposeServiceBuildItem.Timeout(5),
-                    new ComposeServiceBuildItem.Retries(5),
-                    new ComposeServiceBuildItem.StartPeriod(10)),
+            null,
             List.of(
 // Not working for executable
 // Even if `srcResolved.toFile().setExecutable(true);`
@@ -208,7 +200,7 @@ public class PulseCommonProcessor {
                 final ComposeServiceBuildItem.EnvironmentVariables environmentVariables = composeServiceBuildItem.getEnvironmentVariables();
                 final ComposeServiceBuildItem.Command command = composeServiceBuildItem.getCommand();
                 final ComposeServiceBuildItem.Entrypoint entrypoint = composeServiceBuildItem.getEntrypoint();
-                final ComposeServiceBuildItem.HealthCheck healthCheck = composeServiceBuildItem.getHealthCheck();
+                final Optional<ComposeServiceBuildItem.HealthCheck> healthCheck = composeServiceBuildItem.getHealthCheck();
                 final List<ComposeServiceBuildItem.Volume> volumes = composeServiceBuildItem.getVolumes();
                 final ComposeServiceBuildItem.DependsOn dependsOn = composeServiceBuildItem.getDependsOn();
                 service.put("image", imageName.name());
@@ -233,13 +225,14 @@ public class PulseCommonProcessor {
                 if (entrypoint.hasEntrypoint()) {
                     service.put("entrypoint", new InlineList<>(entrypoint.entrypoint()));
                 }
-                service.put("healthcheck",
-                        Map.of(
-                                "test", new InlineList<>(healthCheck.testCommand()),
-                                "interval", healthCheck.interval().inSeconds() + "s",
-                                "timeout", healthCheck.timeout().inSeconds() + "s",
-                                "retries", healthCheck.retries().numberOfRetries(),
-                                "start_period", healthCheck.startPeriod().inSeconds() + "s"));
+                healthCheck.ifPresent(value ->
+                        service.put("healthcheck",
+                                Map.of(
+                                        "test", new InlineList<>(value.testCommand()),
+                                        "interval", value.interval().inSeconds() + "s",
+                                        "timeout", value.timeout().inSeconds() + "s",
+                                        "retries", value.retries().numberOfRetries(),
+                                        "start_period", value.startPeriod().inSeconds() + "s")));
                 final List<ComposeServiceBuildItem.Volume> mergedVolumes = Stream.concat(
                                 volumes.stream(),
                                 additionalVolumeBuildItems.stream()

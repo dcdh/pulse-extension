@@ -6,6 +6,7 @@ import org.apache.commons.lang3.Validate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class ComposeServiceBuildItem extends MultiBuildItem {
 
@@ -224,7 +225,7 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
         this.environmentVariables = Objects.requireNonNull(environmentVariables);
         this.command = Objects.requireNonNull(command);
         this.entrypoint = Objects.requireNonNull(entrypoint);
-        this.healthCheck = Objects.requireNonNull(healthCheck);
+        this.healthCheck = healthCheck;// can be null
         this.volumes = Objects.requireNonNull(volumes);
         this.dependsOn = Objects.requireNonNull(dependsOn);
     }
@@ -261,8 +262,8 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
         return entrypoint;
     }
 
-    public HealthCheck getHealthCheck() {
-        return healthCheck;
+    public Optional<HealthCheck> getHealthCheck() {
+        return Optional.ofNullable(healthCheck);
     }
 
     public List<Volume> getVolumes() {
