@@ -20,7 +20,7 @@ public class ArcHasher implements Hasher {
     Instance<InternalHasher> hashers;
 
     @Override
-    public Hash hash(final Algorithm algorithm, final byte[] original) {
+    public Hash hash(final Algorithm algorithm, final String original) {
         Objects.requireNonNull(algorithm);
         Objects.requireNonNull(original);
         return hashers.select(new AlgorithmQualifier.Literal(algorithm)).get().hash(original);

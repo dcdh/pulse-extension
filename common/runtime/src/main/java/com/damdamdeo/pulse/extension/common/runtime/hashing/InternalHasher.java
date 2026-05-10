@@ -4,5 +4,5 @@ import com.damdamdeo.pulse.extension.core.hashing.Hash;
 
 public interface InternalHasher {
 
-    Hash hash(byte[] original);
+    Hash hash(String original);
 }

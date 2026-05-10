@@ -23,7 +23,7 @@ class HasherTest {
     @Test
     void shouldHashUsingSHA3_256Test() {
         // Given
-        final byte[] givenOriginal = "test".getBytes();
+        final String givenOriginal = "test";
 
         // When
         final Hash hash = hasher.hash(Algorithm.SHA3_256, givenOriginal);

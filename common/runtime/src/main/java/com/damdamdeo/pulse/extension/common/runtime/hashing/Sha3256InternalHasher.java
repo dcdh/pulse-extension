@@ -14,7 +14,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 public class Sha3256InternalHasher implements InternalHasher {
 
     @Override
-    public Hash hash(final byte[] original) {
+    public Hash hash(final String original) {
         return new Hash(Algorithm.SHA3_256, new DigestUtils("SHA3-256").digestAsHex(original));
     }
 }
