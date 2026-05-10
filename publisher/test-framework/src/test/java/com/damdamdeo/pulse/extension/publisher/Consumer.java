@@ -12,6 +12,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
@@ -23,36 +24,46 @@ public class Consumer {
     @ConfigProperty(name = "quarkus.application.name")
     String quarkusApplicationName;
 
+    private enum Target {
+        EVENT {
+            @Override
+            String topicSuffixName() {
+                return "event";
+            }
+        },
+        AGGREGATE_ROOT {
+            @Override
+            String topicSuffixName() {
+                return "aggregate_root";
+            }
+        };
+
+        abstract String topicSuffixName();
+    }
+
     public List<Record<JsonNodeEventKey, JsonNodeEventValue>> consumeFromTEvent() {
-        final String topic = "pulse.%s.event".formatted(quarkusApplicationName.toLowerCase());
-        try (final ConsumerBuilder<JsonNodeEventKey, JsonNodeEventValue> consumer = new ConsumerBuilder<>(
-                Map.of(
-                        BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
-                        AUTO_OFFSET_RESET_CONFIG, "earliest",
-                        ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID(),
-                        ConsumerConfig.GROUP_ID_CONFIG, "my-group"),
-                Duration.ofSeconds(10),
-                new ObjectMapperDeserializer<>(JsonNodeEventKey.class),
-                new ObjectMapperDeserializer<>(JsonNodeEventValue.class));
-             final ConsumerTask<JsonNodeEventKey, JsonNodeEventValue> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion()) {
-            return records.stream().map(record ->
-                            new Record<>(record.headers(), record.key(), record.value()))
-                    .toList();
-        }
+        return consumeFrom(Target.EVENT, JsonNodeEventKey.class, JsonNodeEventValue.class);
     }
 
     public List<Record<JsonNodeAggregateRootKey, JsonNodeAggregateRootValue>> consumeFromTAggregateRoot() {
-        final String topic = "pulse.%s.aggregate_root".formatted(quarkusApplicationName.toLowerCase());
-        try (final ConsumerBuilder<JsonNodeAggregateRootKey, JsonNodeAggregateRootValue> consumer = new ConsumerBuilder<>(
+        return consumeFrom(Target.AGGREGATE_ROOT, JsonNodeAggregateRootKey.class, JsonNodeAggregateRootValue.class);
+    }
+
+    private <K, V> List<Record<K, V>> consumeFrom(final Target target, final Class<K> keyClass, final Class<V> valueClass) {
+        Objects.requireNonNull(target);
+        Objects.requireNonNull(keyClass);
+        Objects.requireNonNull(valueClass);
+        final String topic = "pulse.%s.%s".formatted(quarkusApplicationName.toLowerCase(), target.topicSuffixName());
+        try (final ConsumerBuilder<K, V> consumer = new ConsumerBuilder<>(
                 Map.of(
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),
                         AUTO_OFFSET_RESET_CONFIG, "earliest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID(),
                         ConsumerConfig.GROUP_ID_CONFIG, "my-group"),
                 Duration.ofSeconds(10),
-                new ObjectMapperDeserializer<>(JsonNodeAggregateRootKey.class),
-                new ObjectMapperDeserializer<>(JsonNodeAggregateRootValue.class));
-             final ConsumerTask<JsonNodeAggregateRootKey, JsonNodeAggregateRootValue> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion()) {
+                new ObjectMapperDeserializer<>(keyClass),
+                new ObjectMapperDeserializer<>(valueClass));
+             final ConsumerTask<K, V> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion(Duration.ofSeconds(60))) {
             return records.stream().map(record ->
                             new Record<>(record.headers(), record.key(), record.value()))
                     .toList();

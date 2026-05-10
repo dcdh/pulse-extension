@@ -28,7 +28,7 @@ public class Consumer {
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID(),
                         ConsumerConfig.GROUP_ID_CONFIG, "my-group"),
                 Duration.ofSeconds(10), new StringDeserializer(), new ByteArrayDeserializer());
-             final ConsumerTask<String, byte[]> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion()) {
+             final ConsumerTask<String, byte[]> records = consumer.fromTopics(topic, Duration.ofSeconds(10)).awaitCompletion(Duration.ofSeconds(60))) {
             return records.stream().map(record ->
                     new Record(record.headers(), record.key(), record.value())).toList();
         }

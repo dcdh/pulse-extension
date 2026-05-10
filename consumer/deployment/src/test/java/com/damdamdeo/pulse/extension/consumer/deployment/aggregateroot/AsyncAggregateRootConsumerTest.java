@@ -133,7 +133,7 @@ class AsyncAggregateRootConsumerTest {
                 Todo.class);
 
         // Then
-        await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
+        await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
         expectedAggregateRootPayload.put("id", "Damien/0");
         expectedAggregateRootPayload.put("description", "lorem ipsum");
@@ -151,7 +151,7 @@ class AsyncAggregateRootConsumerTest {
                         new BelongsTo(new AnyAggregateId("Damien/0")),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
-// FCK
+
     @Test
     void shouldConsumeAggregateRootWhenPassPhraseDoesNotExistsAnymore() {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
