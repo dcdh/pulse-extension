@@ -17,12 +17,12 @@ public class ArcHasher implements Hasher {
 
     @Inject
     @Any
-    Instance<InternalHasher> hashers;
+    Instance<HasherImplementation> hashersImplementation;
 
     @Override
     public Hash hash(final Algorithm algorithm, final String original) {
         Objects.requireNonNull(algorithm);
         Objects.requireNonNull(original);
-        return hashers.select(new AlgorithmQualifier.Literal(algorithm)).get().hash(original);
+        return hashersImplementation.select(new AlgorithmQualifier.Literal(algorithm)).get().hash(original);
     }
 }

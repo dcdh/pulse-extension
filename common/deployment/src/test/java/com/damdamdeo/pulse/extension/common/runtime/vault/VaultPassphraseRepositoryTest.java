@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
 import com.damdamdeo.pulse.extension.common.runtime.hashing.AlgorithmQualifier;
-import com.damdamdeo.pulse.extension.common.runtime.hashing.InternalHasher;
+import com.damdamdeo.pulse.extension.common.runtime.hashing.HasherImplementation;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -36,7 +36,7 @@ class VaultPassphraseRepositoryTest {
 
     @Inject
     @AlgorithmQualifier(Algorithm.SHA3_256)
-    InternalHasher internalHasher;
+    HasherImplementation hasherImplementation;
 
     @BeforeEach
     void setup() {
@@ -49,7 +49,7 @@ class VaultPassphraseRepositoryTest {
         final String original = "Damien";
 
         // When
-        Hash hash = internalHasher.hash(original);
+        Hash hash = hasherImplementation.hash(original);
 
         // Then
         assertThat(hash).isEqualTo(new Hash(Algorithm.SHA3_256, "df20d988f004d3c742aef4bb86c7ac4735e93c0c81596f5807b641ea0ce1179c"));

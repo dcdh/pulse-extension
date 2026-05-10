@@ -11,7 +11,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 @Unremovable
 @DefaultBean
 @AlgorithmQualifier(Algorithm.SHA3_256)
-public class Sha3256InternalHasher implements InternalHasher {
+public class Sha3256HasherImplementation implements HasherImplementation {
 
     @Override
     public Hash hash(final String original) {

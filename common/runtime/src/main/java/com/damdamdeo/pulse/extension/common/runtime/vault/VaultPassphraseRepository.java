@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
 import com.damdamdeo.pulse.extension.common.runtime.hashing.AlgorithmQualifier;
-import com.damdamdeo.pulse.extension.common.runtime.hashing.InternalHasher;
+import com.damdamdeo.pulse.extension.common.runtime.hashing.HasherImplementation;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
@@ -25,12 +25,12 @@ import java.util.function.Function;
 public final class VaultPassphraseRepository implements PassphraseRepository {
 
     private final VaultKVSecretEngine vaultKVSecretEngine;
-    private final InternalHasher internalHasher;
+    private final HasherImplementation hasherImplementation;
 
     public VaultPassphraseRepository(final VaultKVSecretEngine vaultKVSecretEngine,
-                                     @AlgorithmQualifier(Algorithm.SHA3_256) final InternalHasher internalHasher) {
+                                     @AlgorithmQualifier(Algorithm.SHA3_256) final HasherImplementation hasherImplementation) {
         this.vaultKVSecretEngine = Objects.requireNonNull(vaultKVSecretEngine);
-        this.internalHasher = Objects.requireNonNull(internalHasher);
+        this.hasherImplementation = Objects.requireNonNull(hasherImplementation);
     }
 
     @Override
@@ -71,7 +71,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     private Function<OwnedBy, String> computeSecretPathFromOwnedBy = new Function<OwnedBy, Hash>() {
         @Override
         public Hash apply(final OwnedBy ownedBy) {
-            return internalHasher.hash(ownedBy.id());
+            return hasherImplementation.hash(ownedBy.id());
         }
     }.andThen(hash -> "secret/owner/" + hash.hashed());
 }
