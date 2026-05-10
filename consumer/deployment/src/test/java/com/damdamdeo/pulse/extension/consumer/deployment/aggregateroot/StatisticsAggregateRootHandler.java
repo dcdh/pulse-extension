@@ -13,6 +13,7 @@ import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateR
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
@@ -35,6 +36,7 @@ public class StatisticsAggregateRootHandler implements AsyncAggregateRootChannel
                               final OwnedBy ownedBy,
                               final BelongsTo belongsTo,
                               final DecryptablePayload<JsonNode> decryptablePayload) {
+        Log.info("StatisticsAggregateRootHandler.handleMessage() called from application: %s with purpose: %s".formatted(fromApplication.value(), purpose));
         this.call = new Call(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption,
                 encryptedPayload, ownedBy, belongsTo, decryptablePayload);
     }

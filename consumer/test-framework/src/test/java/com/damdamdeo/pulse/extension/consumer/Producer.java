@@ -147,7 +147,7 @@ public class Producer {
                                 new JsonNodeAggregateRootValue(1L,
                                         encryptedPayload,
                                         ownedBy.id(),
-                                        belongsTo.aggregateId().id())));
+                                        belongsTo.aggregateId().id())), 1);
         return new EncryptedPayload(encryptedPayload);
     }
 }
