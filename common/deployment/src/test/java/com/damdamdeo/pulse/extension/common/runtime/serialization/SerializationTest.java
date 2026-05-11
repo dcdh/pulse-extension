@@ -47,8 +47,7 @@ class SerializationTest {
                           },
                           "description":"lorem ipsum",
                           "status":"IN_PROGRESS",
-                          "important":false,
-                          "inProgress":true
+                          "important":false
                         }
                         """, serializedJson, JSONCompareMode.STRICT);
     }
