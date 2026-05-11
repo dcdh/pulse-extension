@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryption
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.common.runtime.hashing.ArcHasher;
 import com.damdamdeo.pulse.extension.common.runtime.hashing.Sha3256HasherImplementation;
-import com.damdamdeo.pulse.extension.common.runtime.serialization.AllFieldsVisibilityObjectMapperCustomizer;
+import com.damdamdeo.pulse.extension.common.runtime.serialization.PulseObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.common.runtime.vault.VaultPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -56,7 +56,7 @@ public class PulseCommonProcessor {
     @BuildStep
     AdditionalBeanBuildItem additionalBeans() {
         return AdditionalBeanBuildItem.builder()
-                .addBeanClass(AllFieldsVisibilityObjectMapperCustomizer.class)
+                .addBeanClass(PulseObjectMapperCustomizer.class)
                 .addBeanClasses(VaultPassphraseRepository.class, DefaultPassphraseGenerator.class,
                         DefaultPassphraseProvider.class, OpenPGPDecryptionService.class,
                         OpenPGPEncryptionService.class,

@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.TodoItem;
 import com.damdamdeo.pulse.extension.core.event.MultipleTodoItemsAdded;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
@@ -196,5 +197,32 @@ class EventSerDeTest {
                                 "Organization vacancies"),
                         new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
                                 "Go see family"))));
+    }
+
+    @Test
+    void shouldSerializeEmptyBean() throws JsonProcessingException, JSONException {
+        // Given
+        final TodoMarkedAsDone givenTodoMarkedAsDone = new TodoMarkedAsDone();
+
+        // When
+        final String serialized = objectMapper.writeValueAsString(givenTodoMarkedAsDone);
+
+        // Then
+        // language=json
+        final String expected = "{}";
+        JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldDeserializeEmptyBean() throws JsonProcessingException {
+        // Given
+        // language=json
+        final String given = "{}";
+
+        // When
+        final TodoMarkedAsDone todoMarkedAsDone = objectMapper.readValue(given, TodoMarkedAsDone.class);
+
+        // Then
+        assertThat(todoMarkedAsDone).isEqualTo(new TodoMarkedAsDone());
     }
 }
