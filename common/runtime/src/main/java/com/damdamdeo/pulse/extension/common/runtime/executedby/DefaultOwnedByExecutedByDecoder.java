@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.common.runtime.executedby;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,7 +16,7 @@ import java.util.Optional;
 @ApplicationScoped
 @Unremovable
 @DefaultBean
-public class DefaultOwnedByExecutedByDecoder implements com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder {
+public class DefaultOwnedByExecutedByDecoder implements OwnedByExecutedByDecoder {
 
     @Inject
     DecryptionService decryptionService;
