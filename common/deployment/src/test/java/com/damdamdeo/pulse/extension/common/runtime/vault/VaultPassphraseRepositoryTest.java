@@ -45,13 +45,13 @@ class VaultPassphraseRepositoryTest {
     @Test
     void shouldComputeDamienHash() {
         // Given
-        final String original = "Damien";
+        final OwnedBy original = new OwnedBy("Damien");
 
         // When
-        Hash hash = hasher.hash(original);
+        Hash<OwnedBy> hash = hasher.hash(original);
 
         // Then
-        assertThat(hash).isEqualTo(new Hash(DAMIEN_SHA3_256));
+        assertThat(hash).isEqualTo(new Hash<OwnedBy>(DAMIEN_SHA3_256));
     }
 
     @Test

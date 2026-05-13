@@ -7,7 +7,7 @@ import org.apache.commons.lang3.Validate;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public record OwnedBy(String id) {
+public record OwnedBy(String id) implements Identifiable {
 
     private static final Pattern PATTERN = Pattern.compile("^[ a-zA-Z0-9_-]+$");
 

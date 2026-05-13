@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.core.hashing;
 
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
+
 public interface Hasher {
 
-    Hash hash(String original);
+    <T extends Identifiable> Hash<T> hash(T identifiable);
 }
