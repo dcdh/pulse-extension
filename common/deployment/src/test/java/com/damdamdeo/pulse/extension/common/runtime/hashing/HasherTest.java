@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.common.runtime.hashing;
 
-import com.damdamdeo.pulse.extension.core.hashing.Algorithm;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.test.QuarkusUnitTest;
@@ -26,9 +25,9 @@ class HasherTest {
         final String givenOriginal = "test";
 
         // When
-        final Hash hash = hasher.hash(Algorithm.SHA3_256, givenOriginal);
+        final Hash hash = hasher.hash(givenOriginal);
 
         // Then
-        assertThat(hash).isEqualTo(new Hash(Algorithm.SHA3_256, "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"));
+        assertThat(hash).isEqualTo(new Hash("36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"));
     }
 }

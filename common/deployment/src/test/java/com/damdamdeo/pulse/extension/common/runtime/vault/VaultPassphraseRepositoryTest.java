@@ -1,12 +1,10 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
-import com.damdamdeo.pulse.extension.common.runtime.hashing.AlgorithmQualifier;
-import com.damdamdeo.pulse.extension.common.runtime.hashing.HasherImplementation;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.hashing.Algorithm;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
+import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.test.QuarkusUnitTest;
 import io.quarkus.vault.VaultKVSecretEngine;
 import jakarta.inject.Inject;
@@ -37,8 +35,7 @@ class VaultPassphraseRepositoryTest {
     VaultPassphraseRepository vaultPassphraseRepository;
 
     @Inject
-    @AlgorithmQualifier(Algorithm.SHA3_256)
-    HasherImplementation hasherImplementation;
+    Hasher hasher;
 
     @BeforeEach
     void setup() {
@@ -51,10 +48,10 @@ class VaultPassphraseRepositoryTest {
         final String original = "Damien";
 
         // When
-        Hash hash = hasherImplementation.hash(original);
+        Hash hash = hasher.hash(original);
 
         // Then
-        assertThat(hash).isEqualTo(new Hash(Algorithm.SHA3_256, DAMIEN_SHA3_256));
+        assertThat(hash).isEqualTo(new Hash(DAMIEN_SHA3_256));
     }
 
     @Test

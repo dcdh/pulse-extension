@@ -1,13 +1,11 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
-import com.damdamdeo.pulse.extension.common.runtime.hashing.AlgorithmQualifier;
-import com.damdamdeo.pulse.extension.common.runtime.hashing.HasherImplementation;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.hashing.Algorithm;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
+import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.vault.VaultKVSecretEngine;
@@ -25,12 +23,12 @@ import java.util.function.Function;
 public final class VaultPassphraseRepository implements PassphraseRepository {
 
     private final VaultKVSecretEngine vaultKVSecretEngine;
-    private final HasherImplementation hasherImplementation;
+    private final Hasher hasher;
 
     public VaultPassphraseRepository(final VaultKVSecretEngine vaultKVSecretEngine,
-                                     @AlgorithmQualifier(Algorithm.SHA3_256) final HasherImplementation hasherImplementation) {
+                                     final Hasher hasher) {
         this.vaultKVSecretEngine = Objects.requireNonNull(vaultKVSecretEngine);
-        this.hasherImplementation = Objects.requireNonNull(hasherImplementation);
+        this.hasher = Objects.requireNonNull(hasher);
     }
 
     @Override
@@ -71,7 +69,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     private Function<OwnedBy, String> computeSecretPathFromOwnedBy = new Function<OwnedBy, Hash>() {
         @Override
         public Hash apply(final OwnedBy ownedBy) {
-            return hasherImplementation.hash(ownedBy.id());
+            return hasher.hash(ownedBy.id());
         }
     }.andThen(hash -> "secret/owner/" + hash.hashed());
 }
