@@ -15,6 +15,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @ApplicationScoped
@@ -34,7 +35,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     @Override
     public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
         Objects.requireNonNull(ownedBy);
-        final String path = computeSecretPathFromOwnedBy.apply(ownedBy);
+        final String path = getOwnedByHasherStringBiFunction(ownedBy);
         try {
             final Map<String, String> data = vaultKVSecretEngine.readSecret(path);
             if (data == null || !data.containsKey("passphrase")) {
@@ -51,7 +52,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(passphrase);
-        final String path = computeSecretPathFromOwnedBy.apply(ownedBy);
+        final String path = getOwnedByHasherStringBiFunction(ownedBy);
         final Map<String, String> secret = Map.of("passphrase", new String(passphrase.passphrase()));
         try {
             final Map<String, String> existing = vaultKVSecretEngine.readSecret(path);
@@ -66,10 +67,12 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
         return new Passphrase(passphrase.passphrase().clone());
     }
 
-    private Function<OwnedBy, String> computeSecretPathFromOwnedBy = new Function<OwnedBy, Hash>() {
-        @Override
-        public Hash apply(final OwnedBy ownedBy) {
-            return hasher.hash(ownedBy.id());
-        }
-    }.andThen(hash -> "secret/owner/" + hash.hashed());
+    private String getOwnedByHasherStringBiFunction(final OwnedBy ownedBy) {
+        return ownedByToHashFunc.andThen(hashToPathFunc).apply(ownedBy, hasher);
+    }
+
+    private final BiFunction<OwnedBy, Hasher, Hash> ownedByToHashFunc =
+            (ownedBy, hasher) -> hasher.hash(ownedBy.id());
+
+    private final Function<Hash, String> hashToPathFunc = hash -> "secret/owner/" + hash.hashed();
 }
