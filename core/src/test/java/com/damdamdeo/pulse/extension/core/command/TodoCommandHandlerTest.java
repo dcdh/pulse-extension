@@ -137,7 +137,7 @@ class TodoCommandHandlerTest {
                 .isInstanceOf(BusinessException.class)
                 .rootCause()
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("la todo Damien/0 doit être in progress");
+                .hasMessage("la todo Damien-0 doit être in progress");
     }
 
     @Test
