@@ -1,8 +1,8 @@
 package com.damdamdeo.pulse.extension.core;
 
-public interface AggregateId {
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 
-    String SEPARATOR = "-";
+public interface AggregateId extends Identifiable {
 
     String id();
 }

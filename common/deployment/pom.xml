@@ -46,6 +46,11 @@
             <artifactId>snakeyaml</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
