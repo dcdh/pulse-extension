@@ -20,6 +20,7 @@
 /kafka/target/
 
 /live-notifier/deployment/target/
+/live-notifier/deployment/quarkus-pulse-live-notifier-extension-deployment.iml
 /live-notifier/runtime/target/
 /live-notifier/runtime/quarkus-pulse-live-notifier-extension.iml
 /live-notifier/test-framework/target/
