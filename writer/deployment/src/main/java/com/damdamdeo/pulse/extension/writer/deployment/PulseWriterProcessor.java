@@ -4,8 +4,10 @@ import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
+import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateIdBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
+import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresSequenceGenerator;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -13,6 +15,7 @@ import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PulseWriterProcessor {
 
@@ -27,7 +30,8 @@ public class PulseWriterProcessor {
     List<AdditionalBeanBuildItem> additionalBeans() {
         return List.of(
                 AdditionalBeanBuildItem.builder()
-                        .addBeanClasses(DefaultQuarkusTransaction.class, DefaultInstantProvider.class)
+                        .addBeanClasses(DefaultQuarkusTransaction.class, DefaultInstantProvider.class,
+                                JdbcPostgresSequenceGenerator.class)
                         .build(),
                 // TODO it is not possible to define the bean with @DefaultBean
                 // Should conditionally add it if no other implementation is present.
@@ -45,8 +49,21 @@ public class PulseWriterProcessor {
     }
 
     @BuildStep
-    PostgresSqlScriptBuildItem generatePostgresSqlScriptBuildItems(final ApplicationInfoBuildItem applicationInfoBuildItem) {
+    PostgresSqlScriptBuildItem generatePostgresSqlScriptBuildItems(final ApplicationInfoBuildItem applicationInfoBuildItem,
+                                                                   final List<AggregateIdBuildItem> aggregateIdBuildItems) {
         final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
+        final String sequences = aggregateIdBuildItems.stream().map(AggregateIdBuildItem::aggregateIdClazz)
+                .map(JdbcPostgresSequenceGenerator::sequenceNameFor)
+                .map(sequenceName ->
+                        // language=sql
+                        """
+                                CREATE SEQUENCE IF NOT EXISTS %s.%s
+                                START WITH 1
+                                INCREMENT BY 1
+                                MINVALUE 1
+                                CACHE 1;
+                                """.formatted(schemaName, sequenceName))
+                .collect(Collectors.joining());
         return new PostgresSqlScriptBuildItem(
                 "%s_writer.sql".formatted(schemaName),
                 // language=sql
@@ -208,10 +225,10 @@ public class PulseWriterProcessor {
                             WHEN duplicate_object THEN
                               RAISE NOTICE 'Trigger event_table_not_truncable_trigger EXISTS';
                           END;
-                        
+                          %2$s
                         END;
                         $MAIN$;
-                        """.formatted(schemaName)
+                        """.formatted(schemaName, sequences)
         );
     }
 }

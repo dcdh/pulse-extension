@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -11,6 +12,7 @@ import org.jboss.jandex.Type;
 public class AggregateRootScannerProcessor {
 
     @BuildStep
+    @SuppressWarnings("unchecked")
     void discoverAggregates(final CombinedIndexBuildItem combinedIndexBuildItem,
                             final BuildProducer<AggregateRootBuildItem> aggregateRoots) {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -30,9 +32,20 @@ public class AggregateRootScannerProcessor {
                     final Type aggregateIdType = parameterized.arguments().get(0);
 
                     try {
-                        aggregateRoots.produce(new AggregateRootBuildItem(
-                                classLoader.loadClass(aggregateRootClassInfo.name().toString()),
-                                classLoader.loadClass(aggregateIdType.toString())));
+                        final Class<? extends AggregateRoot<?>> aggregateRootClazz =
+                                (Class<? extends AggregateRoot<?>>)
+                                        classLoader.loadClass(
+                                                aggregateRootClassInfo.name().toString());
+
+                        final Class<? extends AggregateId> aggregateIdClazz =
+                                (Class<? extends AggregateId>)
+                                        classLoader.loadClass(
+                                                aggregateIdType.name().toString());
+
+                        aggregateRoots.produce(
+                                new AggregateRootBuildItem(
+                                        aggregateRootClazz,
+                                        aggregateIdClazz));
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     }
