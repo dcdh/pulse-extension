@@ -26,7 +26,7 @@ public final class PulseObjectMapperCustomizer implements ObjectMapperCustomizer
                         .withGetterVisibility(NONE)
                         .withSetterVisibility(NONE)
                         .withIsGetterVisibility(NONE));
-        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.ALWAYS);
         objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 }
