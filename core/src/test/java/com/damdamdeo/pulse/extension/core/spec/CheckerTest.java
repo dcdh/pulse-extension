@@ -43,7 +43,7 @@ class CheckerTest {
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
                         .isInstanceOf(BusinessException.class)
                         .hasRootCauseInstanceOf(IllegalStateException.class)
-                        .hasRootCauseMessage("la todo Damien/0 doit être importante"),
+                        .hasRootCauseMessage("la todo Damien-0 doit être importante"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 
@@ -57,7 +57,7 @@ class CheckerTest {
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
                         .isInstanceOf(BusinessException.class)
                         .hasRootCauseInstanceOf(IllegalStateException.class)
-                        .hasRootCauseMessage("la todo Damien/0 doit être in progress"),
+                        .hasRootCauseMessage("la todo Damien-0 doit être in progress"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 }
