@@ -31,6 +31,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.datasource.devservices.enabled", "true")
+            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .withConfigurationResource("application.properties");
 
     @Inject
