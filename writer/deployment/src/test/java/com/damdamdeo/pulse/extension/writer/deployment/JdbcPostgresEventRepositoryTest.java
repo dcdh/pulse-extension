@@ -126,26 +126,26 @@ class JdbcPostgresEventRepositoryTest {
                                  SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to
                                  FROM aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
-            tEventPreparedStatement.setString(1, "Damien/1");
+            tEventPreparedStatement.setString(1, "Damien-1");
             tEventPreparedStatement.setString(2, "Todo");
-            tAggregateRootPreparedStatement.setString(1, "Damien/1");
+            tAggregateRootPreparedStatement.setString(1, "Damien-1");
             tAggregateRootPreparedStatement.setString(2, "Todo");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 tAggregateRootResultSet.next();
                 assertAll(
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/1"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien-1"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/1"),
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien-1"),
                         () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
-                                "Damien/1"),
+                                "Damien-1"),
                         () -> assertThat(tAggregateRootResultSet.getString(
                                 "aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
@@ -153,7 +153,7 @@ class JdbcPostgresEventRepositoryTest {
                                 (0),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_payload")).startsWith("\\x"),
                         () -> assertThat(tAggregateRootResultSet.getString("owned_by")).isEqualTo("Damien"),
-                        () -> assertThat(tAggregateRootResultSet.getString("belongs_to")).isEqualTo("Damien/1"));
+                        () -> assertThat(tAggregateRootResultSet.getString("belongs_to")).isEqualTo("Damien-1"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -199,38 +199,38 @@ class JdbcPostgresEventRepositoryTest {
                                  SELECT aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to
                                  FROM aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
-            tEventPreparedStatement.setString(1, "Damien/2");
+            tEventPreparedStatement.setString(1, "Damien-2");
             tEventPreparedStatement.setString(2, "Todo");
-            tAggregateRootPreparedStatement.setString(1, "Damien/2");
+            tAggregateRootPreparedStatement.setString(1, "Damien-2");
             tAggregateRootPreparedStatement.setString(2, "Todo");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 assertAll(
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien-2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"),
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien-2"),
                         () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"));
                 tEventResultSet.next();
                 assertAll(
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien/2"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo("Damien-2"),
                         () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
                         () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("TodoMarkedAsDone"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo("Damien"),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien/2"),
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo("Damien-2"),
                         () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
-                                "Damien/2"),
+                                "Damien-2"),
                         () -> assertThat(tAggregateRootResultSet.getString(
                                 "aggregate_root_type")).isEqualTo("Todo"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
@@ -240,7 +240,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tAggregateRootResultSet.getString(
                                 "owned_by")).isEqualTo("Damien"),
                         () -> assertThat(tAggregateRootResultSet.getString(
-                                "belongs_to")).isEqualTo("Damien/2"));
+                                "belongs_to")).isEqualTo("Damien-2"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -694,11 +694,11 @@ class JdbcPostgresEventRepositoryTest {
                 new EventMetadata(
                         "Todo", "NewTodoCreated", new AggregateVersion(0),
                         Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
-                        new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien/6")), ExecutedBy.NotAvailable.INSTANCE),
+                        new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien-6")), ExecutedBy.NotAvailable.INSTANCE),
                 new EventMetadata(
                         "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
                         Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
-                        new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien/6")), ExecutedBy.NotAvailable.INSTANCE));
+                        new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien-6")), ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
@@ -725,7 +725,7 @@ class JdbcPostgresEventRepositoryTest {
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(new EventMetadata(
                 "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
                 Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
-                new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien/7")), ExecutedBy.NotAvailable.INSTANCE));
+                new OwnedBy("Damien"), new BelongsTo(new AnyAggregateId("Damien-7")), ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
