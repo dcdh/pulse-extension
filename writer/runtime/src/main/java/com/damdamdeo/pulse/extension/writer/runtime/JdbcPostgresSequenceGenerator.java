@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.SequenceNumber;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.apache.commons.text.CaseUtils;
 
 import javax.sql.DataSource;
@@ -23,7 +24,7 @@ public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
     private static final String SEQUENCE_PREFIX = "seq_";
 
     @Inject
-    DataSource dataSource;
+    Provider<DataSource> dataSource;
 
     public static String sequenceNameFor(final Class<? extends AggregateId> aggregateIdClazz) {
         return SEQUENCE_PREFIX + CaseUtils.toCamelCase(aggregateIdClazz.getSimpleName(), false, '_');
@@ -33,7 +34,7 @@ public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
     public <A extends AggregateId> SequenceNumber nextFor(final Class<A> aggregateIdClazz) throws SequenceGenerationException {
         Objects.requireNonNull(aggregateIdClazz);
         final String sequenceName = sequenceNameFor(aggregateIdClazz);
-        try (final Connection connection = dataSource.getConnection()) {
+        try (final Connection connection = dataSource.get().getConnection()) {
             try (final PreparedStatement preparedStatement = connection.prepareStatement("SELECT nextval(?)")) {
                 preparedStatement.setString(1, sequenceName);
                 try (final ResultSet resultSet = preparedStatement.executeQuery()) {

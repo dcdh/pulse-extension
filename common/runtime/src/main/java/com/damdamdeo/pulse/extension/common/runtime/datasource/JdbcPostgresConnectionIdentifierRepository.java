@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -48,14 +49,14 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
     }
 
     @Inject
-    DataSource dataSource;
+    Provider<DataSource> dataSource;
 
     @Override
     public void store(final Hash<ConnectionIdentifier> connectionIdentifierHash, final Identifiable identifiable)
             throws DuplicateConnectionIdentifierException, ConnectionIdentifierRepositoryException {
         Objects.requireNonNull(connectionIdentifierHash);
         Objects.requireNonNull(identifiable);
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
             preparedStatement.setString(1, connectionIdentifierHash.value());
             preparedStatement.setString(2, identifiable.id());
@@ -74,7 +75,7 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
     @Override
     public Optional<Identifiable> findByHash(final Hash<ConnectionIdentifier> connectionIdentifierHash) throws ConnectionIdentifierRepositoryException {
         Objects.requireNonNull(connectionIdentifierHash);
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(SELECT_SQL)) {
             preparedStatement.setString(1, connectionIdentifierHash.value());
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
