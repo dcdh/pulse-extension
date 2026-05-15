@@ -2,17 +2,19 @@ package com.damdamdeo.pulse.extension.common.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.JdbcPostgresConnectionIdentifierRepository;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierAssociation;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionAssociationFinder;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 
-public class ConnectionIdentifierProcessor {
+public class ConnectionAssociationFinderProcessor {
 
     @BuildStep
     AdditionalBeanBuildItem additionalBeans() {
         return AdditionalBeanBuildItem.builder()
-                .addBeanClasses(JdbcPostgresConnectionIdentifierRepository.class, ConnectionIdentifierAssociation.class)
+                .addBeanClasses(JdbcPostgresConnectionIdentifierRepository.class, ConnectionAssociationFinder.class)
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
                 .setUnremovable()
                 .build();
     }

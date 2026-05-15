@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
+package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierAssociation;
 import io.quarkus.test.QuarkusUnitTest;

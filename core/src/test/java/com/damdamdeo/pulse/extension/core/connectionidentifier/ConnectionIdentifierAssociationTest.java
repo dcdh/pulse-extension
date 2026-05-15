@@ -9,9 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
@@ -81,49 +78,6 @@ class ConnectionIdentifierAssociationTest {
         // When && Then
         assertThatThrownBy(() -> connectionIdentifierAssociation.associate(new UserConnectionIdentifier(), givenUserAggregateId))
                 .isInstanceOf(RuntimeException.class)
-                .hasRootCauseInstanceOf(ConnectionIdentifierRepositoryException.class);
-    }
-
-    @Test
-    void shouldFindByHashReturnFoundAggregateFromIdentifiable() throws UnableToFindByHashException, ConnectionIdentifierRepositoryException {
-        // Given
-        final UserAggregateId givenUserAggregateId = new UserAggregateId();
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        doReturn(Optional.of(givenUserAggregateId)).when(connectionIdentifierRepository).findByHash(givenConnectionIdentifier);
-
-        // When
-        final Optional<AggregateId> byHash = connectionIdentifierAssociation.findByHash(givenConnectionIdentifier, _ -> givenUserAggregateId);
-
-        // Then
-        assertThat(byHash).isEqualTo(Optional.of(givenUserAggregateId));
-    }
-
-    @Test
-    void shouldFIndByHashReturnEmptyWhenNoIdentifiableAssociated() throws UnableToFindByHashException, ConnectionIdentifierRepositoryException {
-        // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        doReturn(Optional.empty()).when(connectionIdentifierRepository).findByHash(givenConnectionIdentifier);
-
-        // When
-        final Optional<AggregateId> aggregate = connectionIdentifierAssociation.findByHash(givenConnectionIdentifier, _ -> {
-            throw new IllegalStateException("Should not be called");
-        });
-
-        // Then
-        assertThat(aggregate).isEqualTo(Optional.empty());
-    }
-
-    @Test
-    void shouldFindByHashThrowUnableToFindByHashExceptionOnConnectionIdentifierRepositoryException() throws ConnectionIdentifierRepositoryException {
-        // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        doThrow(ConnectionIdentifierRepositoryException.class).when(connectionIdentifierRepository).findByHash(givenConnectionIdentifier);
-
-        // When && Then
-        assertThatThrownBy(() -> connectionIdentifierAssociation.findByHash(givenConnectionIdentifier, _ -> {
-            throw new IllegalStateException("Should not be called");
-        }))
-                .isInstanceOf(UnableToFindByHashException.class)
                 .hasRootCauseInstanceOf(ConnectionIdentifierRepositoryException.class);
     }
 }
