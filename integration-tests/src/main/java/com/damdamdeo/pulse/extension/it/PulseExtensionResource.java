@@ -32,6 +32,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 @Path("/pulse-extension")
 @Produces(MediaType.APPLICATION_JSON)
@@ -44,6 +45,8 @@ public class PulseExtensionResource {
     @Inject
     @Any
     Instance<StatisticsEventHandler> statisticsEventHandlerInstance;
+
+    Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId("Damien", sequenceNumber);
 
     public record TodoDTO(String id, String description, Status status, boolean important) {
 
@@ -59,9 +62,8 @@ public class PulseExtensionResource {
 
     @POST
     @Path("/createTodo")
-    public TodoDTO createTodo() throws BusinessException {
-        return TodoDTO.from(todoCommandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20), new CreateTodo("lorem ipsum"),
-                () -> new DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20))));
+    public TodoDTO createTodo() throws BusinessException, SequenceGenerationException {
+        return TodoDTO.from(todoCommandHandler.handle(creational, new CreateTodo("lorem ipsum"), DuplicateTodoException::new));
     }
 
     @POST

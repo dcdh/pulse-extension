@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.command;
 
+import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
 import com.damdamdeo.pulse.extension.core.TodoChecklist;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.event.Event;
@@ -15,8 +16,9 @@ public final class TodoChecklistCommandHandler extends CommandHandler<TodoCheckl
                                        final EventRepository<TodoChecklist, TodoChecklistId> eventRepository,
                                        final Transaction transaction,
                                        final ExecutionContextProvider executionContextProvider,
-                                       final List<Saga<TodoChecklistId, Event<TodoChecklistId>>> sagas) {
-        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, sagas);
+                                       final List<Saga<TodoChecklistId, Event<TodoChecklistId>>> sagas,
+                                       final AggregateIdGenerator aggregateIdGenerator) {
+        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, sagas, aggregateIdGenerator);
     }
 
     @Override

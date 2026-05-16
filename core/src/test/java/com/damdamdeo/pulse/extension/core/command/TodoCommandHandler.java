@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.command;
 
+import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.Event;
@@ -15,8 +16,9 @@ public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
                               final EventRepository<Todo, TodoId> eventRepository,
                               final Transaction transaction,
                               final ExecutionContextProvider executionContextProvider,
-                              final List<Saga<TodoId, Event<TodoId>>> sagas) {
-        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, sagas);
+                              final List<Saga<TodoId, Event<TodoId>>> sagas,
+                              final AggregateIdGenerator aggregateIdGenerator) {
+        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, sagas, aggregateIdGenerator);
     }
 
     @Override

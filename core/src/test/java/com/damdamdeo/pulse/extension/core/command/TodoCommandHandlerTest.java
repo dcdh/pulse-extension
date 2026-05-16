@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,23 +33,29 @@ class TodoCommandHandlerTest {
     @Spy
     NotAvailableExecutionContextProvider notAvailableExecutedByProvider;
 
+    @Mock
+    AggregateIdGenerator aggregateIdGenerator;
+
     List<Saga<TodoId, Event<TodoId>>> sagas = new ArrayList<>();
 
+    Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId("T", sequenceNumber);
+
+    // TodoId.SEQUENCE_NUMBER_0)
     @BeforeEach
-    void setUp() {
+    void setUp() throws SequenceGenerationException {
         todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), eventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider, sagas);
+                notAvailableExecutedByProvider, sagas, aggregateIdGenerator);
     }
 
     @Test
-    void shouldCreateTodoUsingExecutedByProvider() throws BusinessException {
+    void shouldCreateTodoUsingExecutedByProvider() throws BusinessException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
         doReturn(false).when(eventRepository).hasEventsFor(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0));
+        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0)).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
-        final Todo todoCreated = todoCommandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), givenCreateTodo,
-                () -> new DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0)));
+        final Todo todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
@@ -68,14 +75,14 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldClassifieAsImportant() throws BusinessException {
+    void shouldClassifieAsImportant() throws BusinessException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
         doReturn(false).when(eventRepository).hasEventsFor(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0));
+        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0)).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
-        final Todo todoCreated = todoCommandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), givenCreateTodo,
-                () -> new DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0)));
+        final Todo todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
@@ -207,14 +214,14 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldThrowBusinessExceptionHavingDuplicateTodoExceptionWhenDuplicate() {
+    void shouldThrowBusinessExceptionHavingDuplicateTodoExceptionWhenDuplicate() throws SequenceGenerationException {
         // Given
+        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0)).when(aggregateIdGenerator).generate(TodoId.class, creational);
         final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
         doReturn(true).when(eventRepository).hasEventsFor(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0));
 
         // When && Then
-        assertThatThrownBy(() -> todoCommandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), givenCreateTodo,
-                () -> new DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0))))
+        assertThatThrownBy(() -> todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new))
                 .isInstanceOf(BusinessException.class)
                 .rootCause()
                 .isInstanceOf(DuplicateTodoException.class)

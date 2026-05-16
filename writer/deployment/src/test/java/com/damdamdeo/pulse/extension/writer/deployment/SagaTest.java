@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -18,6 +16,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -39,6 +38,8 @@ class SagaTest {
     @All
 //    List<Saga<TodoId, Event<TodoId>>> sagas; not working ! will return empty
     List<Saga<TodoId, ?>> sagas;// It's ok
+
+    Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId("Damien", sequenceNumber);
 
     @Inject
     OnNewTodoCreated onNewTodoCreated;
@@ -65,19 +66,18 @@ class SagaTest {
     }
 
     @Test
-    void shouldListenToEvent() throws BusinessException {
+    void shouldListenToEvent() throws BusinessException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 
         // When
-        commandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20), givenCreateTodo,
-                () -> new CommandHandlerTest.DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)));
+        commandHandler.handle(creational, givenCreateTodo, CommandHandlerTest.DuplicateTodoException::new);
 
         // Then
         assertAll(
                 () -> assertThat(sagas.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
-                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)),
+                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))
         );
     }

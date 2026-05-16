@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.core.command.Transaction;
@@ -142,7 +143,7 @@ public class CodeGenerationProcessor {
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
                         CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutionContextProvider.class,
-                        List.class)) {
+                        List.class, AggregateIdGenerator.class)) {
                     constructor
                             .setSignature(SignatureBuilder.forMethod()
                                     .addParameterType(Type.classType(CommandHandlerRegistry.class))
@@ -162,6 +163,7 @@ public class CodeGenerationProcessor {
                                             Type.parameterizedType(Type.classType(Saga.class),
                                                     Type.classType(aggregateRootBuildItem.aggregateIdClazz()),
                                                     Type.wildcardTypeUnbounded())))
+                                    .addParameterType(Type.classType(AggregateIdGenerator.class))
                                     .build());
                     constructor.setModifiers(Modifier.PUBLIC);
                     constructor.getParameterAnnotations(4).addAnnotation(All.class);
@@ -172,13 +174,15 @@ public class CodeGenerationProcessor {
                                     EventRepository.class,
                                     Transaction.class,
                                     ExecutionContextProvider.class,
-                                    List.class),
+                                    List.class,
+                                    AggregateIdGenerator.class),
                             constructor.getThis(),
                             constructor.getMethodParam(0),
                             constructor.getMethodParam(1),
                             constructor.getMethodParam(2),
                             constructor.getMethodParam(3),
-                            constructor.getMethodParam(4)
+                            constructor.getMethodParam(4),
+                            constructor.getMethodParam(5)
                     );
 
                     constructor.returnValue(null);

@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.saga.Saga;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class CommandHandler<A extends AggregateRoot<K>, K extends AggregateId> {
@@ -16,28 +17,32 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
     private final Transaction transaction;
     private final ExecutionContextProvider executionContextProvider;
     private final List<Saga<K, Event<K>>> sagas;
+    private final AggregateIdGenerator aggregateIdGenerator;
 
     public CommandHandler(final CommandHandlerRegistry commandHandlerRegistry,
                           final EventRepository<A, K> eventRepository,
                           final Transaction transaction,
                           final ExecutionContextProvider executionContextProvider,
-                          final List<Saga<K, Event<K>>> sagas) {
+                          final List<Saga<K, Event<K>>> sagas,
+                          final AggregateIdGenerator aggregateIdGenerator) {
         this.commandHandlerRegistry = Objects.requireNonNull(commandHandlerRegistry);
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.transaction = Objects.requireNonNull(transaction);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.sagas = Objects.requireNonNull(sagas);
+        this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
     }
 
-    public A handle(final K id, final CreationalCommand<K> creationalCommand,
-                    final Supplier<DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException {
-        Objects.requireNonNull(id);
+    public A handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
+                    final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException, SequenceGenerationException {
+        Objects.requireNonNull(creational);
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateExceptionSupplier);
         final ExecutionContext executionContext = executionContextProvider.provide();
+        final K id = aggregateIdGenerator.generate(getAggregateIdClass(), creational);
         return commandHandlerRegistry.execute(id, () -> transaction.joiningExisting(() -> {
             if (eventRepository.hasEventsFor(id)) {
-                throw new BusinessException(duplicateAggregateExceptionSupplier.get());
+                throw new BusinessException(duplicateAggregateExceptionSupplier.apply(id));
             }
             final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
             final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);

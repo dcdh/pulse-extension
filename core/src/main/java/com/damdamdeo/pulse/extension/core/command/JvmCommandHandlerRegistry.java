@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BusinessException;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -13,6 +14,8 @@ public class JvmCommandHandlerRegistry implements CommandHandlerRegistry {
 
     @Override
     public <A extends AggregateRoot<?>> A execute(final AggregateId id, final BusinessCallable<A> commandLogic) throws BusinessException {
+        Objects.requireNonNull(id);
+        Objects.requireNonNull(commandLogic);
         final ReentrantLock lock = locks.computeIfAbsent(id, key -> new ReentrantLock());
         lock.lock();
         try {

@@ -33,17 +33,17 @@ class CommandHandlerTest {
     DataSource dataSource;
 
     @Test
-    void shouldExecuteCommand() throws BusinessException {
+    void shouldExecuteCommand() throws BusinessException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 
         // When
-        final Todo todoCreated = commandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20), givenCreateTodo,
-                () -> new DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)));
+        final Todo todoCreated = commandHandler.handle(sequenceNumber -> new TodoId("Damien", sequenceNumber), givenCreateTodo,
+                DuplicateTodoException::new);
 
         // Then
         assertAll(
-                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)),
+                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE)
