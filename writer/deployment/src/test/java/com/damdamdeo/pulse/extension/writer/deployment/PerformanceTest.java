@@ -42,7 +42,7 @@ class PerformanceTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
             .overrideConfigKey("quarkus.devservices.enabled", "true")
-            .overrideConfigKey("pulse.datasource.init-at-startup", "true")
+            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .overrideConfigKey("quarkus.log.category.\"com.damdamdeo.pulse.extension.writer.runtime.projection\".level", "INFO");
 
     @Inject

@@ -28,7 +28,7 @@ class JdbcPostgresSequenceGeneratorTest {
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.devservices.enabled", "true")
-            .overrideConfigKey("pulse.datasource.init-at-startup", "true")
+            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .withConfigurationResource("application.properties");
 
     @Inject

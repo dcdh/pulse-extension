@@ -15,7 +15,7 @@ class ConnectionAssociationFinderTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.datasource.devservices.enabled", "true")
-            .overrideConfigKey("pulse.datasource.init-at-startup", "false")
+            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "false")
             .withConfigurationResource("application.properties");
 
     @Inject

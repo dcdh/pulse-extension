@@ -29,7 +29,7 @@ class SagaTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(CommandHandlerTest.DuplicateTodoException.class))
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.devservices.enabled", "true")
-            .overrideConfigKey("pulse.datasource.init-at-startup", "true")
+            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .withConfigurationResource("application.properties");
 
     @Inject

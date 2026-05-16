@@ -26,7 +26,7 @@ class PostgresFlywayTest {
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.devservices.enabled", "true")
-            .overrideConfigKey("pulse.datasource.init-at-startup", "true")
+            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".min-level", "DEBUG")
             .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".level", "DEBUG")
             .withConfigurationResource("application.properties")
