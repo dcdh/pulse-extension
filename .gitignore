@@ -38,4 +38,5 @@
 /writer/runtime/target/
 /writer/runtime/quarkus-pulse-writer-extension.iml
 
+/quarkus-pulse-extension-parent.iml
 /.idea/
