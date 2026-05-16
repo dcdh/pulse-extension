@@ -31,7 +31,7 @@ public final class Todo extends AggregateRoot<TodoId> {
         this.important = important;
     }
 
-    public void handle(final CreateTodo createTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
+    public void handle(final CreateTodo createTodo, final ExecutionContext executionContext, final EventAppender<TodoId> eventAppender) throws BusinessException {
         Objects.requireNonNull(createTodo);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
@@ -41,7 +41,7 @@ public final class Todo extends AggregateRoot<TodoId> {
         }
     }
 
-    public void handle(final MarkTodoAsDone markTodoAsDone, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
+    public void handle(final MarkTodoAsDone markTodoAsDone, final ExecutionContext executionContext, final EventAppender<TodoId> eventAppender) throws BusinessException {
         Objects.requireNonNull(markTodoAsDone);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
@@ -49,14 +49,14 @@ public final class Todo extends AggregateRoot<TodoId> {
         eventAppender.append(new TodoMarkedAsDone());
     }
 
-    public void handle(final FailTodo failTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
+    public void handle(final FailTodo failTodo, final ExecutionContext executionContext, final EventAppender<TodoId> eventAppender) throws BusinessException {
         Objects.requireNonNull(failTodo);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
         throw new BusinessException(new IllegalStateException("Fail !"));
     }
 
-    public void handle(final CommandWithoutOnEvent commandWithoutOnEvent, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
+    public void handle(final CommandWithoutOnEvent commandWithoutOnEvent, final ExecutionContext executionContext, final EventAppender<TodoId> eventAppender) throws BusinessException {
         Objects.requireNonNull(commandWithoutOnEvent);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);

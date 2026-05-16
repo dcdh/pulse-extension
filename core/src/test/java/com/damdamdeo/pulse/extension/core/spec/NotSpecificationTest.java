@@ -18,7 +18,7 @@ class NotSpecificationTest {
     @Test
     void shouldBeTrueWhenTodoIsNotImportant() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), "lorem", Status.IN_PROGRESS, false);
+        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), "lorem", Status.IN_PROGRESS, false);
 
         // When
         final boolean isSatisfiedBy = NOT_IMPORTANT.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT);
@@ -30,7 +30,7 @@ class NotSpecificationTest {
     @Test
     void shouldBeFalseWhenTodoIsImportant() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), "lorem", Status.IN_PROGRESS, true);
+        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), "lorem", Status.IN_PROGRESS, true);
 
         // When
         final boolean isSatisfiedBy = NOT_IMPORTANT.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT);

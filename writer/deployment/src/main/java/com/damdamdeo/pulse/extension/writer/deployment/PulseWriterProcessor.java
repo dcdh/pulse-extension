@@ -66,6 +66,50 @@ public class PulseWriterProcessor {
                                 CACHE 1;
                                 """.formatted(schemaName, sequenceName))
                 .collect(Collectors.joining());
+        final String sequenceByAggregateRootTypeAndOwnedBy =
+                // language=sql
+                """
+                        CREATE TABLE %1$s.sequence_by_identifiable_clazz_and_owned_by (
+                            identifiable_clazz character varying(255) not null,
+                            owned_by character varying(255) not null,
+                            next_value bigint not null check (next_value > 0),
+                            CONSTRAINT identifiable_clazz_and_owned_by_pkey PRIMARY KEY (identifiable_clazz, owned_by)
+                        );
+                        
+                        CREATE OR REPLACE FUNCTION next_sequence_by_identifiable_clazz_and_owned_by_value(
+                            p_identifiable_clazz TEXT,
+                            p_owned_by TEXT
+                        )
+                        RETURNS BIGINT
+                        LANGUAGE plpgsql
+                        AS $$
+                        DECLARE
+                            v_next BIGINT;
+                        BEGIN
+                            INSERT INTO %1$s.sequence_by_identifiable_clazz_and_owned_by (
+                                identifiable_clazz,
+                                owned_by,
+                                next_value
+                            )
+                            VALUES (
+                                p_identifiable_clazz,
+                                p_owned_by,
+                                1
+                            )
+                            ON CONFLICT (
+                                identifiable_clazz,
+                                owned_by
+                            )
+                            DO UPDATE
+                                SET next_value =
+                                    sequence_by_identifiable_clazz_and_owned_by.next_value + 1
+                            RETURNING next_value
+                            INTO v_next;
+                        
+                            RETURN v_next;
+                        END;
+                        $$;
+                        """.formatted(schemaName);
         return new PostgresSqlScriptBuildItem(
                 "%s_writer.sql".formatted(schemaName),
                 // language=sql
@@ -228,9 +272,10 @@ public class PulseWriterProcessor {
                               RAISE NOTICE 'Trigger event_table_not_truncable_trigger EXISTS';
                           END;
                           %2$s
+                          %3$s
                         END;
                         $MAIN$;
-                        """.formatted(schemaName, sequences)
+                        """.formatted(schemaName, sequences, sequenceByAggregateRootTypeAndOwnedBy)
         );
     }
 }

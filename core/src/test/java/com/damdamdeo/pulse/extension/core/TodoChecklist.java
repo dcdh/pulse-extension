@@ -22,7 +22,7 @@ public final class TodoChecklist extends AggregateRoot<TodoChecklistId> {
         this.description = Objects.requireNonNull(description);
     }
 
-    public void handle(final AddNewTodoItem addNewTodoItem, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException {
+    public void handle(final AddNewTodoItem addNewTodoItem, final ExecutionContext executionContext, final EventAppender<TodoChecklistId> eventAppender) throws BusinessException {
         Objects.requireNonNull(addNewTodoItem);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);

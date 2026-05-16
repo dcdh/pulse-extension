@@ -25,7 +25,7 @@ class AndSpecificationTest {
     )
     void shouldValidateSpecification(final Status givenStatus, final boolean givenImportant, final boolean expected) {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), "lorem", givenStatus, givenImportant);
+        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), "lorem", givenStatus, givenImportant);
 
         // When
         final boolean isSatisfiedBy = IMPORTANT_AND_IN_PROGRESS.isSatisfiedBy(givenTodo, new NotAvailableExecutionContextProvider().provide());

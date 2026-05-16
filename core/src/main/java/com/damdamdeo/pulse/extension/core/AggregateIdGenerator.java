@@ -20,4 +20,12 @@ public class AggregateIdGenerator {
         Validate.matchesPattern(generated.id(), "^[a-zA-Z]+-[A-Z0-9\\-]+$");
         return generated;
     }
+
+    public <A extends AggregateId> A generate(final For<A> identifiable, final Function<SequenceNumber, A> creational) throws SequenceGenerationException {
+        Objects.requireNonNull(identifiable);
+        Objects.requireNonNull(creational);
+        final A generated = creational.apply(sequenceGenerator.nextFor(identifiable));
+        Validate.matchesPattern(generated.id(), "^[a-zA-Z]+-[A-Z0-9\\-]+$");
+        return generated;
+    }
 }

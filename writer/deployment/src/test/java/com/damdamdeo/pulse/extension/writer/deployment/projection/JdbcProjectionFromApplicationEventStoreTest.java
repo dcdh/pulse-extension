@@ -157,7 +157,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         new VersionizedEvent(new AggregateVersion(0),
                                 new ExecutedByEvent(new TodoItemAdded("Implement Projection feature"), ExecutedBy.NotAvailable.INSTANCE))),
                 new TodoChecklist(
-                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 0L),
+                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                         "Implement Projection feature"
                 ), BOB);
         todoEventRepository.save(List.of(
@@ -173,14 +173,14 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         new VersionizedEvent(new AggregateVersion(0),
                                 new ExecutedByEvent(new TodoItemAdded("Go see family"), ExecutedBy.NotAvailable.INSTANCE))),
                 new TodoChecklist(
-                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2), 0L),
+                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
                         "Go see family"
                 ), BOB);
         todoEventRepository.save(List.of(
                         new VersionizedEvent(new AggregateVersion(0),
                                 new ExecutedByEvent(new NewTodoCreated("Bob vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
                 new Todo(
-                        new TodoId("Bob", TodoId.SEQUENCE_NUMBER_0),
+                        new TodoId("Bob", TodoId.SEQUENCE_NUMBER_1),
                         "Bob vacancies",
                         Status.IN_PROGRESS,
                         false
@@ -198,7 +198,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         true,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 0L),
+                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                         "Implement Projection feature"
                                 )
                         )
@@ -224,7 +224,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         true,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 0L),
+                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                         "Implement Projection feature"
                                 )
                         )
@@ -236,7 +236,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         false,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2), 0L),
+                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
                                         "Go see family"
                                 )
                         )

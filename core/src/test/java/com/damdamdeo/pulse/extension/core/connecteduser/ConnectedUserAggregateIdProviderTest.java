@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.core.connecteduser;
 
-import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
-import com.damdamdeo.pulse.extension.core.SequenceGenerationException;
-import com.damdamdeo.pulse.extension.core.SequenceNumber;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AlreadyAssociatedException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionAssociationFinder;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierAssociation;
@@ -67,7 +64,8 @@ class ConnectedUserAggregateIdProviderTest {
         assertAll(
                 () -> assertThat(result).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
                 () -> verify(connectionIdentifierAssociation, never()).associate(any(), any()),
-                () -> verify(aggregateIdGenerator, never()).generate(any(), any()));
+                () -> verify(aggregateIdGenerator, never()).generate(eq(TodoId.class), any()),
+                () -> verify(aggregateIdGenerator, never()).generate(any(For.class), any()));
     }
 
     @Test
@@ -109,7 +107,7 @@ class ConnectedUserAggregateIdProviderTest {
         doReturn(CONNECTED_USER).when(connectedUserProvider).provide();
         doReturn(GIVEN_HASH).when(hasher).hash(CONNECTED_USER);
         doReturn(Optional.empty()).when(connectionAssociationFinder).findByHash(any(), any());
-        doThrow(new SequenceGenerationException("fail", "mySequence")).when(aggregateIdGenerator).generate(any(), any());
+        doThrow(new SequenceGenerationException("fail", "mySequence")).when(aggregateIdGenerator).generate(eq(TodoId.class), any());
 
         // When && Then
         assertThatThrownBy(() -> connectedUserAggregateIdProvider.provide(TodoId.class, creationalFromIdentifiable, creationalFromSequenceNumber))
@@ -125,7 +123,7 @@ class ConnectedUserAggregateIdProviderTest {
         doReturn(CONNECTED_USER).when(connectedUserProvider).provide();
         doReturn(GIVEN_HASH).when(hasher).hash(CONNECTED_USER);
         doReturn(Optional.empty()).when(connectionAssociationFinder).findByHash(any(), any());
-        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(any(), any());
+        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(eq(TodoId.class), any());
 
         doThrow(new AlreadyAssociatedException(CONNECTED_USER)).when(connectionIdentifierAssociation)
                 .associate(CONNECTED_USER, new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));

@@ -24,11 +24,11 @@ class StateApplierTest {
         // When
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
                 new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, Todo.class,
-                TodoId.class, new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0));
+                TodoId.class, new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
 
         // Then
         assertAll(
-                () -> assertThat(todoStateApplier.aggregate().id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0)),
+                () -> assertThat(todoStateApplier.aggregate().id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(todoStateApplier.aggregate().description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoStateApplier.aggregate().status()).isEqualTo(Status.DONE));
     }
@@ -43,7 +43,7 @@ class StateApplierTest {
         // When
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
                 new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, Todo.class,
-                TodoId.class, new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0));
+                TodoId.class, new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
 
         // Then
         assertThat(todoStateApplier.getNewEvents()).isEmpty();
@@ -57,7 +57,7 @@ class StateApplierTest {
         );
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
                 new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenEvents, Todo.class,
-                TodoId.class, new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0));
+                TodoId.class, new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
 
         // When
         todoStateApplier.append(new TodoMarkedAsDone());

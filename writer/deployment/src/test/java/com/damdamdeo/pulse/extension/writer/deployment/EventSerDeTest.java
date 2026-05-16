@@ -29,6 +29,55 @@ class EventSerDeTest {
     @Inject
     ObjectMapper objectMapper;
 
+    private final String listOfTodos =
+            // language=json
+            """
+                    {
+                      "todoItems": [
+                        {
+                          "id": {
+                            "todoId": {
+                              "user": "Damien",
+                              "sequence": "000001"
+                            },
+                            "sequence" : "000001"
+                          },
+                          "description": "IMPORTANT: pulse extension development"
+                        },
+                        {
+                          "id": {
+                            "todoId": {
+                              "user": "Damien",
+                              "sequence": "000001"
+                            },
+                            "sequence" : "000002"
+                          },
+                          "description": "Implement Projection feature"
+                        },
+                        {
+                          "id": {
+                            "todoId": {
+                              "user": "Damien",
+                              "sequence": "000001"
+                            },
+                            "sequence" : "000003"
+                          },
+                          "description": "Organization vacancies"
+                        },
+                        {
+                          "id": {
+                            "todoId": {
+                              "user": "Damien",
+                              "sequence": "000001"
+                            },
+                            "sequence" : "000004"
+                          },
+                          "description": "Go see family"
+                        }
+                      ]
+                    }
+                    """;
+
     @Test
     void shouldSerializeSimpleTypes() throws JsonProcessingException, JSONException {
         // Given
@@ -69,133 +118,39 @@ class EventSerDeTest {
         // Given
         final MultipleTodoItemsAdded givenMultipleTodoItemsAdded = new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
                                 "Go see family")));
 
         // When
         final String serialized = objectMapper.writeValueAsString(givenMultipleTodoItemsAdded);
 
         // Then
-        // language=json
-        final String expected = """
-                {
-                  "todoItems": [
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "IMPORTANT: pulse extension development"
-                    },
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "Implement Projection feature"
-                    },
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "Organization vacancies"
-                    },
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "Go see family"
-                    }
-                  ]
-                }
-                """;
-        JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);
+        JSONAssert.assertEquals(listOfTodos, serialized, JSONCompareMode.STRICT);
     }
 
     @Test
     void shouldDeserializeListType() throws JsonProcessingException {
         // Given
-        // language=json
-        final String given = """
-                {
-                  "todoItems": [
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "IMPORTANT: pulse extension development"
-                    },
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "Implement Projection feature"
-                    },
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "Organization vacancies"
-                    },
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "index": 1
-                      },
-                      "description": "Go see family"
-                    }
-                  ]
-                }
-                """;
 
         // When
-        final MultipleTodoItemsAdded multipleTodoItemsAdded = objectMapper.readValue(given, MultipleTodoItemsAdded.class);
+        final MultipleTodoItemsAdded multipleTodoItemsAdded = objectMapper.readValue(listOfTodos, MultipleTodoItemsAdded.class);
 
         // Then
         assertThat(multipleTodoItemsAdded).isEqualTo(new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
                                 "Go see family"))));
     }
 

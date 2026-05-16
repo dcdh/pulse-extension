@@ -196,7 +196,7 @@ class SerializerTest {
                           "user": "Damien",
                           "sequence": "000001"
                         },
-                        "index": 0
+                        "sequenceNumber": "000001"
                       },
                       "description": "Implement Projection feature"
                     },
@@ -206,9 +206,9 @@ class SerializerTest {
                           "user": "Damien",
                           "sequence": "000001"
                         },
-                        "index": 1
+                        "sequenceNumber": "000002"
                       },
-                      "description": "Organization vacancies"                      
+                      "description": "Organization vacancies"
                     }
                   ]
                 }
@@ -225,11 +225,11 @@ class SerializerTest {
                 false,
                 List.of(
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 0L),
+                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                 "Implement Projection feature"
                         ),
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
+                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
                                 "Organization vacancies"
                         )
                 )

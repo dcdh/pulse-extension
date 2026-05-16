@@ -39,7 +39,12 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateExceptionSupplier);
         final ExecutionContext executionContext = executionContextProvider.provide();
-        final K id = aggregateIdGenerator.generate(getAggregateIdClass(), creational);
+        final K id;
+        if (creationalCommand.ownedBy().isPresent()) {
+            id = aggregateIdGenerator.generate(new For<>(getAggregateIdClass(), creationalCommand.ownedBy().get()), creational);
+        } else {
+            id = aggregateIdGenerator.generate(getAggregateIdClass(), creational);
+        }
         return commandHandlerRegistry.execute(id, () -> transaction.joiningExisting(() -> {
             if (eventRepository.hasEventsFor(id)) {
                 throw new BusinessException(duplicateAggregateExceptionSupplier.apply(id));

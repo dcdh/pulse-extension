@@ -6,7 +6,6 @@ import java.util.Objects;
 
 public record TodoId(String user, SequenceNumber sequence) implements AggregateId {
 
-    public static final SequenceNumber SEQUENCE_NUMBER_0 = SequenceNumber.fromNumber(0L);
     public static final SequenceNumber SEQUENCE_NUMBER_1 = SequenceNumber.fromNumber(1L);
     public static final SequenceNumber SEQUENCE_NUMBER_2 = SequenceNumber.fromNumber(2L);
     public static final SequenceNumber SEQUENCE_NUMBER_3 = SequenceNumber.fromNumber(3L);
@@ -21,8 +20,6 @@ public record TodoId(String user, SequenceNumber sequence) implements AggregateI
     public static final SequenceNumber SEQUENCE_NUMBER_12 = SequenceNumber.fromNumber(12L);
     public static final SequenceNumber SEQUENCE_NUMBER_13 = SequenceNumber.fromNumber(13L);
     public static final SequenceNumber SEQUENCE_NUMBER_14 = SequenceNumber.fromNumber(14L);
-    public static final SequenceNumber SEQUENCE_NUMBER_20 = SequenceNumber.fromNumber(20L);
-
 
     public TodoId {
         Objects.requireNonNull(user);
