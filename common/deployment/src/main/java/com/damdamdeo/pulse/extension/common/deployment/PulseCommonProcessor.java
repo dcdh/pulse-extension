@@ -53,15 +53,20 @@ public class PulseCommonProcessor {
     }
 
     @BuildStep
-    AdditionalBeanBuildItem additionalBeans() {
-        return AdditionalBeanBuildItem.builder()
-                .addBeanClass(PulseObjectMapperCustomizer.class)
-                .addBeanClasses(VaultPassphraseRepository.class, DefaultPassphraseGenerator.class,
-                        DefaultPassphraseProvider.class, OpenPGPDecryptionService.class,
+    List<AdditionalBeanBuildItem> additionalBeans() {
+        final List<AdditionalBeanBuildItem> additionalBeanBuildItems = new ArrayList<>();
+        additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
+                .addBeanClasses(
+                        PulseObjectMapperCustomizer.class,
+                        VaultPassphraseRepository.class,
+                        DefaultPassphraseGenerator.class,
+                        DefaultPassphraseProvider.class,
+                        OpenPGPDecryptionService.class,
                         OpenPGPEncryptionService.class,
                         InitScriptUsageChecker.class,
                         Sha3256DefaultHasher.class)
-                .build();
+                .build());
+        return additionalBeanBuildItems;
     }
 
     @BuildStep

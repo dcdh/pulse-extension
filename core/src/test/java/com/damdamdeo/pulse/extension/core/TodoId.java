@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.core;
 
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
+
 import java.util.Objects;
 
 public record TodoId(String user, SequenceNumber sequence) implements AggregateId {
@@ -25,6 +27,11 @@ public record TodoId(String user, SequenceNumber sequence) implements AggregateI
     public TodoId {
         Objects.requireNonNull(user);
         Objects.requireNonNull(sequence);
+    }
+
+    public static TodoId from(final Identifiable identifiable) {
+        String[] split = identifiable.id().split(SEPARATOR);
+        return new TodoId(split[0], new SequenceNumber(split[1]));
     }
 
     public String id() {

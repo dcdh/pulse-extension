@@ -3,7 +3,6 @@ package com.damdamdeo.pulse.extension.core.connectionidentifier;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
-import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -13,7 +12,7 @@ public class ConnectionAssociationFinder {
 
     private final ConnectionIdentifierRepository connectionIdentifierRepository;
 
-    public ConnectionAssociationFinder(final ConnectionIdentifierRepository connectionIdentifierRepository, final Hasher hasher) {
+    public ConnectionAssociationFinder(final ConnectionIdentifierRepository connectionIdentifierRepository) {
         this.connectionIdentifierRepository = Objects.requireNonNull(connectionIdentifierRepository);
     }
 

@@ -43,4 +43,11 @@ public final class SequenceNumber {
     public int hashCode() {
         return Objects.hashCode(number);
     }
+
+    @Override
+    public String toString() {
+        return "SequenceNumber{" +
+                "number='" + number + '\'' +
+                '}';
+    }
 }

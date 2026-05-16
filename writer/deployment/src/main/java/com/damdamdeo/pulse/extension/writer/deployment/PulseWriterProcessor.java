@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
+import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateIdBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultInstantProvider;
@@ -31,6 +32,7 @@ public class PulseWriterProcessor {
         return List.of(
                 AdditionalBeanBuildItem.builder()
                         .addBeanClasses(DefaultQuarkusTransaction.class, DefaultInstantProvider.class,
+                                AggregateIdGenerator.class,
                                 JdbcPostgresSequenceGenerator.class)
                         .build(),
                 // TODO it is not possible to define the bean with @DefaultBean

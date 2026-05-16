@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.core.connectionidentifier;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierAssociationTest.GIVEN_HASH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
@@ -27,12 +27,11 @@ class ConnectionAssociationFinderTest {
     @Test
     void shouldFindByHashReturnFoundAggregateFromIdentifiable() throws UnableToFindByHashException, ConnectionIdentifierRepositoryException {
         // Given
-        final ConnectionIdentifierAssociationTest.UserAggregateId givenUserAggregateId = new ConnectionIdentifierAssociationTest.UserAggregateId();
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        doReturn(Optional.of(givenUserAggregateId)).when(connectionIdentifierRepository).findByHash(givenConnectionIdentifier);
+        final UserAggregateId givenUserAggregateId = new UserAggregateId();
+        doReturn(Optional.of(givenUserAggregateId)).when(connectionIdentifierRepository).findByHash(GIVEN_HASH);
 
         // When
-        final Optional<AggregateId> byHash = connectionAssociationFinder.findByHash(givenConnectionIdentifier, _ -> givenUserAggregateId);
+        final Optional<AggregateId> byHash = connectionAssociationFinder.findByHash(GIVEN_HASH, _ -> givenUserAggregateId);
 
         // Then
         assertThat(byHash).isEqualTo(Optional.of(givenUserAggregateId));
@@ -41,11 +40,10 @@ class ConnectionAssociationFinderTest {
     @Test
     void shouldFIndByHashReturnEmptyWhenNoIdentifiableAssociated() throws UnableToFindByHashException, ConnectionIdentifierRepositoryException {
         // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        doReturn(Optional.empty()).when(connectionIdentifierRepository).findByHash(givenConnectionIdentifier);
+        doReturn(Optional.empty()).when(connectionIdentifierRepository).findByHash(GIVEN_HASH);
 
         // When
-        final Optional<AggregateId> aggregate = connectionAssociationFinder.findByHash(givenConnectionIdentifier, _ -> {
+        final Optional<AggregateId> aggregate = connectionAssociationFinder.findByHash(GIVEN_HASH, _ -> {
             throw new IllegalStateException("Should not be called");
         });
 
@@ -56,11 +54,10 @@ class ConnectionAssociationFinderTest {
     @Test
     void shouldFindByHashThrowUnableToFindByHashExceptionOnConnectionIdentifierRepositoryException() throws ConnectionIdentifierRepositoryException {
         // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        doThrow(ConnectionIdentifierRepositoryException.class).when(connectionIdentifierRepository).findByHash(givenConnectionIdentifier);
+        doThrow(ConnectionIdentifierRepositoryException.class).when(connectionIdentifierRepository).findByHash(GIVEN_HASH);
 
         // When && Then
-        assertThatThrownBy(() -> connectionAssociationFinder.findByHash(givenConnectionIdentifier, _ -> {
+        assertThatThrownBy(() -> connectionAssociationFinder.findByHash(GIVEN_HASH, _ -> {
             throw new IllegalStateException("Should not be called");
         }))
                 .isInstanceOf(UnableToFindByHashException.class)

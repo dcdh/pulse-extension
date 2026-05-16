@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContex
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildStep;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class ExecutedByProcessor {
         final List<AdditionalBeanBuildItem> additionalBeanBuildItems = new ArrayList<>();
         additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder().addBeanClasses(DefaultOwnedByExecutedByDecoder.class).build());
         additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder().addBeanClasses(DefaultOwnedByExecutedByEncoder.class).build());
-        if (capabilities.isPresent("io.quarkus.oidc")) {
+        if (capabilities.isPresent(Capability.OIDC)) {
             additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder().addBeanClasses(QuarkusOidcExecutionContextProvider.class).build());
         } else {
             additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
