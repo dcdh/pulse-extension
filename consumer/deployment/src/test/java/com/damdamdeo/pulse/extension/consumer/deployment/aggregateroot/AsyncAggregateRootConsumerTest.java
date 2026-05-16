@@ -121,21 +121,21 @@ class AsyncAggregateRootConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Damien-000000",
+                          "id": "Damien-000001",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
                         }
                         """,
-                new AnyAggregateId("Damien-000000"),
+                new AnyAggregateId("Damien-000001"),
                 new OwnedBy("Damien"),
-                new BelongsTo(new AnyAggregateId("Damien-000000")),
+                new BelongsTo(new AnyAggregateId("Damien-000001")),
                 Todo.class);
 
         // Then
         await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
-        expectedAggregateRootPayload.put("id", "Damien-000000");
+        expectedAggregateRootPayload.put("id", "Damien-000001");
         expectedAggregateRootPayload.put("description", "lorem ipsum");
         expectedAggregateRootPayload.put("status", "DONE");
         expectedAggregateRootPayload.put("important", false);
@@ -144,11 +144,11 @@ class AsyncAggregateRootConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000000"),
+                        new AnyAggregateId("Damien-000001"),
                         new CurrentVersionInConsumption(0),
                         payload,
                         new OwnedBy("Damien"),
-                        new BelongsTo(new AnyAggregateId("Damien-000000")),
+                        new BelongsTo(new AnyAggregateId("Damien-000001")),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
 

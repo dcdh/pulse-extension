@@ -123,7 +123,7 @@ class AsyncConsumerChannelEventConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Damien-000000",
+                          "id": "Damien-000001",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
@@ -133,10 +133,10 @@ class AsyncConsumerChannelEventConsumerTest {
                 """
                         {}
                         """,
-                new AnyAggregateId("Damien-000000"),
+                new AnyAggregateId("Damien-000001"),
                 new OwnedBy("Damien"),
                 ExecutedBy.NotAvailable.INSTANCE,
-                new BelongsTo(new AnyAggregateId("Damien-000000")),
+                new BelongsTo(new AnyAggregateId("Damien-000001")),
                 Todo.class,
                 TodoMarkedAsDone.class);
 
@@ -144,7 +144,7 @@ class AsyncConsumerChannelEventConsumerTest {
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
         final ObjectNode expectedTodoMarkedAsDonePayload = objectMapper.createObjectNode();
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
-        expectedAggregateRootPayload.put("id", "Damien-000000");
+        expectedAggregateRootPayload.put("id", "Damien-000001");
         expectedAggregateRootPayload.put("description", "lorem ipsum");
         expectedAggregateRootPayload.put("status", "DONE");
         expectedAggregateRootPayload.put("important", false);
@@ -153,23 +153,23 @@ class AsyncConsumerChannelEventConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000000"),
+                        new AnyAggregateId("Damien-000001"),
                         new CurrentVersionInConsumption(0),
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Damien"),
-                        new BelongsTo(new AnyAggregateId("Damien-000000")),
+                        new BelongsTo(new AnyAggregateId("Damien-000001")),
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
                                 AggregateRootType.from(Todo.class),
-                                new AnyAggregateId("Damien-000000"),
+                                new AnyAggregateId("Damien-000001"),
                                 new LastAggregateVersion(1),
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                                 new OwnedBy("Damien"),
-                                new BelongsTo(new AnyAggregateId("Damien-000000")))));
+                                new BelongsTo(new AnyAggregateId("Damien-000001")))));
     }
 
     @Test

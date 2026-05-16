@@ -61,7 +61,7 @@ class PurposeAggregateRootChannelConsumerTest {
 
         public static TodoAggregateRootValue of() {
             return new TodoAggregateRootValue("aggregateRootPayload".getBytes(StandardCharsets.UTF_8),
-                    "Damien", "Damien-000000");
+                    "Damien", "Damien-000001");
         }
 
         @Override

@@ -87,7 +87,7 @@ class PostgresAggregateRootLoaderTest {
         // language=json
         final String payload = """
                 {
-                  "id": "Damien-000000",
+                  "id": "Damien-000001",
                   "description": "lorem ipsum",
                   "status": "DONE",
                   "important": false
@@ -101,19 +101,19 @@ class PostgresAggregateRootLoaderTest {
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, "Damien-000000");
+            ps.setString(1, "Damien-000001");
             ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedPayload);
             ps.setString(5, "Damien");
-            ps.setString(6, "Damien-000000");
+            ps.setString(6, "Damien-000001");
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
         final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
-        final AggregateId givenAggregateId = new AnyAggregateId("Damien-000000");
+        final AggregateId givenAggregateId = new AnyAggregateId("Damien-000001");
 
         // When
         final AggregateRootLoaded<JsonNode> byAggregateRootTypeAndAggregateId = postgresAggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(
@@ -121,18 +121,18 @@ class PostgresAggregateRootLoaderTest {
 
         // Then
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
-        expectedAggregateRootPayload.put("id", "Damien-000000");
+        expectedAggregateRootPayload.put("id", "Damien-000001");
         expectedAggregateRootPayload.put("description", "lorem ipsum");
         expectedAggregateRootPayload.put("status", "DONE");
         expectedAggregateRootPayload.put("important", false);
         assertThat(byAggregateRootTypeAndAggregateId).isEqualTo(
                 new AggregateRootLoaded<>(
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000000"),
+                        new AnyAggregateId("Damien-000001"),
                         new LastAggregateVersion(1),
                         new EncryptedPayload(encryptedPayload),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                         new OwnedBy("Damien"),
-                        new BelongsTo(new AnyAggregateId("Damien-000000"))));
+                        new BelongsTo(new AnyAggregateId("Damien-000001"))));
     }
 }

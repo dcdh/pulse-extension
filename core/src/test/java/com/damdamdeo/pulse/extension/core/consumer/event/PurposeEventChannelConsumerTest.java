@@ -71,7 +71,7 @@ class PurposeEventChannelConsumerTest {
             return new TodoEventValue(
                     ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                     NewTodoCreated.class.getSimpleName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
-                    "Damien", "Damien-000000", "EU:bob");
+                    "Damien", "Damien-000001", "EU:bob");
         }
 
         @Override
