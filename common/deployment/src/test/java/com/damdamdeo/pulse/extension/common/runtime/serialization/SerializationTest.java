@@ -27,7 +27,7 @@ class SerializationTest {
     void shouldSerializedTodo() throws JsonProcessingException, JSONException {
         // Given
         final Todo givenTodo = new Todo(
-                new TodoId("Damien", 0L),
+                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
                 "lorem ipsum",
                 Status.IN_PROGRESS,
                 false
@@ -43,7 +43,7 @@ class SerializationTest {
                         {
                           "id": {
                             "user": "Damien",
-                            "sequence": 0
+                            "sequence": "000001"
                           },
                           "description":"lorem ipsum",
                           "status":"IN_PROGRESS",

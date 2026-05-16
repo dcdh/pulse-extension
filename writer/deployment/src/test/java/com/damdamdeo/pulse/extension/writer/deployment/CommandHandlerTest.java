@@ -38,12 +38,12 @@ class CommandHandlerTest {
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 
         // When
-        final Todo todoCreated = commandHandler.handle(new TodoId("Damien", 20L), givenCreateTodo,
-                () -> new DuplicateTodoException(new TodoId("Damien", 20L)));
+        final Todo todoCreated = commandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20), givenCreateTodo,
+                () -> new DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)));
 
         // Then
         assertAll(
-                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", 20L)),
+                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)),
                 () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE)

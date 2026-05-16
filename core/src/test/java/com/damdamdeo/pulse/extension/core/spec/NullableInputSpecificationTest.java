@@ -29,7 +29,7 @@ class NullableInputSpecificationTest {
     @Test
     void shouldReturnTrueWhenInputIsNotNull() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", 0L), "lorem", Status.IN_PROGRESS, false);
+        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), "lorem", Status.IN_PROGRESS, false);
 
         // When
         final boolean satisfiedBy = NULLABLE.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT);

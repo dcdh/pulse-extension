@@ -70,14 +70,14 @@ class SagaTest {
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 
         // When
-        commandHandler.handle(new TodoId("Damien", 20L), givenCreateTodo,
-                () -> new CommandHandlerTest.DuplicateTodoException(new TodoId("Damien", 20L)));
+        commandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20), givenCreateTodo,
+                () -> new CommandHandlerTest.DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)));
 
         // Then
         assertAll(
                 () -> assertThat(sagas.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
-                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId("Damien", 20L)),
+                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20)),
                 () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))
         );
     }

@@ -151,7 +151,7 @@ class PartitionTest {
                         // language=json
                         """
                                 {
-                                  "id": "Damien/0",
+                                  "id": "Damien-000000",
                                   "description": "lorem ipsum",
                                   "status": "DONE",
                                   "important": false

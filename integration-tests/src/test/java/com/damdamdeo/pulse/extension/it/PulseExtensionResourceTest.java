@@ -25,7 +25,7 @@ class PulseExtensionResourceTest {
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("id", is("Damien-20"))
+                .body("id", is("Damien-00000K"))
                 .body("description", is("lorem ipsum"))
                 .body("status", is("IN_PROGRESS"))
                 .body("important", is(false));
@@ -47,7 +47,7 @@ class PulseExtensionResourceTest {
                 .statusCode(200)
                 .body("purpose.name", is("statistics"))
                 .body("aggregateRootType.type", is("Todo"))
-                .body("aggregateId.id", is("Damien-20"))
+                .body("aggregateId.id", is("Damien-00000K"))
                 .body("currentVersionInConsumption.version", is(0))
                 .body("storedAt", notNullValue())
                 .body("eventType.type", is("NewTodoCreated"))
@@ -57,16 +57,16 @@ class PulseExtensionResourceTest {
                 .body("decryptableEventPayload.payload.description", is("lorem ipsum"))
                 .body("decryptableEventPayload.decrypted", is(true))
                 .body("aggregateRootLoaded.aggregateRootType.type", is("Todo"))
-                .body("aggregateRootLoaded.aggregateId.id", is("Damien-20"))
+                .body("aggregateRootLoaded.aggregateId.id", is("Damien-00000K"))
                 .body("aggregateRootLoaded.lastAggregateVersion.version", is(0))
                 .body("aggregateRootLoaded.encryptedAggregateRootPayload.payload", notNullValue(String.class))
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.id.user", is("Damien"))
-                .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.id.sequence", is(20))
+                .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.id.sequence", is("00000K"))
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.description", is("lorem ipsum"))
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.status", is("IN_PROGRESS"))
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.important", is(false))
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.decrypted", is(true))
                 .body("aggregateRootLoaded.ownedBy.id", is("Damien"))
-                .body("aggregateRootLoaded.belongsTo.aggregateId.id", is("Damien-20"));
+                .body("aggregateRootLoaded.belongsTo.aggregateId.id", is("Damien-00000K"));
     }
 }

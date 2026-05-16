@@ -63,14 +63,14 @@ class DebeziumPublisherTest {
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(sql)) {
-            eventPreparedStatement.setString(1, "Damien/0");
+            eventPreparedStatement.setString(1, "Damien-000000");
             eventPreparedStatement.setString(2, "Todo");
             eventPreparedStatement.setLong(3, 0);
             eventPreparedStatement.setObject(4, givenStoredAt);
             eventPreparedStatement.setString(5, "NewTodoCreated");
             eventPreparedStatement.setBytes(6, payload);
             eventPreparedStatement.setString(7, "Damien");
-            eventPreparedStatement.setString(8, "Damien/0");
+            eventPreparedStatement.setString(8, "Damien-000000");
             eventPreparedStatement.setString(9, "EU:encodedbob");
             eventPreparedStatement.executeUpdate();
         } catch (final SQLException e) {
@@ -112,10 +112,10 @@ class DebeziumPublisherTest {
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.size()).isEqualTo(1L),
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeEventKey("Todo",
-                        "Damien/0", 0)),
+                        "Damien-000000", 0)),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),// I do not understand the added part ...
-                        "NewTodoCreated", payload, "Damien", "Damien/0", "EU:encodedbob")));
+                        "NewTodoCreated", payload, "Damien", "Damien-000000", "EU:encodedbob")));
     }
 
     @Test
@@ -125,7 +125,7 @@ class DebeziumPublisherTest {
                 // language=json
                 """
                         {
-                          "id": "Damien/0",
+                          "id": "Damien-000000",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
@@ -138,12 +138,12 @@ class DebeziumPublisherTest {
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, "Damien/0");
+            ps.setString(1, "Damien-000000");
             ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, payload);
             ps.setString(5, "Damien");
-            ps.setString(6, "Damien/0");
+            ps.setString(6, "Damien-000000");
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -184,9 +184,9 @@ class DebeziumPublisherTest {
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.size()).isEqualTo(1L),
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeAggregateRootKey("Todo",
-                        "Damien/0")),
+                        "Damien-000000")),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeAggregateRootValue(1L,
-                        payload, "Damien", "Damien/0")));
+                        payload, "Damien", "Damien-000000")));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {

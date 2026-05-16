@@ -21,6 +21,7 @@ import org.jboss.jandex.Type;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Function;
 
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 import static io.quarkus.gizmo.Type.parameterizedType;
@@ -62,6 +63,8 @@ public class SerializerProcessor {
                 && !clazz.isInterface();
     }
 
+    private final Function<FieldInfo, Boolean> isStatic = fieldInfo -> (fieldInfo.flags() & Modifier.STATIC) != 0;
+
     private void collectFieldsRecursive(final DotName type, final IndexView index, final Set<DotName> visited,
                                         final List<DiscoveredClassBuildItem> buildItems) {
         if (visited.contains(type)) {
@@ -80,7 +83,9 @@ public class SerializerProcessor {
                 .orElseThrow(() -> new IllegalStateException("Should not be here !"));
 
         // Je ne sais pas pk sur TodoChecklist uniquement la description comme field est trouvé :/
-        Validate.validState(longestConstructor.parametersCount() >= classInfo.fields().size(),
+        Validate.validState(longestConstructor.parametersCount() >= classInfo.fields()
+                        .stream()
+                        .filter(fieldInfo -> !isStatic.apply(fieldInfo)).count(),
                 "Please add a constructor using all fields on class %s - longestConstructor parameter %d - nb of fields %d".formatted(
                         classInfo.name(),
                         longestConstructor.parametersCount(), classInfo.fields().size()));

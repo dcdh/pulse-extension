@@ -59,7 +59,7 @@ class AsyncConsumerChannelEventConsumerTest {
 
         @Override
         public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
-            throw new IllegalStateException("Should not be calld !");
+            throw new IllegalStateException("Should not be called !");
         }
     }
 
@@ -123,7 +123,7 @@ class AsyncConsumerChannelEventConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Damien/0",
+                          "id": "Damien-000000",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
@@ -133,10 +133,10 @@ class AsyncConsumerChannelEventConsumerTest {
                 """
                         {}
                         """,
-                new AnyAggregateId("Damien/0"),
+                new AnyAggregateId("Damien-000000"),
                 new OwnedBy("Damien"),
                 ExecutedBy.NotAvailable.INSTANCE,
-                new BelongsTo(new AnyAggregateId("Damien/0")),
+                new BelongsTo(new AnyAggregateId("Damien-000000")),
                 Todo.class,
                 TodoMarkedAsDone.class);
 
@@ -144,7 +144,7 @@ class AsyncConsumerChannelEventConsumerTest {
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
         final ObjectNode expectedTodoMarkedAsDonePayload = objectMapper.createObjectNode();
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
-        expectedAggregateRootPayload.put("id", "Damien/0");
+        expectedAggregateRootPayload.put("id", "Damien-000000");
         expectedAggregateRootPayload.put("description", "lorem ipsum");
         expectedAggregateRootPayload.put("status", "DONE");
         expectedAggregateRootPayload.put("important", false);
@@ -153,23 +153,23 @@ class AsyncConsumerChannelEventConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien/0"),
+                        new AnyAggregateId("Damien-000000"),
                         new CurrentVersionInConsumption(0),
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Damien"),
-                        new BelongsTo(new AnyAggregateId("Damien/0")),
+                        new BelongsTo(new AnyAggregateId("Damien-000000")),
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
                                 AggregateRootType.from(Todo.class),
-                                new AnyAggregateId("Damien/0"),
+                                new AnyAggregateId("Damien-000000"),
                                 new LastAggregateVersion(1),
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                                 new OwnedBy("Damien"),
-                                new BelongsTo(new AnyAggregateId("Damien/0")))));
+                                new BelongsTo(new AnyAggregateId("Damien-000000")))));
     }
 
     @Test
@@ -186,7 +186,7 @@ class AsyncConsumerChannelEventConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Alban/0",
+                          "id": "Alban-000000",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
@@ -196,10 +196,10 @@ class AsyncConsumerChannelEventConsumerTest {
                 """
                         {}
                         """,
-                new AnyAggregateId("Alban/0"),
+                new AnyAggregateId("Alban-000000"),
                 new OwnedBy("Alban"),
                 ExecutedBy.NotAvailable.INSTANCE,
-                new BelongsTo(new AnyAggregateId("Alban/0")),
+                new BelongsTo(new AnyAggregateId("Alban-000000")),
                 Todo.class,
                 TodoMarkedAsDone.class);
 
@@ -210,22 +210,22 @@ class AsyncConsumerChannelEventConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Alban/0"),
+                        new AnyAggregateId("Alban-000000"),
                         new CurrentVersionInConsumption(0),
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         new OwnedBy("Alban"),
-                        new BelongsTo(new AnyAggregateId("Alban/0")),
+                        new BelongsTo(new AnyAggregateId("Alban-000000")),
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofUndecryptable(),
                         new AggregateRootLoaded<>(
                                 AggregateRootType.from(Todo.class),
-                                new AnyAggregateId("Alban/0"),
+                                new AnyAggregateId("Alban-000000"),
                                 new LastAggregateVersion(1),
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofUndecryptable(),
                                 new OwnedBy("Alban"),
-                                new BelongsTo(new AnyAggregateId("Alban/0")))));
+                                new BelongsTo(new AnyAggregateId("Alban-000000")))));
     }
 }

@@ -54,6 +54,9 @@ class PerformanceTest {
     @Inject
     DataSource dataSource;
 
+    @Inject
+    SequenceGenerator sequenceGenerator;
+
     record TodoProjection(TodoId todoId,
                           String description,
                           Status status,
@@ -107,26 +110,31 @@ class PerformanceTest {
     private static final class FindByTaskSupplier implements Supplier<Long> {
 
         private final ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
-        private final Long sequence;
+        private final SequenceGenerator sequenceGenerator;
 
         private FindByTaskSupplier(final ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore,
-                                   final Long sequence) {
+                                   final SequenceGenerator sequenceGenerator) {
             this.todoProjectionProjectionFromEventStore = Objects.requireNonNull(todoProjectionProjectionFromEventStore);
-            this.sequence = Objects.requireNonNull(sequence);
+            this.sequenceGenerator = Objects.requireNonNull(sequenceGenerator);
         }
 
         @Override
         public Long get() {
-            final Instant start = Instant.now();
-            todoProjectionProjectionFromEventStore.findBy(new OwnedBy("Performance"), new TodoId("Performance", sequence), new TodoProjectionSingleResultAggregateQuery());
-            return Duration.between(start, Instant.now()).toMillis();
+            try {
+                final Instant start = Instant.now();
+                final SequenceNumber sequenceNumber = sequenceGenerator.nextFor(TodoId.class);
+                todoProjectionProjectionFromEventStore.findBy(new OwnedBy("Performance"), new TodoId("Performance", sequenceNumber), new TodoProjectionSingleResultAggregateQuery());
+                return Duration.between(start, Instant.now()).toMillis();
+            } catch (SequenceGenerationException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     @Test
     @Disabled
         // Can't go more ... Quarkus limit test running to 5 min max, and it cannot be overridden...
-    void executePerfTest() {
+    void executePerfTest() throws SequenceGenerationException {
         LOGGER.info("Start execute performance test");
         LOGGER.info("Create 30.000 of NewTodoCreated events");
         final StopWatch watch = StopWatch.createStarted();
@@ -134,7 +142,7 @@ class PerformanceTest {
             if (i % 1_000 == 0) {
                 LOGGER.info("Current creation %d".formatted(i));
             }
-            final TodoId givenTodoId = new TodoId("Performance", i);
+            final TodoId givenTodoId = new TodoId("Performance", sequenceGenerator.nextFor(TodoId.class));
             final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                     new VersionizedEvent<>(new AggregateVersion(0),
                             new ExecutedByEvent<>(new NewTodoCreated(LOREM_IPSUM), ExecutedBy.NotAvailable.INSTANCE)));
@@ -151,7 +159,7 @@ class PerformanceTest {
         watch.reset();
 
         final List<FindByTaskSupplier> taskSuppliers = LongStream.range(0, 1000)
-                .mapToObj(sequenceNb -> new FindByTaskSupplier(todoProjectionProjectionFromEventStore, sequenceNb))
+                .mapToObj(sequenceNb -> new FindByTaskSupplier(todoProjectionProjectionFromEventStore, sequenceGenerator))
                 .toList();
         final List<CompletableFuture<Long>> futures = taskSuppliers.stream()
                 .map(supplier -> CompletableFuture.supplyAsync(supplier, managedExecutor))

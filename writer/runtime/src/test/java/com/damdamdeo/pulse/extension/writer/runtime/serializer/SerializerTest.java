@@ -167,7 +167,7 @@ class SerializerTest {
 
         // Then
         assertThat(deserializedTodo).isEqualTo(new Todo(
-                new TodoId("Damien", 14L),
+                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14),
                 "lorem ipsum",
                 Status.DONE,
                 false
@@ -217,17 +217,17 @@ class SerializerTest {
 
         // Then
         assertThat(deserializedFullTodo).isEqualTo(new FullTodo(
-                new TodoId("Damien", 14L),
+                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14),
                 "lorem ipsum",
                 Status.DONE,
                 false,
                 List.of(
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", 14L), 0L),
+                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14), 0L),
                                 "Implement Projection feature"
                         ),
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", 14L), 1L),
+                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14), 1L),
                                 "Organization vacancies"
                         )
                 )

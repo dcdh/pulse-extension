@@ -121,21 +121,21 @@ class AsyncAggregateRootConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Damien/0",
+                          "id": "Damien-000000",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
                         }
                         """,
-                new AnyAggregateId("Damien/0"),
+                new AnyAggregateId("Damien-000000"),
                 new OwnedBy("Damien"),
-                new BelongsTo(new AnyAggregateId("Damien/0")),
+                new BelongsTo(new AnyAggregateId("Damien-000000")),
                 Todo.class);
 
         // Then
         await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
-        expectedAggregateRootPayload.put("id", "Damien/0");
+        expectedAggregateRootPayload.put("id", "Damien-000000");
         expectedAggregateRootPayload.put("description", "lorem ipsum");
         expectedAggregateRootPayload.put("status", "DONE");
         expectedAggregateRootPayload.put("important", false);
@@ -144,11 +144,11 @@ class AsyncAggregateRootConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien/0"),
+                        new AnyAggregateId("Damien-000000"),
                         new CurrentVersionInConsumption(0),
                         payload,
                         new OwnedBy("Damien"),
-                        new BelongsTo(new AnyAggregateId("Damien/0")),
+                        new BelongsTo(new AnyAggregateId("Damien-000000")),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
 
@@ -166,15 +166,15 @@ class AsyncAggregateRootConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Alban/0",
+                          "id": "Alban-000000",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
                         }
                         """,
-                new AnyAggregateId("Alban/0"),
+                new AnyAggregateId("Alban-000000"),
                 new OwnedBy("Alban"),
-                new BelongsTo(new AnyAggregateId("Alban/0")),
+                new BelongsTo(new AnyAggregateId("Alban-000000")),
                 Todo.class);
 
         // Then
@@ -184,11 +184,11 @@ class AsyncAggregateRootConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Alban/0"),
+                        new AnyAggregateId("Alban-000000"),
                         new CurrentVersionInConsumption(0),
                         payload,
                         new OwnedBy("Alban"),
-                        new BelongsTo(new AnyAggregateId("Alban/0")),
+                        new BelongsTo(new AnyAggregateId("Alban-000000")),
                         DecryptablePayload.ofUndecryptable()));
     }
 }

@@ -36,7 +36,7 @@ class PurposeAggregateRootChannelConsumerTest {
                                 Integer version) implements AggregateRootKey {
 
         public static TodoAggregateRootKey of() {
-            return new TodoAggregateRootKey(Todo.class.getSimpleName(), new TodoId("Damien", 0L).toString(), 1);
+            return new TodoAggregateRootKey(Todo.class.getSimpleName(), new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0).toString(), 1);
         }
 
         @Override
@@ -61,7 +61,7 @@ class PurposeAggregateRootChannelConsumerTest {
 
         public static TodoAggregateRootValue of() {
             return new TodoAggregateRootValue("aggregateRootPayload".getBytes(StandardCharsets.UTF_8),
-                    "Damien", "Damien/0L");
+                    "Damien", "Damien-000000");
         }
 
         @Override

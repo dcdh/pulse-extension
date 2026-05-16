@@ -69,13 +69,13 @@ class EventSerDeTest {
         // Given
         final MultipleTodoItemsAdded givenMultipleTodoItemsAdded = new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "Go see family")));
 
         // When
@@ -90,7 +90,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -100,7 +100,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -110,7 +110,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -120,7 +120,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -143,7 +143,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -153,7 +153,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -163,7 +163,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -173,7 +173,7 @@ class EventSerDeTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 1
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -189,13 +189,13 @@ class EventSerDeTest {
         // Then
         assertThat(multipleTodoItemsAdded).isEqualTo(new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", 1L), 1L),
+                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "Go see family"))));
     }
 

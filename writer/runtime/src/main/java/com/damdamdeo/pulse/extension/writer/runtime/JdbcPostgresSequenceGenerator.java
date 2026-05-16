@@ -42,7 +42,7 @@ public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
                         throw new SequenceGenerationException("Unable to retrieve next sequence value for '%s'".formatted(sequenceName),
                                 sequenceName);
                     }
-                    return new SequenceNumber(resultSet.getLong(1));
+                    return SequenceNumber.fromNumber(resultSet.getLong(1));
                 }
             }
         } catch (final SQLException exception) {

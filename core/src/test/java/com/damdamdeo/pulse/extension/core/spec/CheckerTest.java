@@ -25,7 +25,7 @@ class CheckerTest {
     @Test
     void shouldNotFailWhenTodoIsImportantAndInProgress() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", 0L), "lorem", Status.IN_PROGRESS, true);
+        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), "lorem", Status.IN_PROGRESS, true);
 
         // When && Then
         assertAll(
@@ -36,28 +36,28 @@ class CheckerTest {
     @Test
     void shouldFailWhenTodoIsNotImportant() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", 0L), "lorem", Status.IN_PROGRESS, false);
+        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), "lorem", Status.IN_PROGRESS, false);
 
         // When && Then
         assertAll(
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
                         .isInstanceOf(BusinessException.class)
                         .hasRootCauseInstanceOf(IllegalStateException.class)
-                        .hasRootCauseMessage("la todo Damien-0 doit être importante"),
+                        .hasRootCauseMessage("la todo Damien-000000 doit être importante"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 
     @Test
     void shouldFailWhenTodoIsImportantAndNotInProgress() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", 0L), "lorem", Status.DONE, true);
+        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_0), "lorem", Status.DONE, true);
 
         // When && Then
         assertAll(
                 () -> assertThatThrownBy(() -> IMPORTANT_NEXT_IN_PROGRESS.check(givenTodo, EXECUTION_CONTEXT))
                         .isInstanceOf(BusinessException.class)
                         .hasRootCauseInstanceOf(IllegalStateException.class)
-                        .hasRootCauseMessage("la todo Damien-0 doit être in progress"),
+                        .hasRootCauseMessage("la todo Damien-000000 doit être in progress"),
                 () -> assertThat(IMPORTANT_NEXT_IN_PROGRESS.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT)).isFalse());
     }
 }

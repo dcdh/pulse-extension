@@ -83,7 +83,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien/0")));
+                        new AnyAggregateId("Damien-000000")));
 
         // Then
         assertThat(lastAggregateVersionBy).isEmpty();
@@ -103,7 +103,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien/0");
+            ps.setString(5, "Damien-000000");
             ps.setInt(6, 0);
             ps.executeUpdate();
         } catch (final SQLException e) {
@@ -117,7 +117,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien/0")));
+                        new AnyAggregateId("Damien-000000")));
 
         // Then
         assertThat(lastAggregateVersionBy).isEqualTo(Optional.of(
@@ -135,7 +135,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien/0")), new CurrentVersionInConsumption(0));
+                        new AnyAggregateId("Damien-000000")), new CurrentVersionInConsumption(0));
 
         // Then
         // language=sql
@@ -149,7 +149,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien/0");
+            ps.setString(5, "Damien-000000");
             try (final ResultSet rs = ps.executeQuery()) {
                 assertThat(rs.next()).isTrue();
                 assertThat(rs.getInt("last_consumed_version")).isEqualTo(0);
@@ -173,7 +173,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien/0");
+            ps.setString(5, "Damien-000000");
             ps.setInt(6, 0);
             ps.executeUpdate();
         } catch (final SQLException e) {
@@ -187,7 +187,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien/0")), new CurrentVersionInConsumption(1));
+                        new AnyAggregateId("Damien-000000")), new CurrentVersionInConsumption(1));
 
         // Then
         // language=sql
@@ -201,7 +201,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien/0");
+            ps.setString(5, "Damien-000000");
             try (final ResultSet rs = ps.executeQuery()) {
                 assertAll(
                         () -> assertThat(rs.next()).isTrue(),

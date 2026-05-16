@@ -60,8 +60,8 @@ public class PulseExtensionResource {
     @POST
     @Path("/createTodo")
     public TodoDTO createTodo() throws BusinessException {
-        return TodoDTO.from(todoCommandHandler.handle(new TodoId("Damien", 20L), new CreateTodo("lorem ipsum"),
-                () -> new DuplicateTodoException(new TodoId("Damien", 20L))));
+        return TodoDTO.from(todoCommandHandler.handle(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20), new CreateTodo("lorem ipsum"),
+                () -> new DuplicateTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_20))));
     }
 
     @POST

@@ -83,7 +83,7 @@ class JdbcPostgresSequenceGeneratorTest {
         assertAll(
                 () -> assertThat(sequences).containsExactly("todotaking_todo.seq_todochecklistid",
                         "todotaking_todo.seq_todoid", "todotaking_todo.seq_useraggregateid"),
-                () -> assertThat(sequenceNumber).isEqualTo(new SequenceNumber(1L)));
+                () -> assertThat(sequenceNumber).isEqualTo(SequenceNumber.fromNumber(1L)));
     }
 
     @Test
@@ -91,8 +91,8 @@ class JdbcPostgresSequenceGeneratorTest {
         final Class<? extends AggregateId> given = TodoChecklistId.class;
 
         assertAll(
-                () -> assertThat(jdbcPostgresSequenceGenerator.nextFor(given)).isEqualTo(new SequenceNumber(1L)),
-                () -> assertThat(jdbcPostgresSequenceGenerator.nextFor(given)).isEqualTo(new SequenceNumber(2L))
+                () -> assertThat(jdbcPostgresSequenceGenerator.nextFor(given)).isEqualTo(SequenceNumber.fromNumber(1L)),
+                () -> assertThat(jdbcPostgresSequenceGenerator.nextFor(given)).isEqualTo(SequenceNumber.fromNumber(2L))
         );
     }
 }
