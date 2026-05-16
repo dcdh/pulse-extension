@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.SequenceGenerationException;
 import com.damdamdeo.pulse.extension.core.SequenceNumber;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresSequenceGenerator;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -53,6 +54,14 @@ class JdbcPostgresSequenceGeneratorTest {
         }
     }
 
+    record SampleIdentifiable() implements Identifiable {
+
+        @Override
+        public String id() {
+            throw new IllegalStateException("Should not be called");
+        }
+    }
+
     @Test
     void shouldCreateSequences() throws SequenceGenerationException {
         // Given
@@ -81,8 +90,10 @@ class JdbcPostgresSequenceGeneratorTest {
             throw new RuntimeException(e);
         }
         assertAll(
-                () -> assertThat(sequences).containsExactly("todotaking_todo.seq_todochecklistid",
-                        "todotaking_todo.seq_todoid", "todotaking_todo.seq_useraggregateid"),
+                () -> assertThat(sequences).containsExactly("todotaking_todo.seq_sampleidentifiable",
+                        "todotaking_todo.seq_todochecklistid",
+                        "todotaking_todo.seq_todoid",
+                        "todotaking_todo.seq_useraggregateid"),
                 () -> assertThat(sequenceNumber).isEqualTo(SequenceNumber.fromNumber(1L)));
     }
 

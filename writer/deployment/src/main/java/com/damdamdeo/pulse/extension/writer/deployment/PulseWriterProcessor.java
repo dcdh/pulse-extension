@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuild
 import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
 import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
-import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateIdBuildItem;
+import com.damdamdeo.pulse.extension.writer.deployment.items.IdentifiableBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresSequenceGenerator;
@@ -52,9 +52,9 @@ public class PulseWriterProcessor {
 
     @BuildStep
     PostgresSqlScriptBuildItem generatePostgresSqlScriptBuildItems(final ApplicationInfoBuildItem applicationInfoBuildItem,
-                                                                   final List<AggregateIdBuildItem> aggregateIdBuildItems) {
+                                                                   final List<IdentifiableBuildItem> identifiableBuildItems) {
         final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
-        final String sequences = aggregateIdBuildItems.stream().map(AggregateIdBuildItem::aggregateIdClazz)
+        final String sequences = identifiableBuildItems.stream().map(IdentifiableBuildItem::identifiableClazz)
                 .map(JdbcPostgresSequenceGenerator::sequenceNameFor)
                 .map(sequenceName ->
                         // language=sql

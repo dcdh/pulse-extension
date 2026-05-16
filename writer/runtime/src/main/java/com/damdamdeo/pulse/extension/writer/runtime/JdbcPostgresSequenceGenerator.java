@@ -1,9 +1,9 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.SequenceGenerationException;
 import com.damdamdeo.pulse.extension.core.SequenceGenerator;
 import com.damdamdeo.pulse.extension.core.SequenceNumber;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,14 +26,14 @@ public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
     @Inject
     Provider<DataSource> dataSource;
 
-    public static String sequenceNameFor(final Class<? extends AggregateId> aggregateIdClazz) {
-        return SEQUENCE_PREFIX + CaseUtils.toCamelCase(aggregateIdClazz.getSimpleName(), false, '_');
+    public static String sequenceNameFor(final Class<? extends Identifiable> identifiableClazz) {
+        return SEQUENCE_PREFIX + CaseUtils.toCamelCase(identifiableClazz.getSimpleName(), false, '_');
     }
 
     @Override
-    public <A extends AggregateId> SequenceNumber nextFor(final Class<A> aggregateIdClazz) throws SequenceGenerationException {
-        Objects.requireNonNull(aggregateIdClazz);
-        final String sequenceName = sequenceNameFor(aggregateIdClazz);
+    public <A extends Identifiable> SequenceNumber nextFor(final Class<A> identifiableClazz) throws SequenceGenerationException {
+        Objects.requireNonNull(identifiableClazz);
+        final String sequenceName = sequenceNameFor(identifiableClazz);
         try (final Connection connection = dataSource.get().getConnection()) {
             try (final PreparedStatement preparedStatement = connection.prepareStatement("SELECT nextval(?)")) {
                 preparedStatement.setString(1, sequenceName);
