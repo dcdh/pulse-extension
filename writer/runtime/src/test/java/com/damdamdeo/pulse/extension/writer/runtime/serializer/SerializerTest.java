@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.runtime.serializer;
 
+import com.damdamdeo.pulse.extension.common.runtime.serialization.PulseObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -144,6 +145,7 @@ class SerializerTest {
         OBJECT_MAPPER.addMixIn(FullTodo.class, FullTodoMixin.class);
         OBJECT_MAPPER.addMixIn(NombreDeConvives.class, NombreDeConvivesMixIn.class);
         OBJECT_MAPPER.addMixIn(CommandeEnCoursDePrise.class, CommandeEnCoursDePriseMixIn.class);
+        PulseObjectMapperCustomizer.customizeObjectMapper(OBJECT_MAPPER);
     }
 
     @Test
@@ -154,7 +156,7 @@ class SerializerTest {
                 {
                   "id": {
                     "user": "Damien",
-                    "sequence": 14
+                    "sequence": "000001"
                   },
                   "description": "lorem ipsum",
                   "status": "DONE",
@@ -167,7 +169,7 @@ class SerializerTest {
 
         // Then
         assertThat(deserializedTodo).isEqualTo(new Todo(
-                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14),
+                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
                 "lorem ipsum",
                 Status.DONE,
                 false
@@ -182,7 +184,7 @@ class SerializerTest {
                 {
                   "id": {
                     "user": "Damien",
-                    "sequence": 14
+                    "sequence": "000001"
                   },
                   "description": "lorem ipsum",
                   "status": "DONE",
@@ -192,7 +194,7 @@ class SerializerTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 14
+                          "sequence": "000001"
                         },
                         "index": 0
                       },
@@ -202,7 +204,7 @@ class SerializerTest {
                       "id": {
                         "todoId": {
                           "user": "Damien",
-                          "sequence": 14
+                          "sequence": "000001"
                         },
                         "index": 1
                       },
@@ -217,17 +219,17 @@ class SerializerTest {
 
         // Then
         assertThat(deserializedFullTodo).isEqualTo(new FullTodo(
-                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14),
+                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
                 "lorem ipsum",
                 Status.DONE,
                 false,
                 List.of(
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14), 0L),
+                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 0L),
                                 "Implement Projection feature"
                         ),
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14), 1L),
+                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), 1L),
                                 "Organization vacancies"
                         )
                 )
@@ -235,12 +237,12 @@ class SerializerTest {
     }
 
     @Test
-    void toto() throws JsonProcessingException {
+    void should() throws JsonProcessingException {
         // System.out.println(OBJECT_MAPPER.writeValueAsString(new CommandeEnCoursDePrise(new NombreDeConvives(10))));
         CommandeEnCoursDePrise commandeEnCoursDePrise = OBJECT_MAPPER.readValue(
                 """
                         {"nombreDeConvives":{"nombre":10}}
                         """, CommandeEnCoursDePrise.class);
-        System.out.print(commandeEnCoursDePrise);
+        assertThat(commandeEnCoursDePrise).isEqualTo(new CommandeEnCoursDePrise(new NombreDeConvives(10)));
     }
 }

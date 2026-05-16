@@ -20,6 +20,10 @@ public final class PulseObjectMapperCustomizer implements ObjectMapperCustomizer
 
     @Override
     public void customize(final ObjectMapper objectMapper) {
+        customizeObjectMapper(objectMapper);
+    }
+
+    public static void customizeObjectMapper(final ObjectMapper objectMapper) {
         Objects.requireNonNull(objectMapper);
         objectMapper.setVisibility(
                 objectMapper.getSerializationConfig()
@@ -35,4 +39,5 @@ public final class PulseObjectMapperCustomizer implements ObjectMapperCustomizer
         sequenceNumberModule.addDeserializer(SequenceNumber.class, new SequenceNumberDeserializer());
         objectMapper.registerModule(sequenceNumberModule);
     }
+
 }
