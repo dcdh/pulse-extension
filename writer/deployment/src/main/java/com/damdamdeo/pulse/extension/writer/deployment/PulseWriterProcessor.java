@@ -66,19 +66,19 @@ public class PulseWriterProcessor {
                                 CACHE 1;
                                 """.formatted(schemaName, sequenceName))
                 .collect(Collectors.joining());
-        final String sequenceByAggregateRootTypeAndOwnedBy =
+        final String sequenceByAggregateRootTypeAndBelongsTo =
                 // language=sql
                 """
-                        CREATE TABLE %1$s.sequence_by_identifiable_clazz_and_owned_by (
+                        CREATE TABLE %1$s.sequence_by_identifiable_clazz_and_belongs_to (
                             identifiable_clazz character varying(255) not null,
-                            owned_by character varying(255) not null,
+                            belongs_to character varying(255) not null,
                             next_value bigint not null check (next_value > 0),
-                            CONSTRAINT identifiable_clazz_and_owned_by_pkey PRIMARY KEY (identifiable_clazz, owned_by)
+                            CONSTRAINT identifiable_clazz_and_belongs_to_pkey PRIMARY KEY (identifiable_clazz, belongs_to)
                         );
                         
-                        CREATE OR REPLACE FUNCTION next_sequence_by_identifiable_clazz_and_owned_by_value(
+                        CREATE OR REPLACE FUNCTION next_sequence_by_identifiable_clazz_and_belongs_to_value(
                             p_identifiable_clazz TEXT,
-                            p_owned_by TEXT
+                            p_belongs_to TEXT
                         )
                         RETURNS BIGINT
                         LANGUAGE plpgsql
@@ -86,23 +86,23 @@ public class PulseWriterProcessor {
                         DECLARE
                             v_next BIGINT;
                         BEGIN
-                            INSERT INTO %1$s.sequence_by_identifiable_clazz_and_owned_by (
+                            INSERT INTO %1$s.sequence_by_identifiable_clazz_and_belongs_to (
                                 identifiable_clazz,
-                                owned_by,
+                                belongs_to,
                                 next_value
                             )
                             VALUES (
                                 p_identifiable_clazz,
-                                p_owned_by,
+                                p_belongs_to,
                                 1
                             )
                             ON CONFLICT (
                                 identifiable_clazz,
-                                owned_by
+                                belongs_to
                             )
                             DO UPDATE
                                 SET next_value =
-                                    sequence_by_identifiable_clazz_and_owned_by.next_value + 1
+                                    sequence_by_identifiable_clazz_and_belongs_to.next_value + 1
                             RETURNING next_value
                             INTO v_next;
                         
@@ -275,7 +275,7 @@ public class PulseWriterProcessor {
                           %3$s
                         END;
                         $MAIN$;
-                        """.formatted(schemaName, sequences, sequenceByAggregateRootTypeAndOwnedBy)
+                        """.formatted(schemaName, sequences, sequenceByAggregateRootTypeAndBelongsTo)
         );
     }
 }

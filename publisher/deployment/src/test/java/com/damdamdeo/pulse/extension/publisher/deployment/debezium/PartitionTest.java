@@ -151,7 +151,7 @@ class PartitionTest {
                         // language=json
                         """
                                 {
-                                  "id": "Damien-000001",
+                                  "id": TodoId.USER_1_TODO_1.id(),
                                   "description": "lorem ipsum",
                                   "status": "DONE",
                                   "important": false

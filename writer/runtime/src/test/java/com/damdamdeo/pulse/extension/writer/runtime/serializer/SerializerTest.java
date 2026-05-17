@@ -8,7 +8,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONException;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,28 +151,89 @@ class SerializerTest {
         PulseObjectMapperCustomizer.customizeObjectMapper(OBJECT_MAPPER);
     }
 
+    private static final String TODO =
+            // language=json
+            """
+                    {
+                       "id": {
+                         "userId": {
+                           "sequence": "000001"
+                         },
+                         "sequence": "000001"
+                       },
+                       "description": "lorem ipsum",
+                       "status": "DONE",
+                       "important": false
+                    }
+                    """;
+
+    private static final String FULL_TODO =
+            // language=json
+            """
+                    {
+                      "id": {
+                        "userId": {
+                          "sequence": "000001"
+                        },
+                        "sequence": "000001"
+                      },
+                      "description": "lorem ipsum",
+                      "status": "DONE",
+                      "important": false,
+                      "todoChecklistList": [
+                        {
+                          "id": {
+                            "todoId": {
+                              "userId": {
+                                "sequence": "000001"
+                              },
+                              "sequence": "000001"
+                            },
+                            "sequence": "000001"
+                          },
+                          "description": "Implement Projection feature"
+                        },
+                        {
+                          "id": {
+                            "todoId": {
+                              "userId": {
+                                "sequence": "000001"
+                              },
+                              "sequence": "000001"
+                            },
+                            "sequence": "000002"
+                          },
+                          "description": "Organization vacancies"
+                        }
+                      ]
+                    }
+                    """;
+
+    @Test
+    void shouldSerializeTodo() throws JsonProcessingException, JSONException {
+        // Given
+        final Todo given = new Todo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                "lorem ipsum",
+                Status.DONE,
+                false);
+
+        // When
+        final String serialized = OBJECT_MAPPER.writeValueAsString(given);
+
+        // Then
+        JSONAssert.assertEquals(TODO, serialized, JSONCompareMode.STRICT);
+    }
+
     @Test
     void shouldDeserializedTodo() throws JsonProcessingException {
         // Given
-        // language=json
-        final String givenContent = """
-                {
-                  "id": {
-                    "user": "Damien",
-                    "sequence": "000001"
-                  },
-                  "description": "lorem ipsum",
-                  "status": "DONE",
-                  "important": false
-                }
-                """;
 
         // When
-        final Todo deserializedTodo = OBJECT_MAPPER.readValue(givenContent, Todo.class);
+        final Todo deserializedTodo = OBJECT_MAPPER.readValue(TODO, Todo.class);
 
         // Then
         assertThat(deserializedTodo).isEqualTo(new Todo(
-                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
+                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                 "lorem ipsum",
                 Status.DONE,
                 false
@@ -177,59 +241,52 @@ class SerializerTest {
     }
 
     @Test
-    void shouldDeserializedFullTodo() throws JsonProcessingException {
+    void shouldSerializeFullTodo() throws JsonProcessingException, JSONException {
         // Given
-        // language=json
-        final String givenContent = """
-                {
-                  "id": {
-                    "user": "Damien",
-                    "sequence": "000001"
-                  },
-                  "description": "lorem ipsum",
-                  "status": "DONE",
-                  "important": false,
-                  "todoChecklistList": [
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "sequenceNumber": "000001"
-                      },
-                      "description": "Implement Projection feature"
-                    },
-                    {
-                      "id": {
-                        "todoId": {
-                          "user": "Damien",
-                          "sequence": "000001"
-                        },
-                        "sequenceNumber": "000002"
-                      },
-                      "description": "Organization vacancies"
-                    }
-                  ]
-                }
-                """;
-
-        // When
-        final FullTodo deserializedFullTodo = OBJECT_MAPPER.readValue(givenContent, FullTodo.class);
-
-        // Then
-        assertThat(deserializedFullTodo).isEqualTo(new FullTodo(
-                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
+        final FullTodo given = new FullTodo(
+                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                 "lorem ipsum",
                 Status.DONE,
                 false,
                 List.of(
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                 "Implement Projection feature"
                         ),
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
+                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
+                                "Organization vacancies"
+                        )
+                )
+        );
+
+        // When
+        final String serialized = OBJECT_MAPPER.writeValueAsString(given);
+
+        // Then
+        JSONAssert.assertEquals(FULL_TODO, serialized, JSONCompareMode.STRICT);
+    }
+
+    @Test
+    void shouldDeserializedFullTodo() throws JsonProcessingException {
+        // Given
+
+        // When
+        final FullTodo deserializedFullTodo = OBJECT_MAPPER.readValue(FULL_TODO, FullTodo.class);
+
+        // Then
+        assertThat(deserializedFullTodo).isEqualTo(new FullTodo(
+                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                "lorem ipsum",
+                Status.DONE,
+                false,
+                List.of(
+                        new TodoChecklist(
+                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                "Implement Projection feature"
+                        ),
+                        new TodoChecklist(
+                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
                                 "Organization vacancies"
                         )
                 )

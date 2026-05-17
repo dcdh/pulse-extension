@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot;
 
 import com.damdamdeo.pulse.extension.core.BelongsTo;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootValue;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -34,7 +33,7 @@ public record JsonNodeAggregateRootValue(@JsonProperty("aggregate_root_payload")
 
     @Override
     public BelongsTo toBelongsTo() {
-        return new BelongsTo(new AnyAggregateId(belongsTo));
+        return new BelongsTo(belongsTo);
     }
 
     @Override

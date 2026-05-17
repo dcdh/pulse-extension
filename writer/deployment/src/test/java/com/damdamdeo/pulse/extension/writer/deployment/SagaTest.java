@@ -39,7 +39,7 @@ class SagaTest {
 //    List<Saga<TodoId, Event<TodoId>>> sagas; not working ! will return empty
     List<Saga<TodoId, ?>> sagas;// It's ok
 
-    Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId("Damien", sequenceNumber);
+    Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber);
 
     @Inject
     OnNewTodoCreated onNewTodoCreated;
@@ -77,7 +77,7 @@ class SagaTest {
         assertAll(
                 () -> assertThat(sagas.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
-                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
+                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))
         );
     }

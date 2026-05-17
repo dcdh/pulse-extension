@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
@@ -38,10 +39,10 @@ class OpenPGPDecryptionServiceTest {
     void shouldDecrypt() {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(new OwnedBy("custom organization"));
+        doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(OwnedBy.from(TodoId.USER_1_TODO_1));
 
         // When
-        final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, new OwnedBy("custom organization"));
+        final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, OwnedBy.from(TodoId.USER_1_TODO_1));
 
         // Then
         assertThat(decrypted).isEqualTo(new DecryptedPayload("Hello world!".getBytes(StandardCharsets.UTF_8)));
@@ -52,11 +53,11 @@ class OpenPGPDecryptionServiceTest {
     void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(new OwnedBy("custom organization"));
+        doReturn(Optional.empty()).when(passphraseRepository).retrieve(OwnedBy.from(TodoId.USER_1_TODO_1));
 
         // When && Then
-        assertThatThrownBy(() -> decryptionService.decrypt(encrypted, new OwnedBy("custom organization")))
+        assertThatThrownBy(() -> decryptionService.decrypt(encrypted, OwnedBy.from(TodoId.USER_1_TODO_1)))
                 .isExactlyInstanceOf(UnknownPassphraseException.class)
-                .hasFieldOrPropertyWithValue("ownedBy", new OwnedBy("custom organization"));
+                .hasFieldOrPropertyWithValue("ownedBy", OwnedBy.from(TodoId.USER_1_TODO_1));
     }
 }

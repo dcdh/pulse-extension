@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
@@ -71,13 +72,13 @@ class DefaultPassphraseProviderTest {
         // Given
 
         // When
-        final Passphrase provided = defaultPassphraseProvider.provide(new OwnedBy("Damien"));
+        final Passphrase provided = defaultPassphraseProvider.provide(OwnedBy.from(UserId.USER_1));
 
         // Then
         assertAll(
                 () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE.passphrase()),
                 () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isTrue(),
-                () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(new OwnedBy("Damien")).get())
+                () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(OwnedBy.from(UserId.USER_1)).get())
                         .isEqualTo(PassphraseSample.PASSPHRASE)
         );
     }
@@ -85,11 +86,11 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldReuseCache() {
         // Given
-        cache.as(CaffeineCache.class).get(new OwnedBy("Damien"), ownedBy -> PassphraseSample.PASSPHRASE)
+        cache.as(CaffeineCache.class).get(OwnedBy.from(UserId.USER_1), ownedBy -> PassphraseSample.PASSPHRASE)
                 .await().indefinitely();
 
         // When
-        final Passphrase provided = defaultPassphraseProvider.provide(new OwnedBy("Damien"));
+        final Passphrase provided = defaultPassphraseProvider.provide(OwnedBy.from(UserId.USER_1));
 
         // Then
         assertAll(

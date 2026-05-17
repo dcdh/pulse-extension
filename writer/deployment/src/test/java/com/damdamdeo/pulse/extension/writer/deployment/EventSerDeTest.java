@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.TodoItem;
 import com.damdamdeo.pulse.extension.core.event.MultipleTodoItemsAdded;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -37,40 +38,48 @@ class EventSerDeTest {
                         {
                           "id": {
                             "todoId": {
-                              "user": "Damien",
+                              "userId": {
+                                "sequence": "000001"
+                              },
                               "sequence": "000001"
                             },
-                            "sequence" : "000001"
+                            "sequence": "000001"
                           },
                           "description": "IMPORTANT: pulse extension development"
                         },
                         {
                           "id": {
                             "todoId": {
-                              "user": "Damien",
+                              "userId": {
+                                "sequence": "000001"
+                              },
                               "sequence": "000001"
                             },
-                            "sequence" : "000002"
+                            "sequence": "000002"
                           },
                           "description": "Implement Projection feature"
                         },
                         {
                           "id": {
                             "todoId": {
-                              "user": "Damien",
+                              "userId": {
+                                "sequence": "000001"
+                              },
                               "sequence": "000001"
                             },
-                            "sequence" : "000003"
+                            "sequence": "000003"
                           },
                           "description": "Organization vacancies"
                         },
                         {
                           "id": {
                             "todoId": {
-                              "user": "Damien",
+                              "userId": {
+                                "sequence": "000001"
+                              },
                               "sequence": "000001"
                             },
-                            "sequence" : "000004"
+                            "sequence": "000004"
                           },
                           "description": "Go see family"
                         }
@@ -118,13 +127,13 @@ class EventSerDeTest {
         // Given
         final MultipleTodoItemsAdded givenMultipleTodoItemsAdded = new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
                                 "Go see family")));
 
         // When
@@ -144,13 +153,13 @@ class EventSerDeTest {
         // Then
         assertThat(multipleTodoItemsAdded).isEqualTo(new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
+                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
                                 "Go see family"))));
     }
 

@@ -41,7 +41,7 @@ class PurposeEventChannelConsumerTest {
                         Integer version) implements EventKey {
 
         public static TodoEventKey of() {
-            return new TodoEventKey(Todo.class.getSimpleName(), new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1).toString(), 1);
+            return new TodoEventKey(Todo.class.getSimpleName(), new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1).toString(), 1);
         }
 
         @Override
@@ -71,7 +71,7 @@ class PurposeEventChannelConsumerTest {
             return new TodoEventValue(
                     ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                     NewTodoCreated.class.getSimpleName(), "eventPayload".getBytes(StandardCharsets.UTF_8),
-                    "Damien", "Damien-000001", "EU:bob");
+                    UserId.USER_1.id(), TodoId.USER_1_TODO_1.id(), "EU:bob");
         }
 
         @Override
@@ -101,7 +101,7 @@ class PurposeEventChannelConsumerTest {
 
         @Override
         public BelongsTo toBelongsTo() {
-            return new BelongsTo(new AnyAggregateId(belongsTo));
+            return BelongsTo.from(new AnyAggregateId(belongsTo));
         }
     }
 

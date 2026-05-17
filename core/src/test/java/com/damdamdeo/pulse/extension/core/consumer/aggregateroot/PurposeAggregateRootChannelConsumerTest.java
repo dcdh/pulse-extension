@@ -36,7 +36,7 @@ class PurposeAggregateRootChannelConsumerTest {
                                 Integer version) implements AggregateRootKey {
 
         public static TodoAggregateRootKey of() {
-            return new TodoAggregateRootKey(Todo.class.getSimpleName(), new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1).toString(), 1);
+            return new TodoAggregateRootKey(Todo.class.getSimpleName(), new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1).toString(), 1);
         }
 
         @Override
@@ -61,7 +61,7 @@ class PurposeAggregateRootChannelConsumerTest {
 
         public static TodoAggregateRootValue of() {
             return new TodoAggregateRootValue("aggregateRootPayload".getBytes(StandardCharsets.UTF_8),
-                    "Damien", "Damien-000001");
+                    UserId.USER_1.id(), TodoId.USER_1_TODO_1.id());
         }
 
         @Override
@@ -76,7 +76,7 @@ class PurposeAggregateRootChannelConsumerTest {
 
         @Override
         public BelongsTo toBelongsTo() {
-            return new BelongsTo(new AnyAggregateId(belongsTo));
+            return BelongsTo.from(new AnyAggregateId(belongsTo));
         }
     }
 

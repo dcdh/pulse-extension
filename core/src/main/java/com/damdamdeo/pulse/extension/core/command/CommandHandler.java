@@ -33,19 +33,13 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
     }
 
-    public A handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
-                    final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException, SequenceGenerationException {
-        Objects.requireNonNull(creational);
+    public A handle(final K id, final CreationalCommand<K> creationalCommand,
+                    final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException {
+        Objects.requireNonNull(id);
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateExceptionSupplier);
         final ExecutionContext executionContext = executionContextProvider.provide();
-        final K id;
-        if (creationalCommand.ownedBy().isPresent()) {
-            id = aggregateIdGenerator.generate(new For<>(getAggregateIdClass(), creationalCommand.ownedBy().get()), creational);
-        } else {
-            id = aggregateIdGenerator.generate(getAggregateIdClass(), creational);
-        }
-        return commandHandlerRegistry.execute(id, () -> transaction.joiningExisting(() -> {
+        return commandHandlerRegistry.execute(id, () -> {
             if (eventRepository.hasEventsFor(id)) {
                 throw new BusinessException(duplicateAggregateExceptionSupplier.apply(id));
             }
@@ -55,7 +49,38 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
             newEvents.forEach(newEvent -> sagas.forEach(saga -> saga.execute(id, newEvent.event())));
             eventRepository.save(newEvents, aggregate, executionContext.executedBy());
             return aggregate;
-        }));
+        });
+    }
+
+    public A handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
+                    final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException {
+        Objects.requireNonNull(creational);
+        Objects.requireNonNull(creationalCommand);
+        Objects.requireNonNull(duplicateAggregateExceptionSupplier);
+        final ExecutionContext executionContext = executionContextProvider.provide();
+        return transaction.joiningExisting(() -> {
+            try {
+                final K id;
+                if (creationalCommand.belongsTo().isPresent()) {
+                    id = aggregateIdGenerator.generate(new For<>(getAggregateIdClass(), creationalCommand.belongsTo().get()), creational);
+                } else {
+                    id = aggregateIdGenerator.generate(getAggregateIdClass(), creational);
+                }
+                return commandHandlerRegistry.execute(id, () -> {
+                    if (eventRepository.hasEventsFor(id)) {
+                        throw new BusinessException(duplicateAggregateExceptionSupplier.apply(id));
+                    }
+                    final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
+                    final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
+                    List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+                    newEvents.forEach(newEvent -> sagas.forEach(saga -> saga.execute(id, newEvent.event())));
+                    eventRepository.save(newEvents, aggregate, executionContext.executedBy());
+                    return aggregate;
+                });
+            } catch (final SequenceGenerationException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public A handle(final Command<K> command) throws BusinessException {

@@ -1,8 +1,9 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.writer.runtime.QuarkusOidcConnectedUserProvider;
+import com.damdamdeo.pulse.extension.common.runtime.connecteduser.QuarkusOidcConnectedUserProvider;
 import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedIsAnonymousException;
 import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUser;
+import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserNotAvailableException;
 import com.damdamdeo.pulse.extension.core.connecteduser.UsernameNotAMailException;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
@@ -62,6 +63,8 @@ class QuarkusOidcConnectedUserProviderTest {
                                 "error", "missing_email",
                                 "message", "Connected user does not have an email"))
                         .build();
+            } catch (final ConnectedUserNotAvailableException e) {
+                throw new RuntimeException("Should not be here", e);// quarkusOidcConnectedUserProvider will never throw this exception
             }
         }
     }

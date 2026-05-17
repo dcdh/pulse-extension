@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.common.runtime.serialization;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
@@ -27,7 +28,7 @@ class SerializationTest {
     void shouldSerializedTodo() throws JsonProcessingException, JSONException {
         // Given
         final Todo givenTodo = new Todo(
-                new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
+                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                 "lorem ipsum",
                 Status.IN_PROGRESS,
                 false
@@ -42,12 +43,14 @@ class SerializationTest {
                 """
                         {
                           "id": {
-                            "user": "Damien",
+                            "userId": {
+                              "sequence": "000001"
+                            },
                             "sequence": "000001"
                           },
-                          "description":"lorem ipsum",
-                          "status":"IN_PROGRESS",
-                          "important":false
+                          "description": "lorem ipsum",
+                          "status": "IN_PROGRESS",
+                          "important": false
                         }
                         """, serializedJson, JSONCompareMode.STRICT);
     }

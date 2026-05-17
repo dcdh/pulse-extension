@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import com.damdamdeo.pulse.extension.core.BelongsTo;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
@@ -11,7 +10,6 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Objects;
@@ -60,7 +58,7 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") ZonedDateTime stored
 
     @Override
     public BelongsTo toBelongsTo() {
-        return new BelongsTo(new AnyAggregateId(belongsTo));
+        return new BelongsTo(belongsTo);
     }
 
     @Override

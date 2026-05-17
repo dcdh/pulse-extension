@@ -16,6 +16,7 @@
 /integration-tests/target/
 /integration-tests/quarkus-pulse-extension-integration-tests.iml
 /integration-tests/compose-devservices-pulse.yml
+/integration-tests/src/main/resources/realm-quarkus.json
 
 /kafka/target/
 

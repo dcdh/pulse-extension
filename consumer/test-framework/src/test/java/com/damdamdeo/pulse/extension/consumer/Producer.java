@@ -70,7 +70,7 @@ public class Producer {
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedAggregatePayload);
             ps.setString(5, ownedBy.id());
-            ps.setString(6, belongsTo.aggregateId().id());
+            ps.setString(6, belongsTo.id());
             ps.executeUpdate();
         } catch (final SQLException sqlException) {
             throw new RuntimeException(sqlException);
@@ -92,7 +92,7 @@ public class Producer {
                                 eventClass.getSimpleName(),
                                 encryptedPayload,
                                 ownedBy.id(),
-                                belongsTo.aggregateId().id(),
+                                belongsTo.id(),
                                 executedBy.encode(new ExecutedByEncoder() {
                                     @Override
                                     public byte[] encode(String value) {
@@ -126,7 +126,7 @@ public class Producer {
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedAggregatePayload);
             ps.setString(5, ownedBy.id());
-            ps.setString(6, belongsTo.aggregateId().id());
+            ps.setString(6, belongsTo.id());
             ps.executeUpdate();
         } catch (final SQLException sqlException) {
             throw new RuntimeException(sqlException);
@@ -146,7 +146,7 @@ public class Producer {
                         new JsonNodeAggregateRootValue(1L,
                                 encryptedPayload,
                                 ownedBy.id(),
-                                belongsTo.aggregateId().id())));
+                                belongsTo.id())));
         return new EncryptedPayload(encryptedPayload);
     }
 }

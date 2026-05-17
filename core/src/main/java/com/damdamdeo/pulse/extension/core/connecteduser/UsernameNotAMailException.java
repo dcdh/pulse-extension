@@ -1,4 +1,4 @@
 package com.damdamdeo.pulse.extension.core.connecteduser;
 
-public class UsernameNotAMailException extends RuntimeException {
+public class UsernameNotAMailException extends Exception {
 }

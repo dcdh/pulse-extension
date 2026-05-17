@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.runtime;
+package com.damdamdeo.pulse.extension.common.runtime.connecteduser;
 
 import com.damdamdeo.pulse.extension.core.connecteduser.*;
 import io.quarkus.arc.Unremovable;
@@ -14,7 +14,7 @@ public class QuarkusOidcConnectedUserProvider implements ConnectedUserProvider {
     SecurityIdentity securityIdentity;
 
     @Override
-    public ConnectedUser provide() throws ConnectedIsAnonymousException, UsernameNotAMailException {
+    public ConnectedUser provide() throws ConnectedIsAnonymousException, UsernameNotAMailException, ConnectedUserNotAvailableException {
         if (securityIdentity.isAnonymous()) {
             throw new ConnectedIsAnonymousException();
         } else {

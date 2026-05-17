@@ -36,7 +36,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
             .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .withConfigurationResource("application.properties");
 
-    record TodoProjection(TodoId id,
+    record TodoProjection(TodoId todoId,
                           String description,
                           Status status,
                           boolean important,
@@ -62,7 +62,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                       WHERE belongs_to = '%2$s'
                     )
                     SELECT jsonb_build_object(
-                      'id', d.decrypted_aggregate_root_payload -> 'id',
+                      'todoId', d.decrypted_aggregate_root_payload -> 'id',
                       'description', d.decrypted_aggregate_root_payload ->> 'description',
                       'status', d.decrypted_aggregate_root_payload ->> 'status',
                       'important', d.decrypted_aggregate_root_payload ->> 'important',
@@ -103,7 +103,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                       WHERE owned_by = '%2$s'
                     )
                     SELECT jsonb_build_object(
-                      'id', d.decrypted_aggregate_root_payload -> 'id',
+                      'todoId', d.decrypted_aggregate_root_payload -> 'id',
                       'description', d.decrypted_aggregate_root_payload ->> 'description',
                       'status', d.decrypted_aggregate_root_payload ->> 'status',
                       'important', d.decrypted_aggregate_root_payload ->> 'important',
@@ -151,60 +151,60 @@ class JdbcProjectionFromApplicationEventStoreTest {
     void shouldFindBy() {
         // Given
         todoEventRepository.save(List.of(
-                        new VersionizedEvent(new AggregateVersion(0),
-                                new ExecutedByEvent(new NewTodoCreated("IMPORTANT: pulse extension development"), ExecutedBy.NotAvailable.INSTANCE))),
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new ExecutedByEvent<>(new NewTodoCreated("IMPORTANT: pulse extension development"), ExecutedBy.NotAvailable.INSTANCE))),
                 new Todo(
-                        new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                         "IMPORTANT: pulse extension development",
                         Status.IN_PROGRESS,
                         true
                 ), BOB);
         todoChecklistEventRepository.save(List.of(
-                        new VersionizedEvent(new AggregateVersion(0),
-                                new ExecutedByEvent(new TodoItemAdded("Implement Projection feature"), ExecutedBy.NotAvailable.INSTANCE))),
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new ExecutedByEvent<>(new TodoItemAdded("Implement Projection feature"), ExecutedBy.NotAvailable.INSTANCE))),
                 new TodoChecklist(
-                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                         "Implement Projection feature"
                 ), BOB);
         todoEventRepository.save(List.of(
-                        new VersionizedEvent(new AggregateVersion(0),
-                                new ExecutedByEvent(new NewTodoCreated("Organization vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new ExecutedByEvent<>(new NewTodoCreated("Organization vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
                 new Todo(
-                        new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
                         "Organization vacancies",
                         Status.IN_PROGRESS,
                         false
                 ), BOB);
         todoChecklistEventRepository.save(List.of(
-                        new VersionizedEvent(new AggregateVersion(0),
-                                new ExecutedByEvent(new TodoItemAdded("Go see family"), ExecutedBy.NotAvailable.INSTANCE))),
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new ExecutedByEvent<>(new TodoItemAdded("Go see family"), ExecutedBy.NotAvailable.INSTANCE))),
                 new TodoChecklist(
-                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
+                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
                         "Go see family"
                 ), BOB);
         todoEventRepository.save(List.of(
-                        new VersionizedEvent(new AggregateVersion(0),
-                                new ExecutedByEvent(new NewTodoCreated("Bob vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new ExecutedByEvent<>(new NewTodoCreated("Bob vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
                 new Todo(
-                        new TodoId("Bob", TodoId.SEQUENCE_NUMBER_1),
+                        new TodoId(UserId.USER_2, TodoId.SEQUENCE_NUMBER_1),
                         "Bob vacancies",
                         Status.IN_PROGRESS,
                         false
                 ), BOB);
 
         // When
-        final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(new OwnedBy("Damien"), new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
+        final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(OwnedBy.from(UserId.USER_1), new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
 
         // Then
         assertThat(foundBy).isEqualTo(Optional.of(
                 new TodoProjection(
-                        new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                         "IMPORTANT: pulse extension development",
                         Status.IN_PROGRESS,
                         true,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                         "Implement Projection feature"
                                 )
                         )
@@ -218,31 +218,31 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        List<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(new OwnedBy("Damien"),
+        List<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(OwnedBy.from(UserId.USER_1),
                 new TodoProjectionMultipleResultAggregateQuery());
 
         // Then
         assertThat(todos).containsExactly(
                 new TodoProjection(
-                        new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                         "IMPORTANT: pulse extension development",
                         Status.IN_PROGRESS,
                         true,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
                                         "Implement Projection feature"
                                 )
                         )
                 ),
                 new TodoProjection(
-                        new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
                         "Organization vacancies",
                         Status.IN_PROGRESS,
                         false,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
                                         "Go see family"
                                 )
                         )

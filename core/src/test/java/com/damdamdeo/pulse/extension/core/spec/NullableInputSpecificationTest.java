@@ -1,13 +1,11 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
-import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NullableInputSpecificationTest {
 
@@ -29,7 +27,7 @@ class NullableInputSpecificationTest {
     @Test
     void shouldReturnTrueWhenInputIsNotNull() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), "lorem", Status.IN_PROGRESS, false);
+        final Todo givenTodo = new Todo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), "lorem", Status.IN_PROGRESS, false);
 
         // When
         final boolean satisfiedBy = NULLABLE.isSatisfiedBy(givenTodo, EXECUTION_CONTEXT);

@@ -45,7 +45,7 @@ class TodoCommandHandlerTest {
 
     List<Saga<TodoChecklistId, Event<TodoChecklistId>>> todoChecklistSagas = new ArrayList<>();
 
-    Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId("T", sequenceNumber);
+    Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber);
 
     // TodoId.SEQUENCE_NUMBER_1)
     @BeforeEach
@@ -60,15 +60,15 @@ class TodoCommandHandlerTest {
     void shouldCreateTodoUsingExecutedByProvider() throws BusinessException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
-        doReturn(false).when(todoEventRepository).hasEventsFor(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
-        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(TodoId.class, creational);
+        doReturn(false).when(todoEventRepository).hasEventsFor(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
+        doReturn(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
         final Todo todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
-                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
+                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE),
@@ -86,19 +86,19 @@ class TodoCommandHandlerTest {
     @Test
     void shouldCreateTodoChecklistUsingTodoOwning() throws SequenceGenerationException, BusinessException {
         // Given
-        final Function<SequenceNumber, TodoChecklistId> creational = sequenceNumber -> new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), sequenceNumber);
-        final OwnedBy ownedBy = new OwnedBy("Damien-000001");
-        final AddNewTodoItem givenCreateTodoChecklist = new AddNewTodoItem(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), "lorem ipsum");
-        doReturn(false).when(todoChecklistEventRepository).hasEventsFor(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1));
-        doReturn(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1))
-                .when(aggregateIdGenerator).generate(new For<>(TodoChecklistId.class, ownedBy), creational);
+        final Function<SequenceNumber, TodoChecklistId> creational = sequenceNumber -> new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), sequenceNumber);
+        final BelongsTo belongsTo = BelongsTo.from(TodoId.USER_1_TODO_1);
+        final AddNewTodoItem givenCreateTodoChecklist = new AddNewTodoItem(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), "lorem ipsum");
+        doReturn(false).when(todoChecklistEventRepository).hasEventsFor(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1));
+        doReturn(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1))
+                .when(aggregateIdGenerator).generate(new For<>(TodoChecklistId.class, belongsTo), creational);
 
         // When
         final TodoChecklist todoChecklistCreated = todoChecklistCommandHandler.handle(creational, givenCreateTodoChecklist, DuplicateTodoChecklistException::new);
 
         // Then
         assertAll(
-                () -> assertThat(todoChecklistCreated.id()).isEqualTo(new TodoChecklistId(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)),
+                () -> assertThat(todoChecklistCreated.id()).isEqualTo(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(todoChecklistCreated.description()).isEqualTo("lorem ipsum"),
                 () -> verify(todoChecklistEventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
@@ -115,15 +115,15 @@ class TodoCommandHandlerTest {
     void shouldClassifieAsImportant() throws BusinessException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
-        doReturn(false).when(todoEventRepository).hasEventsFor(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
-        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(TodoId.class, creational);
+        doReturn(false).when(todoEventRepository).hasEventsFor(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
+        doReturn(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
         final Todo todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
-                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
+                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(todoCreated.description()).isEqualTo("IMPORTANT lorem ipsum"),
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.TRUE),
@@ -144,16 +144,16 @@ class TodoCommandHandlerTest {
     @Test
     void shouldMarkTodoAsDone() throws BusinessException {
         // Given
-        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
         doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
-                .when(todoEventRepository).loadOrderByVersionASC(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+                .when(todoEventRepository).loadOrderByVersionASC(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
 
         // When
         final Todo todoMarkedAsDone = todoCommandHandler.handle(givenMarkTodoAsDone);
 
         // Then
         assertAll(
-                () -> assertThat(todoMarkedAsDone.id()).isEqualTo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)),
+                () -> assertThat(todoMarkedAsDone.id()).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(todoMarkedAsDone.description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoMarkedAsDone.status()).isEqualTo(Status.DONE),
                 () -> assertThat(todoMarkedAsDone.important()).isEqualTo(Boolean.FALSE),
@@ -170,24 +170,24 @@ class TodoCommandHandlerTest {
     @Test
     void shouldFailWhenMarkingATodoDoneAlreadyDone() {
         // Given
-        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
         doReturn(List.of(
                 new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
                 new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)))
-                .when(todoEventRepository).loadOrderByVersionASC(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+                .when(todoEventRepository).loadOrderByVersionASC(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone))
                 .isInstanceOf(BusinessException.class)
                 .rootCause()
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("la todo Damien-000001 doit être in progress");
+                .hasMessage("la todo U000001-T000001 doit être in progress");
     }
 
     @Test
     void shouldThrowBusinessException() {
         // Given
-        final FailTodo failTodo = new FailTodo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+        final FailTodo failTodo = new FailTodo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(failTodo))
@@ -199,7 +199,7 @@ class TodoCommandHandlerTest {
     @Test
     void shouldFailWhenCommandIsNotHandled() {
         // Given
-        final UnhandledTodo unhandledTodo = new UnhandledTodo(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+        final UnhandledTodo unhandledTodo = new UnhandledTodo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(unhandledTodo))
@@ -210,7 +210,7 @@ class TodoCommandHandlerTest {
     @Test
     void shouldFailWhenEventIsNotHandled() {
         // Given
-        final CommandWithoutOnEvent commandWithoutOnEvent = new CommandWithoutOnEvent(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+        final CommandWithoutOnEvent commandWithoutOnEvent = new CommandWithoutOnEvent(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(commandWithoutOnEvent))
@@ -248,30 +248,30 @@ class TodoCommandHandlerTest {
     @Test
     void shouldThrowBusinessExceptionHavingTodoMissingExceptionCauseWhenMissing() {
         // Given
-        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
-        doReturn(List.of()).when(todoEventRepository).loadOrderByVersionASC(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+        final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
+        doReturn(List.of()).when(todoEventRepository).loadOrderByVersionASC(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
 
         // When && Then
-        assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1))))
+        assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1))))
                 .isInstanceOf(BusinessException.class)
                 .rootCause()
                 .isInstanceOf(MissingAggregateException.class)
-                .hasFieldOrPropertyWithValue("todoId", new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+                .hasFieldOrPropertyWithValue("todoId", new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
     }
 
     @Test
     void shouldThrowBusinessExceptionHavingDuplicateTodoExceptionWhenDuplicate() throws SequenceGenerationException {
         // Given
-        doReturn(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(TodoId.class, creational);
+        doReturn(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)).when(aggregateIdGenerator).generate(TodoId.class, creational);
         final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
-        doReturn(true).when(todoEventRepository).hasEventsFor(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+        doReturn(true).when(todoEventRepository).hasEventsFor(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new))
                 .isInstanceOf(BusinessException.class)
                 .rootCause()
                 .isInstanceOf(DuplicateTodoException.class)
-                .hasFieldOrPropertyWithValue("todoId", new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1));
+                .hasFieldOrPropertyWithValue("todoId", new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
     }
 
     @Test

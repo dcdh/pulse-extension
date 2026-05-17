@@ -7,6 +7,8 @@ import java.util.function.Function;
 
 public class AggregateIdGenerator {
 
+    private static final String MATCH_PATTERN = "^[a-zA-Z]+-?[A-Z0-9\\-]+$";
+
     private final SequenceGenerator sequenceGenerator;
 
     public AggregateIdGenerator(final SequenceGenerator sequenceGenerator) {
@@ -17,7 +19,7 @@ public class AggregateIdGenerator {
         Objects.requireNonNull(clazz);
         Objects.requireNonNull(creational);
         final A generated = creational.apply(sequenceGenerator.nextFor(clazz));
-        Validate.matchesPattern(generated.id(), "^[a-zA-Z]+-[A-Z0-9\\-]+$");
+        Validate.matchesPattern(generated.id(), MATCH_PATTERN);
         return generated;
     }
 
@@ -25,7 +27,7 @@ public class AggregateIdGenerator {
         Objects.requireNonNull(identifiable);
         Objects.requireNonNull(creational);
         final A generated = creational.apply(sequenceGenerator.nextFor(identifiable));
-        Validate.matchesPattern(generated.id(), "^[a-zA-Z]+-[A-Z0-9\\-]+$");
+        Validate.matchesPattern(generated.id(), MATCH_PATTERN);
         return generated;
     }
 }

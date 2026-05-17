@@ -62,7 +62,7 @@ class QueryEventStoreTest {
     @Test
     void shouldFindByIdReturnAggregateWhenExists() {
         // Given
-        final TodoId givenTodoId = new TodoId("Damien", TodoId.SEQUENCE_NUMBER_10);
+        final TodoId givenTodoId = new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_10);
         final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
                         new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)));
@@ -89,7 +89,7 @@ class QueryEventStoreTest {
     @Test
     void shouldFindByIdReturnEmptyWhenAggregateDoesNotExist() {
         // Given
-        final TodoId givenTodoId = new TodoId("Damien", TodoId.SEQUENCE_NUMBER_11);
+        final TodoId givenTodoId = new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_11);
 
         // When
         final Optional<Todo> byId = queryEventStore.findById(givenTodoId);
@@ -101,7 +101,7 @@ class QueryEventStoreTest {
     @Test
     void shouldFindByIdAndVersionReturnEmptyOnUnknownVersion() {
         // Given
-        final TodoId givenTodoId = new TodoId("Damien", TodoId.SEQUENCE_NUMBER_12);
+        final TodoId givenTodoId = new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_12);
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
 
         // When
@@ -114,7 +114,7 @@ class QueryEventStoreTest {
     @Test
     void shouldFindByIdAndVersionUseAggregateRootTable() {
         // Given
-        final TodoId givenTodoId = new TodoId("Damien", TodoId.SEQUENCE_NUMBER_13);
+        final TodoId givenTodoId = new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_13);
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
         final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
@@ -135,7 +135,7 @@ class QueryEventStoreTest {
         // Then
         assertThat(byIdAndVersion).isEqualTo(Optional.of(
                 new Todo(
-                        new TodoId("Damien", TodoId.SEQUENCE_NUMBER_13),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_13),
                         "lorem ipsum",
                         Status.DONE,
                         false
@@ -146,7 +146,7 @@ class QueryEventStoreTest {
     @Test
     void shouldFindByIdAndVersionUseEventsTableWhenBelowLatestVersion() {
         // Given
-        final TodoId givenTodoId = new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14);
+        final TodoId givenTodoId = new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_14);
         final AggregateVersion aggregateVersion = new AggregateVersion(0);
         final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
@@ -168,7 +168,7 @@ class QueryEventStoreTest {
         // Then
         assertThat(byIdAndVersion).isEqualTo(Optional.of(
                 new Todo(
-                        new TodoId("Damien", TodoId.SEQUENCE_NUMBER_14),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_14),
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false

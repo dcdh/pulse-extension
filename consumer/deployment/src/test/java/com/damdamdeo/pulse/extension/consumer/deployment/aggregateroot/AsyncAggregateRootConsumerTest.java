@@ -3,10 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.aggregateroot;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.consumer.Producer;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.AsyncAggregateRootConsumerChannel;
-import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.BelongsTo;
-import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
@@ -48,7 +45,7 @@ class AsyncAggregateRootConsumerTest {
 
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            if (new OwnedBy("Damien").equals(ownedBy)) {
+            if (OwnedBy.from(UserId.USER_1).equals(ownedBy)) {
                 return Optional.of(PassphraseSample.PASSPHRASE);
             } else {
                 return Optional.empty();
@@ -121,21 +118,21 @@ class AsyncAggregateRootConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Damien-000001",
+                          "id": "U000001-T000001",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
                         }
                         """,
-                new AnyAggregateId("Damien-000001"),
-                new OwnedBy("Damien"),
-                new BelongsTo(new AnyAggregateId("Damien-000001")),
+                new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
+                OwnedBy.from(UserId.USER_1),
+                BelongsTo.from(TodoId.USER_1_TODO_1),
                 Todo.class);
 
         // Then
         await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
         final ObjectNode expectedAggregateRootPayload = objectMapper.createObjectNode();
-        expectedAggregateRootPayload.put("id", "Damien-000001");
+        expectedAggregateRootPayload.put("id", TodoId.USER_1_TODO_1.id());
         expectedAggregateRootPayload.put("description", "lorem ipsum");
         expectedAggregateRootPayload.put("status", "DONE");
         expectedAggregateRootPayload.put("important", false);
@@ -144,11 +141,11 @@ class AsyncAggregateRootConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000001"),
+                        new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        new OwnedBy("Damien"),
-                        new BelongsTo(new AnyAggregateId("Damien-000001")),
+                        OwnedBy.from(UserId.USER_1),
+                        BelongsTo.from(TodoId.USER_1_TODO_1),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
 
@@ -166,15 +163,15 @@ class AsyncAggregateRootConsumerTest {
                 // language=json
                 """
                         {
-                          "id": "Alban-000000",
+                          "id": "U000002-000001",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
                         }
                         """,
-                new AnyAggregateId("Alban-000000"),
-                new OwnedBy("Alban"),
-                new BelongsTo(new AnyAggregateId("Alban-000000")),
+                new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
+                OwnedBy.from(UserId.USER_2),
+                BelongsTo.from(TodoId.USER_2_TODO_1),
                 Todo.class);
 
         // Then
@@ -184,11 +181,11 @@ class AsyncAggregateRootConsumerTest {
                         new FromApplication("TodoTaking", "Todo"),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Alban-000000"),
+                        new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        new OwnedBy("Alban"),
-                        new BelongsTo(new AnyAggregateId("Alban-000000")),
+                        OwnedBy.from(UserId.USER_2),
+                        BelongsTo.from(TodoId.USER_2_TODO_1),
                         DecryptablePayload.ofUndecryptable()));
     }
 }

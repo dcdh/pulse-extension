@@ -46,12 +46,12 @@ public final class TodoChecklist extends AggregateRoot<TodoChecklistId> {
 
     @Override
     public BelongsTo belongsTo() {
-        return new BelongsTo(id.todoId());
+        return BelongsTo.from(id.todoId());
     }
 
     @Override
     public OwnedBy ownedBy() {
-        return new OwnedBy(id.todoId().user());
+        return OwnedBy.from(id.todoId().userId());
     }
 
     @Override

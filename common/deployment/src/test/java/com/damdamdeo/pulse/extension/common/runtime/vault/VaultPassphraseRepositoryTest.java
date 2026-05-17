@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
@@ -24,9 +25,9 @@ class VaultPassphraseRepositoryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties");
 
-    private static final String DAMIEN_SHA3_256 = "df20d988f004d3c742aef4bb86c7ac4735e93c0c81596f5807b641ea0ce1179c";
+    private static final String USER_1_SHA3_256 = "825262468b4cb777358139eafbdec2e0477f898202d8cab60ae9c3a8e79a0de9";
 
-    private static final String SECRET_PATH = "secret/owner/" + DAMIEN_SHA3_256;
+    private static final String SECRET_PATH = "secret/owner/" + USER_1_SHA3_256;
 
     @Inject
     VaultKVSecretEngine vaultKVSecretEngine;
@@ -45,13 +46,13 @@ class VaultPassphraseRepositoryTest {
     @Test
     void shouldComputeDamienHash() {
         // Given
-        final OwnedBy original = new OwnedBy("Damien");
+        final OwnedBy original = OwnedBy.from(UserId.USER_1);
 
         // When
         Hash<OwnedBy> hash = hasher.hash(original);
 
         // Then
-        assertThat(hash).isEqualTo(new Hash<OwnedBy>(DAMIEN_SHA3_256));
+        assertThat(hash).isEqualTo(new Hash<OwnedBy>(USER_1_SHA3_256));
     }
 
     @Test
@@ -59,7 +60,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(OwnedBy.from(UserId.USER_1));
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -71,7 +72,7 @@ class VaultPassphraseRepositoryTest {
         vaultKVSecretEngine.writeSecret(SECRET_PATH, Map.of());
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(OwnedBy.from(UserId.USER_1));
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -84,7 +85,7 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE.passphrase())));
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(new OwnedBy("Damien"));
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(OwnedBy.from(UserId.USER_1));
 
         // Then
         assertAll(
@@ -97,7 +98,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Passphrase stored = vaultPassphraseRepository.store(new OwnedBy("Damien"), PassphraseSample.PASSPHRASE);
+        final Passphrase stored = vaultPassphraseRepository.store(OwnedBy.from(UserId.USER_1), PassphraseSample.PASSPHRASE);
 
         // Then
         final Map<String, String> secret = vaultKVSecretEngine.readSecret(SECRET_PATH);

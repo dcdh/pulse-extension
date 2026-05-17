@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.command;
 
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -15,7 +16,7 @@ public record AddNewTodoItem(TodoId todoId, String description) implements Creat
     }
 
     @Override
-    public Optional<OwnedBy> ownedBy() {
-        return Optional.of(OwnedBy.from(todoId));
+    public Optional<BelongsTo> belongsTo() {
+        return Optional.of(BelongsTo.from(todoId));
     }
 }

@@ -74,8 +74,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                         } catch (final UnknownPassphraseException unknownPassphraseException) {
                             decryptablePayload = DecryptablePayload.ofUndecryptable();
                         }
-                        final BelongsTo belongsTo = new BelongsTo(
-                                new AnyAggregateId(rs.getString("belongs_to")));
+                        final BelongsTo belongsTo = new BelongsTo(rs.getString("belongs_to"));
                         return new AggregateRootLoaded<>(
                                 aggregateRootType,
                                 aggregateId,

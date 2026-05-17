@@ -24,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -124,7 +123,7 @@ class PerformanceTest {
             try {
                 final Instant start = Instant.now();
                 final SequenceNumber sequenceNumber = sequenceGenerator.nextFor(TodoId.class);
-                todoProjectionProjectionFromEventStore.findBy(new OwnedBy("Performance"), new TodoId("Performance", sequenceNumber), new TodoProjectionSingleResultAggregateQuery());
+                todoProjectionProjectionFromEventStore.findBy(OwnedBy.from(new TodoId(UserId.USER_1, sequenceNumber)), new TodoId(UserId.USER_1, sequenceNumber), new TodoProjectionSingleResultAggregateQuery());
                 return Duration.between(start, Instant.now()).toMillis();
             } catch (SequenceGenerationException e) {
                 throw new RuntimeException(e);
@@ -143,7 +142,7 @@ class PerformanceTest {
             if (i % 1_000 == 0) {
                 LOGGER.info("Current creation %d".formatted(i));
             }
-            final TodoId givenTodoId = new TodoId("Performance", sequenceGenerator.nextFor(TodoId.class));
+            final TodoId givenTodoId = new TodoId(UserId.USER_1, sequenceGenerator.nextFor(TodoId.class));
             final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                     new VersionizedEvent<>(new AggregateVersion(0),
                             new ExecutedByEvent<>(new NewTodoCreated(LOREM_IPSUM), ExecutedBy.NotAvailable.INSTANCE)));

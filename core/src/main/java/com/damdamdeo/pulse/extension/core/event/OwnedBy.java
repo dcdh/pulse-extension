@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public record OwnedBy(String id) implements Identifiable {
 
-    private static final Pattern PATTERN = Pattern.compile("^[ a-zA-Z0-9_-]+$");
+    private static final Pattern PATTERN = Pattern.compile("^[a-zA-Z0-9_\\-]+$");
 
     public OwnedBy {
         Objects.requireNonNull(id);
@@ -19,6 +19,10 @@ public record OwnedBy(String id) implements Identifiable {
     public static OwnedBy from(final AggregateId ownedBy) {
         Objects.requireNonNull(ownedBy);
         return new OwnedBy(ownedBy.id());
+    }
+
+    public static OwnedBy from(final Identifiable identifiable) {
+        return new OwnedBy(identifiable.id());
     }
 
     public static OwnedBy himself(final AggregateRoot<?> aggregateRoot) {

@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.idempotency;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import io.quarkus.test.QuarkusUnitTest;
@@ -83,7 +84,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000001")));
+                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())));
 
         // Then
         assertThat(lastAggregateVersionBy).isEmpty();
@@ -103,7 +104,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien-000001");
+            ps.setString(5, TodoId.USER_1_TODO_1.id());
             ps.setInt(6, 0);
             ps.executeUpdate();
         } catch (final SQLException e) {
@@ -117,7 +118,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000001")));
+                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())));
 
         // Then
         assertThat(lastAggregateVersionBy).isEqualTo(Optional.of(
@@ -135,7 +136,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000001")), new CurrentVersionInConsumption(0));
+                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0));
 
         // Then
         // language=sql
@@ -149,7 +150,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien-000001");
+            ps.setString(5, TodoId.USER_1_TODO_1.id());
             try (final ResultSet rs = ps.executeQuery()) {
                 assertThat(rs.next()).isTrue();
                 assertThat(rs.getInt("last_consumed_version")).isEqualTo(0);
@@ -173,7 +174,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien-000001");
+            ps.setString(5, TodoId.USER_1_TODO_1.id());
             ps.setInt(6, 0);
             ps.executeUpdate();
         } catch (final SQLException e) {
@@ -187,7 +188,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId("Damien-000001")), new CurrentVersionInConsumption(1));
+                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(1));
 
         // Then
         // language=sql
@@ -201,7 +202,7 @@ class JdbcPostgresIdempotencyRepositoryTest {
             ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
-            ps.setString(5, "Damien-000001");
+            ps.setString(5, TodoId.USER_1_TODO_1.id());
             try (final ResultSet rs = ps.executeQuery()) {
                 assertAll(
                         () -> assertThat(rs.next()).isTrue(),

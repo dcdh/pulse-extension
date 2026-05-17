@@ -82,12 +82,12 @@ public final class Todo extends AggregateRoot<TodoId> {
 
     @Override
     public BelongsTo belongsTo() {
-        return new BelongsTo(id);
+        return BelongsTo.himself(this);
     }
 
     @Override
     public OwnedBy ownedBy() {
-        return new OwnedBy(id.user());
+        return OwnedBy.from(id.userId());
     }
 
     public String description() {

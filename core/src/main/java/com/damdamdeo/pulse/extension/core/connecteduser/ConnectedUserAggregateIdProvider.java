@@ -7,48 +7,42 @@ import com.damdamdeo.pulse.extension.core.SequenceNumber;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AlreadyAssociatedException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionAssociationFinder;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierAssociation;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.UnableToFindByHashException;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.UnableToFindException;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
-import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 
 public class ConnectedUserAggregateIdProvider {
 
-    private final ConnectedUserProvider connectedUserProvider;
     private final AggregateIdGenerator aggregateIdGenerator;
     private final ConnectionAssociationFinder connectionAssociationFinder;
     private final ConnectionIdentifierAssociation connectionIdentifierAssociation;
-    private final Hasher hasher;
 
-    public ConnectedUserAggregateIdProvider(final ConnectedUserProvider connectedUserProvider,
-                                            final AggregateIdGenerator aggregateIdGenerator,
+    public ConnectedUserAggregateIdProvider(final AggregateIdGenerator aggregateIdGenerator,
                                             final ConnectionAssociationFinder connectionAssociationFinder,
-                                            final ConnectionIdentifierAssociation connectionIdentifierAssociation,
-                                            final Hasher hasher) {
-        this.connectedUserProvider = Objects.requireNonNull(connectedUserProvider);
+                                            final ConnectionIdentifierAssociation connectionIdentifierAssociation) {
         this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
         this.connectionAssociationFinder = Objects.requireNonNull(connectionAssociationFinder);
         this.connectionIdentifierAssociation = Objects.requireNonNull(connectionIdentifierAssociation);
-        this.hasher = Objects.requireNonNull(hasher);
     }
 
     public <A extends AggregateId> A provide(final Class<A> clazz,
                                              final Function<Identifiable, A> identifiableToAggregateIdFunction,
                                              final Function<SequenceNumber, A> sequenceNumberAggregateIdFunction) throws ConnectedUserAggregateIdProviderException {
+        Objects.requireNonNull(clazz);
+        Objects.requireNonNull(identifiableToAggregateIdFunction);
+        Objects.requireNonNull(sequenceNumberAggregateIdFunction);
         try {
-            final ConnectedUser connectedUser = connectedUserProvider.provide();
-            final Optional<A> byHash = connectionAssociationFinder.findByHash(hasher.hash(connectedUser), identifiableToAggregateIdFunction);
-            if (byHash.isPresent()) {
-                return byHash.get();
+            final Provided<A> provided = connectionAssociationFinder.findByConnectedUser(identifiableToAggregateIdFunction);
+            if (!provided.isUnknown()) {
+                return provided.identifiable();
             } else {
                 final A generated = aggregateIdGenerator.generate(clazz, sequenceNumberAggregateIdFunction);
-                connectionIdentifierAssociation.associate(connectedUser, generated);
+                connectionIdentifierAssociation.associate(provided.connectedUser(), generated);
                 return generated;
             }
-        } catch (final UnableToFindByHashException | SequenceGenerationException | AlreadyAssociatedException e) {
+        } catch (final UnableToFindException | SequenceGenerationException | AlreadyAssociatedException e) {
             throw new ConnectedUserAggregateIdProviderException(e);
         }
     }

@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.core.connectionidentifier;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import org.junit.jupiter.api.Test;

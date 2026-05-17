@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.EventStoreException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -88,7 +89,7 @@ class PostgresEncryptionTest {
         }
 
         // When
-        final DecryptedPayload decrypted = decryptionService.decrypt(new EncryptedPayload(encrypted), new OwnedBy("Damien"));
+        final DecryptedPayload decrypted = decryptionService.decrypt(new EncryptedPayload(encrypted), OwnedBy.from(UserId.USER_1));
 
         // Then
         assertAll(

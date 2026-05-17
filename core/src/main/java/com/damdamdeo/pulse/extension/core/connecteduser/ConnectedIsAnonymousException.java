@@ -1,4 +1,4 @@
 package com.damdamdeo.pulse.extension.core.connecteduser;
 
-public class ConnectedIsAnonymousException extends RuntimeException {
+public class ConnectedIsAnonymousException extends Exception {
 }

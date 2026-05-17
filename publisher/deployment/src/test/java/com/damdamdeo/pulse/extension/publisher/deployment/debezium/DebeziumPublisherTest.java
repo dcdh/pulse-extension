@@ -3,6 +3,8 @@ package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.publisher.*;
 import com.damdamdeo.pulse.extension.publisher.Record;
 import io.quarkus.test.QuarkusUnitTest;
@@ -63,14 +65,14 @@ class DebeziumPublisherTest {
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement eventPreparedStatement = connection.prepareStatement(sql)) {
-            eventPreparedStatement.setString(1, "Damien-000001");
+            eventPreparedStatement.setString(1, TodoId.USER_1_TODO_1.id());
             eventPreparedStatement.setString(2, "Todo");
             eventPreparedStatement.setLong(3, 0);
             eventPreparedStatement.setObject(4, givenStoredAt);
             eventPreparedStatement.setString(5, "NewTodoCreated");
             eventPreparedStatement.setBytes(6, payload);
-            eventPreparedStatement.setString(7, "Damien");
-            eventPreparedStatement.setString(8, "Damien-000001");
+            eventPreparedStatement.setString(7, UserId.USER_1.id());
+            eventPreparedStatement.setString(8, TodoId.USER_1_TODO_1.id());
             eventPreparedStatement.setString(9, "EU:encodedbob");
             eventPreparedStatement.executeUpdate();
         } catch (final SQLException e) {
@@ -112,10 +114,10 @@ class DebeziumPublisherTest {
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.size()).isEqualTo(1L),
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeEventKey("Todo",
-                        "Damien-000001", 0)),
+                        TodoId.USER_1_TODO_1.id(), 0)),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),// I do not understand the added part ...
-                        "NewTodoCreated", payload, "Damien", "Damien-000001", "EU:encodedbob")));
+                        "NewTodoCreated", payload, UserId.USER_1.id(), TodoId.USER_1_TODO_1.id(), "EU:encodedbob")));
     }
 
     @Test
@@ -125,7 +127,7 @@ class DebeziumPublisherTest {
                 // language=json
                 """
                         {
-                          "id": "Damien-000001",
+                          "id": TodoId.USER_1_TODO_1.id(),
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
@@ -138,12 +140,12 @@ class DebeziumPublisherTest {
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, "Damien-000001");
+            ps.setString(1, TodoId.USER_1_TODO_1.id());
             ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, payload);
-            ps.setString(5, "Damien");
-            ps.setString(6, "Damien-000001");
+            ps.setString(5, UserId.USER_1.id());
+            ps.setString(6, TodoId.USER_1_TODO_1.id());
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -184,9 +186,9 @@ class DebeziumPublisherTest {
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.size()).isEqualTo(1L),
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeAggregateRootKey("Todo",
-                        "Damien-000001")),
+                        TodoId.USER_1_TODO_1.id())),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeAggregateRootValue(1L,
-                        payload, "Damien", "Damien-000001")));
+                        payload, UserId.USER_1.id(), TodoId.USER_1_TODO_1.id())));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {

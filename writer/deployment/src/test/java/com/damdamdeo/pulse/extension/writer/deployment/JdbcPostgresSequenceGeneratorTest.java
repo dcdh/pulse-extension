@@ -2,7 +2,6 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresSequenceGenerator;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -73,10 +71,12 @@ class JdbcPostgresSequenceGeneratorTest {
             throw new RuntimeException(e);
         }
         assertAll(
-                () -> assertThat(sequences).containsExactly("todotaking_todo.seq_sampleidentifiable",
+                () -> assertThat(sequences).containsExactly("todotaking_todo.seq_customfailingtodoid",
+                        "todotaking_todo.seq_sampleidentifiable",
                         "todotaking_todo.seq_todochecklistid",
                         "todotaking_todo.seq_todoid",
-                        "todotaking_todo.seq_useraggregateid"),
+                        "todotaking_todo.seq_useraggregateid",
+                        "todotaking_todo.seq_userid"),
                 () -> assertThat(sequenceNumber).isEqualTo(SequenceNumber.fromNumber(1L)));
     }
 
@@ -93,12 +93,12 @@ class JdbcPostgresSequenceGeneratorTest {
     }
 
     @Test
-    void shouldGenerateSequenceInOrderFromOwner() throws SequenceGenerationException {
+    void shouldGenerateSequenceInOrderFromBelongsTo() throws SequenceGenerationException {
         // Given
         final List<For<TodoChecklistId>> given = List.of(
-                new For<>(TodoChecklistId.class, new OwnedBy(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1).id())),
-                new For<>(TodoChecklistId.class, new OwnedBy(new TodoId("Damien", TodoId.SEQUENCE_NUMBER_1).id())),
-                new For<>(TodoChecklistId.class, new OwnedBy(new TodoId("Alban", TodoId.SEQUENCE_NUMBER_1).id())));
+                new For<>(TodoChecklistId.class, BelongsTo.from(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1))),
+                new For<>(TodoChecklistId.class, BelongsTo.from(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1))),
+                new For<>(TodoChecklistId.class, BelongsTo.from(new TodoId(UserId.USER_2, TodoId.SEQUENCE_NUMBER_1))));
 
         // When
         final List<SequenceNumber> sequenceNumbers = new ArrayList<>();
@@ -112,14 +112,14 @@ class JdbcPostgresSequenceGeneratorTest {
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                                 SELECT identifiable_clazz, owned_by, next_value
-                                 FROM sequence_by_identifiable_clazz_and_owned_by
-                                 ORDER BY identifiable_clazz, owned_by;
+                                 SELECT identifiable_clazz, belongs_to, next_value
+                                 FROM sequence_by_identifiable_clazz_and_belongs_to
+                                 ORDER BY identifiable_clazz, belongs_to;
                              """);
              final ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 final String identifiableClazz = rs.getString("identifiable_clazz");
-                final String ownedBy = rs.getString("owned_by");
+                final String ownedBy = rs.getString("belongs_to");
                 final int nextValue = rs.getInt("next_value");
                 sequences.add(identifiableClazz + "|" + ownedBy + "|" + nextValue);
             }
@@ -133,6 +133,6 @@ class JdbcPostgresSequenceGeneratorTest {
                         SequenceNumber.fromNumber(2L),
                         SequenceNumber.fromNumber(1L)),
                 () -> assertThat(sequences).containsExactly(
-                        "TodoChecklistId|Alban-000001|1", "TodoChecklistId|Damien-000001|2"));
+                        "TodoChecklistId|U000001-T000001|2", "TodoChecklistId|U000002-T000001|1"));
     }
 }

@@ -16,6 +16,6 @@ public record TodoChecklistId(TodoId todoId, SequenceNumber sequence) implements
 
     @Override
     public String id() {
-        return todoId.id() + SEPARATOR + sequence.number();
+        return todoId.id() + SEPARATOR + "CL" + sequence.number();
     }
 }
