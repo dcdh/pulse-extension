@@ -136,7 +136,7 @@ class AsyncConsumerChannelEventConsumerTest {
                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                 User.OWNED_BY_USER_1,
                 ExecutedBy.NotAvailable.INSTANCE,
-                BelongsTo.from(TodoId.USER_1_TODO_1),
+                User.BELONGS_TO_USER_1_TODO_1,
                 Todo.class,
                 TodoMarkedAsDone.class);
 
@@ -159,7 +159,7 @@ class AsyncConsumerChannelEventConsumerTest {
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         User.OWNED_BY_USER_1,
-                        BelongsTo.from(TodoId.USER_1_TODO_1),
+                        User.BELONGS_TO_USER_1_TODO_1,
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
@@ -169,7 +169,7 @@ class AsyncConsumerChannelEventConsumerTest {
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                                 User.OWNED_BY_USER_1,
-                                BelongsTo.from(TodoId.USER_1_TODO_1))));
+                                User.BELONGS_TO_USER_1_TODO_1)));
     }
 
     @Test
@@ -199,7 +199,7 @@ class AsyncConsumerChannelEventConsumerTest {
                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                 User.OWNED_BY_USER_2,
                 ExecutedBy.NotAvailable.INSTANCE,
-                BelongsTo.from(TodoId.USER_2_TODO_1),
+                User.BELONGS_TO_USER_2_TODO_1,
                 Todo.class,
                 TodoMarkedAsDone.class);
 
@@ -216,7 +216,7 @@ class AsyncConsumerChannelEventConsumerTest {
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
                         User.OWNED_BY_USER_2,
-                        BelongsTo.from(TodoId.USER_2_TODO_1),
+                        User.BELONGS_TO_USER_2_TODO_1,
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofUndecryptable(),
                         new AggregateRootLoaded<>(
@@ -226,6 +226,6 @@ class AsyncConsumerChannelEventConsumerTest {
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofUndecryptable(),
                                 User.OWNED_BY_USER_2,
-                                BelongsTo.from(TodoId.USER_2_TODO_1))));
+                                User.BELONGS_TO_USER_2_TODO_1)));
     }
 }

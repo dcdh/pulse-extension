@@ -693,11 +693,11 @@ class JdbcPostgresEventRepositoryTest {
                 new EventMetadata(
                         "Todo", "NewTodoCreated", new AggregateVersion(0),
                         Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
-                        User.OWNED_BY_USER_1, BelongsTo.from(TodoId.USER_1_TODO_6), ExecutedBy.NotAvailable.INSTANCE),
+                        User.OWNED_BY_USER_1, User.BELONGS_TO_USER_1_TODO_6, ExecutedBy.NotAvailable.INSTANCE),
                 new EventMetadata(
                         "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
                         Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
-                        User.OWNED_BY_USER_1, BelongsTo.from(TodoId.USER_1_TODO_6), ExecutedBy.NotAvailable.INSTANCE));
+                        User.OWNED_BY_USER_1, User.BELONGS_TO_USER_1_TODO_6, ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
@@ -724,7 +724,7 @@ class JdbcPostgresEventRepositoryTest {
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(new EventMetadata(
                 "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
                 Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
-                User.OWNED_BY_USER_1, BelongsTo.from(TodoId.USER_1_TODO_7), ExecutedBy.NotAvailable.INSTANCE));
+                User.OWNED_BY_USER_1, User.BELONGS_TO_USER_1_TODO_7, ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test

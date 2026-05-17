@@ -126,7 +126,7 @@ class AsyncAggregateRootConsumerTest {
                         """,
                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                 User.OWNED_BY_USER_1,
-                BelongsTo.from(TodoId.USER_1_TODO_1),
+                User.BELONGS_TO_USER_1_TODO_1,
                 Todo.class);
 
         // Then
@@ -145,7 +145,7 @@ class AsyncAggregateRootConsumerTest {
                         new CurrentVersionInConsumption(0),
                         payload,
                         User.OWNED_BY_USER_1,
-                        BelongsTo.from(TodoId.USER_1_TODO_1),
+                        User.BELONGS_TO_USER_1_TODO_1,
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
 
@@ -171,7 +171,7 @@ class AsyncAggregateRootConsumerTest {
                         """,
                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                 User.OWNED_BY_USER_2,
-                BelongsTo.from(TodoId.USER_2_TODO_1),
+                User.BELONGS_TO_USER_2_TODO_1,
                 Todo.class);
 
         // Then
@@ -185,7 +185,7 @@ class AsyncAggregateRootConsumerTest {
                         new CurrentVersionInConsumption(0),
                         payload,
                         User.OWNED_BY_USER_2,
-                        BelongsTo.from(TodoId.USER_2_TODO_1),
+                        User.BELONGS_TO_USER_2_TODO_1,
                         DecryptablePayload.ofUndecryptable()));
     }
 }

@@ -96,9 +96,9 @@ class JdbcPostgresSequenceGeneratorTest {
     void shouldGenerateSequenceInOrderFromBelongsTo() throws SequenceGenerationException {
         // Given
         final List<For<TodoChecklistId>> given = List.of(
-                new For<>(TodoChecklistId.class, BelongsTo.from(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1))),
-                new For<>(TodoChecklistId.class, BelongsTo.from(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1))),
-                new For<>(TodoChecklistId.class, BelongsTo.from(new TodoId(UserId.USER_2, TodoId.SEQUENCE_NUMBER_1))));
+                new For<>(TodoChecklistId.class, User.BELONGS_TO_USER_1_TODO_1),
+                new For<>(TodoChecklistId.class, User.BELONGS_TO_USER_1_TODO_1),
+                new For<>(TodoChecklistId.class, User.BELONGS_TO_USER_2_TODO_1));
 
         // When
         final List<SequenceNumber> sequenceNumbers = new ArrayList<>();
