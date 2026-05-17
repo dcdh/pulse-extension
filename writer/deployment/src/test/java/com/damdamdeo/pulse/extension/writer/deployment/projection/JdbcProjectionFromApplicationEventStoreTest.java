@@ -43,7 +43,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                           List<TodoChecklistProjection> checklist) implements Projection {
     }
 
-    record TodoChecklistProjection(TodoChecklistId id, String description) {
+    record TodoChecklistProjection(TodoChecklistId todoChecklistId, String description) {
     }
 
     public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
@@ -68,7 +68,10 @@ class JdbcProjectionFromApplicationEventStoreTest {
                       'important', d.decrypted_aggregate_root_payload ->> 'important',
                       'checklist', COALESCE(
                         jsonb_agg(
-                          i.decrypted_aggregate_root_payload::jsonb
+                          jsonb_build_object(
+                            'todoChecklistId', i.decrypted_aggregate_root_payload -> 'id',
+                            'description', i.decrypted_aggregate_root_payload ->> 'description'
+                          )
                         ), '[]'::jsonb
                       )
                     ) AS response
@@ -106,7 +109,10 @@ class JdbcProjectionFromApplicationEventStoreTest {
                       'important', d.decrypted_aggregate_root_payload ->> 'important',
                       'checklist', COALESCE(
                         jsonb_agg(
-                          i.decrypted_aggregate_root_payload::jsonb
+                          jsonb_build_object(
+                            'todoChecklistId', i.decrypted_aggregate_root_payload -> 'id',
+                            'description', i.decrypted_aggregate_root_payload ->> 'description'
+                          )
                         ), '[]'::jsonb
                       )
                     ) AS response
