@@ -45,7 +45,7 @@ class AsyncAggregateRootConsumerTest {
 
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            if (OwnedBy.from(UserId.USER_1).equals(ownedBy)) {
+            if (User.OWNED_BY_USER_1.equals(ownedBy)) {
                 return Optional.of(PassphraseSample.PASSPHRASE);
             } else {
                 return Optional.empty();
@@ -125,7 +125,7 @@ class AsyncAggregateRootConsumerTest {
                         }
                         """,
                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
-                OwnedBy.from(UserId.USER_1),
+                User.OWNED_BY_USER_1,
                 BelongsTo.from(TodoId.USER_1_TODO_1),
                 Todo.class);
 
@@ -144,7 +144,7 @@ class AsyncAggregateRootConsumerTest {
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        OwnedBy.from(UserId.USER_1),
+                        User.OWNED_BY_USER_1,
                         BelongsTo.from(TodoId.USER_1_TODO_1),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
@@ -170,7 +170,7 @@ class AsyncAggregateRootConsumerTest {
                         }
                         """,
                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
-                OwnedBy.from(UserId.USER_2),
+                User.OWNED_BY_USER_2,
                 BelongsTo.from(TodoId.USER_2_TODO_1),
                 Todo.class);
 
@@ -184,7 +184,7 @@ class AsyncAggregateRootConsumerTest {
                         new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        OwnedBy.from(UserId.USER_2),
+                        User.OWNED_BY_USER_2,
                         BelongsTo.from(TodoId.USER_2_TODO_1),
                         DecryptablePayload.ofUndecryptable()));
     }

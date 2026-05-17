@@ -193,7 +193,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                 ), BOB);
 
         // When
-        final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(OwnedBy.from(UserId.USER_1), new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
+        final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(User.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
 
         // Then
         assertThat(foundBy).isEqualTo(Optional.of(
@@ -218,7 +218,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        List<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(OwnedBy.from(UserId.USER_1),
+        List<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(User.OWNED_BY_USER_1,
                 new TodoProjectionMultipleResultAggregateQuery());
 
         // Then

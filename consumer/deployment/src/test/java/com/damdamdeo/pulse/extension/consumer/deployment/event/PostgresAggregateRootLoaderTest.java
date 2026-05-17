@@ -134,7 +134,7 @@ class PostgresAggregateRootLoaderTest {
                         new LastAggregateVersion(1),
                         new EncryptedPayload(encryptedPayload),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
-                        OwnedBy.from(UserId.USER_1),
+                        User.OWNED_BY_USER_1,
                         BelongsTo.from(TodoId.USER_1_TODO_1)));
     }
 }

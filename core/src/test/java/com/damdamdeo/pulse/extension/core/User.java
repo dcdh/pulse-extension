@@ -10,6 +10,9 @@ import java.util.Objects;
 
 public class User extends AggregateRoot<UserId> {
 
+    public static final OwnedBy OWNED_BY_USER_1 = OwnedBy.from(UserId.USER_1);
+    public static final OwnedBy OWNED_BY_USER_2 = OwnedBy.from(UserId.USER_2);
+
     public User(final UserId id) {
         super(id);
     }
