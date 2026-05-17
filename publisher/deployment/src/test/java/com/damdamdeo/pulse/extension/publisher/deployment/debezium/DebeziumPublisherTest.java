@@ -1,10 +1,8 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
-import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.UserId;
+import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.publisher.*;
 import com.damdamdeo.pulse.extension.publisher.Record;
 import io.quarkus.test.QuarkusUnitTest;
@@ -71,8 +69,8 @@ class DebeziumPublisherTest {
             eventPreparedStatement.setObject(4, givenStoredAt);
             eventPreparedStatement.setString(5, "NewTodoCreated");
             eventPreparedStatement.setBytes(6, payload);
-            eventPreparedStatement.setString(7, UserId.USER_1.id());
-            eventPreparedStatement.setString(8, TodoId.USER_1_TODO_1.id());
+            eventPreparedStatement.setString(7, OwnedBy.from(UserId.USER_1).id());
+            eventPreparedStatement.setString(8, BelongsTo.from(TodoId.USER_1_TODO_1).id());
             eventPreparedStatement.setString(9, "EU:encodedbob");
             eventPreparedStatement.executeUpdate();
         } catch (final SQLException e) {
@@ -117,7 +115,7 @@ class DebeziumPublisherTest {
                         TodoId.USER_1_TODO_1.id(), 0)),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),// I do not understand the added part ...
-                        "NewTodoCreated", payload, UserId.USER_1.id(), TodoId.USER_1_TODO_1.id(), "EU:encodedbob")));
+                        "NewTodoCreated", payload, OwnedBy.from(UserId.USER_1).id(), BelongsTo.from(TodoId.USER_1_TODO_1).id(), "EU:encodedbob")));
     }
 
     @Test
@@ -127,7 +125,7 @@ class DebeziumPublisherTest {
                 // language=json
                 """
                         {
-                          "id": TodoId.USER_1_TODO_1.id(),
+                          "id": "U000001-T000001",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
@@ -144,8 +142,8 @@ class DebeziumPublisherTest {
             ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, payload);
-            ps.setString(5, UserId.USER_1.id());
-            ps.setString(6, TodoId.USER_1_TODO_1.id());
+            ps.setString(5, OwnedBy.from(UserId.USER_1).id());
+            ps.setString(6, BelongsTo.from(TodoId.USER_1_TODO_1).id());
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -188,7 +186,7 @@ class DebeziumPublisherTest {
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeAggregateRootKey("Todo",
                         TodoId.USER_1_TODO_1.id())),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeAggregateRootValue(1L,
-                        payload, UserId.USER_1.id(), TodoId.USER_1_TODO_1.id())));
+                        payload, OwnedBy.from(UserId.USER_1).id(), BelongsTo.from(TodoId.USER_1_TODO_1).id())));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {

@@ -25,7 +25,7 @@ class VaultPassphraseRepositoryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties");
 
-    private static final String USER_1_SHA3_256 = "825262468b4cb777358139eafbdec2e0477f898202d8cab60ae9c3a8e79a0de9";
+    private static final String USER_1_SHA3_256 = "1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d";
 
     private static final String SECRET_PATH = "secret/owner/" + USER_1_SHA3_256;
 
@@ -44,7 +44,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldComputeDamienHash() {
+    void shouldComputeUser1Hash() {
         // Given
         final OwnedBy original = User.OWNED_BY_USER_1;
 

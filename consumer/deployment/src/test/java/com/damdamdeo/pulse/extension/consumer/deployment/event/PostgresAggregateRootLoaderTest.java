@@ -107,8 +107,8 @@ class PostgresAggregateRootLoaderTest {
             ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedPayload);
-            ps.setString(5, UserId.USER_1.id());
-            ps.setString(6, TodoId.USER_1_TODO_1.id());
+            ps.setString(5, OwnedBy.from(UserId.USER_1).id());
+            ps.setString(6, BelongsTo.from(TodoId.USER_1_TODO_1).id());
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
