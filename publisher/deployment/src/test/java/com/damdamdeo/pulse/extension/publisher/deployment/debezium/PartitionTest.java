@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
+import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
@@ -45,9 +47,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PartitionTest {
 
-    private static final String OWNED_BY_A = "OwnedByA";
-    private static final String OWNED_BY_B = "OwnedByB";
-
     private static final FromApplication FROM_APPLICATION = new FromApplication("TodoTaking", "Todo");
 
     private static final String EVENT_TOPIC = new CdcTopicNaming(FROM_APPLICATION, Table.EVENT).name();
@@ -70,31 +69,31 @@ class PartitionTest {
     // https://debezium.io/documentation/reference/stable/transformations/partition-routing.html#partition-routing-partition-hash-function
     // https://github.com/debezium/debezium/blob/main/debezium-core/src/main/java/io/debezium/transforms/partitions/PartitionRouting.java#L250
     @Test
-    void shouldOwnedByBBeAssignedToPartitionZERO() {
+    void shouldBelongsToUser1Todo1BeAssignedToPartitionZero() {
         // Given
 
         // When
-        final int i = computePartition(2, List.of(OWNED_BY_B));
+        final int i = computePartition(2, User.BELONGS_TO_USER_1_TODO_1);
 
         // Then
         assertThat(i).isEqualTo(0);
     }
 
     @Test
-    void shouldOwnedByABeAssignedToPartitionOne() {
+    void shouldBelongsToUser2Todo1BeAssignedToPartitionOne() {
         // Given
 
         // When
-        final int i = computePartition(2, List.of(OWNED_BY_A));
+        final int i = computePartition(2, User.BELONGS_TO_USER_2_TODO_1);
 
         // Then
         assertThat(i).isEqualTo(1);
     }
 
     // https://github.com/debezium/debezium/blob/8f9481a69cc0418e7614093f834bc9625cd2d390/debezium-core/src/main/java/io/debezium/transforms/partitions/PartitionRouting.java#L242
-    protected int computePartition(final Integer partitionNumber, final List<Object> values) {
+    protected int computePartition(final Integer partitionNumber, final BelongsTo belongsTo) {
         // use Object::hashCode
-        int totalHashCode = values.stream().map(Object::hashCode).reduce(0, Integer::sum);
+        int totalHashCode = belongsTo.id().hashCode();
         // hashCode can be negative due to overflow. Since Math.abs(Integer.MIN_INT) will still return a negative number
         // we use bitwise operation to remove the sign
         int normalizedHash = totalHashCode & Integer.MAX_VALUE;
@@ -110,10 +109,10 @@ class PartitionTest {
     void shouldHaveInitializedTwoPartitions() throws InterruptedException {
         // Given / Must push messages to create the topic
         Integer index = 0;
-        for (final String ownedBy : List.of(OWNED_BY_A, OWNED_BY_B)) {
+        for (final BelongsTo belongsTo : List.of(User.BELONGS_TO_USER_1_TODO_1, User.BELONGS_TO_USER_2_TODO_1)) {
             // language=sql
             final String tEventSql = """
-                    INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by) 
+                    INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
             // language=sql
@@ -139,8 +138,8 @@ class PartitionTest {
                                   "important": false
                                 }
                                 """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload());
-                tEventPS.setString(7, ownedBy);
-                tEventPS.setString(8, ownedBy);
+                tEventPS.setString(7, User.OWNED_BY_USER_1.id());
+                tEventPS.setString(8, belongsTo.id());
                 tEventPS.setString(9, "EU:encodedbob");
                 tEventPS.executeUpdate();
 
@@ -151,14 +150,14 @@ class PartitionTest {
                         // language=json
                         """
                                 {
-                                  "id": TodoId.USER_1_TODO_1.id(),
+                                  "id": "U000001-T000001",
                                   "description": "lorem ipsum",
                                   "status": "DONE",
                                   "important": false
                                 }
                                 """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload());
-                tAggregateRootPS.setString(5, ownedBy);
-                tAggregateRootPS.setString(6, ownedBy);
+                tAggregateRootPS.setString(5, User.OWNED_BY_USER_1.id());
+                tAggregateRootPS.setString(6, belongsTo.id());
                 tAggregateRootPS.executeUpdate();
 
                 index++;
@@ -256,13 +255,13 @@ class PartitionTest {
                 () -> assertThat(topicInfos.values()).allSatisfy(topicInfo -> assertThat(topicInfo.records()).hasSize(1)),
                 // Assertions exactes
                 () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 0)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 0)).getFirstRecordOwnedBy(objectMapper)).isEqualTo("OwnedByB"),
+                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 0)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_1_TODO_1.id()),
                 () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 1)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 1)).getFirstRecordOwnedBy(objectMapper)).isEqualTo("OwnedByA"),
+                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 1)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_2_TODO_1.id()),
                 () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 0)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 0)).getFirstRecordOwnedBy(objectMapper)).isEqualTo("OwnedByB"),
+                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 0)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_1_TODO_1.id()),
                 () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 1)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 1)).getFirstRecordOwnedBy(objectMapper)).isEqualTo("OwnedByA")
+                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 1)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_2_TODO_1.id())
         );
 
         // Debug lisible
@@ -291,11 +290,11 @@ class PartitionTest {
             return records;
         }
 
-        public String getFirstRecordOwnedBy(final ObjectMapper objectMapper) {
+        public String getFirstRecordBelongsTo(final ObjectMapper objectMapper) {
             try {
                 final ConsumerRecord<String, String> first = records.getFirst();
                 final JsonNode jsonNode = objectMapper.readTree(first.value());
-                return jsonNode.get("owned_by").asText();
+                return jsonNode.get("belongs_to").asText();
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
