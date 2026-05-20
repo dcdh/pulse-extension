@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,7 +68,7 @@ class DefaultPassphraseProviderTest {
     }
 
     @Test
-    void shouldPushInCache() throws ExecutionException, InterruptedException {
+    void shouldPushInCache() throws UnableToProvidePassphraseException {
         // Given
 
         // When
@@ -84,7 +84,7 @@ class DefaultPassphraseProviderTest {
     }
 
     @Test
-    void shouldReuseCache() {
+    void shouldReuseCache() throws UnableToProvidePassphraseException {
         // Given
         cache.as(CaffeineCache.class).get(User.OWNED_BY_USER_1, ownedBy -> PassphraseSample.PASSPHRASE)
                 .await().indefinitely();

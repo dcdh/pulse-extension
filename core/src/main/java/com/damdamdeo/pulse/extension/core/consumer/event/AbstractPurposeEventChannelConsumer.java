@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core.consumer.event;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.UnableToExecuteException;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 
@@ -24,7 +25,7 @@ public abstract class AbstractPurposeEventChannelConsumer<T> {
     }
 
     protected void handleMessage(final Purpose purpose, final FromApplication fromApplication,
-                                 final EventKey eventKey, final EventValue eventValue) {
+                                 final EventKey eventKey, final EventValue eventValue) throws UnableToExecuteException {
         Objects.requireNonNull(purpose);
         Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(eventKey);

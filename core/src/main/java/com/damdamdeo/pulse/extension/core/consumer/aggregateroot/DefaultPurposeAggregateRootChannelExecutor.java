@@ -5,10 +5,7 @@ import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.apache.commons.lang3.Validate;
 
@@ -38,7 +35,7 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
     @Override
     public void execute(final Purpose purpose, final FromApplication fromApplication,
                         final AggregateRootKey aggregateRootKey, final AggregateRootValue aggregateRootValue,
-                        final LastConsumedAggregateVersion lastConsumedAggregateVersion) {
+                        final LastConsumedAggregateVersion lastConsumedAggregateVersion) throws UnableToExecuteException {
         Objects.requireNonNull(purpose);
         Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(aggregateRootKey);
@@ -51,7 +48,7 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
 
     @Override
     public void execute(final Purpose purpose, final FromApplication fromApplication,
-                        final AggregateRootKey aggregateRootKey, final AggregateRootValue aggregateRootValue) {
+                        final AggregateRootKey aggregateRootKey, final AggregateRootValue aggregateRootValue) throws UnableToExecuteException {
         Objects.requireNonNull(purpose);
         Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(aggregateRootKey);
@@ -62,7 +59,7 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
 
     private void execute(final Purpose purpose, final FromApplication fromApplication,
                          final AggregateRootKey aggregateRootKey, final AggregateRootValue aggregateRootValue,
-                         final CurrentVersionInConsumption currentVersionInConsumption) {
+                         final CurrentVersionInConsumption currentVersionInConsumption) throws UnableToExecuteException {
         Objects.requireNonNull(purpose);
         Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(aggregateRootKey);
@@ -70,29 +67,30 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
         Objects.requireNonNull(currentVersionInConsumption);
         final AggregateRootType aggregateRootType = aggregateRootKey.toAggregateRootType();
         final AggregateId aggregateId = aggregateRootKey.toAggregateId();
-        asyncAggregateRootChannelMessageHandlerProvider.provideForTarget(purpose)
-                .forEach(asyncEventChannelMessageHandler -> {
-                    final EncryptedPayload encryptedPayload = aggregateRootValue.toEncryptedPayload();
-                    final OwnedBy ownedBy = aggregateRootValue.toOwnedBy();
-                    final BelongsTo belongsTo = aggregateRootValue.toBelongsTo();
-                    try {
-                        DecryptablePayload<T> decryptableEventPayload;
-                        try {
-                            final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
-                            final T decryptedAggregateRootPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
-                            decryptableEventPayload = DecryptablePayload.ofDecrypted(decryptedAggregateRootPayload);
-                        } catch (final UnknownPassphraseException unknownPassphraseException) {
-                            decryptableEventPayload = DecryptablePayload.ofUndecryptable();
-                        }
-                        synchronized (this) {
-                            asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, encryptedPayload, ownedBy,
-                                    belongsTo, decryptableEventPayload);
-                        }
-                    } catch (final IOException e) {
-                        throw new AggregateRootChannelMessageHandlerException(
-                                purpose, aggregateId, aggregateRootType, currentVersionInConsumption, e);
-                    }
-                });
+        for (AsyncAggregateRootChannelMessageHandler<T> asyncEventChannelMessageHandler : asyncAggregateRootChannelMessageHandlerProvider.provideForTarget(purpose)) {
+            final EncryptedPayload encryptedPayload = aggregateRootValue.toEncryptedPayload();
+            final OwnedBy ownedBy = aggregateRootValue.toOwnedBy();
+            final BelongsTo belongsTo = aggregateRootValue.toBelongsTo();
+            try {
+                DecryptablePayload<T> decryptableEventPayload;
+                try {
+                    final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
+                    final T decryptedAggregateRootPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
+                    decryptableEventPayload = DecryptablePayload.ofDecrypted(decryptedAggregateRootPayload);
+                } catch (final UnknownPassphraseException unknownPassphraseException) {
+                    decryptableEventPayload = DecryptablePayload.ofUndecryptable();
+                } catch (final UnableToRetrievePassphraseException unableToRetrievePassphraseException) {
+                    throw new UnableToExecuteException(unableToRetrievePassphraseException);
+                }
+                synchronized (this) {
+                    asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, encryptedPayload, ownedBy,
+                            belongsTo, decryptableEventPayload);
+                }
+            } catch (final IOException e) {
+                throw new AggregateRootChannelMessageHandlerException(
+                        purpose, aggregateId, aggregateRootType, currentVersionInConsumption, e);
+            }
+        }
     }
 
     @Override

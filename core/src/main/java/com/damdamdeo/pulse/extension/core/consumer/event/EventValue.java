@@ -5,7 +5,8 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 
 import java.time.ZonedDateTime;
 
@@ -19,7 +20,7 @@ public interface EventValue {
 
     OwnedBy toOwnedBy();
 
-    ExecutedBy toExecutedBy(ExecutedByDecoder executedByDecoder);
+    ExecutedBy toExecutedBy(ExecutedByFactory executedByFactory) throws UnableToDecodeException;
 
     BelongsTo toBelongsTo();
 }

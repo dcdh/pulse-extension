@@ -1,36 +1,22 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+
 import java.util.Objects;
-import java.util.Optional;
 
 public sealed interface ExecutedBy
         permits ExecutedBy.Anonymous, ExecutedBy.EndUser, ExecutedBy.ServiceAccount, ExecutedBy.NotAvailable {
 
     String SEPARATOR = ":";
 
-    String encode(ExecutedByEncoder executedByEncoder);
+    String encode(ExecutedByEncoder executedByEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
 
     String value();
 
     boolean decoded();
 
-    static ExecutedBy decode(final String value, final ExecutedByDecoder executedByDecoder) {
-        if (value == null || value.equals("NA")) {
-            return NotAvailable.INSTANCE;
-        } else if (value.equals("A")) {
-            return Anonymous.INSTANCE;
-        } else if (value.startsWith(EndUser.DISCRIMINANT + SEPARATOR)) {
-            final String encodedEndUser = value.substring((EndUser.DISCRIMINANT + SEPARATOR).length());
-            final Optional<String> decoded = executedByDecoder.decode(encodedEndUser);
-            return decoded.map(decodedEndUser -> new EndUser(decodedEndUser, true))
-                    .orElseGet(() -> new EndUser(encodedEndUser, false));
-        } else if (value.startsWith(ServiceAccount.DISCRIMINANT + SEPARATOR)) {
-            return new ServiceAccount(value.substring((ServiceAccount.DISCRIMINANT + SEPARATOR).length()));
-        }
-        throw new IllegalArgumentException("Invalid ExecutedBy value: " + value);
-    }
-
     final class Anonymous implements ExecutedBy {
+
         public static final String DISCRIMINANT = "A";
 
         public static final Anonymous INSTANCE = new Anonymous();
@@ -39,7 +25,7 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder) {
+        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) {
             return DISCRIMINANT;
         }
 
@@ -65,11 +51,11 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder) {
+        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             if (!decoded) {
                 throw new IllegalStateException("Could not encode not decoded");
             }
-            return DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by));
+            return DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by, ownedBy));
         }
 
         @Override
@@ -84,6 +70,7 @@ public sealed interface ExecutedBy
     }
 
     record ServiceAccount(String by) implements ExecutedBy {
+
         public static final String DISCRIMINANT = "SA";
 
         public ServiceAccount {
@@ -94,7 +81,7 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder) {
+        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return DISCRIMINANT + SEPARATOR + by;
         }
 
@@ -110,6 +97,7 @@ public sealed interface ExecutedBy
     }
 
     final class NotAvailable implements ExecutedBy {
+
         public static final String DISCRIMINANT = "NA";
 
         public static final NotAvailable INSTANCE = new NotAvailable();
@@ -118,7 +106,7 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder) {
+        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return DISCRIMINANT;
         }
 

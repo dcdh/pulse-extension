@@ -24,7 +24,8 @@ public abstract class AbstractPurposeAggregateRootChannelConsumer<T> {
     }
 
     protected void handleMessage(final Purpose purpose, final FromApplication fromApplication,
-                                 final AggregateRootKey aggregateRootKey, final AggregateRootValue aggregateRootValue) {
+                                 final AggregateRootKey aggregateRootKey, final AggregateRootValue aggregateRootValue)
+            throws UnableToExecuteException {
         Objects.requireNonNull(purpose);
         Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(aggregateRootKey);

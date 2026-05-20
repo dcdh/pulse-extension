@@ -4,15 +4,13 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
-import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoader;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaderException;
 import com.damdamdeo.pulse.extension.core.consumer.event.UnknownAggregateRootException;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -85,7 +83,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                                 belongsTo);
                     }
                     throw new UnknownAggregateRootException(aggregateRootType, aggregateId);
-                } catch (final IOException e) {
+                } catch (final IOException | UnableToRetrievePassphraseException e) {
                     throw new AggregateRootLoaderException(aggregateRootType, aggregateId, e);
                 }
             }

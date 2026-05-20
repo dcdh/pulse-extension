@@ -12,7 +12,7 @@ import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.smallrye.reactive.messaging.kafka.companion.ProducerBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -54,7 +54,7 @@ public class Producer {
                                                                                final ExecutedBy executedBy,
                                                                                final BelongsTo belongsTo,
                                                                                final Class<A> aggregateRootClass,
-                                                                               final Class<B> eventClass) {
+                                                                               final Class<B> eventClass) throws UnableToEncodeException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
@@ -93,12 +93,7 @@ public class Producer {
                                 encryptedPayload,
                                 ownedBy.id(),
                                 belongsTo.id(),
-                                executedBy.encode(new ExecutedByEncoder() {
-                                    @Override
-                                    public byte[] encode(String value) {
-                                        return ("encoded" + value).getBytes(StandardCharsets.UTF_8);
-                                    }
-                                }))));
+                                executedBy.encode((value, ownedBy1) -> ("encoded" + value).getBytes(StandardCharsets.UTF_8), ownedBy))));
         return new Response(
                 new EncryptedPayload(encryptedAggregatePayload),
                 new EncryptedPayload(encryptedPayload));

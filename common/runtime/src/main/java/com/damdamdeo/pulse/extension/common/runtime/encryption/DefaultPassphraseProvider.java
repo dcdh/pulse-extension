@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseGenerator;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -11,6 +8,7 @@ import io.quarkus.cache.CacheResult;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @ApplicationScoped
 @Unremovable
@@ -29,13 +27,19 @@ public final class DefaultPassphraseProvider implements PassphraseProvider {
     // https://github.com/quarkusio/quarkus/issues/19676
     @CacheResult(cacheName = "passphrase")
     @Override
-    public Passphrase provide(final OwnedBy ownedBy) {
+    public Passphrase provide(final OwnedBy ownedBy) throws UnableToProvidePassphraseException {
         Objects.requireNonNull(ownedBy);
-        return passphraseRepository.retrieve(ownedBy)
-                .orElseGet(() -> {
-                    final Passphrase generated = passphraseGenerator.generate();
-                    passphraseRepository.store(ownedBy, generated);
-                    return generated;
-                });
+        try {
+            final Optional<Passphrase> retrieved = passphraseRepository.retrieve(ownedBy);
+            if (retrieved.isPresent()) {
+                return retrieved.get();
+            } else {
+                final Passphrase generated = passphraseGenerator.generate();
+                return passphraseRepository.store(ownedBy, generated);
+            }
+        } catch (final UnableToRetrievePassphraseException | PassphraseAlreadyExistsException |
+                       UnableToStorePassphraseException exception) {
+            throw new UnableToProvidePassphraseException(exception);
+        }
     }
 }

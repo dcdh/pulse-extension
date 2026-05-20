@@ -2,7 +2,8 @@ package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.MessagingLiveNotifierPublisher;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +37,7 @@ public class MessagingConsumer {
     DecryptionService decryptionService;
 
     @Inject
-    OwnedByExecutedByDecoder ownedByExecutedByDecoder;
+    ExecutedByFactory executedByFactory;
 
     @Transactional
     @Blocking
@@ -46,11 +47,11 @@ public class MessagingConsumer {
                 .lastHeader(MessagingLiveNotifierPublisher.EVENT_NAME).value());
         final OwnedBy ownedBy = new OwnedBy(new String(consumerRecord.headers()
                 .lastHeader(MessagingLiveNotifierPublisher.OWNED_BY).value()));
-        final Audience audience = Audience.decode(new String(consumerRecord.headers()
-                        .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()),
-                ownedByExecutedByDecoder.executedByDecoder(ownedBy));
-        final String className = extractClassName(consumerRecord.headers());
         try {
+            final Audience audience = Audience.decode(new String(consumerRecord.headers()
+                            .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()),
+                    executedByFactory, ownedBy);
+            final String className = extractClassName(consumerRecord.headers());
             final DecryptedPayload decryptedPayload = decryptionService.decrypt(new EncryptedPayload(consumerRecord.value()), ownedBy);
             final Object payload = mapToObject(decryptedPayload.payload(), className);
             notifyEventProducer.fire(new NotifyEvent(eventName, payload, audience));
@@ -58,6 +59,10 @@ public class MessagingConsumer {
             LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
         } catch (final DecryptionException decryptionException) {
             LOGGER.fine("Fail to decrypt for %s %s - notification will not be sent".formatted(ownedBy.id(), decryptionException.getMessage()));
+        } catch (final UnableToDecodeException unableToDecodeException) {
+            LOGGER.fine("Fail to decode for %s %s - notification will not be sent".formatted(ownedBy.id(), unableToDecodeException.getMessage()));
+        } catch (final UnableToRetrievePassphraseException unableToRetrievePassphraseException) {
+            LOGGER.fine("Fail to retrieve passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
         }
     }
 

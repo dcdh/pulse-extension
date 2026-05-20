@@ -90,7 +90,7 @@ class PurposeAggregateRootChannelConsumerTest {
     TodoPurposeAggregateRootChannelConsumer todoTargetAggregateRootChannelConsumer;
 
     @Test
-    void shouldExecuteWhenNotConsumedYetOnFirstEvent() {
+    void shouldExecuteWhenNotConsumedYetOnFirstEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
@@ -119,7 +119,7 @@ class PurposeAggregateRootChannelConsumerTest {
     }
 
     @Test
-    void shouldExecuteWhenNotConsumedYetOnNextEvent() {
+    void shouldExecuteWhenNotConsumedYetOnNextEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
@@ -147,7 +147,7 @@ class PurposeAggregateRootChannelConsumerTest {
     }
 
     @Test
-    void shouldNotConsumeWhenAlreadyConsumed() {
+    void shouldNotConsumeWhenAlreadyConsumed() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");

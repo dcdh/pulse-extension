@@ -1,11 +1,9 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.reactive.messaging.MutinyEmitter;
@@ -45,7 +43,7 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
     PassphraseRepository passphraseRepository;
 
     @Inject
-    OwnedByExecutedByEncoder ownedByExecutedByEncoder;
+    ExecutedByEncoder executedByEncoder;
 
     @Override
     public void publish(final String eventName, final T payload, final OwnedBy ownedBy, final Audience audience) throws PublicationException {
@@ -67,12 +65,13 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
                                                 .add(EVENT_NAME, eventName.getBytes())
                                                 .add(CONTENT_TYPE, contentType.getBytes(StandardCharsets.UTF_8))
                                                 .add(OWNED_BY, ownedBy.id().getBytes(StandardCharsets.UTF_8))
-                                                .add(AUDIENCE, audience.encode(ownedByExecutedByEncoder.executedByEncoder(ownedBy)).getBytes(StandardCharsets.UTF_8)))
+                                                .add(AUDIENCE, audience.encode(executedByEncoder, ownedBy).getBytes(StandardCharsets.UTF_8)))
                                         .build()));
             } else {
                 LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
             }
-        } catch (final JsonProcessingException exception) {
+        } catch (final JsonProcessingException | UnableToRetrievePassphraseException |
+                       UnableToEncodeException exception) {
             throw new PublicationException(exception);
         }
     }

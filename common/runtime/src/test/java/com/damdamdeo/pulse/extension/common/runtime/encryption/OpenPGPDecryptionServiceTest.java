@@ -1,12 +1,8 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.User;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
-import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +32,7 @@ class OpenPGPDecryptionServiceTest {
     }
 
     @Test
-    void shouldDecrypt() {
+    void shouldDecrypt() throws UnableToRetrievePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
         doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(User.OWNED_BY_USER_1);
@@ -50,7 +46,7 @@ class OpenPGPDecryptionServiceTest {
 
     // Meaning that the organization has been deleted from Vault ...
     @Test
-    void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() {
+    void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToRetrievePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
         doReturn(Optional.empty()).when(passphraseRepository).retrieve(User.OWNED_BY_USER_1);

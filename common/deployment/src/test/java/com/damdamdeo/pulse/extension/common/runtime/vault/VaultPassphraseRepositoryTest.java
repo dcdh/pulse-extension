@@ -3,6 +3,9 @@ package com.damdamdeo.pulse.extension.common.runtime.vault;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
+import com.damdamdeo.pulse.extension.core.encryption.UnableToRetrievePassphraseException;
+import com.damdamdeo.pulse.extension.core.encryption.UnableToStorePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
@@ -56,7 +59,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenPathDoesNotExists() {
+    void shouldReturnEmptyWhenPathDoesNotExists() throws UnableToRetrievePassphraseException {
         // Given
 
         // When
@@ -67,7 +70,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenPassphraseDoesNotExists() {
+    void shouldReturnEmptyWhenPassphraseDoesNotExists() throws UnableToRetrievePassphraseException {
         // Given
         vaultKVSecretEngine.writeSecret(SECRET_PATH, Map.of());
 
@@ -79,7 +82,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnStoredPassphrase() {
+    void shouldReturnStoredPassphrase() throws UnableToRetrievePassphraseException {
         // Given
         vaultKVSecretEngine.writeSecret(SECRET_PATH,
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE.passphrase())));
@@ -94,7 +97,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldStorePassphrase() {
+    void shouldStorePassphrase() throws PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
 
         // When

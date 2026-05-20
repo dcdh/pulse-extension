@@ -14,6 +14,7 @@ import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.QuarkusUnitTest;
@@ -110,7 +111,7 @@ class AsyncConsumerChannelEventConsumerTest {
     }
 
     @Test
-    void shouldConsumeEvent() {
+    void shouldConsumeEvent() throws UnableToEncodeException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
@@ -173,7 +174,7 @@ class AsyncConsumerChannelEventConsumerTest {
     }
 
     @Test
-    void shouldConsumeEventWhenPassPhraseDoesNotExistsAnymore() {
+    void shouldConsumeEventWhenPassPhraseDoesNotExistsAnymore() throws UnableToEncodeException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(

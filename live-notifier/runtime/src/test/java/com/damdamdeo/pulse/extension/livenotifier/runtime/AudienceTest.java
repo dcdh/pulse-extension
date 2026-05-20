@@ -1,8 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByDecoder;
-import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.User;
+import com.damdamdeo.pulse.extension.core.executedby.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,6 +19,8 @@ class AudienceTest {
     // AllConnected
     // ----------------------------------------------------------------------
 
+    ExecutedByFactory executedByFactory = new ExecutedByFactory(TestExecutedByDecoder.INSTANCE);
+
     @Test
     void allConnected_should_be_eligible_for_alice_and_bob() {
         // Given
@@ -32,13 +33,13 @@ class AudienceTest {
     }
 
     @Test
-    void allConnected_encode_and_decode_should_return_singleton_instance() {
+    void allConnected_encode_and_decode_should_return_singleton_instance() throws UnableToEncodeException, UnableToDecodeException {
         // Given
         final Audience audience = Audience.AllConnected.INSTANCE;
 
         // When
-        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE);
-        final Audience decoded = Audience.decode(encoded, TestExecutedByDecoder.INSTANCE);
+        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE, User.OWNED_BY_USER_1);
+        final Audience decoded = Audience.decode(encoded, executedByFactory, User.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -73,13 +74,13 @@ class AudienceTest {
     }
 
     @Test
-    void fromList_encode_and_decode_should_preserve_eligibility_list() {
+    void fromList_encode_and_decode_should_preserve_eligibility_list() throws UnableToEncodeException, UnableToDecodeException {
         // Given
         final Audience audience = new Audience.FromListOfEligibility(List.of(ALICE, BOB));
 
         // When
-        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE);
-        final Audience decoded = Audience.decode(encoded, TestExecutedByDecoder.INSTANCE);
+        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE, User.OWNED_BY_USER_1);
+        final Audience decoded = Audience.decode(encoded, executedByFactory, User.OWNED_BY_USER_1);
 
         // Then
         assertThat(decoded).isInstanceOf(Audience.FromListOfEligibility.class);
@@ -99,7 +100,7 @@ class AudienceTest {
 
     @Test
     void decode_should_fail_on_unknown_discriminant() {
-        assertThatThrownBy(() -> Audience.decode("UNKNOWN", TestExecutedByDecoder.INSTANCE))
+        assertThatThrownBy(() -> Audience.decode("UNKNOWN", executedByFactory, User.OWNED_BY_USER_1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid Audience value");
     }
@@ -110,7 +111,7 @@ class AudienceTest {
         String invalid = Audience.FromListOfEligibility.DISCRIMINANT + Audience.SEPARATOR + "INVALID_FORMAT";
 
         // Then
-        assertThatThrownBy(() -> Audience.decode(invalid, TestExecutedByDecoder.INSTANCE))
+        assertThatThrownBy(() -> Audience.decode(invalid, executedByFactory, User.OWNED_BY_USER_1))
                 .isInstanceOf(IllegalStateException.class);
     }
 }

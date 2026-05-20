@@ -1,15 +1,9 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
 import com.damdamdeo.pulse.extension.core.*;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.*;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByDecoder;
-import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
@@ -48,10 +42,10 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     EventClazzDiscovery eventClazzDiscovery;
 
     @Inject
-    OwnedByExecutedByEncoder ownedByExecutedByEncoder;
+    ExecutedByEncoder executedByEncoder;
 
     @Inject
-    OwnedByExecutedByDecoder ownedByExecutedByDecoder;
+    ExecutedByFactory executedByFactory;
 
     @Override
     public void save(final List<VersionizedEvent<K>> versionizedEvents, final AggregateRoot<K> aggregateRoot, final ExecutedBy executedBy)
@@ -96,7 +90,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy).passphrase()));
                 eventPreparedStatement.setString(8, ownedBy.id());
                 eventPreparedStatement.setString(9, aggregateRoot.belongsTo().id());
-                eventPreparedStatement.setString(10, executedBy.encode(ownedByExecutedByEncoder.executedByEncoder(ownedBy)));
+                eventPreparedStatement.setString(10, executedBy.encode(executedByEncoder, ownedBy));
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }
@@ -111,7 +105,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             aggregatePreparedStatement.setString(6, ownedBy.id());
             aggregatePreparedStatement.setString(7, aggregateRoot.belongsTo().id());
             aggregatePreparedStatement.executeUpdate();
-        } catch (final JsonProcessingException | SQLException e) {
+        } catch (final JsonProcessingException | SQLException | UnableToProvidePassphraseException |
+                       UnableToEncodeException e) {
             throw new EventStoreException(e);
         }
     }
@@ -142,7 +137,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                        final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
+                        final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
                         final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
                         LOGGER.fine(new String(decryptedEventPayload.payload()));
                         final Event<K> event = (Event<K>)
@@ -150,7 +145,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                         eventClazzDiscovery.from(resultSet.getString("event_type")));
                         events.add(new ExecutedByEvent<>(event, executedBy));
                     }
-                } catch (ClassNotFoundException | IOException e) {
+                } catch (ClassNotFoundException | IOException | UnableToDecodeException |
+                         UnableToRetrievePassphraseException e) {
                     throw new EventStoreException(e);
                 }
                 return events;
@@ -178,7 +174,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             try (final ResultSet resultSet = loadStmt.executeQuery()) {
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                    final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
+                    final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
                     final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
                     LOGGER.fine(new String(decryptedEventPayload.payload()));
                     final Event<K> event = (Event<K>)
@@ -186,7 +182,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                     eventClazzDiscovery.from(resultSet.getString("event_type")));
                     events.add(new ExecutedByEvent<>(event, executedBy));
                 }
-            } catch (ClassNotFoundException | IOException e) {
+            } catch (ClassNotFoundException | IOException | UnableToDecodeException |
+                     UnableToRetrievePassphraseException e) {
                 throw new EventStoreException(e);
             }
             return events;
@@ -219,7 +216,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 } else {
                     return Optional.empty();
                 }
-            } catch (IOException e) {
+            } catch (IOException | UnableToRetrievePassphraseException e) {
                 throw new EventStoreException(e);
             }
         } catch (final SQLException e) {
@@ -267,7 +264,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             try (final ResultSet resultSet = findStmt.executeQuery()) {
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                    final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
+                    final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
                     eventsMetadata.add(new EventMetadata(
                             resultSet.getString("aggregate_root_type"),
                             resultSet.getString("event_type"),
@@ -280,7 +277,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 }
             }
             return eventsMetadata;
-        } catch (final SQLException e) {
+        } catch (final SQLException | UnableToDecodeException e) {
             throw new EventStoreException(e);
         }
     }
@@ -308,7 +305,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 try (final ResultSet resultSet = findStmt.executeQuery()) {
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                        final ExecutedBy executedBy = ExecutedBy.decode(resultSet.getString("executed_by"), ownedByExecutedByDecoder.executedByDecoder(ownedBy));
+                        final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
                         eventsMetadata.add(new EventMetadata(
                                 resultSet.getString("aggregate_root_type"),
                                 resultSet.getString("event_type"),
@@ -321,7 +318,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                     }
                 }
                 return eventsMetadata;
-            } catch (final SQLException e) {
+            } catch (final SQLException | UnableToDecodeException e) {
                 throw new EventStoreException(e);
             }
         }

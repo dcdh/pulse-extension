@@ -25,6 +25,7 @@ public class ConnectionIdentifierAssociation {
         Objects.requireNonNull(aggregateId);
         final Hash<ConnectionIdentifier> connectionIdentifierHash = hasher.hash(connectionIdentifier);
         try {
+            LOGGER.debug("Associating connection identifier {} with aggregate id {} and hash from ConnectionIdentifier {}", connectionIdentifier, aggregateId, connectionIdentifierHash);
             connectionIdentifierRepository.store(connectionIdentifierHash, aggregateId);
         } catch (final ConnectionIdentifierRepositoryException e) {
             throw new RuntimeException(e);

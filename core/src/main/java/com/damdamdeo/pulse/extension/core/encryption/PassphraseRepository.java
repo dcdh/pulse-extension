@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface PassphraseRepository {
 
-    Optional<Passphrase> retrieve(OwnedBy ownedBy);
+    Optional<Passphrase> retrieve(OwnedBy ownedBy) throws UnableToRetrievePassphraseException;
 
-    Passphrase store(OwnedBy ownedBy, Passphrase passphrase) throws PassphraseAlreadyExistsException;
+    Passphrase store(OwnedBy ownedBy, Passphrase passphrase) throws PassphraseAlreadyExistsException, UnableToStorePassphraseException;
 }

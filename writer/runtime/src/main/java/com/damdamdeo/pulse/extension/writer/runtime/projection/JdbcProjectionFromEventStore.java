@@ -1,9 +1,10 @@
 package com.damdamdeo.pulse.extension.writer.runtime.projection;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.projection.*;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
@@ -37,21 +38,25 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateQuery);
-        final String query = singleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
-        LOGGER.fine(query);
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
-             final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
-            if (projectionResultSet.next()) {
-                final String response = projectionResultSet.getString("response");
-                LOGGER.fine(response);
-                return Optional.of(
-                        objectMapper.readValue(response, getProjectionClass())
-                );
-            } else {
-                return Optional.empty();
+        try {
+            final String query = singleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
+            LOGGER.fine(query);
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
+                 final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
+                if (projectionResultSet.next()) {
+                    final String response = projectionResultSet.getString("response");
+                    LOGGER.fine(response);
+                    return Optional.of(
+                            objectMapper.readValue(response, getProjectionClass())
+                    );
+                } else {
+                    return Optional.empty();
+                }
+            } catch (final JsonProcessingException | SQLException e) {
+                throw new ProjectionException(ownedBy, aggregateId, e);
             }
-        } catch (final JsonProcessingException | SQLException e) {
+        } catch (UnableToProvidePassphraseException e) {
             throw new ProjectionException(ownedBy, aggregateId, e);
         }
     }
@@ -60,22 +65,26 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
     public List<P> findAll(final OwnedBy ownedBy, final MultipleResultAggregateQuery multipleResultAggregateQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(multipleResultAggregateQuery);
-        final String query = multipleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), ownedBy);
-        LOGGER.fine(query);
-        final List<P> responses = new ArrayList<>();
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
-             final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
-            while (projectionResultSet.next()) {
-                final String response = projectionResultSet.getString("response");
-                LOGGER.fine(response);
-                responses.add(
-                        objectMapper.readValue(response, getProjectionClass()));
+        try {
+            final String query = multipleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), ownedBy);
+            LOGGER.fine(query);
+            final List<P> responses = new ArrayList<>();
+            try (final Connection connection = dataSource.getConnection();
+                 final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
+                 final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
+                while (projectionResultSet.next()) {
+                    final String response = projectionResultSet.getString("response");
+                    LOGGER.fine(response);
+                    responses.add(
+                            objectMapper.readValue(response, getProjectionClass()));
+                }
+            } catch (final JsonProcessingException | SQLException e) {
+                throw new ProjectionException(ownedBy, e);
             }
-        } catch (final JsonProcessingException | SQLException e) {
+            return responses;
+        } catch (UnableToProvidePassphraseException e) {
             throw new ProjectionException(ownedBy, e);
         }
-        return responses;
     }
 
     abstract protected Class<P> getProjectionClass();

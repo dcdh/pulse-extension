@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
+import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.UnableToExecuteException;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
@@ -9,7 +10,8 @@ import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -95,8 +97,8 @@ class PurposeEventChannelConsumerTest {
         }
 
         @Override
-        public ExecutedBy toExecutedBy(final ExecutedByDecoder executedByDecoder) {
-            return ExecutedBy.decode(executedBy, executedByDecoder);
+        public ExecutedBy toExecutedBy(final ExecutedByFactory executedByFactory) throws UnableToDecodeException {
+            return executedByFactory.from(executedBy, new OwnedBy(ownedBy));
         }
 
         @Override
@@ -115,7 +117,7 @@ class PurposeEventChannelConsumerTest {
     TodoPurposeEventChannelConsumer todoTargetEventChannelConsumer;
 
     @Test
-    void shouldExecuteWhenNotConsumedYetOnFirstEvent() {
+    void shouldExecuteWhenNotConsumedYetOnFirstEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
@@ -143,7 +145,7 @@ class PurposeEventChannelConsumerTest {
     }
 
     @Test
-    void shouldExecuteWhenNotConsumedYetOnNextEvent() {
+    void shouldExecuteWhenNotConsumedYetOnNextEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
@@ -171,7 +173,7 @@ class PurposeEventChannelConsumerTest {
     }
 
     @Test
-    void shouldNotConsumeWhenAlreadyConsumed() {
+    void shouldNotConsumeWhenAlreadyConsumed() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
         final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");

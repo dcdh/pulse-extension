@@ -35,7 +35,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
 
     @Override
     public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy)
-            throws DecryptionException, UnknownPassphraseException {
+            throws DecryptionException, UnknownPassphraseException, UnableToRetrievePassphraseException {
         Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
         try (final InputStream in = new ByteArrayInputStream(encrypted.payload())) {

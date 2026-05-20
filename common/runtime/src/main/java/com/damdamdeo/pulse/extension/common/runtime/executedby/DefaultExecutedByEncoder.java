@@ -3,9 +3,10 @@ package com.damdamdeo.pulse.extension.common.runtime.executedby;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
-import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,7 +19,7 @@ import java.util.Objects;
 @ApplicationScoped
 @Unremovable
 @DefaultBean
-public class DefaultOwnedByExecutedByEncoder implements OwnedByExecutedByEncoder {
+public class DefaultExecutedByEncoder implements ExecutedByEncoder {
 
     @Inject
     PassphraseProvider passphraseProvider;
@@ -27,12 +28,14 @@ public class DefaultOwnedByExecutedByEncoder implements OwnedByExecutedByEncoder
     EncryptionService encryptionService;
 
     @Override
-    public ExecutedByEncoder executedByEncoder(final OwnedBy ownedBy) {
+    public byte[] encode(final String value, final OwnedBy ownedBy) throws UnableToEncodeException {
+        Objects.requireNonNull(value);
         Objects.requireNonNull(ownedBy);
-        return value -> {
-            Objects.requireNonNull(value);
+        try {
             final Passphrase passphrase = passphraseProvider.provide(ownedBy);
             return Base64.encode(encryptionService.encrypt(value.getBytes(StandardCharsets.UTF_8), passphrase).payload());
-        };
+        } catch (final UnableToProvidePassphraseException unableToProvidePassphraseException) {
+            throw new UnableToEncodeException(unableToProvidePassphraseException);
+        }
     }
 }

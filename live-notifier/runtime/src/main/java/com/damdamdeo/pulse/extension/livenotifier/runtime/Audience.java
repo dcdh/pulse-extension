@@ -1,17 +1,16 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.*;
 import org.apache.commons.lang3.Validate;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.StringJoiner;
 
 public sealed interface Audience
-    permits Audience.AllConnected, Audience.FromListOfEligibility {
+        permits Audience.AllConnected, Audience.FromListOfEligibility {
 
     String SEPARATOR = ":";
 
@@ -19,22 +18,24 @@ public sealed interface Audience
 
     boolean eligible(ExecutedBy.EndUser executedBy);
 
-    String encode(ExecutedByEncoder executedByEncoder);
+    String encode(ExecutedByEncoder executedByEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
 
-    static Audience decode(final String value, final ExecutedByDecoder executedByDecoder) {
+    static Audience decode(final String value, final ExecutedByFactory executedByFactory, final OwnedBy ownedBy) throws UnableToDecodeException {
         Objects.requireNonNull(value);
-        Objects.requireNonNull(executedByDecoder);
+        Objects.requireNonNull(executedByFactory);
+        Objects.requireNonNull(ownedBy);
         if (value.startsWith(AllConnected.DISCRIMINANT)) {
             return AllConnected.INSTANCE;
         } else if (value.startsWith(FromListOfEligibility.DISCRIMINANT)) {
-            final List<ExecutedBy.EndUser> listOfEligibilityEndUser = Arrays.stream(value.substring((FromListOfEligibility.DISCRIMINANT+SEPARATOR).length())
-                    .split(ELIGIBLE_SEPARATOR))
-                    .map(eligible -> {
-                        Validate.validState(eligible.startsWith(ExecutedBy.EndUser.DISCRIMINANT + ExecutedBy.EndUser.SEPARATOR));
-                        return (ExecutedBy.EndUser) ExecutedBy.decode(eligible, executedByDecoder);
-                    })
-                    .filter(ExecutedBy.EndUser::decoded)
-                    .toList();
+            final List<ExecutedBy.EndUser> listOfEligibilityEndUser = new ArrayList<>();
+            for (final String executedBy : value.substring((FromListOfEligibility.DISCRIMINANT + SEPARATOR).length())
+                    .split(ELIGIBLE_SEPARATOR)) {
+                Validate.validState(executedBy.startsWith(ExecutedBy.EndUser.DISCRIMINANT + ExecutedBy.EndUser.SEPARATOR));
+                final ExecutedBy.EndUser apply = (ExecutedBy.EndUser) executedByFactory.from(executedBy, ownedBy);
+                if (apply.decoded()) {
+                    listOfEligibilityEndUser.add(apply);
+                }
+            }
             return new FromListOfEligibility(listOfEligibilityEndUser);
         }
         throw new IllegalArgumentException("Invalid Audience value: " + value);
@@ -54,7 +55,7 @@ public sealed interface Audience
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder) {
+        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return DISCRIMINANT;
         }
     }
@@ -72,10 +73,13 @@ public sealed interface Audience
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder) {
-            return DISCRIMINANT + SEPARATOR + eligibles.stream()
-                    .map(endUser -> endUser.encode(executedByEncoder))
-                    .collect(Collectors.joining(ELIGIBLE_SEPARATOR));
+        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+            final StringJoiner joiner = new StringJoiner(ELIGIBLE_SEPARATOR);
+            for (final ExecutedBy.EndUser endUser : eligibles) {
+                final String encode = endUser.encode(executedByEncoder, ownedBy);
+                joiner.add(encode);
+            }
+            return DISCRIMINANT + SEPARATOR + joiner;
         }
     }
 }

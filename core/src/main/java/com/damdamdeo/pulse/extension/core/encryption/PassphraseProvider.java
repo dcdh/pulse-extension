@@ -4,5 +4,5 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 public interface PassphraseProvider {
 
-    Passphrase provide(final OwnedBy ownedBy);
+    Passphrase provide(final OwnedBy ownedBy) throws UnableToProvidePassphraseException;
 }

@@ -8,8 +8,8 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
-import com.damdamdeo.pulse.extension.core.executedby.OwnedByExecutedByEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.damdamdeo.pulse.extension.writer.runtime.InstantProvider;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -54,11 +54,11 @@ class JdbcPostgresEventRepositoryTest {
     DataSource dataSource;
 
     @ApplicationScoped
-    static class StubOwnedByExecutedByEncoder implements OwnedByExecutedByEncoder {
+    static class StubExecutedByEncoder implements ExecutedByEncoder {
 
         @Override
-        public ExecutedByEncoder executedByEncoder(final OwnedBy ownedBy) {
-            return TestExecutedByEncoder.INSTANCE;
+        public byte[] encode(String value, OwnedBy ownedBy) throws UnableToEncodeException {
+            return TestExecutedByEncoder.INSTANCE.encode(value, ownedBy);
         }
     }
 
@@ -779,8 +779,10 @@ class JdbcPostgresEventRepositoryTest {
             preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
             preparedStatement.setString(7, ownedBy.id());
             preparedStatement.setString(8, aggregateRootId);
-            preparedStatement.setString(9, executedBy.encode(TestExecutedByEncoder.INSTANCE));
+            preparedStatement.setString(9, executedBy.encode(TestExecutedByEncoder.INSTANCE, ownedBy));
             preparedStatement.executeUpdate();
+        } catch (final UnableToEncodeException e) {
+            throw new RuntimeException(e);
         }
     }
 }

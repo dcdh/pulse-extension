@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
@@ -33,7 +31,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
-    public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
+    public Optional<Passphrase> retrieve(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(ownedBy);
         final String path = getOwnedByHasherStringBiFunction(ownedBy);
         try {
@@ -44,12 +42,17 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
             final String passphrase = data.get("passphrase");
             return Optional.of(new Passphrase(passphrase.toCharArray()));
         } catch (final VaultClientException vaultClientException) {
-            return Optional.empty();
+            if (Integer.valueOf(404).equals(vaultClientException.getStatus())) {
+                return Optional.empty();
+            } else {
+                throw new UnableToRetrievePassphraseException(vaultClientException);
+            }
         }
     }
 
     @Override
-    public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
+    public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException,
+            UnableToStorePassphraseException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(passphrase);
         final String path = getOwnedByHasherStringBiFunction(ownedBy);
@@ -60,11 +63,17 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
                 throw new PassphraseAlreadyExistsException(ownedBy);
             } else {
                 vaultKVSecretEngine.writeSecret(path, secret);
+                return new Passphrase(passphrase.passphrase().clone());
             }
         } catch (final VaultClientException vaultClientException) {
-            vaultKVSecretEngine.writeSecret(path, secret);
+            if (Integer.valueOf(404).equals(vaultClientException.getStatus())) {
+                // emitted by readSecret if the secret does not exist
+                vaultKVSecretEngine.writeSecret(path, secret);
+                return new Passphrase(passphrase.passphrase().clone());
+            } else {
+                throw new UnableToStorePassphraseException(vaultClientException);
+            }
         }
-        return new Passphrase(passphrase.passphrase().clone());
     }
 
     private String getOwnedByHasherStringBiFunction(final OwnedBy ownedBy) {

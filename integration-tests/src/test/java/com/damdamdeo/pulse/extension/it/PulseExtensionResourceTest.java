@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
@@ -21,7 +20,7 @@ class PulseExtensionResourceTest {
 
     @Test
     @Order(1)
-    void testCreateTodoEndpoint() throws SQLException {
+    void testCreateTodoEndpoint() {
         // Given
         final String accessToken = getAccessToken();
 
