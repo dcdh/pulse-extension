@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
-import com.damdamdeo.pulse.extension.core.saga.Saga;
+import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import io.quarkus.arc.All;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -21,7 +21,7 @@ import java.util.function.Function;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class SagaTest {
+class OnStoredEventListenerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -36,8 +36,8 @@ class SagaTest {
 
     @Inject
     @All
-//    List<Saga<TodoId, Event<TodoId>>> sagas; not working ! will return empty
-    List<Saga<TodoId, ?>> sagas;// It's ok
+//    List<OnStoredEventListener<TodoId, Event<TodoId>>> onStoredEventListeners; not working ! will return empty
+    List<OnStoredEventListener<TodoId, ?>> onStoredEventListeners;// It's ok
 
     Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber);
 
@@ -47,7 +47,7 @@ class SagaTest {
     record On(TodoId id, NewTodoCreated event) {
     }
 
-    static class OnNewTodoCreated implements Saga<TodoId, NewTodoCreated> {
+    static class OnNewTodoCreated implements OnStoredEventListener<TodoId, NewTodoCreated> {
 
         final List<On> events = new ArrayList<>();
 
@@ -75,7 +75,7 @@ class SagaTest {
 
         // Then
         assertAll(
-                () -> assertThat(sagas.size()).isEqualTo(1),
+                () -> assertThat(onStoredEventListeners.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)),
                 () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))

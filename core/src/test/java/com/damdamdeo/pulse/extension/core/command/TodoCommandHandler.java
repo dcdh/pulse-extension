@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.saga.Saga;
+import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 
 import java.util.List;
 
@@ -16,9 +16,9 @@ public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
                               final EventRepository<Todo, TodoId> eventRepository,
                               final Transaction transaction,
                               final ExecutionContextProvider executionContextProvider,
-                              final List<Saga<TodoId, Event<TodoId>>> sagas,
+                              final List<OnStoredEventListener<TodoId, Event<TodoId>>> onStoredEventListeners,
                               final AggregateIdGenerator aggregateIdGenerator) {
-        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, sagas, aggregateIdGenerator);
+        super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, onStoredEventListeners, aggregateIdGenerator);
     }
 
     @Override

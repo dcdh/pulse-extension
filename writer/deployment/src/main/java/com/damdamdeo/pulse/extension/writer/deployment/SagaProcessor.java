@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.saga.Saga;
+import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -11,11 +11,11 @@ import java.util.List;
 public class SagaProcessor {
 
     @BuildStep
-    List<AdditionalBeanBuildItem> registerSaga(final CombinedIndexBuildItem combinedIndexBuildItem) {
-        return combinedIndexBuildItem.getIndex().getAllKnownImplementations(Saga.class)
+    List<AdditionalBeanBuildItem> registerOnStoredEventListeners(final CombinedIndexBuildItem combinedIndexBuildItem) {
+        return combinedIndexBuildItem.getIndex().getAllKnownImplementations(OnStoredEventListener.class)
                 .stream()
-                .map(saga -> AdditionalBeanBuildItem.builder()
-                        .addBeanClass(saga.name().toString())
+                .map(onStoredEventListener -> AdditionalBeanBuildItem.builder()
+                        .addBeanClass(onStoredEventListener.name().toString())
                         .setDefaultScope(DotNames.SINGLETON)
                         .setUnremovable()
                         .build())

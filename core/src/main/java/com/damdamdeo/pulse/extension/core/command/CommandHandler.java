@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.core.command;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.saga.Saga;
+import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 
 import java.util.List;
 import java.util.Objects;
@@ -16,20 +16,20 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
     private final EventRepository<A, K> eventRepository;
     private final Transaction transaction;
     private final ExecutionContextProvider executionContextProvider;
-    private final List<Saga<K, Event<K>>> sagas;
+    private final List<OnStoredEventListener<K, Event<K>>> onStoredEventListeners;
     private final AggregateIdGenerator aggregateIdGenerator;
 
     public CommandHandler(final CommandHandlerRegistry commandHandlerRegistry,
                           final EventRepository<A, K> eventRepository,
                           final Transaction transaction,
                           final ExecutionContextProvider executionContextProvider,
-                          final List<Saga<K, Event<K>>> sagas,
+                          final List<OnStoredEventListener<K, Event<K>>> onStoredEventListeners,
                           final AggregateIdGenerator aggregateIdGenerator) {
         this.commandHandlerRegistry = Objects.requireNonNull(commandHandlerRegistry);
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.transaction = Objects.requireNonNull(transaction);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
-        this.sagas = Objects.requireNonNull(sagas);
+        this.onStoredEventListeners = Objects.requireNonNull(onStoredEventListeners);
         this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
     }
 
@@ -46,7 +46,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
             final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
             final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
             List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-            newEvents.forEach(newEvent -> sagas.forEach(saga -> saga.execute(id, newEvent.event())));
+            newEvents.forEach(newEvent -> onStoredEventListeners.forEach(onStoredEventListener -> onStoredEventListener.execute(id, newEvent.event())));
             eventRepository.save(newEvents, aggregate, executionContext.executedBy());
             return aggregate;
         });
@@ -73,7 +73,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
                     final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
                     List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-                    newEvents.forEach(newEvent -> sagas.forEach(saga -> saga.execute(id, newEvent.event())));
+                    newEvents.forEach(newEvent -> onStoredEventListeners.forEach(onStoredEventListener -> onStoredEventListener.execute(id, newEvent.event())));
                     eventRepository.save(newEvents, aggregate, executionContext.executedBy());
                     return aggregate;
                 });
@@ -103,7 +103,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
             final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
             final A aggregate = stateApplier.executeCommand(command, executionContext);
             List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-            newEvents.forEach(newEvent -> sagas.forEach(saga -> saga.execute(command.id(), newEvent.event())));
+            newEvents.forEach(newEvent -> onStoredEventListeners.forEach(onStoredEventListener -> onStoredEventListener.execute(command.id(), newEvent.event())));
             eventRepository.save(newEvents, aggregate, executionContext.executedBy());
             return aggregate;
         }));

@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.saga.Saga;
+import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,9 +41,9 @@ class TodoCommandHandlerTest {
     @Mock
     AggregateIdGenerator aggregateIdGenerator;
 
-    List<Saga<TodoId, Event<TodoId>>> todoSagas = new ArrayList<>();
+    List<OnStoredEventListener<TodoId, Event<TodoId>>> todoOnStoredEventListeners = new ArrayList<>();
 
-    List<Saga<TodoChecklistId, Event<TodoChecklistId>>> todoChecklistSagas = new ArrayList<>();
+    List<OnStoredEventListener<TodoChecklistId, Event<TodoChecklistId>>> todoChecklistOnStoredEventListeners = new ArrayList<>();
 
     Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber);
 
@@ -51,9 +51,9 @@ class TodoCommandHandlerTest {
     @BeforeEach
     void setUp() throws SequenceGenerationException {
         todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), todoEventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider, todoSagas, aggregateIdGenerator);
+                notAvailableExecutedByProvider, todoOnStoredEventListeners, aggregateIdGenerator);
         todoChecklistCommandHandler = new TodoChecklistCommandHandler(new JvmCommandHandlerRegistry(), todoChecklistEventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider, todoChecklistSagas, aggregateIdGenerator);
+                notAvailableExecutedByProvider, todoChecklistOnStoredEventListeners, aggregateIdGenerator);
     }
 
     @Test

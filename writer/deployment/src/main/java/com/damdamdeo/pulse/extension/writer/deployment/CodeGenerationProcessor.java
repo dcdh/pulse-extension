@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.InternalQueryEventStore;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.projection.Projection;
-import com.damdamdeo.pulse.extension.core.saga.Saga;
+import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository;
 import com.damdamdeo.pulse.extension.writer.runtime.projection.JdbcProjectionFromEventStore;
@@ -155,12 +155,12 @@ public class CodeGenerationProcessor {
                                     .addParameterType(Type.classType(ExecutionContextProvider.class))
                                     .addParameterType(Type.parameterizedType(
                                             Type.classType(List.class),
-//                                            Type.parameterizedType(Type.classType(Saga.class),
+//                                            Type.parameterizedType(Type.classType(OnStoredEventListener.class),
 //                                                    Type.classType(aggregateRootBuildItem.aggregateIdClazz()),
 //                                                    Type.parameterizedType(
 //                                                            Type.classType(Event.class),
 //                                                            Type.classType(aggregateRootBuildItem.aggregateIdClazz())))))
-                                            Type.parameterizedType(Type.classType(Saga.class),
+                                            Type.parameterizedType(Type.classType(OnStoredEventListener.class),
                                                     Type.classType(aggregateRootBuildItem.aggregateIdClazz()),
                                                     Type.wildcardTypeUnbounded())))
                                     .addParameterType(Type.classType(AggregateIdGenerator.class))

@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.event.Event;
 
 import java.util.Objects;
 
-public interface Saga<K extends AggregateId, E extends Event<K>> {
+public interface OnStoredEventListener<K extends AggregateId, E extends Event<K>> {
 
     void on(K id, E event);
 
