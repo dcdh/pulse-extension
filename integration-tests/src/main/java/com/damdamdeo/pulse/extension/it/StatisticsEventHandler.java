@@ -46,7 +46,7 @@ public final class StatisticsEventHandler implements AsyncEventChannelMessageHan
                               final ExecutedBy executedBy,
                               final DecryptablePayload<JsonNode> decryptableEventPayload,
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
-        if (TODO_TAKING_TODO.equals(fromApplication)) {
+        if (TODO_TAKING_TODO.equals(fromApplication) && this.call == null) {// pick the first call
             this.call = new Call(
                     fromApplication,
                     purpose,

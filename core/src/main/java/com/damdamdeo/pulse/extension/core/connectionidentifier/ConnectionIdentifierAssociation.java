@@ -3,10 +3,14 @@ package com.damdamdeo.pulse.extension.core.connectionidentifier;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
 public class ConnectionIdentifierAssociation {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionIdentifierAssociation.class);
 
     private final ConnectionIdentifierRepository connectionIdentifierRepository;
     private final Hasher hasher;

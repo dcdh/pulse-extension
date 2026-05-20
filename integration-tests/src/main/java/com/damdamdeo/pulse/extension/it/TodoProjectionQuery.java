@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.it;
 
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Provided;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionAssociationFinder;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.UnableToFindException;
@@ -63,8 +64,8 @@ public class TodoProjectionQuery {
     };
 
     public List<TodoProjection> getByConnectedUser() throws UnableToFindException {
-        Provided<OwnedBy> byConnectedUser = connectionAssociationFinder.findByConnectedUser(OwnedBy::from);
+        Provided<UserId> byConnectedUser = connectionAssociationFinder.findByConnectedUser(UserId::from);
         Validate.validState(!byConnectedUser.isUnknown());
-        return todoProjectionProjectionFromEventStore.findAll(byConnectedUser.identifiable(), multipleResultAggregateQuery);
+        return todoProjectionProjectionFromEventStore.findAll(OwnedBy.from(byConnectedUser.identifiable()), multipleResultAggregateQuery);
     }
 }

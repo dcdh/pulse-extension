@@ -11,8 +11,6 @@ import java.util.Objects;
 
 public final class Todo extends AggregateRoot<TodoId> {
 
-    public static final OwnedBy OWNED_BY_USER_1_TODO_1 = OwnedBy.from(TodoId.USER_1_TODO_1);
-
     private static final String IMPORTANT = "IMPORTANT";
 
     private String description;

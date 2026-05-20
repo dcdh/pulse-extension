@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -44,7 +46,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
 
         // When
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"),
-                new OwnedBy("Todo"), audienceBob);
+                User.OWNED_BY_USER_1, audienceBob);
 
         // Then
         final List<Record> records = consumer.consume("pulse.live-notification.todotaking_todo");
@@ -55,7 +57,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
                 () -> assertThat(headersName).containsExactly("event-name", "content-type", "owned-by", "audience"),
                 () -> assertThat(getValuesByKey(headers, "event-name")).containsExactly("TodoEvents"),
                 () -> assertThat(getValuesByKey(headers, "content-type")).containsExactly("application/vnd.com.damdamdeo.pulse.extension.core.event.NewTodoCreated.api+json"),
-                () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("Todo"),
+                () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("UserId|U000001"),
                 () -> assertThat(getValuesByKey(headers, "audience")).isNotEmpty(),
                 () -> assertThat(getValuesByKey(headers, "audience").getFirst()).startsWith("FROM_LIST_OF_ELIGIBILITY:EU:"),// It is encoded and not deterministic
                 () -> assertThat(records.getFirst().getKey()).isNull(),

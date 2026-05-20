@@ -12,6 +12,8 @@ public class User extends AggregateRoot<UserId> {
 
     public static final OwnedBy OWNED_BY_USER_1 = OwnedBy.from(UserId.USER_1);
     public static final OwnedBy OWNED_BY_USER_2 = OwnedBy.from(UserId.USER_2);
+    public static final OwnedBy OWNED_BY_USER_3 = OwnedBy.from(UserId.USER_3);
+    public static final OwnedBy OWNED_BY_USER_4 = OwnedBy.from(UserId.USER_4);
 
     public static final BelongsTo BELONGS_TO_USER_1_TODO_1 = BelongsTo.from(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
     public static final BelongsTo BELONGS_TO_USER_1_TODO_6 = BelongsTo.from(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_6));

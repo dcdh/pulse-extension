@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
+import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.SseConsumer;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.AbstractMessagingTest;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
@@ -41,7 +41,7 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
 
         // When
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("another lorem ipsum"),
-                new OwnedBy("TodoAnother"), Audience.AllConnected.INSTANCE);
+                User.OWNED_BY_USER_4, Audience.AllConnected.INSTANCE);
 
         // Then
         final List<String> ssePayload = receivedEvents.get(12, TimeUnit.SECONDS);

@@ -72,6 +72,7 @@ class JdbcPostgresSequenceGeneratorTest {
         }
         assertAll(
                 () -> assertThat(sequences).containsExactly("todotaking_todo.seq_customfailingtodoid",
+                        "todotaking_todo.seq_customidentifiable",
                         "todotaking_todo.seq_sampleidentifiable",
                         "todotaking_todo.seq_todochecklistid",
                         "todotaking_todo.seq_todoid",
