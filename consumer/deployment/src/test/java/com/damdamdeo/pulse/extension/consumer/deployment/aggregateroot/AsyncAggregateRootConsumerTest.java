@@ -3,7 +3,10 @@ package com.damdamdeo.pulse.extension.consumer.deployment.aggregateroot;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.consumer.Producer;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.AsyncAggregateRootConsumerChannel;
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
@@ -45,7 +48,7 @@ class AsyncAggregateRootConsumerTest {
 
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            if (User.OWNED_BY_USER_1.equals(ownedBy)) {
+            if (Todo.OWNED_BY_USER_1.equals(ownedBy)) {
                 return Optional.of(PassphraseSample.PASSPHRASE);
             } else {
                 return Optional.empty();
@@ -125,8 +128,8 @@ class AsyncAggregateRootConsumerTest {
                         }
                         """,
                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
-                User.OWNED_BY_USER_1,
-                User.BELONGS_TO_USER_1_TODO_1,
+                Todo.OWNED_BY_USER_1,
+                Todo.BELONGS_TO_USER_1,
                 Todo.class);
 
         // Then
@@ -144,8 +147,8 @@ class AsyncAggregateRootConsumerTest {
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        User.OWNED_BY_USER_1,
-                        User.BELONGS_TO_USER_1_TODO_1,
+                        Todo.OWNED_BY_USER_1,
+                        Todo.BELONGS_TO_USER_1,
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
 
@@ -170,8 +173,8 @@ class AsyncAggregateRootConsumerTest {
                         }
                         """,
                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
-                User.OWNED_BY_USER_2,
-                User.BELONGS_TO_USER_2_TODO_1,
+                Todo.OWNED_BY_USER_2,
+                Todo.BELONGS_TO_USER_2,
                 Todo.class);
 
         // Then
@@ -184,8 +187,8 @@ class AsyncAggregateRootConsumerTest {
                         new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        User.OWNED_BY_USER_2,
-                        User.BELONGS_TO_USER_2_TODO_1,
+                        Todo.OWNED_BY_USER_2,
+                        Todo.BELONGS_TO_USER_2,
                         DecryptablePayload.ofUndecryptable()));
     }
 }

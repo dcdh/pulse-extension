@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.User;
+import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,10 +35,10 @@ class OpenPGPDecryptionServiceTest {
     void shouldDecrypt() throws UnableToRetrievePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(User.OWNED_BY_USER_1);
+        doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(Todo.OWNED_BY_USER_1);
 
         // When
-        final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, User.OWNED_BY_USER_1);
+        final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1);
 
         // Then
         assertThat(decrypted).isEqualTo(new DecryptedPayload("Hello world!".getBytes(StandardCharsets.UTF_8)));
@@ -49,11 +49,11 @@ class OpenPGPDecryptionServiceTest {
     void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToRetrievePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE);
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(User.OWNED_BY_USER_1);
+        doReturn(Optional.empty()).when(passphraseRepository).retrieve(Todo.OWNED_BY_USER_1);
 
         // When && Then
-        assertThatThrownBy(() -> decryptionService.decrypt(encrypted, User.OWNED_BY_USER_1))
+        assertThatThrownBy(() -> decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1))
                 .isExactlyInstanceOf(UnknownPassphraseException.class)
-                .hasFieldOrPropertyWithValue("ownedBy", User.OWNED_BY_USER_1);
+                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
     }
 }

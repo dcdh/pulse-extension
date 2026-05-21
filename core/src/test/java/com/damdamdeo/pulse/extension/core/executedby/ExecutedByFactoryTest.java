@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
 import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,10 +27,10 @@ public class ExecutedByFactoryTest {
     void decodeEndUser() throws UnableToDecodeException {
         // Given
         final String value = "EU:encodedalice";
-        Mockito.doReturn(Optional.of("alice")).when(executedByDecoder).decode("encodedalice", User.OWNED_BY_USER_1);
+        Mockito.doReturn(Optional.of("alice")).when(executedByDecoder).decode("encodedalice", Todo.OWNED_BY_USER_1);
 
         // When
-        final ExecutedBy executedBy = executedByFactory.from(value, User.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByFactory.from(value, Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -45,10 +44,10 @@ public class ExecutedByFactoryTest {
     void shouldEndUserNotBeDecodedWhenPassphraseDoesNotExistAnymore() throws UnableToDecodeException {
         // Given
         final String value = "EU:encodedalice";
-        Mockito.doReturn(Optional.empty()).when(executedByDecoder).decode("encodedalice", User.OWNED_BY_USER_1);
+        Mockito.doReturn(Optional.empty()).when(executedByDecoder).decode("encodedalice", Todo.OWNED_BY_USER_1);
 
         // When
-        final ExecutedBy executedBy = executedByFactory.from(value, User.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByFactory.from(value, Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -64,7 +63,7 @@ public class ExecutedByFactoryTest {
         final String value = "SA:cron-job";
 
         // When
-        final ExecutedBy executedBy = executedByFactory.from(value, User.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByFactory.from(value, Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -80,7 +79,7 @@ public class ExecutedByFactoryTest {
         final String value = "A";
 
         // When
-        final ExecutedBy executedBy = executedByFactory.from(value, User.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByFactory.from(value, Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -95,7 +94,7 @@ public class ExecutedByFactoryTest {
         final String value = "NA";
 
         // When
-        final ExecutedBy executedBy = executedByFactory.from(value, User.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByFactory.from(value, Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -110,7 +109,7 @@ public class ExecutedByFactoryTest {
         final String value = null;
 
         // When
-        final ExecutedBy executedBy = executedByFactory.from(value, User.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByFactory.from(value, Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -125,7 +124,7 @@ public class ExecutedByFactoryTest {
         final String value = "INVALID";
 
         // When / Then
-        assertThatThrownBy(() -> executedByFactory.from(value, User.OWNED_BY_USER_1))
+        assertThatThrownBy(() -> executedByFactory.from(value, Todo.OWNED_BY_USER_1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid ExecutedBy value");
     }

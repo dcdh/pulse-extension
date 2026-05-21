@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
-import com.damdamdeo.pulse.extension.core.User;
+import com.damdamdeo.pulse.extension.core.Todo;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = new ExecutedBy.EndUser("alice", true);
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, User.OWNED_BY_USER_1);
+            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo("EU:encodedalice");
@@ -32,7 +32,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = new ExecutedBy.ServiceAccount("cron-job");
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, User.OWNED_BY_USER_1);
+            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo("SA:cron-job");
@@ -44,7 +44,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, User.OWNED_BY_USER_1);
+            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo("A");
@@ -56,7 +56,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.NotAvailable.INSTANCE;
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, User.OWNED_BY_USER_1);
+            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo("NA");

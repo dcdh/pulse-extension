@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
-import com.damdamdeo.pulse.extension.core.User;
+import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 import org.junit.jupiter.api.Test;
 
@@ -38,8 +38,8 @@ class AudienceTest {
         final Audience audience = Audience.AllConnected.INSTANCE;
 
         // When
-        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE, User.OWNED_BY_USER_1);
-        final Audience decoded = Audience.decode(encoded, executedByFactory, User.OWNED_BY_USER_1);
+        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE, Todo.OWNED_BY_USER_1);
+        final Audience decoded = Audience.decode(encoded, executedByFactory, Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -79,8 +79,8 @@ class AudienceTest {
         final Audience audience = new Audience.FromListOfEligibility(List.of(ALICE, BOB));
 
         // When
-        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE, User.OWNED_BY_USER_1);
-        final Audience decoded = Audience.decode(encoded, executedByFactory, User.OWNED_BY_USER_1);
+        final String encoded = audience.encode(TestExecutedByEncoder.INSTANCE, Todo.OWNED_BY_USER_1);
+        final Audience decoded = Audience.decode(encoded, executedByFactory, Todo.OWNED_BY_USER_1);
 
         // Then
         assertThat(decoded).isInstanceOf(Audience.FromListOfEligibility.class);
@@ -100,7 +100,7 @@ class AudienceTest {
 
     @Test
     void decode_should_fail_on_unknown_discriminant() {
-        assertThatThrownBy(() -> Audience.decode("UNKNOWN", executedByFactory, User.OWNED_BY_USER_1))
+        assertThatThrownBy(() -> Audience.decode("UNKNOWN", executedByFactory, Todo.OWNED_BY_USER_1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid Audience value");
     }
@@ -111,7 +111,7 @@ class AudienceTest {
         String invalid = Audience.FromListOfEligibility.DISCRIMINANT + Audience.SEPARATOR + "INVALID_FORMAT";
 
         // Then
-        assertThatThrownBy(() -> Audience.decode(invalid, executedByFactory, User.OWNED_BY_USER_1))
+        assertThatThrownBy(() -> Audience.decode(invalid, executedByFactory, Todo.OWNED_BY_USER_1))
                 .isInstanceOf(IllegalStateException.class);
     }
 }

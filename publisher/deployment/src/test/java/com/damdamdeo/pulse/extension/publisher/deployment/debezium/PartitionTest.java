@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryption
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.User;
+import com.damdamdeo.pulse.extension.core.TodoChecklist;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
@@ -73,7 +73,7 @@ class PartitionTest {
         // Given
 
         // When
-        final int i = computePartition(2, User.BELONGS_TO_USER_1_TODO_1);
+        final int i = computePartition(2, TodoChecklist.BELONGS_TO_USER_1_TODO_1);
 
         // Then
         assertThat(i).isEqualTo(0);
@@ -84,7 +84,7 @@ class PartitionTest {
         // Given
 
         // When
-        final int i = computePartition(2, User.BELONGS_TO_USER_2_TODO_1);
+        final int i = computePartition(2, TodoChecklist.BELONGS_TO_USER_2_TODO_1);
 
         // Then
         assertThat(i).isEqualTo(1);
@@ -109,7 +109,7 @@ class PartitionTest {
     void shouldHaveInitializedTwoPartitions() throws InterruptedException {
         // Given / Must push messages to create the topic
         Integer index = 0;
-        for (final BelongsTo belongsTo : List.of(User.BELONGS_TO_USER_1_TODO_1, User.BELONGS_TO_USER_2_TODO_1)) {
+        for (final BelongsTo belongsTo : List.of(TodoChecklist.BELONGS_TO_USER_1_TODO_1, TodoChecklist.BELONGS_TO_USER_2_TODO_1)) {
             // language=sql
             final String tEventSql = """
                     INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by)
@@ -138,7 +138,7 @@ class PartitionTest {
                                   "important": false
                                 }
                                 """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload());
-                tEventPS.setString(7, User.OWNED_BY_USER_1.id());
+                tEventPS.setString(7, Todo.OWNED_BY_USER_1.id());
                 tEventPS.setString(8, belongsTo.id());
                 tEventPS.setString(9, "EU:encodedbob");
                 tEventPS.executeUpdate();
@@ -156,7 +156,7 @@ class PartitionTest {
                                   "important": false
                                 }
                                 """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload());
-                tAggregateRootPS.setString(5, User.OWNED_BY_USER_1.id());
+                tAggregateRootPS.setString(5, Todo.OWNED_BY_USER_1.id());
                 tAggregateRootPS.setString(6, belongsTo.id());
                 tAggregateRootPS.executeUpdate();
 
@@ -255,13 +255,13 @@ class PartitionTest {
                 () -> assertThat(topicInfos.values()).allSatisfy(topicInfo -> assertThat(topicInfo.records()).hasSize(1)),
                 // Assertions exactes
                 () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 0)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 0)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_1_TODO_1.id()),
+                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 0)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(TodoChecklist.BELONGS_TO_USER_1_TODO_1.id()),
                 () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 1)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 1)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_2_TODO_1.id()),
+                () -> assertThat(topicInfos.get(new TopicPartition(EVENT_TOPIC, 1)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(TodoChecklist.BELONGS_TO_USER_2_TODO_1.id()),
                 () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 0)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 0)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_1_TODO_1.id()),
+                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 0)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(TodoChecklist.BELONGS_TO_USER_1_TODO_1.id()),
                 () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 1)).records()).hasSize(1),
-                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 1)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(User.BELONGS_TO_USER_2_TODO_1.id())
+                () -> assertThat(topicInfos.get(new TopicPartition(AGGREGATE_ROOT_TOPIC, 1)).getFirstRecordBelongsTo(objectMapper)).isEqualTo(TodoChecklist.BELONGS_TO_USER_2_TODO_1.id())
         );
 
         // Debug lisible

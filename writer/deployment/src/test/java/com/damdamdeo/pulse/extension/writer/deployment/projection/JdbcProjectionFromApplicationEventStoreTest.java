@@ -59,7 +59,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         public.pgp_sym_decrypt(aggregate_root_payload, '%1$s')::jsonb AS decrypted_aggregate_root_payload,
                         belongs_to
                       FROM aggregate_root
-                      WHERE belongs_to = '%2$s'
+                      WHERE belongs_to = '%2$s' OR aggregate_root_id = '%2$s'
                     )
                     SELECT jsonb_build_object(
                       'todoId', d.decrypted_aggregate_root_payload -> 'id',
@@ -193,7 +193,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                 ), BOB);
 
         // When
-        final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(User.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
+        final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
 
         // Then
         assertThat(foundBy).isEqualTo(Optional.of(
@@ -218,7 +218,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        List<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(User.OWNED_BY_USER_1,
+        List<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(Todo.OWNED_BY_USER_1,
                 new TodoProjectionMultipleResultAggregateQuery());
 
         // Then

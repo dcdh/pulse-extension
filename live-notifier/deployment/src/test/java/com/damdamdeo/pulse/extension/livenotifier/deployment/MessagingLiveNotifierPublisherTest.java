@@ -1,9 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
 import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.livenotifier.Consumer;
 import com.damdamdeo.pulse.extension.livenotifier.Record;
@@ -46,7 +44,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
 
         // When
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"),
-                User.OWNED_BY_USER_1, audienceBob);
+                Todo.OWNED_BY_USER_1, audienceBob);
 
         // Then
         final List<Record> records = consumer.consume("pulse.live-notification.todotaking_todo");

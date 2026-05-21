@@ -1,8 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
-import com.damdamdeo.pulse.extension.core.User;
+import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.livenotifier.SseConsumer;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.AbstractMessagingTest;
@@ -74,10 +73,10 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
         final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob", true)));
         final Audience audienceDuke = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("duke", true)));
         final Audience audienceAlice = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("alice", true)));
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), User.OWNED_BY_USER_1, audienceBob);
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum"), User.OWNED_BY_USER_2, audienceAlice);
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum"), User.OWNED_BY_USER_3, audienceDuke);
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob another lorem ipsum"), User.OWNED_BY_USER_1, audienceBob);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), Todo.OWNED_BY_USER_1, audienceBob);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum"), Todo.OWNED_BY_USER_2, audienceAlice);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum"), Todo.OWNED_BY_USER_3, audienceDuke);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob another lorem ipsum"), Todo.OWNED_BY_USER_1, audienceBob);
 
         // Then
         final List<String> ssePayload = receivedEvents.get(12, TimeUnit.SECONDS);

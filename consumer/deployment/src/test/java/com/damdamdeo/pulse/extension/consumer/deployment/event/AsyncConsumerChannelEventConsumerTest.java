@@ -51,7 +51,7 @@ class AsyncConsumerChannelEventConsumerTest {
 
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            if (User.OWNED_BY_USER_1.equals(ownedBy)) {
+            if (Todo.OWNED_BY_USER_1.equals(ownedBy)) {
                 return Optional.of(PassphraseSample.PASSPHRASE);
             } else {
                 return Optional.empty();
@@ -135,9 +135,9 @@ class AsyncConsumerChannelEventConsumerTest {
                         {}
                         """,
                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
-                User.OWNED_BY_USER_1,
+                Todo.OWNED_BY_USER_1,
                 ExecutedBy.NotAvailable.INSTANCE,
-                User.BELONGS_TO_USER_1_TODO_1,
+                Todo.BELONGS_TO_USER_1,
                 Todo.class,
                 TodoMarkedAsDone.class);
 
@@ -159,8 +159,8 @@ class AsyncConsumerChannelEventConsumerTest {
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
-                        User.OWNED_BY_USER_1,
-                        User.BELONGS_TO_USER_1_TODO_1,
+                        Todo.OWNED_BY_USER_1,
+                        Todo.BELONGS_TO_USER_1,
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
@@ -169,8 +169,8 @@ class AsyncConsumerChannelEventConsumerTest {
                                 new LastAggregateVersion(1),
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
-                                User.OWNED_BY_USER_1,
-                                User.BELONGS_TO_USER_1_TODO_1)));
+                                Todo.OWNED_BY_USER_1,
+                                Todo.BELONGS_TO_USER_1)));
     }
 
     @Test
@@ -198,9 +198,9 @@ class AsyncConsumerChannelEventConsumerTest {
                         {}
                         """,
                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
-                User.OWNED_BY_USER_2,
+                Todo.OWNED_BY_USER_2,
                 ExecutedBy.NotAvailable.INSTANCE,
-                User.BELONGS_TO_USER_2_TODO_1,
+                Todo.BELONGS_TO_USER_2,
                 Todo.class,
                 TodoMarkedAsDone.class);
 
@@ -216,8 +216,8 @@ class AsyncConsumerChannelEventConsumerTest {
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
-                        User.OWNED_BY_USER_2,
-                        User.BELONGS_TO_USER_2_TODO_1,
+                        Todo.OWNED_BY_USER_2,
+                        Todo.BELONGS_TO_USER_2,
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofUndecryptable(),
                         new AggregateRootLoaded<>(
@@ -226,7 +226,7 @@ class AsyncConsumerChannelEventConsumerTest {
                                 new LastAggregateVersion(1),
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofUndecryptable(),
-                                User.OWNED_BY_USER_2,
-                                User.BELONGS_TO_USER_2_TODO_1)));
+                                Todo.OWNED_BY_USER_2,
+                                Todo.BELONGS_TO_USER_2)));
     }
 }

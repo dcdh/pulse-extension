@@ -87,7 +87,7 @@ class TodoCommandHandlerTest {
     void shouldCreateTodoChecklistUsingTodoOwning() throws SequenceGenerationException, BusinessException {
         // Given
         final Function<SequenceNumber, TodoChecklistId> creational = sequenceNumber -> new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), sequenceNumber);
-        final BelongsTo belongsTo = User.BELONGS_TO_USER_1_TODO_1;
+        final BelongsTo belongsTo = TodoChecklist.BELONGS_TO_USER_1_TODO_1;
         final AddNewTodoItem givenCreateTodoChecklist = new AddNewTodoItem(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), "lorem ipsum");
         doReturn(false).when(todoChecklistEventRepository).hasEventsFor(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1));
         doReturn(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1))

@@ -54,14 +54,14 @@ class PulseExtensionResourceTest {
                 .body("aggregateRoots", hasSize(3))
                 .body("aggregateRoots", hasItems(
                         "U000001|User|0|UserId|U000001|U000001",
-                        "U000001-T000001|Todo|0|UserId|U000001|U000001-T000001",
+                        "U000001-T000001|Todo|0|UserId|U000001|U000001",
                         "U000001-T000001-CL000001|TodoChecklist|0|UserId|U000001|U000001-T000001"
                 ))
                 // events
                 .body("events", hasSize(3))
                 .body("events", hasItems(
                         "U000001|User|0|UserRegistered|UserId|U000001|U000001",
-                        "U000001-T000001|Todo|0|NewTodoCreated|UserId|U000001|U000001-T000001",
+                        "U000001-T000001|Todo|0|NewTodoCreated|UserId|U000001|U000001",
                         "U000001-T000001-CL000001|TodoChecklist|0|TodoItemAdded|UserId|U000001|U000001-T000001"
                 ));
     }

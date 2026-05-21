@@ -108,7 +108,7 @@ class PostgresAggregateRootLoaderTest {
             ps.setLong(3, 1);
             ps.setBytes(4, encryptedPayload);
             ps.setString(5, OwnedBy.from(UserId.USER_1).id());
-            ps.setString(6, BelongsTo.from(TodoId.USER_1_TODO_1).id());
+            ps.setString(6, BelongsTo.from(UserId.USER_1).id());
             ps.executeUpdate();
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -134,7 +134,7 @@ class PostgresAggregateRootLoaderTest {
                         new LastAggregateVersion(1),
                         new EncryptedPayload(encryptedPayload),
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
-                        User.OWNED_BY_USER_1,
-                        User.BELONGS_TO_USER_1_TODO_1));
+                        Todo.OWNED_BY_USER_1,
+                        Todo.BELONGS_TO_USER_1));
     }
 }

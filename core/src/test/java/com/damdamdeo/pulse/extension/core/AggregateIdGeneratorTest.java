@@ -56,10 +56,10 @@ class AggregateIdGeneratorTest {
     void shouldReturnGeneratedAggregateIdUsingASequenceFor() throws SequenceGenerationException {
         // Given
         doReturn(SequenceNumber.fromNumber(1L)).when(sequenceGenerator).nextFor(new For<>(TodoChecklistId.class,
-                User.BELONGS_TO_USER_1_TODO_1));
+                TodoChecklist.BELONGS_TO_USER_1_TODO_1));
 
         // When
-        final TodoChecklistId generated = aggregateIdGenerator.generate(new For<>(TodoChecklistId.class, User.BELONGS_TO_USER_1_TODO_1),
+        final TodoChecklistId generated = aggregateIdGenerator.generate(new For<>(TodoChecklistId.class, TodoChecklist.BELONGS_TO_USER_1_TODO_1),
                 sequenceNumber -> new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_10), sequenceNumber));
 
         // Then

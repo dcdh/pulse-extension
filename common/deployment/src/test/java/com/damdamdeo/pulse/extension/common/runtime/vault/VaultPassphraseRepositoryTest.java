@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.vault;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.User;
+import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToRetrievePassphraseException;
@@ -49,7 +49,7 @@ class VaultPassphraseRepositoryTest {
     @Test
     void shouldComputeUser1Hash() {
         // Given
-        final OwnedBy original = User.OWNED_BY_USER_1;
+        final OwnedBy original = Todo.OWNED_BY_USER_1;
 
         // When
         Hash<OwnedBy> hash = hasher.hash(original);
@@ -63,7 +63,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(User.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -75,7 +75,7 @@ class VaultPassphraseRepositoryTest {
         vaultKVSecretEngine.writeSecret(SECRET_PATH, Map.of());
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(User.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -88,7 +88,7 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE.passphrase())));
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(User.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -101,7 +101,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Passphrase stored = vaultPassphraseRepository.store(User.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
+        final Passphrase stored = vaultPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
 
         // Then
         final Map<String, String> secret = vaultKVSecretEngine.readSecret(SECRET_PATH);

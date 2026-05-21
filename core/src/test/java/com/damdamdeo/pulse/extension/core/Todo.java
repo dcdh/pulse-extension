@@ -11,6 +11,14 @@ import java.util.Objects;
 
 public final class Todo extends AggregateRoot<TodoId> {
 
+    public static final OwnedBy OWNED_BY_USER_1 = OwnedBy.from(UserId.USER_1);
+    public static final OwnedBy OWNED_BY_USER_2 = OwnedBy.from(UserId.USER_2);
+    public static final OwnedBy OWNED_BY_USER_3 = OwnedBy.from(UserId.USER_3);
+    public static final OwnedBy OWNED_BY_USER_4 = OwnedBy.from(UserId.USER_4);
+
+    public static final BelongsTo BELONGS_TO_USER_1 = BelongsTo.from(UserId.USER_1);
+    public static final BelongsTo BELONGS_TO_USER_2 = BelongsTo.from(UserId.USER_2);
+
     private static final String IMPORTANT = "IMPORTANT";
 
     private String description;
@@ -82,7 +90,7 @@ public final class Todo extends AggregateRoot<TodoId> {
 
     @Override
     public BelongsTo belongsTo() {
-        return BelongsTo.himself(this);
+        return BelongsTo.from(id.userId());
     }
 
     @Override

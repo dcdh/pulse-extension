@@ -10,6 +10,9 @@ import java.util.Objects;
 
 public final class TodoChecklist extends AggregateRoot<TodoChecklistId> {
 
+    public static final BelongsTo BELONGS_TO_USER_1_TODO_1 = BelongsTo.from(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
+    public static final BelongsTo BELONGS_TO_USER_2_TODO_1 = BelongsTo.from(new TodoId(UserId.USER_2, TodoId.SEQUENCE_NUMBER_1));
+
     private String description;
 
     public TodoChecklist(final TodoChecklistId todoChecklistId) {
