@@ -17,7 +17,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -86,6 +89,30 @@ class EventSerDeTest {
                       ]
                     }
                     """;
+
+    record EventWithTime(LocalDateTime createAt) {
+
+        EventWithTime {
+            Objects.requireNonNull(createAt);
+        }
+    }
+
+    @Test
+    void shouldSerializeTime() throws JsonProcessingException, JSONException {
+        // Given
+        final EventWithTime givenEventWithTime = new EventWithTime(LocalDateTime.of(2026, Month.MAY, 22, 23, 30, 8));
+
+        // When
+        final String serialized = objectMapper.writeValueAsString(givenEventWithTime);
+
+        // language=json
+        final String expected = """
+                {
+                  "createAt":"2026-05-22T23:30:08"
+                }
+                """;
+        JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);
+    }
 
     @Test
     void shouldSerializeSimpleTypes() throws JsonProcessingException, JSONException {
