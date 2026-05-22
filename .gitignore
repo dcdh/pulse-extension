@@ -41,3 +41,5 @@
 
 /quarkus-pulse-extension-parent.iml
 /.idea/
+/integration-tests/infrastructure/compose-devservices-pulse.yml
+/integration-tests/infrastructure/src/main/resources/realm-quarkus.json
