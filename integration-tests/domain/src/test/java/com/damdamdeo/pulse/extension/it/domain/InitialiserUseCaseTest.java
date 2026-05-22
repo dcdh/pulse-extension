@@ -104,7 +104,7 @@ class InitialiserUseCaseTest {
                 .isInstanceOf(ConnectedUserAggregateIdProviderException.class)
                 .cause()
                 .isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("Something went wrongBOOM");
+                .hasMessage("Something went wrong");
     }
 
     @Test
