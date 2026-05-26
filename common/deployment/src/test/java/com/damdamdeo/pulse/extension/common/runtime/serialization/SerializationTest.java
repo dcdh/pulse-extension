@@ -18,7 +18,7 @@ class SerializationTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
+            .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
     @Inject
