@@ -83,3 +83,25 @@ java.lang.NoSuchFieldError: com.github.luben.zstd.ZstdOutputStreamNoFinalizer.ds
                 at java.base@21.0.2/java.io.FilterOutputStream.close(FilterOutputStream.java:184)
                 ... 28 more
 ----
+
+== mixed Build-time and Runtime config on the same config root
+
+When mixing Build-time and Runtime config on the same config root, this exception can occur – not more the case here because the code has been reverted.
+
+----
+[ERROR] Failed to execute goal io.quarkus:quarkus-maven-plugin:3.33.1.1:build (default) on project quarkus-pulse-extension-integration-tests-infrastructure: Failed to build quarkus application: Configuration validation failed:
+[ERROR]         java.util.NoSuchElementException: SRCFG00014: The config property XXXXXXXXXXXXX is required but it could not be found in any config source
+[ERROR]         SRCFG00050: pulse.datasource.init-at-startup in PropertiesConfigSource[source=jar:file:///home/damien/IdeaProjects/pulse-extension/integration-tests/infrastructure/target/quarkus-pulse-extension-integration-tests-infrastructure-1.0.0-SNAPSHOT.jar!/application.properties]:15 does not map to any root
+----
+
+Have a look at these online resources:
+
+https://github.com/quarkusio/quarkus/discussions/47981
+
+https://smallrye.io/smallrye-config/Latest/config/customizer/
+
+Here is a reproducer to explain the issue https://github.com/dcdh/greeting-config-extension
+
+It is ok when
+
+In pulse this **CommonConfigBuilder** has been created and referenced in **resources/META-INF/services/io.smallrye.config.SmallRyeConfigBuilderCustomizer** of **quarkus-pulse-common-extension**
