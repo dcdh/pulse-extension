@@ -31,7 +31,6 @@ class ShouldFailOnApplicationDuplicationTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties")
             .assertException(throwable -> assertThat(throwable)
