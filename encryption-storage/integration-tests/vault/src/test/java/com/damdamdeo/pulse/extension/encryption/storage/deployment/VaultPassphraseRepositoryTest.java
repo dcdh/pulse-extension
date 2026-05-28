@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @QuarkusTest
@@ -107,5 +108,17 @@ class VaultPassphraseRepositoryTest {
                 () -> Assertions.assertThat(stored).isEqualTo(PassphraseSample.PASSPHRASE),
                 () -> assertThat(secret).isEqualTo(Map.of("passphrase", new String(PassphraseSample.PASSPHRASE.passphrase())))
         );
+    }
+
+    @Test
+    void shouldThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() {
+        // Given
+        vaultKVSecretEngine.writeSecret(SECRET_PATH,
+                Map.of("passphrase", new String(PassphraseSample.PASSPHRASE.passphrase())));
+
+        // When && Then
+        assertThatThrownBy(() -> vaultPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE))
+                .isExactlyInstanceOf(PassphraseAlreadyExistsException.class)
+                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
     }
 }
