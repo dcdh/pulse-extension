@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime.hashing;
+package com.damdamdeo.pulse.extension.hasher.runtime;
 
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;

@@ -9,7 +9,6 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphrase
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseProvider;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
-import com.damdamdeo.pulse.extension.common.runtime.hashing.Sha3256DefaultHasher;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.PulseObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.common.runtime.vault.VaultPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
@@ -63,8 +62,7 @@ public class PulseCommonProcessor {
                         DefaultPassphraseProvider.class,
                         OpenPGPDecryptionService.class,
                         OpenPGPEncryptionService.class,
-                        InitScriptUsageChecker.class,
-                        Sha3256DefaultHasher.class)
+                        InitScriptUsageChecker.class)
                 .build());
         return additionalBeanBuildItems;
     }

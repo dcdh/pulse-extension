@@ -45,3 +45,7 @@
 /integration-tests/infrastructure/src/main/resources/realm-quarkus.json
 /integration-tests/domain/target/
 /integration-tests/infrastructure/target/
+/hasher/deployment/target/
+/hasher/runtime/target/
+/hasher/runtime/quarkus-pulse-hasher-extension.iml
+/hasher/deployment/quarkus-pulse-hasher-extension-deployment.iml
