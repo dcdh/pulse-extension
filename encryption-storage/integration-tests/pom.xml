@@ -5,11 +5,16 @@
 
     <parent>
         <groupId>com.damdamdeo.pulse</groupId>
-        <artifactId>quarkus-pulse-extension-integration-tests-parent</artifactId>
+        <artifactId>quarkus-pulse-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>quarkus-pulse-extension-integration-tests-infrastructure</artifactId>
-    <name>Pulse Extension - Integration Tests Infrastructure</name>
+    <artifactId>quarkus-pulse-extension-encryption-storage-integration-tests-parent</artifactId>
+    <name>Pulse Extension - Encryption Storage Integration Tests Parent</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>vault</module>
+    </modules>
 
     <properties>
         <skipITs>true</skipITs>
@@ -18,62 +23,15 @@
     <dependencies>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-extension-integration-tests-domain</artifactId>
+            <artifactId>quarkus-pulse-encryption-storage-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- pulse extensions -->
-        <dependency>
-            <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-writer-extension</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-publisher-extension</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-consumer-extension</artifactId>
-        </dependency>
-        <!-- /pulse extensions -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-messaging-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-oidc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-flyway</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkiverse.vault</groupId>
-            <artifactId>quarkus-vault</artifactId>
-            <version>${quarkus-vault.version}</version>
-        </dependency>
-
-        <!-- for debugging purpose-->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-flyway-deployment</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -95,43 +53,10 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-realm-quarkus-json</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>
-                                ${project.basedir}/src/main/resources
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>
-                                        ${project.basedir}/../../writer/deployment/src/test/resources
-                                    </directory>
-                                    <includes>
-                                        <include>realm-quarkus.json</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
