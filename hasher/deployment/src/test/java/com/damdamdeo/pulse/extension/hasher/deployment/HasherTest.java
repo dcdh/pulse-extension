@@ -1,16 +1,15 @@
 package com.damdamdeo.pulse.extension.hasher.deployment;
 
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
+import com.damdamdeo.pulse.extension.hasher.runtime.CustomIdentifiable;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.util.Objects;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class HasherTest {
 
@@ -22,22 +21,18 @@ class HasherTest {
     @Inject
     Hasher hasher;
 
-    record CustomIdentifiable(String id) implements Identifiable {
-
-        CustomIdentifiable {
-            Objects.requireNonNull(id);
-        }
-    }
-
     @Test
     void shouldHashUsingSHA3_256Test() {
         // Given
-        final CustomIdentifiable givenOriginal = new CustomIdentifiable("test");
+        final CustomIdentifiable given = CustomIdentifiable.GIVEN;
 
         // When
-        final Hash<CustomIdentifiable> hash = hasher.hash(givenOriginal);
+        final Hash<CustomIdentifiable> hash = hasher.hash(given);
 
         // Then
-        assertThat(hash).isEqualTo(new Hash<CustomIdentifiable>("36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"));
+        assertAll(
+                () -> assertThat(hasher.getClass().getName()).isEqualTo("com.damdamdeo.pulse.extension.hasher.runtime.Sha3256DefaultHasher_ClientProxy"),
+                () -> assertThat(hash).isEqualTo(given.expected())
+        );
     }
 }

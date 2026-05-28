@@ -17,6 +17,6 @@ public class Sha3256DefaultHasher implements Hasher {
 
     public <T extends Identifiable> Hash<T> hash(final T identifiable) {
         Objects.requireNonNull(identifiable);
-        return new Hash<T>(new DigestUtils("SHA3-256").digestAsHex(identifiable.id()));
+        return new Hash<>(new DigestUtils("SHA3-256").digestAsHex(identifiable.id()));
     }
 }
