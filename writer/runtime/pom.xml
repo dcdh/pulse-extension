@@ -66,9 +66,9 @@
             <artifactId>quarkus-smallrye-openapi</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkiverse.vault</groupId>
-            <artifactId>quarkus-vault</artifactId>
-            <version>${quarkus-vault.version}</version>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-encryption-storage-extension</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>

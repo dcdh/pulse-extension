@@ -49,3 +49,7 @@
 /hasher/runtime/target/
 /hasher/runtime/quarkus-pulse-hasher-extension.iml
 /hasher/deployment/quarkus-pulse-hasher-extension-deployment.iml
+/encryption-storage/deployment/target/
+/encryption-storage/deployment/quarkus-pulse-encryption-storage-extension-deployment.iml
+/encryption-storage/runtime/target/
+/encryption-storage/runtime/quarkus-pulse-encryption-storage-extension.iml

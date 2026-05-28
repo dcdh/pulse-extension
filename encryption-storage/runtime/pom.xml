@@ -4,11 +4,11 @@
 
     <parent>
         <groupId>com.damdamdeo.pulse</groupId>
-        <artifactId>quarkus-pulse-consumer-extension-parent</artifactId>
+        <artifactId>quarkus-pulse-encryption-storage-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>quarkus-pulse-consumer-extension</artifactId>
-    <name>Pulse Extension - Consumer Runtime</name>
+    <artifactId>quarkus-pulse-encryption-storage-extension</artifactId>
+    <name>Pulse Extension - Encryption Storage Runtime</name>
 
     <dependencies>
         <dependency>
@@ -18,61 +18,17 @@
         </dependency>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-extension-kafka-dev-service</artifactId>
+            <artifactId>quarkus-pulse-hasher-extension</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-narayana-jta</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-agroal</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jdbc-postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-cache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-encryption-storage-extension</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-common-extension</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-messaging-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>pulse-core</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
+            <groupId>io.quarkiverse.vault</groupId>
+            <artifactId>quarkus-vault</artifactId>
+            <version>${quarkus-vault.version}</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -92,11 +48,6 @@
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-extension-maven-plugin</artifactId>
                 <version>${quarkus.version}</version>
-                <configuration>
-                    <capabilities>
-                        <provides>com.damdamdeo.pulse-consumer-extension</provides>
-                    </capabilities>
-                </configuration>
                 <executions>
                     <execution>
                         <phase>compile</phase>
