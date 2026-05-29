@@ -10,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import org.apache.commons.text.CaseUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -26,6 +27,9 @@ public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
 
     @Inject
     Provider<DataSource> dataSource;
+
+    @ConfigProperty(name = "quarkus.application.name")
+    String quarkusApplicationName;
 
     public static String sequenceNameFor(final Class<? extends Identifiable> identifiableClazz) {
         return SEQUENCE_PREFIX + CaseUtils.toCamelCase(identifiableClazz.getSimpleName(), false, '_');
@@ -59,7 +63,8 @@ public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
     public <A extends Identifiable> SequenceNumber nextFor(final For<A> identifiable) throws SequenceGenerationException {
         Objects.requireNonNull(identifiable);
         try (final Connection connection = dataSource.get().getConnection()) {
-            try (final PreparedStatement preparedStatement = connection.prepareStatement("SELECT next_sequence_by_identifiable_clazz_and_belongs_to_value(?,?)")) {
+            try (final PreparedStatement preparedStatement = connection.prepareStatement("SELECT %s.next_sequence_by_identifiable_clazz_and_belongs_to_value(?,?)"
+                    .formatted(quarkusApplicationName))) {
                 preparedStatement.setString(1, identifiable.identifiableClazz().getSimpleName());
                 preparedStatement.setString(2, identifiable.belongsTo().id());
                 try (final ResultSet resultSet = preparedStatement.executeQuery()) {

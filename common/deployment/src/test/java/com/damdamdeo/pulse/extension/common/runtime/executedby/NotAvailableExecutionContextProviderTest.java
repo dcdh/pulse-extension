@@ -16,8 +16,7 @@ class NotAvailableExecutionContextProviderTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withConfigurationResource("application.properties")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false");
+            .withConfigurationResource("application.properties");
 
     @Inject
     ExecutionContextProvider executionContextProvider;

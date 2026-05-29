@@ -3,7 +3,6 @@ package com.damdamdeo.pulse.extension.common.deployment;
 import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
-import com.damdamdeo.pulse.extension.common.runtime.datasource.InitScriptUsageChecker;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseProvider;
@@ -59,8 +58,7 @@ public class PulseCommonProcessor {
                         DefaultPassphraseGenerator.class,
                         DefaultPassphraseProvider.class,
                         OpenPGPDecryptionService.class,
-                        OpenPGPEncryptionService.class,
-                        InitScriptUsageChecker.class)
+                        OpenPGPEncryptionService.class)
                 .build());
         return additionalBeanBuildItems;
     }
@@ -96,6 +94,11 @@ public class PulseCommonProcessor {
                 new RunTimeConfigurationDefaultBuildItem("quarkus.datasource.jdbc.max-size", "100"));
     }
 
+    @BuildStep
+    ComposeServiceBuildItem generateCompose() {
+        return PulseCommonProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM;
+    }
+
     public static ComposeServiceBuildItem.ServiceName POSTGRES_SERVICE_NAME = new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME);
 
     public static ComposeServiceBuildItem.ServiceName KAFKA_SERVICE_NAME = new ComposeServiceBuildItem.ServiceName("kafka");
@@ -105,7 +108,7 @@ public class PulseCommonProcessor {
             new ComposeServiceBuildItem.ImageName("postgres:17.6-alpine3.22"),
             new ComposeServiceBuildItem.Labels(
                     Map.of("io.quarkus.devservices.compose.wait_for.logs", ".*database system is ready to accept connections.*")),
-            new ComposeServiceBuildItem.Ports(List.of(String.valueOf(PostgresUtils.DEFAULT_PORT))),
+            new ComposeServiceBuildItem.Ports(List.of(PostgresUtils.DEFAULT_PORT + ":" + PostgresUtils.DEFAULT_PORT)),
             ComposeServiceBuildItem.Links.ofNone(),
             new ComposeServiceBuildItem.EnvironmentVariables(
                     Map.of("POSTGRES_USER", "quarkus",

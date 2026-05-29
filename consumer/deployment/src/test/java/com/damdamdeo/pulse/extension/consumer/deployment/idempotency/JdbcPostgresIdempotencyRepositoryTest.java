@@ -26,7 +26,6 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 

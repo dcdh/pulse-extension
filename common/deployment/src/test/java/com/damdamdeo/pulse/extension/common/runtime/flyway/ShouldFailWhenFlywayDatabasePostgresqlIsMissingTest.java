@@ -19,8 +19,6 @@ class ShouldFailWhenFlywayDatabasePostgresqlIsMissingTest extends AbstractCommon
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withEmptyApplication()
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
 //                    Dependency.of("io.quarkus", "quarkus-jdbc-postgresql", Version.getVersion()),

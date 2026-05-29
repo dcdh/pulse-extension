@@ -1,11 +1,18 @@
 /common/deployment/target/
 /common/deployment/quarkus-pulse-common-extension-deployment.iml
+/common/deployment/todotaking_todo_connection_identifier.sql
+/common/deployment/compose-devservices-pulse.yml
+/common/deployment/boom_connection_identifier.sql
 /common/runtime/target/
 /common/runtime/quarkus-pulse-common-extension.iml
 
 /consumer/deployment/target/
 /consumer/deployment/quarkus-pulse-consumer-extension-deployment.iml
 /consumer/deployment/compose-devservices-pulse.yml
+/consumer/deployment/todoclient_registered_target_consumer.sql
+/consumer/deployment/todotaking_todo_connection_identifier.sql
+/consumer/deployment/todotaking_todo_idempotency_consumer.sql
+/consumer/deployment/todotaking_todo_target_consumer.sql
 /consumer/runtime/target/
 /consumer/runtime/quarkus-pulse-consumer-extension.iml
 /consumer/test-framework/target/
@@ -13,15 +20,22 @@
 /core/target/
 /core/pulse-core.iml
 
-/integration-tests/target/
 /integration-tests/quarkus-pulse-extension-integration-tests.iml
-/integration-tests/compose-devservices-pulse.yml
-/integration-tests/src/main/resources/realm-quarkus.json
+/integration-tests/domain/target/
+/integration-tests/infrastructure/target/
+/integration-tests/infrastructure/compose-devservices-pulse.yml
+/integration-tests/infrastructure/todotaking_todo_aggregates.sql
+/integration-tests/infrastructure/todotaking_todo_connection_identifier.sql
+/integration-tests/infrastructure/todotaking_todo_idempotency_consumer.sql
+/integration-tests/infrastructure/todotaking_todo_sequences.sql
+/integration-tests/infrastructure/todotaking_todo_sequences_table.sql
 
 /kafka/target/
 
 /live-notifier/deployment/target/
 /live-notifier/deployment/quarkus-pulse-live-notifier-extension-deployment.iml
+/live-notifier/deployment/compose-devservices-pulse.yml
+/live-notifier/deployment/todotaking_todo_connection_identifier.sql
 /live-notifier/runtime/target/
 /live-notifier/runtime/quarkus-pulse-live-notifier-extension.iml
 /live-notifier/test-framework/target/
@@ -29,6 +43,10 @@
 /publisher/deployment/target/
 /publisher/deployment/compose-devservices-pulse.yml
 /publisher/deployment/quarkus-pulse-publisher-extension-deployment.iml
+/publisher/deployment/todotaking_todo_aggregates.sql
+/publisher/deployment/todotaking_todo_connection_identifier.sql
+/publisher/deployment/todotaking_todo_sequences.sql
+/publisher/deployment/todotaking_todo_sequences_table.sql
 /publisher/runtime/target/
 /publisher/runtime/quarkus-pulse-publisher-extension.iml
 /publisher/test-framework/target/
@@ -36,15 +54,15 @@
 /writer/deployment/target/
 /writer/deployment/compose-devservices-pulse.yml
 /writer/deployment/quarkus-pulse-writer-extension-deployment.iml
+/writer/deployment/todotaking_todo_aggregates.sql
+/writer/deployment/todotaking_todo_connection_identifier.sql
+/writer/deployment/todotaking_todo_sequences.sql
+/writer/deployment/todotaking_todo_sequences_table.sql
 /writer/runtime/target/
 /writer/runtime/quarkus-pulse-writer-extension.iml
 
 /quarkus-pulse-extension-parent.iml
 /.idea/
-/integration-tests/infrastructure/compose-devservices-pulse.yml
-/integration-tests/infrastructure/src/main/resources/realm-quarkus.json
-/integration-tests/domain/target/
-/integration-tests/infrastructure/target/
 /hasher/deployment/target/
 /hasher/runtime/target/
 /hasher/runtime/quarkus-pulse-hasher-extension.iml

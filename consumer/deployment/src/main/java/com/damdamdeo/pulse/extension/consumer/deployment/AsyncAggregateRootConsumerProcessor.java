@@ -1,7 +1,9 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
-import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
+import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
+import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
+import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncAggregateRootConsumerChannel;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.*;
@@ -37,6 +39,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -93,16 +96,17 @@ public class AsyncAggregateRootConsumerProcessor {
     }
 
     @BuildStep
-    List<PostgresSqlScriptBuildItem> generatePostgresSqlScriptBuildItems(final Capabilities capabilities,
-                                                                         final List<DiscoveredAsyncAggregateRootConsumerChannel> discoveredAsyncAggregateRootConsumerChannels) {
+    List<AdditionalVolumeBuildItem> generateAdditionalVolumeBuildItems(final Capabilities capabilities,
+                                                                       final List<DiscoveredAsyncAggregateRootConsumerChannel> discoveredAsyncAggregateRootConsumerChannels) {
         if (PulseConsumerProcessor.shouldGenerate(capabilities)) {
             return discoveredAsyncAggregateRootConsumerChannels.stream()
                     .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream())
                     .distinct()
                     .map(FromApplication::value)
                     .map(String::toLowerCase)
-                    .map(schemaName -> new PostgresSqlScriptBuildItem(
-                                    "%s_target_consumer.sql".formatted(schemaName),
+                    .map(schemaName -> new AdditionalVolumeBuildItem(
+                            new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
+                            new ComposeServiceBuildItem.Volume("./%s_target_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_target_consumer.sql".formatted(schemaName),
                                     // language=sql
                                     """
                                             CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
@@ -117,8 +121,8 @@ public class AsyncAggregateRootConsumerProcessor {
                                               belongs_to character varying(255) not null,
                                               CONSTRAINT aggregate_root_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type)
                                             );
-                                            """.formatted(schemaName)
-                            )
+                                            """.formatted(schemaName).getBytes(StandardCharsets.UTF_8)
+                            ))
                     ).toList();
         } else {
             return List.of();

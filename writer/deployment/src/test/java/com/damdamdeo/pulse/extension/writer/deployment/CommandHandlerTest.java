@@ -23,7 +23,6 @@ class CommandHandlerTest extends AbstractWriterTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.devservices.enabled", "true")
-            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .withConfigurationResource("application.properties");
 
     @Inject

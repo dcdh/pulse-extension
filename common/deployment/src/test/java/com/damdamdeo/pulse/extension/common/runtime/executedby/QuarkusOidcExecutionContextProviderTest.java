@@ -25,7 +25,6 @@ class QuarkusOidcExecutionContextProviderTest extends AbstractCommonTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.keycloak.devservices.users.alice", "alice")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),

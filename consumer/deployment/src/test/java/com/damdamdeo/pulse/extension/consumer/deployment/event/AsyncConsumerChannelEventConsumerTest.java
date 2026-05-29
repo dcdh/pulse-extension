@@ -43,7 +43,6 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(StatisticsEventHandler.class, Call.class))
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 

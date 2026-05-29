@@ -14,9 +14,6 @@ class ConnectionAssociationFinderTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.datasource.devservices.enabled", "true")
-            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "false")
             .withConfigurationResource("application.properties");
 
     @Inject

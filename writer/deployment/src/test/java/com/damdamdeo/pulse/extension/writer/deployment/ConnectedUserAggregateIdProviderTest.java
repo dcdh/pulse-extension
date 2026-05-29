@@ -37,11 +37,9 @@ class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addAsResource("realm-quarkus.json"))
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.datasource.devservices.enabled", "true")
-            .overrideConfigKey("quarkus.devservices.enabled", "true")
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.keycloak.devservices.realm-path", "realm-quarkus.json")
             .overrideConfigKey("quarkus.oidc.client-id", "account")
-            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),

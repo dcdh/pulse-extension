@@ -14,8 +14,7 @@ class ConnectionIdentifierAssociationTest extends AbstractWriterTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.datasource.devservices.enabled", "true")
-            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "false")
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .withConfigurationResource("application.properties");
 
     @Inject

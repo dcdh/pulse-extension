@@ -28,7 +28,6 @@ class DefaultPassphraseProviderTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
     @Singleton

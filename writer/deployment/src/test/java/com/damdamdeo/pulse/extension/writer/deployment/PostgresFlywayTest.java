@@ -23,10 +23,11 @@ class PostgresFlywayTest extends AbstractWriterTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withEmptyApplication()
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
+            // disable compose dev service and use a new instance of postgres to ensure that flyway will be tested
+            // compose dev service comes with initialization scripts we do not want them here
+            .overrideConfigKey("quarkus.compose.devservices.enabled", "false")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.devservices.enabled", "true")
-            .overrideRuntimeConfigKey("pulse.datasource.init-at-startup", "true")
+            .overrideConfigKey("quarkus.datasource.devservices.enabled", "true")
             .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".min-level", "DEBUG")
             .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".level", "DEBUG")
             .withConfigurationResource("application.properties")
@@ -64,8 +65,7 @@ class PostgresFlywayTest extends AbstractWriterTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.event", "todotaking_todo.aggregate_root",
-                "todotaking_todo.flyway_schema_history");
+        assertThat(tables).contains("todotaking_todo.flyway_schema_history");
     }
 
     @Test

@@ -1,8 +1,8 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
+import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
-import com.damdamdeo.pulse.extension.common.deployment.items.PostgresSqlScriptBuildItem;
+import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
 import com.damdamdeo.pulse.extension.writer.deployment.items.IdentifiableBuildItem;
@@ -11,10 +11,12 @@ import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresSequenceGenerator;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,29 +48,31 @@ public class PulseWriterProcessor {
     }
 
     @BuildStep
-    ComposeServiceBuildItem generateCompose() {
-        return PulseCommonProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM;
-    }
-
-    @BuildStep
-    PostgresSqlScriptBuildItem generatePostgresSqlScriptBuildItems(final ApplicationInfoBuildItem applicationInfoBuildItem,
-                                                                   final List<IdentifiableBuildItem> identifiableBuildItems) {
+    void generateAdditionalVolumeBuildItem(final ApplicationInfoBuildItem applicationInfoBuildItem,
+                                           final List<IdentifiableBuildItem> identifiableBuildItems,
+                                           final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemBuildProducer) {
         final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
         final String sequences = identifiableBuildItems.stream().map(IdentifiableBuildItem::identifiableClazz)
                 .map(JdbcPostgresSequenceGenerator::sequenceNameFor)
                 .map(sequenceName ->
                         // language=sql
                         """
-                                CREATE SEQUENCE IF NOT EXISTS %s.%s
+                                CREATE SCHEMA IF NOT EXISTS %1$s;
+                                CREATE SEQUENCE IF NOT EXISTS %1$s.%2$s
                                 START WITH 1
                                 INCREMENT BY 1
                                 MINVALUE 1
                                 CACHE 1;
                                 """.formatted(schemaName, sequenceName))
                 .collect(Collectors.joining());
+        additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
+                new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
+                new ComposeServiceBuildItem.Volume("./%s_sequences.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_sequences.sql".formatted(schemaName),
+                        sequences.getBytes(StandardCharsets.UTF_8))));
         final String sequenceByAggregateRootTypeAndBelongsTo =
                 // language=sql
                 """
+                        CREATE SCHEMA IF NOT EXISTS %1$s;
                         CREATE TABLE %1$s.sequence_by_identifiable_clazz_and_belongs_to (
                             identifiable_clazz character varying(255) not null,
                             belongs_to character varying(255) not null,
@@ -76,7 +80,7 @@ public class PulseWriterProcessor {
                             CONSTRAINT identifiable_clazz_and_belongs_to_pkey PRIMARY KEY (identifiable_clazz, belongs_to)
                         );
                         
-                        CREATE OR REPLACE FUNCTION next_sequence_by_identifiable_clazz_and_belongs_to_value(
+                        CREATE OR REPLACE FUNCTION %1$s.next_sequence_by_identifiable_clazz_and_belongs_to_value(
                             p_identifiable_clazz TEXT,
                             p_belongs_to TEXT
                         )
@@ -110,8 +114,11 @@ public class PulseWriterProcessor {
                         END;
                         $$;
                         """.formatted(schemaName);
-        return new PostgresSqlScriptBuildItem(
-                "%s_writer.sql".formatted(schemaName),
+        additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
+                new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
+                new ComposeServiceBuildItem.Volume("./%s_sequences_table.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_sequences_table.sql".formatted(schemaName),
+                        sequenceByAggregateRootTypeAndBelongsTo.getBytes(StandardCharsets.UTF_8))));
+        final String aggregates =
                 // language=sql
                 """
                         CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
@@ -271,11 +278,12 @@ public class PulseWriterProcessor {
                             WHEN duplicate_object THEN
                               RAISE NOTICE 'Trigger event_table_not_truncable_trigger EXISTS';
                           END;
-                          %2$s
-                          %3$s
                         END;
                         $MAIN$;
-                        """.formatted(schemaName, sequences, sequenceByAggregateRootTypeAndBelongsTo)
-        );
+                        """.formatted(schemaName);
+        additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
+                new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
+                new ComposeServiceBuildItem.Volume("./%s_aggregates.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregates.sql".formatted(schemaName),
+                        aggregates.getBytes(StandardCharsets.UTF_8))));
     }
 }
