@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class KafkaConnectorApiExecutorTest {
+class KafkaConnectorApiExecutorTest extends AbstractPublisherTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

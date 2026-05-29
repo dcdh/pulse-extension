@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class KafkaConnectorConfigurationGeneratorTest {
+class KafkaConnectorConfigurationGeneratorTest extends AbstractPublisherTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

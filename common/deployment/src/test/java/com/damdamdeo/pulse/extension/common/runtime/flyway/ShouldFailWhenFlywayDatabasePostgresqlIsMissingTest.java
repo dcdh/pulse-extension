@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.flyway;
 
+import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -13,7 +14,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Disabled// not working - do not know why
-class ShouldFailWhenFlywayDatabasePostgresqlIsMissingTest {
+class ShouldFailWhenFlywayDatabasePostgresqlIsMissingTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

@@ -45,7 +45,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class PartitionTest {
+class PartitionTest extends AbstractPublisherTest {
 
     private static final FromApplication FROM_APPLICATION = new FromApplication("TodoTaking", "Todo");
 

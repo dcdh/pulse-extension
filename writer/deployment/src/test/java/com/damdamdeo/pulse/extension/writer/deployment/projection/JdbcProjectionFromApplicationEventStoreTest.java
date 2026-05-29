@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.projection.MultipleResultAggregateQuer
 import com.damdamdeo.pulse.extension.core.projection.Projection;
 import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
 import com.damdamdeo.pulse.extension.core.projection.SingleResultAggregateQuery;
+import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -24,7 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class JdbcProjectionFromApplicationEventStoreTest {
+class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
 
     private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 

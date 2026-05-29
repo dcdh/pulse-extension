@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.deployment.aggregateroot;
 
+import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.Source;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.AsyncAggregateRootConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest {
+class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

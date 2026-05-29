@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailOnInvalidApplicationNameTest {
+class ShouldFailOnInvalidApplicationNameTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

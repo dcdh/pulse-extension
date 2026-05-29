@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class PartitionCheckerTest {
+class PartitionCheckerTest extends AbstractPublisherTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class JdbcPostgresEventRepositoryTest {
+class JdbcPostgresEventRepositoryTest extends AbstractWriterTest {
 
     private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 

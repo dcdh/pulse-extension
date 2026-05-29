@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
+import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.PostgresAggregateRootLoader;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
@@ -32,7 +33,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class PostgresAggregateRootLoaderTest {
+class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -40,20 +41,6 @@ class PostgresAggregateRootLoaderTest {
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
-
-    @ApplicationScoped
-    static class StubPassphraseRepository implements PassphraseRepository {
-
-        @Override
-        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            return Optional.of(PassphraseSample.PASSPHRASE);
-        }
-
-        @Override
-        public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
-            throw new IllegalStateException("Should not be called");
-        }
-    }
 
     @Inject
     PostgresAggregateRootLoader postgresAggregateRootLoader;

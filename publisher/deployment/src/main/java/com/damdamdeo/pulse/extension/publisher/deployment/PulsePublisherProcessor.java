@@ -54,7 +54,7 @@ public class PulsePublisherProcessor {
                                         "CONFIG_STORAGE_TOPIC", "my_connect_configs",
                                         "OFFSET_STORAGE_TOPIC", "my_connect_offsets",
                                         "STATUS_STORAGE_TOPIC", "my_connect_statuses",
-                                        "LOG_LEVEL", "TRACE")),
+                                        "LOG_LEVEL", "INFO")),
                         ComposeServiceBuildItem.Command.ofNone(),
                         ComposeServiceBuildItem.Entrypoint.ofNone(),
                         new ComposeServiceBuildItem.HealthCheck(

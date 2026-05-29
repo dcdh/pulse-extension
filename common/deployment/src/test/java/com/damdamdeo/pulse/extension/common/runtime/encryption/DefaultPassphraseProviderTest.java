@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
+import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
@@ -23,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class DefaultPassphraseProviderTest {
+class DefaultPassphraseProviderTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

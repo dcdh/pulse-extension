@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
 
+import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionAssociationFinder;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.inject.Instance;
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ConnectionAssociationFinderTest {
+class ConnectionAssociationFinderTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

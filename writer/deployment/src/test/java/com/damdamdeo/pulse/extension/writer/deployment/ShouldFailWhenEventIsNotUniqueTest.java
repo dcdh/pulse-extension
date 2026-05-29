@@ -11,7 +11,7 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShouldFailWhenEventIsNotUniqueTest {
+public class ShouldFailWhenEventIsNotUniqueTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

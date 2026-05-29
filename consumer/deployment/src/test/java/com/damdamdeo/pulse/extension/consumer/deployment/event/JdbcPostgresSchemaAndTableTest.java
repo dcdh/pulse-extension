@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
+import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JdbcPostgresSchemaAndTableTest {
+class JdbcPostgresSchemaAndTableTest extends AbstractConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

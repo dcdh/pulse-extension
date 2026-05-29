@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.event;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.consumer.Producer;
 import com.damdamdeo.pulse.extension.consumer.Response;
+import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
@@ -37,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class AsyncConsumerChannelEventConsumerTest {
+class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -45,24 +46,6 @@ class AsyncConsumerChannelEventConsumerTest {
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
-
-    @ApplicationScoped
-    static class StubPassphraseRepository implements PassphraseRepository {
-
-        @Override
-        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            if (Todo.OWNED_BY_USER_1.equals(ownedBy)) {
-                return Optional.of(PassphraseSample.PASSPHRASE);
-            } else {
-                return Optional.empty();
-            }
-        }
-
-        @Override
-        public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
-            throw new IllegalStateException("Should not be called !");
-        }
-    }
 
     @Inject
     DataSource dataSource;

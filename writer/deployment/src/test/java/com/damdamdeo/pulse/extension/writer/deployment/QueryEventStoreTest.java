@@ -18,7 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class QueryEventStoreTest {
+class QueryEventStoreTest extends AbstractWriterTest {
 
     private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 

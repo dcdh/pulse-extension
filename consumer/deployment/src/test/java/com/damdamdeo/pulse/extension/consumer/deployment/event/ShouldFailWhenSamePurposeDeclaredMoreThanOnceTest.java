@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.consumer.deployment.event;
 
+import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.Source;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
@@ -27,7 +28,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest {
+class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

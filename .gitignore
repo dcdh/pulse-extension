@@ -55,3 +55,4 @@
 /encryption-storage/runtime/quarkus-pulse-encryption-storage-extension.iml
 /encryption-storage/integration-tests/vault/target/
 /encryption-storage/integration-tests/vault/quarkus-pulse-extension-encryption-storage-integration-tests-vault.iml
+/common/quarkus-pulse-common-extension-parent.iml

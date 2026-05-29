@@ -23,7 +23,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
-class QuarkusOidcConnectedUserProviderTest {
+class QuarkusOidcConnectedUserProviderTest extends AbstractWriterTest {
 
     // cf. QuarkusOidcExecutionContextProviderTest
     @RegisterExtension

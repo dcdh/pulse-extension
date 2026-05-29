@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.serialization;
 
+import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
-class SerializationTest {
+class SerializationTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

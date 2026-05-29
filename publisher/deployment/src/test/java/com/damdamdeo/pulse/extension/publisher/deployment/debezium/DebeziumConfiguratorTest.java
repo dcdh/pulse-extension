@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-class DebeziumConfiguratorTest {
+class DebeziumConfiguratorTest extends AbstractPublisherTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

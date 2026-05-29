@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.datasource;
 
+import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifier;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class JdbcPostgresConnectionIdentifierRepositoryTest {
+class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

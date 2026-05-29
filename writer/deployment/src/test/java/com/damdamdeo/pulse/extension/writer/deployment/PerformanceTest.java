@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
-class PerformanceTest {
+class PerformanceTest extends AbstractWriterTest {
 
     private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 

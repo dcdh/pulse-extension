@@ -16,7 +16,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
-class BusinessExceptionMapperTest {
+class BusinessExceptionMapperTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
