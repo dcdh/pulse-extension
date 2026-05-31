@@ -1,8 +1,8 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
-import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
-import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildItem;
+import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.consumer.runtime.JacksonDecryptedPayloadToPayloadMapper;

@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.deployment.items;
+package com.damdamdeo.pulse.extension.compose.deployment;
 
 import io.quarkus.builder.item.MultiBuildItem;
 import org.apache.commons.lang3.Validate;

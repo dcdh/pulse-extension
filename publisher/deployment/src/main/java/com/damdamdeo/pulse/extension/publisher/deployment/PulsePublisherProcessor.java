@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.publisher.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
-import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.*;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;

@@ -33,6 +33,11 @@
         </dependency>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-compose-extension-deployment</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-encryption-storage-extension-deployment</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -45,10 +50,6 @@
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-hasher-extension-deployment</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

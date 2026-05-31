@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
-import com.damdamdeo.pulse.extension.common.deployment.items.AdditionalVolumeBuildItem;
-import com.damdamdeo.pulse.extension.common.deployment.items.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildItem;
+import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
@@ -39,7 +39,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.IndexView;
 
 import java.lang.reflect.Modifier;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;

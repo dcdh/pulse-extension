@@ -74,3 +74,6 @@
 /encryption-storage/integration-tests/vault/target/
 /encryption-storage/integration-tests/vault/quarkus-pulse-extension-encryption-storage-integration-tests-vault.iml
 /common/quarkus-pulse-common-extension-parent.iml
+/compose/deployment/quarkus-pulse-compose-extension-deployment.iml
+/compose/runtime/target/
+/compose/deployment/target/
