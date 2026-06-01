@@ -77,3 +77,5 @@
 /compose/deployment/quarkus-pulse-compose-extension-deployment.iml
 /compose/runtime/target/
 /compose/deployment/target/
+/encryption-storage/integration-tests/vault/compose-devservices-pulse.yml
+/encryption-storage/integration-tests/vault/pulse-policy-policy.hcl

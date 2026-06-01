@@ -64,7 +64,11 @@ public class ComposeProcessor {
                 if (labels.hasLabels()) {
                     service.put("labels", labels.labels());
                 }
-                service.put("restart", "always");
+                if (serviceName.isInit()) {
+                    service.put("restart", "no");
+                } else {
+                    service.put("restart", "always");
+                }
                 if (ports.hasPorts()) {
                     service.put("ports", ports.ports());
                 }

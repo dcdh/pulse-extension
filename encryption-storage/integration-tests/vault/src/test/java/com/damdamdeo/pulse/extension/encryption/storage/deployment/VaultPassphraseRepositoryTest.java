@@ -14,6 +14,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.vault.VaultKVSecretEngine;
 import jakarta.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +30,7 @@ class VaultPassphraseRepositoryTest {
 
     private static final String USER_1_SHA3_256 = "1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d";
 
-    private static final String SECRET_PATH = "secret/owner/" + USER_1_SHA3_256;
+    private static final String SECRET_PATH = "owner/" + USER_1_SHA3_256;
 
     @Inject
     VaultKVSecretEngine vaultKVSecretEngine;
@@ -40,8 +41,9 @@ class VaultPassphraseRepositoryTest {
     @Inject
     Hasher hasher;
 
+    @AfterEach
     @BeforeEach
-    void setup() {
+    void tearDown() {
         vaultKVSecretEngine.deleteSecret(SECRET_PATH);
     }
 

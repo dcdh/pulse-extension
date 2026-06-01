@@ -14,7 +14,11 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
 
         public ServiceName {
             Objects.requireNonNull(name);
-            Validate.matchesPattern(name, "[a-z]+");
+            Validate.matchesPattern(name, "[a-z\\-]+");
+        }
+
+        public boolean isInit() {
+            return name.endsWith("-init");
         }
     }
 
