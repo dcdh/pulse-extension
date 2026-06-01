@@ -20,7 +20,7 @@ public class VaultEncryptionStorageProcessor {
             new ComposeServiceBuildItem.ImageName("openbao/openbao:2.5.4"),
             new ComposeServiceBuildItem.Labels(
                     Map.of("io.quarkus.devservices.compose.wait_for.logs", ".*OpenBao server started!.*")),
-            new ComposeServiceBuildItem.Ports(List.of("8200:8200")),
+            new ComposeServiceBuildItem.Ports(List.of("8200")),
             ComposeServiceBuildItem.Links.ofNone(),
             new ComposeServiceBuildItem.EnvironmentVariables(
                     Map.of("BAO_DEV_ROOT_TOKEN_ID", "my-root-token",

@@ -40,7 +40,7 @@ public class ComposeProcessor {
             new ComposeServiceBuildItem.ImageName("postgres:17.6-alpine3.22"),
             new ComposeServiceBuildItem.Labels(
                     Map.of("io.quarkus.devservices.compose.wait_for.logs", ".*database system is ready to accept connections.*")),
-            new ComposeServiceBuildItem.Ports(List.of(DEFAULT_PORT + ":" + DEFAULT_PORT)),
+            new ComposeServiceBuildItem.Ports(List.of(String.valueOf(DEFAULT_PORT))),
             ComposeServiceBuildItem.Links.ofNone(),
             new ComposeServiceBuildItem.EnvironmentVariables(
                     Map.of("POSTGRES_USER", "quarkus",
