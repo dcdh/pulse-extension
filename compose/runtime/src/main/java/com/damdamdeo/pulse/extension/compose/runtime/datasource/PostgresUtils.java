@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime.datasource;
+package com.damdamdeo.pulse.extension.compose.runtime.datasource;
 
 public final class PostgresUtils {
 

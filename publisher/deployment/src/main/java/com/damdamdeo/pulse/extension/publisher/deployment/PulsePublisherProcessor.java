@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.publisher.deployment;
 
-import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
+import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.*;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -38,7 +38,7 @@ public class PulsePublisherProcessor {
     @BuildStep
     List<ComposeServiceBuildItem> generateCompose() {
         return List.of(
-                PulseCommonProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM,
+                ComposeProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM,
                 new ComposeServiceBuildItem(
                         new ComposeServiceBuildItem.ServiceName("connect"),
                         new ComposeServiceBuildItem.ImageName("quay.io/debezium/connect:3.5.0.Final"),
@@ -46,8 +46,8 @@ public class PulsePublisherProcessor {
                                 Map.of("io.quarkus.devservices.compose.config_map.port.8083", "pulse.debezium.connect.port")),
                         new ComposeServiceBuildItem.Ports(List.of("8083")),
                         ComposeServiceBuildItem.Links.on(List.of(
-                                PulseCommonProcessor.KAFKA_SERVICE_NAME,
-                                PulseCommonProcessor.POSTGRES_SERVICE_NAME)),
+                                ComposeProcessor.KAFKA_SERVICE_NAME,
+                                ComposeProcessor.POSTGRES_SERVICE_NAME)),
                         new ComposeServiceBuildItem.EnvironmentVariables(
                                 Map.of("BOOTSTRAP_SERVERS", "kafka:29092",
                                         "GROUP_ID", "1",
@@ -65,8 +65,8 @@ public class PulsePublisherProcessor {
                                 new ComposeServiceBuildItem.StartPeriod(10)),
                         List.of(),
                         ComposeServiceBuildItem.DependsOn.on(List.of(
-                                PulseCommonProcessor.POSTGRES_SERVICE_NAME,
-                                PulseCommonProcessor.KAFKA_SERVICE_NAME)))
+                                ComposeProcessor.POSTGRES_SERVICE_NAME,
+                                ComposeProcessor.KAFKA_SERVICE_NAME)))
         );
     }
 }

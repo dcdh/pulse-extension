@@ -1,83 +1,17 @@
 package com.damdamdeo.pulse.extension.encryption.storage.deployment;
 
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
-import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.VaultPassphraseRepository;
-import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
-import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.maven.dependency.Dependency;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class VaultEncryptionStorageProcessor {
 
-    // no capability exposed by vault yet ...
-    // https://github.com/quarkiverse/quarkus-vault/pull/507
-    // check on dependency presence instead, which is bad
-    @BuildStep
-    List<AdditionalBeanBuildItem> additionalBeans(final Capabilities capabilities,
-                                                  final CurateOutcomeBuildItem curateOutcomeBuildItem) {
-        final List<AdditionalBeanBuildItem> additionalBeanBuildItems = new ArrayList<>();
-//        if (capabilities.isPresent("io.quarkiverse.vault")) {
-//            additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
-//                    .addBeanClasses(VaultPassphraseRepository.class)
-//                    .build());
-//        }
-        if (hasDependency(curateOutcomeBuildItem, Dependency.of("io.quarkiverse.vault", "quarkus-vault"))) {
-            additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
-                    .addBeanClasses(VaultPassphraseRepository.class)
-                    .build());
-        }
-        return additionalBeanBuildItems;
-    }
-    /*
-version: '3.8'
-
-services:
-  openbao:
-    image: openbao/openbao:2.5.4
-    container_name: openbao-dev
-    ports:
-      - "8200:8200"
-    environment:
-      BAO_DEV_ROOT_TOKEN_ID: "my-root-token"
-      BAO_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
-    command: ["server", "-dev", "-dev-no-store-token"]
-
-
-  openbao-init:
-    image: openbao/openbao:2.5.4
-    container_name: openbao-init
-    environment:
-      BAO_ADDR: "http://openbao:8200"
-      BAO_TOKEN: "my-root-token"
-    volumes:
-      - ./quarkus-policy.hcl:/tmp/quarkus-policy.hcl
-    depends_on:
-      - openbao
-    entrypoint: >
-      sh -c "
-        sleep 2;
-        bao policy write quarkus-app /tmp/quarkus-policy.hcl;
-        bao token create -policy=quarkus-app -id='quarkus-app-token';
-        bao kv put secret/myapps/config database-password='super-secret-password';
-        echo 'Permissions et secrets initialisés dans OpenBao !';
-      "
-
-// quarkus-policy.hcl
-# Autorise la lecture des secrets sous OpenBao
-path "secret/data/myapps/config" {
-  capabilities = ["read"]
-}
-
-path "secret/myapps/config" {
-  capabilities = ["read"]
-}
-     */
+    public static final Dependency QUARKUS_VAULT_DEPENDENCY = Dependency.of("io.quarkiverse.vault", "quarkus-vault");
 
     public static ComposeServiceBuildItem OPEN_BAO_COMPOSE_SERVICE_BUILD_ITEM = new ComposeServiceBuildItem(
             new ComposeServiceBuildItem.ServiceName("openbao"),
@@ -139,17 +73,11 @@ path "secret/myapps/config" {
     );
 
     @BuildStep
-    List<ComposeServiceBuildItem> generateCompose() {
-        return List.of(OPEN_BAO_COMPOSE_SERVICE_BUILD_ITEM, OPEN_BAO_INIT_COMPOSE_SERVICE_BUILD_ITEM);
-    }
-
-    private boolean hasDependency(final CurateOutcomeBuildItem curateOutcomeBuildItem,
-                                  final Dependency dependency) {
-        return curateOutcomeBuildItem.getApplicationModel()
-                .getDependencies()
-                .stream()
-                .anyMatch(dep ->
-                        dep.getGroupId().equals(dependency.getGroupId())
-                                && dep.getArtifactId().equals(dependency.getArtifactId()));
+    List<ComposeServiceBuildItem> generateCompose(final CurateOutcomeBuildItem curateOutcomeBuildItem) {
+        if (EncryptionStorageProcessor.hasDependency(curateOutcomeBuildItem, QUARKUS_VAULT_DEPENDENCY)) {
+            return List.of(OPEN_BAO_COMPOSE_SERVICE_BUILD_ITEM, OPEN_BAO_INIT_COMPOSE_SERVICE_BUILD_ITEM);
+        } else {
+            return List.of();
+        }
     }
 }

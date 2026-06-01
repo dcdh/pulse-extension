@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>jdbc-postgres</module>
         <module>vault</module>
     </modules>
 

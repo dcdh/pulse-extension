@@ -81,5 +81,6 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     private final BiFunction<OwnedBy, Hasher, Hash<OwnedBy>> ownedByToHashFunc =
             (ownedBy, hasher) -> hasher.hash(ownedBy);
 
+    // TODO prendre en compte le context application via le nom
     private final Function<Hash<OwnedBy>, String> hashToPathFunc = hash -> "owner/" + hash.value();
 }

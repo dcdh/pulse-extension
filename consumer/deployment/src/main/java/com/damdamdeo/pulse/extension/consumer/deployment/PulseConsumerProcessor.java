@@ -1,10 +1,10 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
-import com.damdamdeo.pulse.extension.common.deployment.PulseCommonProcessor;
-import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildItem;
-import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
-import com.damdamdeo.pulse.extension.common.runtime.datasource.PostgresUtils;
+import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildItem;
+import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
+import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.consumer.runtime.JacksonDecryptedPayloadToPayloadMapper;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKey;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyDeserializer;
@@ -54,8 +54,8 @@ public class PulseConsumerProcessor {
                          final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemProducer) {
         if (shouldGenerate(capabilities)) {
             composeServiceBuildItemBuildProducer.produce(List.of(
-                    PulseCommonProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM,
-                    PulseCommonProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM));
+                    ComposeProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM,
+                    ComposeProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM));
         }
         final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
         final AdditionalVolumeBuildItem additionalVolumeBuildItem = new AdditionalVolumeBuildItem(
