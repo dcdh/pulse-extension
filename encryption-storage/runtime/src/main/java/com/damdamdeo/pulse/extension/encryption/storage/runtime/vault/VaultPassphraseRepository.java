@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.encryption.storage.runtime.vault;
 
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
@@ -8,12 +9,12 @@ import io.quarkus.arc.Unremovable;
 import io.quarkus.vault.VaultKVSecretEngine;
 import io.quarkus.vault.client.VaultClientException;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @ApplicationScoped
 @Unremovable
@@ -21,11 +22,14 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
 
     private final VaultKVSecretEngine vaultKVSecretEngine;
     private final Hasher hasher;
+    private final FromApplication fromApplication;
 
     public VaultPassphraseRepository(final VaultKVSecretEngine vaultKVSecretEngine,
-                                     final Hasher hasher) {
+                                     final Hasher hasher,
+                                     @ConfigProperty(name = "quarkus.application.name") final String quarkusApplicationName) {
         this.vaultKVSecretEngine = Objects.requireNonNull(vaultKVSecretEngine);
         this.hasher = Objects.requireNonNull(hasher);
+        this.fromApplication = FromApplication.from(quarkusApplicationName);
     }
 
     @Override
@@ -75,12 +79,11 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     }
 
     private String getOwnedByHasherStringBiFunction(final OwnedBy ownedBy) {
-        return ownedByToHashFunc.andThen(hashToPathFunc).apply(ownedBy, hasher);
+        return hashToPathFunc.apply(fromApplication, ownedByToHashFunc.apply(ownedBy, hasher));
     }
 
     private final BiFunction<OwnedBy, Hasher, Hash<OwnedBy>> ownedByToHashFunc =
             (ownedBy, hasher) -> hasher.hash(ownedBy);
 
-    // TODO prendre en compte le context application via le nom
-    private final Function<Hash<OwnedBy>, String> hashToPathFunc = hash -> "owner/" + hash.value();
+    private final BiFunction<FromApplication, Hash<OwnedBy>, String> hashToPathFunc = (fromApplication, hash) -> fromApplication.value().toLowerCase() + "/owner/" + hash.value();
 }
