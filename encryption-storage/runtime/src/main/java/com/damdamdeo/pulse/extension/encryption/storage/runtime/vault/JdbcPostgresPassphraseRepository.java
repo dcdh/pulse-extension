@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.encryption.storage.runtime.vault;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
+import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -18,6 +19,7 @@ import java.util.Optional;
 @ApplicationScoped
 @Unremovable
 @Transactional
+@DefaultBean
 public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
     private final PassphraseConfiguration passphraseConfiguration;
@@ -38,6 +40,8 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     @Override
     public Optional<Passphrase> retrieve(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(ownedBy);
+        final String masterKey = passphraseConfiguration.masterKey().orElseThrow(() -> new UnableToRetrievePassphraseException(
+                new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
         final String ownerHash = hash(ownedBy);
         final String sql =
                 // language=sql
@@ -48,7 +52,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                         """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, passphraseConfiguration.masterKey());
+            stmt.setString(1, masterKey);
             stmt.setString(2, ownerHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
@@ -67,6 +71,8 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
             UnableToStorePassphraseException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(passphrase);
+        final String masterKey = passphraseConfiguration.masterKey().orElseThrow(() -> new UnableToStorePassphraseException(
+                new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
         final String ownerHash = hash(ownedBy);
         final String sql =
                 // language=sql
@@ -78,7 +84,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
              final PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, ownerHash);
             stmt.setString(2, new String(passphrase.passphrase()));
-            stmt.setString(3, passphraseConfiguration.masterKey());
+            stmt.setString(3, masterKey);
             stmt.executeUpdate();
             return new Passphrase(passphrase.passphrase().clone());
         } catch (final SQLException sqlException) {

@@ -4,6 +4,8 @@ import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 
+import java.util.Optional;
+
 @ConfigMapping(prefix = "pulse.encryption-storage")
 @ConfigRoot(phase = ConfigPhase.RUN_TIME)
 public interface PassphraseConfiguration {
@@ -11,5 +13,5 @@ public interface PassphraseConfiguration {
     /**
      * masterKey to encode / decode passphrase
      */
-    String masterKey();
+    Optional<String> masterKey();
 }
