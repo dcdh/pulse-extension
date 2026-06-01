@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.encryption.storage.deployment;
 
+import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.DefaultPassphraseObfuscator;
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.JdbcPostgresPassphraseRepository;
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.VaultPassphraseRepository;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -31,14 +32,14 @@ public class EncryptionStorageProcessor {
                     .build());
         } else if (hasDependency(curateOutcomeBuildItem, Dependency.of("io.quarkus", "quarkus-jdbc-postgresql"))) {
             additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
-                    .addBeanClasses(JdbcPostgresPassphraseRepository.class)
+                    .addBeanClasses(JdbcPostgresPassphraseRepository.class, DefaultPassphraseObfuscator.class)
                     .build());
         }
         return additionalBeanBuildItems;
     }
 
     public static boolean hasDependency(final CurateOutcomeBuildItem curateOutcomeBuildItem,
-                                         final Dependency dependency) {
+                                        final Dependency dependency) {
         return curateOutcomeBuildItem.getApplicationModel()
                 .getDependencies()
                 .stream()

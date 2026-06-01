@@ -22,11 +22,14 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
     private final DataSource dataSource;
     private final Hasher hasher;
+    private final PassphraseObfuscator passphraseObfuscator;
 
     public JdbcPostgresPassphraseRepository(final DataSource dataSource,
-                                            final Hasher hasher) {
+                                            final Hasher hasher,
+                                            final PassphraseObfuscator passphraseObfuscator) {
         this.dataSource = Objects.requireNonNull(dataSource);
         this.hasher = Objects.requireNonNull(hasher);
+        this.passphraseObfuscator = Objects.requireNonNull(passphraseObfuscator);
     }
 
     @Override
@@ -47,7 +50,8 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                 if (!rs.next()) {
                     return Optional.empty();
                 }
-                return Optional.of(new Passphrase(rs.getString("passphrase").toCharArray()));
+                return Optional.of(new Passphrase(rs.getString("passphrase").toCharArray()))
+                        .map(passphraseObfuscator::obfuscate);
             }
         } catch (final SQLException sqlException) {
             throw new UnableToRetrievePassphraseException(sqlException);
