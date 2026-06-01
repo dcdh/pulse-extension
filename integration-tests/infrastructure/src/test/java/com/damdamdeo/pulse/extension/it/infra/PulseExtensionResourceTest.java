@@ -63,7 +63,13 @@ class PulseExtensionResourceTest {
                         "U000001|User|0|UserRegistered|UserId|U000001|U000001",
                         "U000001-T000001|Todo|0|NewTodoCreated|UserId|U000001|U000001",
                         "U000001-T000001-CL000001|TodoChecklist|0|TodoItemAdded|UserId|U000001|U000001-T000001"
-                ));
+                ))
+                // vaultKeys
+                .body("vaultKeys", hasSize(3))
+                .body("vaultKeys", hasItems(
+                        "/todotaking_todo/",
+                        "/todotaking_todo/owner/",
+                        "/todotaking_todo/owner/1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d"));
     }
 
     @Test

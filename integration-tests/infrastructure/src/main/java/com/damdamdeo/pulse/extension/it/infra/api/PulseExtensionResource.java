@@ -26,6 +26,7 @@ import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
 import com.damdamdeo.pulse.extension.it.infra.query.TodoProjection;
 import com.damdamdeo.pulse.extension.it.infra.query.TodoProjectionQuery;
 import io.quarkus.security.Authenticated;
+import io.quarkus.vault.VaultKVSecretEngine;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
@@ -40,10 +41,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Path("/pulse-extension")
 @Produces(MediaType.APPLICATION_JSON)
@@ -63,11 +61,15 @@ public class PulseExtensionResource {
     @Inject
     DataSource dataSource;
 
+    @Inject
+    VaultKVSecretEngine vaultKVSecretEngine;
+
     public record CreationalWorkflowResponse(List<String> sequences,
                                              List<String> sequenceByIdentifiableClazzAndOwnedBy,
                                              List<String> databaseConnectionIdentifiers,
                                              List<String> aggregateRoots,
-                                             List<String> events) {
+                                             List<String> events,
+                                             List<String> vaultKeys) {
 
         public CreationalWorkflowResponse {
             Objects.requireNonNull(sequences);
@@ -75,6 +77,7 @@ public class PulseExtensionResource {
             Objects.requireNonNull(databaseConnectionIdentifiers);
             Objects.requireNonNull(aggregateRoots);
             Objects.requireNonNull(events);
+            Objects.requireNonNull(vaultKeys);
         }
     }
 
@@ -165,13 +168,26 @@ public class PulseExtensionResource {
                     }
                 }
             }
+
+            final List<String> vaultKeys = new ArrayList<>();
+            walk("/", 1, 3, vaultKeys);
             return Response.ok(new CreationalWorkflowResponse(sequences,
                     sequenceByIdentifiableClazzAndBelongsTo,
                     databaseConnectionIdentifiers,
                     aggregateRoots,
-                    events)).build();
+                    events, vaultKeys)).build();
         } catch (final BusinessException exception) {
             return Response.serverError().entity(exception.getMessage()).build();
+        }
+    }
+
+    void walk(final String base, final int depth, final int maxDepth, final List<String> out) {
+        if (depth > maxDepth) return;
+        final List<String> children = vaultKVSecretEngine.listSecrets(base);
+        for (final String child : children) {
+            final String path = base.endsWith("/") ? base + child : base + "/" + child;
+            out.add(path);
+            walk(path, depth + 1, maxDepth, out);
         }
     }
 
