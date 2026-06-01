@@ -85,3 +85,4 @@
 /integration-tests/infrastructure/todotaking_todo_passphrase.sql
 /integration-tests/infrastructure/pulse-policy-policy.hcl
 /encryption-storage/integration-tests/vault/todotaking_todo_pulse-policy-policy.hcl
+/integration-tests/infrastructure/todotaking_todo_pulse-policy-policy.hcl

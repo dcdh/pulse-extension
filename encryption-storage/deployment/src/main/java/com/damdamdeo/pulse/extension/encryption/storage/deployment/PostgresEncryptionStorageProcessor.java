@@ -27,10 +27,11 @@ public class PostgresEncryptionStorageProcessor {
                     new ComposeServiceBuildItem.Volume("./%s_passphrase.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_passphrase.sql".formatted(schemaName),
                             // language=sql
                             """
+                                    CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
                                     CREATE SCHEMA IF NOT EXISTS %1$s;
                                     CREATE TABLE %1$s.passphrase (
                                         owned_by_hashed VARCHAR(255) PRIMARY KEY,
-                                        passphrase VARCHAR(255) NOT NULL
+                                        passphrase bytea NOT NULL                                        
                                     );
                                     """.formatted(schemaName).getBytes(StandardCharsets.UTF_8))
             ));

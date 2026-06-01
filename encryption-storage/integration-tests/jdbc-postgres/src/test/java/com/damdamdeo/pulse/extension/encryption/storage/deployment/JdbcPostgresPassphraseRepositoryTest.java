@@ -76,9 +76,9 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnStoredPassphrase() throws UnableToRetrievePassphraseException {
+    void shouldReturnStoredPassphrase() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        insertPassphrase(USER_1_SHA3_256, new String(PassphraseSample.PASSPHRASE.passphrase()));
+        jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
 
         // When
         final Optional<Passphrase> passphrase = jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
@@ -121,33 +121,20 @@ class JdbcPostgresPassphraseRepositoryTest {
         }
         assertAll(
                 () -> assertThat(stored).isEqualTo(PassphraseSample.PASSPHRASE),
-                () -> assertThat(passphrases).containsExactly(new PassphraseRecord("1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d", "7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&"))
+                () -> assertThat(passphrases.size()).isEqualTo(1),
+                () -> assertThat(passphrases.getFirst().ownedByHashed()).isEqualTo("1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d"),
+                () -> assertThat(passphrases.getFirst().passphrase()).startsWith("\\x")
         );
     }
 
     @Test
-    void shouldThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() {
+    void shouldThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() throws PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        insertPassphrase(USER_1_SHA3_256, new String(PassphraseSample.PASSPHRASE.passphrase()));
+        jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
 
         // When && Then
         assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE))
                 .isExactlyInstanceOf(PassphraseAlreadyExistsException.class)
                 .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
-    }
-
-    private void insertPassphrase(final String ownedByHash, final String passphrase) {
-        // language=sql
-        final String sql = """
-                INSERT INTO passphrase (owned_by_hashed, passphrase) VALUES (?, ?)
-                """;
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, ownedByHash);
-            ps.setString(2, passphrase);
-            ps.executeUpdate();
-        } catch (final SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

@@ -20,13 +20,16 @@ import java.util.Optional;
 @Transactional
 public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
+    private final PassphraseConfiguration passphraseConfiguration;
     private final DataSource dataSource;
     private final Hasher hasher;
     private final PassphraseObfuscator passphraseObfuscator;
 
-    public JdbcPostgresPassphraseRepository(final DataSource dataSource,
+    public JdbcPostgresPassphraseRepository(final PassphraseConfiguration passphraseConfiguration,
+                                            final DataSource dataSource,
                                             final Hasher hasher,
                                             final PassphraseObfuscator passphraseObfuscator) {
+        this.passphraseConfiguration = Objects.requireNonNull(passphraseConfiguration);
         this.dataSource = Objects.requireNonNull(dataSource);
         this.hasher = Objects.requireNonNull(hasher);
         this.passphraseObfuscator = Objects.requireNonNull(passphraseObfuscator);
@@ -39,13 +42,14 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
         final String sql =
                 // language=sql
                 """
-                        SELECT passphrase
+                        SELECT public.pgp_sym_decrypt(passphrase,?) as passphrase
                         FROM passphrase
                         WHERE owned_by_hashed = ?
                         """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, ownerHash);
+            stmt.setString(1, passphraseConfiguration.masterKey());
+            stmt.setString(2, ownerHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
                     return Optional.empty();
@@ -68,12 +72,13 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                 // language=sql
                 """
                         INSERT INTO passphrase(owned_by_hashed, passphrase)
-                        VALUES (?, ?)
+                        VALUES (?, public.pgp_sym_encrypt(?::text,?))
                         """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, ownerHash);
             stmt.setString(2, new String(passphrase.passphrase()));
+            stmt.setString(3, passphraseConfiguration.masterKey());
             stmt.executeUpdate();
             return new Passphrase(passphrase.passphrase().clone());
         } catch (final SQLException sqlException) {
