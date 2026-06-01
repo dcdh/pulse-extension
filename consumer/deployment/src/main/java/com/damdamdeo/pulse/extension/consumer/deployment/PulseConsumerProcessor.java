@@ -12,6 +12,7 @@ import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValueDeserializer;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
+import com.damdamdeo.pulse.extension.kafka.deployment.KafkaProcessor;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.Capabilities;
@@ -55,7 +56,7 @@ public class PulseConsumerProcessor {
         if (shouldGenerate(capabilities)) {
             composeServiceBuildItemBuildProducer.produce(List.of(
                     ComposeProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM,
-                    ComposeProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM));
+                    KafkaProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM));
         }
         final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
         final AdditionalVolumeBuildItem additionalVolumeBuildItem = new AdditionalVolumeBuildItem(

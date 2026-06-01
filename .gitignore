@@ -86,3 +86,13 @@
 /integration-tests/infrastructure/pulse-policy-policy.hcl
 /encryption-storage/integration-tests/vault/todotaking_todo_pulse-policy-policy.hcl
 /integration-tests/infrastructure/todotaking_todo_pulse-policy-policy.hcl
+/keycloak/deployment/quarkus-pulse-keycloak-extension-deployment.iml
+/publisher/deployment/todotaking_todo_passphrase.sql
+/integration-tests/infrastructure/realm.json
+/kafka/deployment/target/
+/kafka/deployment/quarkus-pulse-kafka-extension-deployment.iml
+/kafka/runtime/target/
+/keycloak/deployment/target/
+/keycloak/runtime/target/
+/compose/runtime/quarkus-pulse-compose-extension.iml
+/kafka/docker-image/target/

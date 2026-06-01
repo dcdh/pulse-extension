@@ -13,6 +13,11 @@
     <dependencies>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-kafka-extension</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>
         </dependency>

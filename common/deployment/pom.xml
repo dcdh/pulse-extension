@@ -43,6 +43,11 @@
         </dependency>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-keycloak-extension-deployment</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-common-extension</artifactId>
             <version>${project.version}</version>
         </dependency>

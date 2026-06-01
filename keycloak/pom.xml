@@ -7,12 +7,11 @@
         <artifactId>quarkus-pulse-extension-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>quarkus-pulse-kafka-extension-parent</artifactId>
+    <artifactId>quarkus-pulse-keycloak-extension-parent</artifactId>
     <packaging>pom</packaging>
-    <name>Pulse Extension - Kafka Parent</name>
+    <name>Pulse Extension - Keycloak Parent</name>
 
     <modules>
-        <module>docker-image</module>
         <module>runtime</module>
         <module>deployment</module>
     </modules>

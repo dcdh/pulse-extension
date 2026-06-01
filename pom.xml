@@ -12,6 +12,7 @@
         <module>compose</module>
         <module>common</module>
         <module>kafka</module>
+        <module>keycloak</module>
         <module>writer</module>
         <module>publisher</module>
         <module>consumer</module>
