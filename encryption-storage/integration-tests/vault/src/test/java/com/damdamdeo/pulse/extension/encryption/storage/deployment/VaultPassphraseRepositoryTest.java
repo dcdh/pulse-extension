@@ -30,7 +30,7 @@ class VaultPassphraseRepositoryTest {
 
     private static final String USER_1_SHA3_256 = "1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d";
 
-    private static final String SECRET_PATH = "todotaking_todo/owner/" + USER_1_SHA3_256;
+    private static final String SECRET_PATH = "owner/" + USER_1_SHA3_256;
 
     @Inject
     VaultKVSecretEngine vaultKVSecretEngine;
