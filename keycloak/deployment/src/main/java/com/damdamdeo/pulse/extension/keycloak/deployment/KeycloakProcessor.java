@@ -34,7 +34,7 @@ public class KeycloakProcessor {
                     null,
                     List.of(new ComposeServiceBuildItem.Volume("./realm.json",
                             "/opt/keycloak/data/import/realm.json",
-                            KeycloakProcessor.class.getResourceAsStream("/realm.json").readAllBytes()
+                            KeycloakProcessor.class.getResourceAsStream("/realm.json").readAllBytes(), "json"
                     )),
                     ComposeServiceBuildItem.DependsOn.ofNone());
         } catch (final IOException e) {

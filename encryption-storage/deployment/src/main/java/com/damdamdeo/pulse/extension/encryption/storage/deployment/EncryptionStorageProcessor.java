@@ -26,11 +26,11 @@ public class EncryptionStorageProcessor {
 //                    .addBeanClasses(VaultPassphraseRepository.class)
 //                    .build());
 //        }
-        if (hasDependency(curateOutcomeBuildItem, Dependency.of("io.quarkiverse.vault", "quarkus-vault"))) {
+        if (hasDependency(curateOutcomeBuildItem, VaultEncryptionStorageProcessor.QUARKUS_VAULT_DEPENDENCY)) {
             additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
                     .addBeanClasses(VaultPassphraseRepository.class)
                     .build());
-        } else if (hasDependency(curateOutcomeBuildItem, Dependency.of("io.quarkus", "quarkus-jdbc-postgresql"))) {
+        } else if (hasDependency(curateOutcomeBuildItem, PostgresEncryptionStorageProcessor.QUARKUS_JDBC_POSTGRESQL_DEPENDENCY)) {
             additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
                     .addBeanClasses(JdbcPostgresPassphraseRepository.class, DefaultPassphraseObfuscator.class)
                     .build());

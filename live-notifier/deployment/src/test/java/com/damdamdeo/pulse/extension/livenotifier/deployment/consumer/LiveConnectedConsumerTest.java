@@ -30,10 +30,8 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties")
+            .overrideConfigKey("quarkus.oidc.client-id", "account")
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.keycloak.devservices.users.alice", "alice")
-            .overrideConfigKey("quarkus.keycloak.devservices.users.duke", "duke")
-            .overrideConfigKey("quarkus.keycloak.devservices.users.bob", "bob")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion())
             ));
@@ -56,7 +54,7 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
                         .formParam("grant_type", "password")
                         .formParam("client_id", clientId)
                         .formParam("client_secret", secret)
-                        .formParam("username", "bob")
+                        .formParam("username", "bob@mail.com")
                         .formParam("password", "bob")
                         .when()
                         .log().all()
@@ -70,7 +68,7 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
         final CompletableFuture<List<String>> receivedEvents = sseConsumer.consume(accessToken, Duration.ofSeconds(10));
 
         // When
-        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob", true)));
+        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob@mail.com", true)));
         final Audience audienceDuke = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("duke", true)));
         final Audience audienceAlice = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("alice", true)));
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), Todo.OWNED_BY_USER_1, audienceBob);

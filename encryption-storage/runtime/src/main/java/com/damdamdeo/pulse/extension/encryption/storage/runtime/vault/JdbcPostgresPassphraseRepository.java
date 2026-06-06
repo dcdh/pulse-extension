@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Provider;
 import jakarta.transaction.Transactional;
 
 import javax.sql.DataSource;
@@ -23,12 +24,12 @@ import java.util.Optional;
 public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
     private final PassphraseConfiguration passphraseConfiguration;
-    private final DataSource dataSource;
+    private final Provider<DataSource> dataSource;
     private final Hasher hasher;
     private final PassphraseObfuscator passphraseObfuscator;
 
     public JdbcPostgresPassphraseRepository(final PassphraseConfiguration passphraseConfiguration,
-                                            final DataSource dataSource,
+                                            final Provider<DataSource> dataSource,
                                             final Hasher hasher,
                                             final PassphraseObfuscator passphraseObfuscator) {
         this.passphraseConfiguration = Objects.requireNonNull(passphraseConfiguration);
@@ -40,8 +41,10 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     @Override
     public Optional<Passphrase> retrieve(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(ownedBy);
-        final String masterKey = passphraseConfiguration.masterKey().orElseThrow(() -> new UnableToRetrievePassphraseException(
-                new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
+        final MasterKey masterKey = passphraseConfiguration.masterKey()
+                .map(MasterKey::new)
+                .orElseThrow(() -> new UnableToRetrievePassphraseException(
+                        new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
         final String ownerHash = hash(ownedBy);
         final String sql =
                 // language=sql
@@ -50,9 +53,9 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                         FROM passphrase
                         WHERE owned_by_hashed = ?
                         """;
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, masterKey);
+            stmt.setString(1, masterKey.key());
             stmt.setString(2, ownerHash);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
@@ -71,8 +74,10 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
             UnableToStorePassphraseException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(passphrase);
-        final String masterKey = passphraseConfiguration.masterKey().orElseThrow(() -> new UnableToStorePassphraseException(
-                new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
+        final MasterKey masterKey = passphraseConfiguration.masterKey()
+                .map(MasterKey::new)
+                .orElseThrow(() -> new UnableToStorePassphraseException(
+                        new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
         final String ownerHash = hash(ownedBy);
         final String sql =
                 // language=sql
@@ -80,11 +85,11 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                         INSERT INTO passphrase(owned_by_hashed, passphrase)
                         VALUES (?, public.pgp_sym_encrypt(?::text,?))
                         """;
-        try (final Connection connection = dataSource.getConnection();
+        try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, ownerHash);
             stmt.setString(2, new String(passphrase.passphrase()));
-            stmt.setString(3, masterKey);
+            stmt.setString(3, masterKey.key());
             stmt.executeUpdate();
             return new Passphrase(passphrase.passphrase().clone());
         } catch (final SQLException sqlException) {

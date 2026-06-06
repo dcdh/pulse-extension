@@ -80,7 +80,7 @@ public class VaultEncryptionStorageProcessor {
                                     }
                                     """
                                     .formatted(applicationName)
-                                    .getBytes(StandardCharsets.UTF_8)
+                                    .getBytes(StandardCharsets.UTF_8), "hcl"
                     )),
                     ComposeServiceBuildItem.DependsOn.on(List.of(new ComposeServiceBuildItem.ServiceName("openbao")))
             );

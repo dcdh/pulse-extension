@@ -28,6 +28,6 @@ class DefaultPassphraseGeneratorTest {
         // sample generated 7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&
 
         // Then
-        assertThat(generated.length()).isEqualTo(32);
+        assertThat(generated.passphrase().length).isEqualTo(32);
     }
 }

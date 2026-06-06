@@ -25,7 +25,7 @@ class QuarkusOidcExecutionContextProviderTest extends AbstractCommonTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
-            .overrideConfigKey("quarkus.keycloak.devservices.users.alice", "alice")
+            .overrideConfigKey("quarkus.oidc.client-id", "account")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
                     Dependency.of("io.quarkus", "quarkus-rest-jackson", Version.getVersion())
@@ -111,7 +111,7 @@ class QuarkusOidcExecutionContextProviderTest extends AbstractCommonTest {
                 .get("/executedByProvider")
                 .then().log().all()
                 .statusCode(200)
-                .body("executedBy", is("SA:service-account-quarkus-app"))
+                .body("executedBy", is("SA:service-account-account"))
                 .body("roles", hasItems("offline_access", "default-roles-quarkus", "uma_authorization"));
     }
 

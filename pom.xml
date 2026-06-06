@@ -11,6 +11,7 @@
         <module>core</module>
         <module>compose</module>
         <module>common</module>
+        <module>build-report</module>
         <module>kafka</module>
         <module>keycloak</module>
         <module>writer</module>

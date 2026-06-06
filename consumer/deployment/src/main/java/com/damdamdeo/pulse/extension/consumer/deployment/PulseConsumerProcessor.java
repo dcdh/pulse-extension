@@ -77,7 +77,7 @@ public class PulseConsumerProcessor {
                                   CONSTRAINT idempotency_pkey PRIMARY KEY (purpose, from_application, table_name, aggregate_root_type, aggregate_root_id),
                                   CONSTRAINT table_name_format_chk CHECK (table_name = 'EVENT' OR table_name = 'AGGREGATE_ROOT')
                                 );
-                                """.formatted(schemaName).getBytes(StandardCharsets.UTF_8)
+                                """.formatted(schemaName).getBytes(StandardCharsets.UTF_8), "sql"
                 ));
         additionalVolumeBuildItemProducer.produce(additionalVolumeBuildItem);
     }

@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.common.deployment;
 
+import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseGenerator;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseProvider;
@@ -21,6 +24,7 @@ import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PulseCommonProcessor {
 
@@ -67,15 +71,16 @@ public class PulseCommonProcessor {
     }
 
     @BuildStep
-    RunTimeConfigurationDefaultBuildItem definePostgresCurrentSchema(final ApplicationInfoBuildItem applicationInfoBuildItem) {
-        return new RunTimeConfigurationDefaultBuildItem("quarkus.datasource.jdbc.additional-jdbc-properties.currentSchema",
-                applicationInfoBuildItem.getName().toLowerCase());
-    }
+    void datasourceConfiguration(final ApplicationInfoBuildItem applicationInfoBuildItem,
+                                 final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
+                                 final BuildProducer<ContentBuildItem> contentBuildItemBuildProducer) {
+        final Map<String, String> datasourceConfiguration = Map.of("quarkus.datasource.jdbc.additional-jdbc-properties.currentSchema",
+                applicationInfoBuildItem.getName().toLowerCase(), "quarkus.datasource.jdbc.max-size", "100");
+        datasourceConfiguration.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(
+                new RunTimeConfigurationDefaultBuildItem(key, value)));
 
-    @BuildStep
-    List<RunTimeConfigurationDefaultBuildItem> defaultConfigurations() {
-        return List.of(
-                new RunTimeConfigurationDefaultBuildItem("quarkus.datasource.jdbc.max-size", "100"));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Datasource configuration")));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(datasourceConfiguration)));
     }
 
     @BuildStep

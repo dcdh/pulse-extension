@@ -188,13 +188,14 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
     }
 
     // https://docs.docker.com/engine/storage/bind-mounts/#syntax
-    public record Volume(String src, String destination, byte[] content) {
+    public record Volume(String src, String destination, byte[] content, String contentType) {
 
         public Volume {
             Objects.requireNonNull(src);
             Validate.validState(src.startsWith("./"));
             Objects.requireNonNull(destination);
             Objects.requireNonNull(content);
+            Objects.requireNonNull(contentType);
         }
     }
 

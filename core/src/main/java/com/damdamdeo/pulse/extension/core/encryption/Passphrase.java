@@ -1,10 +1,13 @@
 package com.damdamdeo.pulse.extension.core.encryption;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.Arrays;
 
 public record Passphrase(char[] passphrase) {
-    public int length() {
-        return passphrase.length;
+
+    public Passphrase {
+        Validate.isTrue(passphrase.length == 32);
     }
 
     @Override

@@ -35,10 +35,9 @@ class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
     // cf. JdbcPostgresConnectionIdentifierRepositoryTest
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot(javaArchive -> javaArchive.addAsResource("realm-quarkus.json"))
+            .withEmptyApplication()
             .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
-            .overrideConfigKey("quarkus.keycloak.devservices.realm-path", "realm-quarkus.json")
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(

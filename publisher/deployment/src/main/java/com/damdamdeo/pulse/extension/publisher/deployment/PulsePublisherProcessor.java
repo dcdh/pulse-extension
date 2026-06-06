@@ -1,12 +1,21 @@
 package com.damdamdeo.pulse.extension.publisher.deployment;
 
+import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.Admonition;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.AdmonitionType;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.kafka.deployment.KafkaProcessor;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
+import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 
 import java.util.List;
@@ -68,6 +77,18 @@ public class PulsePublisherProcessor {
                         ComposeServiceBuildItem.DependsOn.on(List.of(
                                 ComposeProcessor.POSTGRES_SERVICE_NAME,
                                 KafkaProcessor.KAFKA_SERVICE_NAME)))
+        );
+    }
+
+    @BuildStep
+    List<ContentBuildItem> contentBuildItems(final ApplicationInfoBuildItem applicationInfoBuildItem) throws JsonProcessingException {
+        return List.of(
+                new ContentBuildItem(new Title(2, "Publisher Debezium configuration")),
+                new ContentBuildItem(CodeBlock.fromJson(
+                        new ObjectMapper().writeValueAsString(
+                                KafkaConnectorConfigurationGenerator.generate(
+                                        FromApplication.from(applicationInfoBuildItem.getName()), "localhost", 8083, "datasourceUsername", "datasourcePassword", "database", 1)))),
+                new ContentBuildItem(new Admonition(AdmonitionType.NOTE, "host, port, datasourceUsername, datasourcePassword, database, topicCreationDefaultPartitions are determined at runtime"))
         );
     }
 }

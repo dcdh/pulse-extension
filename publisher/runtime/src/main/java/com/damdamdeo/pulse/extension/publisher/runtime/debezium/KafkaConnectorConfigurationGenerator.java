@@ -47,6 +47,16 @@ public final class KafkaConnectorConfigurationGenerator {
         final String host = "localhost".equals(matcher.group("host")) ? PostgresUtils.SERVICE_NAME : matcher.group("host");
         final int port = "localhost".equals(matcher.group("host")) ? PostgresUtils.DEFAULT_PORT : Integer.parseInt(matcher.group("port"));
         final String database = matcher.group("database");
+        return generate(fromApplication, host, port, datasourceUsername, datasourcePassword, database, debeziumConfiguration.topicCreation().defaultPartitions());
+    }
+
+    public static KafkaConnectorConfigurationDTO generate(final FromApplication fromApplication,
+                                                          final String host,
+                                                          final int port,
+                                                          final String datasourceUsername,
+                                                          final String datasourcePassword,
+                                                          final String database,
+                                                          final Integer topicCreationDefaultPartitions) {
         return KafkaConnectorConfigurationDTO
                 .newBuilder()
                 .withName(fromApplication.value().toLowerCase())
@@ -59,7 +69,7 @@ public final class KafkaConnectorConfigurationGenerator {
                                 .withDatabaseUser(datasourceUsername)
                                 .withDatabasePassword(datasourcePassword)
                                 .withDatabaseDbname(database)
-                                .withTopicCreationDefaultPartitions(debeziumConfiguration.topicCreation().defaultPartitions())
+                                .withTopicCreationDefaultPartitions(topicCreationDefaultPartitions)
                                 .build())
                 .build();
     }

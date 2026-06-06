@@ -1,8 +1,11 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
+import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
+import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
-import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncAggregateRootConsumerChannel;
@@ -42,6 +45,7 @@ import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
@@ -121,7 +125,7 @@ public class AsyncAggregateRootConsumerProcessor {
                                               belongs_to character varying(255) not null,
                                               CONSTRAINT aggregate_root_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type)
                                             );
-                                            """.formatted(schemaName).getBytes(StandardCharsets.UTF_8)
+                                            """.formatted(schemaName).getBytes(StandardCharsets.UTF_8), "sql"
                             ))
                     ).toList();
         } else {
@@ -134,6 +138,7 @@ public class AsyncAggregateRootConsumerProcessor {
                                                      final ApplicationInfoBuildItem applicationInfoBuildItem,
                                                      final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
                                                      final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
+                                                     final BuildProducer<ContentBuildItem> contentBuildItemBuildProducer,
                                                      final OutputTargetBuildItem outputTargetBuildItem) {
         discoveredAsyncAggregateRootConsumerChannels.stream()
                 .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream()
@@ -227,23 +232,31 @@ public class AsyncAggregateRootConsumerProcessor {
                     }
                 });
 
-        discoveredAsyncAggregateRootConsumerChannels.stream()
+        final Map<String, String> configurations = discoveredAsyncAggregateRootConsumerChannels.stream()
                 .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream()
                         .map(src -> new TargetWithSource(discoveredAsyncAggregateRootConsumerChannel.target(), src))
-                ).forEach(targetWithSource -> {
+                ).map(targetWithSource -> {
                     final String channelNaming = targetWithSource.channel(TABLE);
                     final String topic = new CdcTopicNaming(targetWithSource.fromApplication(), Table.AGGREGATE_ROOT).name();
-                    Map.of(
-                                    "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName(),
-                                    "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",
-                                    "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",
-                                    "mp.messaging.incoming.%s.connector".formatted(channelNaming), "smallrye-kafka",
-                                    "mp.messaging.incoming.%s.topic".formatted(channelNaming), topic,
-                                    "mp.messaging.incoming.%s.key.deserializer".formatted(channelNaming), JsonNodeAggregateRootKeyDeserializer.class.getName(),
-                                    "mp.messaging.incoming.%s.value.deserializer".formatted(channelNaming), JsonNodeAggregateRootValueDeserializer.class.getName(),
-                                    "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(channelNaming), JsonNodeAggregateRootKey.class.getName(),
-                                    "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), JsonNodeAggregateRootValue.class.getName())
-                            .forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
-                });
+                    return Map.of(
+                            "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName(),
+                            "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",
+                            "mp.messaging.incoming.%s.auto.offset.reset".formatted(channelNaming), "earliest",
+                            "mp.messaging.incoming.%s.connector".formatted(channelNaming), "smallrye-kafka",
+                            "mp.messaging.incoming.%s.topic".formatted(channelNaming), topic,
+                            "mp.messaging.incoming.%s.key.deserializer".formatted(channelNaming), JsonNodeAggregateRootKeyDeserializer.class.getName(),
+                            "mp.messaging.incoming.%s.value.deserializer".formatted(channelNaming), JsonNodeAggregateRootValueDeserializer.class.getName(),
+                            "mp.messaging.incoming.%s.value.deserializer.key-type".formatted(channelNaming), JsonNodeAggregateRootKey.class.getName(),
+                            "mp.messaging.incoming.%s.value.deserializer.value-type".formatted(channelNaming), JsonNodeAggregateRootValue.class.getName());
+                }).flatMap(m -> m.entrySet().stream())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));
+        configurations.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer
+                .produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
+
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Async AggregateRoot Consumer configuration")));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(configurations)));
     }
 }

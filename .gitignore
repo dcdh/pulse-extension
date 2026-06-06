@@ -96,3 +96,11 @@
 /keycloak/runtime/target/
 /compose/runtime/quarkus-pulse-compose-extension.iml
 /kafka/docker-image/target/
+/build-report/deployment/quarkus-pulse-build-report-extension-deployment.iml
+/build-report/deployment/target/
+/writer/deployment/realm.json
+/writer/deployment/todotaking_todo_passphrase.sql
+/common/deployment/realm.json
+/common/deployment/todotaking_todo_passphrase.sql
+/live-notifier/deployment/realm.json
+/publisher/deployment/realm.json

@@ -38,6 +38,6 @@ public class ConnectionAssociationFinderProcessor {
                                     CONSTRAINT connection_identifier_hash_unique
                                         UNIQUE (connection_identifier_hash)
                                 );
-                                """.formatted(schemaName).getBytes(StandardCharsets.UTF_8)));
+                                """.formatted(schemaName).getBytes(StandardCharsets.UTF_8), "sql"));
     }
 }

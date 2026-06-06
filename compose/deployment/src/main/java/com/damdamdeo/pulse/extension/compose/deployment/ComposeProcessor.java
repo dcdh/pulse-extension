@@ -1,5 +1,10 @@
 package com.damdamdeo.pulse.extension.compose.deployment;
 
+import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.BasicTable;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.TableRow;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -12,6 +17,7 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -75,7 +81,8 @@ public class ComposeProcessor {
     void generateDockerCompose(final List<ComposeServiceBuildItem> composeServiceBuildItems,
                                final List<AdditionalVolumeBuildItem> additionalVolumeBuildItems,
                                final OutputTargetBuildItem outputTargetBuildItem,
-                               // use the GeneratedResourceBuildItem only to ensure that the file will be created before compose is started
+                               final BuildProducer<ContentBuildItem> contentBuildItemProducer,
+                               // use the GeneratedResourceBuildItem only to ensure that the file will be created before compose is started NOT THE CASE !!!
                                final BuildProducer<GeneratedResourceBuildItem> generatedResourceBuildItemBuildProducer) throws IOException {
         if (!composeServiceBuildItems.isEmpty()) {
             final List<ComposeServiceBuildItem.Volume> volumesToCreateOnHostSrc = new ArrayList<>();
@@ -181,6 +188,25 @@ public class ComposeProcessor {
             try (final FileWriter writer = new FileWriter(resolved.toFile())) {
                 yaml.dump(root, writer);
             }
+            final String dockerCompose;
+            try (StringWriter stringWriter = new StringWriter()) {
+                yaml.dump(root, stringWriter);
+                dockerCompose = stringWriter.toString();
+            }
+            contentBuildItemProducer.produce(new ContentBuildItem(new Title(2, "Docker compose")));
+            contentBuildItemProducer.produce(new ContentBuildItem(CodeBlock.fromYaml(dockerCompose)));
+            contentBuildItemProducer.produce(new ContentBuildItem(new Title(2, "Additional volumes")));
+            additionalVolumeBuildItems.forEach(additionalVolumeBuildItem -> {
+                contentBuildItemProducer.produce(new ContentBuildItem(new Title(3, additionalVolumeBuildItem.getServiceName().name())));
+                contentBuildItemProducer.produce(new ContentBuildItem(new BasicTable(
+                        List.of(
+                                new TableRow(List.of("src", additionalVolumeBuildItem.getVolume().src())),
+                                new TableRow(List.of("destination", additionalVolumeBuildItem.getVolume().destination()))))));
+                contentBuildItemProducer.produce(new ContentBuildItem(new CodeBlock(
+                        additionalVolumeBuildItem.getVolume().contentType(),
+                        new String(additionalVolumeBuildItem.getVolume().content())
+                )));
+            });
         }
     }
 

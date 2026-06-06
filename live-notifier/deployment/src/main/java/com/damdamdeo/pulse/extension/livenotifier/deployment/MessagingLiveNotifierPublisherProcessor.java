@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
+import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
+import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.common.deployment.items.EligibleTypeForSerializationBuildItem;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.items.EventBuildItem;
@@ -21,6 +24,7 @@ import jakarta.inject.Singleton;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 import static org.apache.commons.lang3.StringUtils.capitalize;
@@ -28,16 +32,23 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 public class MessagingLiveNotifierPublisherProcessor {
 
     @BuildStep
-    List<RunTimeConfigurationDefaultBuildItem> generateChannelPublisher(final ApplicationInfoBuildItem applicationInfoBuildItem) {
+    void generateChannelPublisher(final ApplicationInfoBuildItem applicationInfoBuildItem,
+                                  final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
+                                  final BuildProducer<ContentBuildItem> contentBuildItemBuildProducer) {
         final String topic = new LiveNotifierTopicNaming(FromApplication.from(applicationInfoBuildItem.getName())).name();
-        return List.of(
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.group.id", applicationInfoBuildItem.getName()),
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.enable.auto.commit", "true"),
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.auto.offset.reset", "latest"),
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.connector", "smallrye-kafka"),
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.topic", topic),
-                new RunTimeConfigurationDefaultBuildItem("mp.messaging.outgoing.live-notification-out.value.serializer", ByteArraySerializer.class.getName())
-        );
+        final Map<String, String> configurations = Map.of(
+                "mp.messaging.outgoing.live-notification-out.group.id", applicationInfoBuildItem.getName(),
+                "mp.messaging.outgoing.live-notification-out.enable.auto.commit", "true",
+                "mp.messaging.outgoing.live-notification-out.auto.offset.reset", "latest",
+                "mp.messaging.outgoing.live-notification-out.connector", "smallrye-kafka",
+                "mp.messaging.outgoing.live-notification-out.topic", topic,
+                "mp.messaging.outgoing.live-notification-out.value.serializer", ByteArraySerializer.class.getName());
+
+        configurations.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer
+                .produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
+
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Live Notifier configuration")));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(configurations)));
     }
 
     @BuildStep
