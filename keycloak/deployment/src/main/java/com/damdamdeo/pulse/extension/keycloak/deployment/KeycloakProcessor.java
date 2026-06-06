@@ -2,6 +2,9 @@ package com.damdamdeo.pulse.extension.keycloak.deployment;
 
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.KeycloakUtils;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 
 import java.io.IOException;
@@ -43,7 +46,10 @@ public class KeycloakProcessor {
     };
 
     @BuildStep
-    ComposeServiceBuildItem generateCompose() {
-        return KEYCLOAK_COMPOSE_SERVICE_BUILD_ITEM.get();
+    void generateCompose(final BuildProducer<ComposeServiceBuildItem> composeServiceBuildItemBuildProducer,
+                         final Capabilities capabilities) {
+        if (capabilities.isPresent(Capability.OIDC)) {
+            composeServiceBuildItemBuildProducer.produce(KEYCLOAK_COMPOSE_SERVICE_BUILD_ITEM.get());
+        }
     }
 }

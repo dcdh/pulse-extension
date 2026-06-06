@@ -1,8 +1,6 @@
 /common/deployment/target/
 /common/deployment/quarkus-pulse-common-extension-deployment.iml
-/common/deployment/todotaking_todo_connection_identifier.sql
 /common/deployment/compose-devservices-pulse.yml
-/common/deployment/boom_connection_identifier.sql
 /common/runtime/target/
 /common/runtime/quarkus-pulse-common-extension.iml
 
@@ -10,7 +8,6 @@
 /consumer/deployment/quarkus-pulse-consumer-extension-deployment.iml
 /consumer/deployment/compose-devservices-pulse.yml
 /consumer/deployment/todoclient_registered_target_consumer.sql
-/consumer/deployment/todotaking_todo_connection_identifier.sql
 /consumer/deployment/todotaking_todo_idempotency_consumer.sql
 /consumer/deployment/todotaking_todo_target_consumer.sql
 /consumer/runtime/target/
@@ -25,7 +22,6 @@
 /integration-tests/infrastructure/target/
 /integration-tests/infrastructure/compose-devservices-pulse.yml
 /integration-tests/infrastructure/todotaking_todo_aggregates.sql
-/integration-tests/infrastructure/todotaking_todo_connection_identifier.sql
 /integration-tests/infrastructure/todotaking_todo_idempotency_consumer.sql
 /integration-tests/infrastructure/todotaking_todo_sequences.sql
 /integration-tests/infrastructure/todotaking_todo_sequences_table.sql
@@ -35,7 +31,6 @@
 /live-notifier/deployment/target/
 /live-notifier/deployment/quarkus-pulse-live-notifier-extension-deployment.iml
 /live-notifier/deployment/compose-devservices-pulse.yml
-/live-notifier/deployment/todotaking_todo_connection_identifier.sql
 /live-notifier/runtime/target/
 /live-notifier/runtime/quarkus-pulse-live-notifier-extension.iml
 /live-notifier/test-framework/target/
@@ -44,7 +39,6 @@
 /publisher/deployment/compose-devservices-pulse.yml
 /publisher/deployment/quarkus-pulse-publisher-extension-deployment.iml
 /publisher/deployment/todotaking_todo_aggregates.sql
-/publisher/deployment/todotaking_todo_connection_identifier.sql
 /publisher/deployment/todotaking_todo_sequences.sql
 /publisher/deployment/todotaking_todo_sequences_table.sql
 /publisher/runtime/target/
@@ -55,7 +49,6 @@
 /writer/deployment/compose-devservices-pulse.yml
 /writer/deployment/quarkus-pulse-writer-extension-deployment.iml
 /writer/deployment/todotaking_todo_aggregates.sql
-/writer/deployment/todotaking_todo_connection_identifier.sql
 /writer/deployment/todotaking_todo_sequences.sql
 /writer/deployment/todotaking_todo_sequences_table.sql
 /writer/runtime/target/
@@ -87,7 +80,6 @@
 /integration-tests/infrastructure/todotaking_todo_pulse-policy-policy.hcl
 /keycloak/deployment/quarkus-pulse-keycloak-extension-deployment.iml
 /publisher/deployment/todotaking_todo_passphrase.sql
-/integration-tests/infrastructure/realm.json
 /kafka/deployment/target/
 /kafka/deployment/quarkus-pulse-kafka-extension-deployment.iml
 /kafka/runtime/target/
@@ -97,11 +89,10 @@
 /kafka/docker-image/target/
 /build-report/deployment/quarkus-pulse-build-report-extension-deployment.iml
 /build-report/deployment/target/
-/writer/deployment/realm.json
 /writer/deployment/todotaking_todo_passphrase.sql
-/common/deployment/realm.json
 /common/deployment/todotaking_todo_passphrase.sql
-/live-notifier/deployment/realm.json
-/publisher/deployment/realm.json
 /common/deployment/boom_passphrase.sql
 /bom/quarkus-pulse-extension-bom.iml
+/integration-tests/infrastructure/realm.json
+/integration-tests/infrastructure/todotaking_todo_connection_identifier.sql
+/encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
