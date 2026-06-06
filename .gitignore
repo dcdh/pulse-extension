@@ -104,3 +104,4 @@
 /common/deployment/todotaking_todo_passphrase.sql
 /live-notifier/deployment/realm.json
 /publisher/deployment/realm.json
+/common/deployment/boom_passphrase.sql
