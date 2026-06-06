@@ -105,3 +105,4 @@
 /live-notifier/deployment/realm.json
 /publisher/deployment/realm.json
 /common/deployment/boom_passphrase.sql
+/bom/quarkus-pulse-extension-bom.iml
