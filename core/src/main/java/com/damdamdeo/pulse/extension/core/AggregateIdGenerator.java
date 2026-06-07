@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 public class AggregateIdGenerator {
 
-    private static final String MATCH_PATTERN = "^[a-zA-Z]+-?[A-Z0-9\\-]+$";
+    private static final String MATCH_PATTERN = "^[a-zA-Z0-9]+-?[A-Z0-9\\-]+$";
 
     private final SequenceGenerator sequenceGenerator;
 
