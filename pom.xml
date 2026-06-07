@@ -30,7 +30,7 @@
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.version>3.33.1.1</quarkus.version>
+        <quarkus.version>3.33.2</quarkus.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <quarkus-vault.version>4.7.0</quarkus-vault.version>
         <quarkus-resteasy-problem.version>3.32.1</quarkus-resteasy-problem.version>
