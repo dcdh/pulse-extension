@@ -5,6 +5,9 @@ import io.quarkus.logging.Log;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -17,16 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class PostgresFlywayTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
+                    .addAsResource("V1__init.sql", "/db/migration/V1__init.sql"))
             // disable compose dev service and use a new instance of postgres to ensure that flyway will be tested
             // compose dev service comes with initialization scripts we do not want them here
             .overrideConfigKey("quarkus.compose.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .overrideConfigKey("quarkus.datasource.devservices.enabled", "true")
             .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".min-level", "DEBUG")
             .overrideConfigKey("quarkus.log.category.\"io.quarkus.flyway.runtime\".level", "DEBUG")
@@ -38,6 +42,16 @@ class PostgresFlywayTest extends AbstractWriterTest {
 
     @Inject
     DataSource dataSource;
+
+    @Test
+    void shouldGenerateFlywayConfiguration() {
+        assertAll(
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.flyway.migrate-at-start", Boolean.class))
+                        .isTrue(),
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.flyway.baseline-on-migrate", Boolean.class))
+                        .isTrue()
+        );
+    }
 
     @Test
     void shouldTablesBeInitialized() {
@@ -65,7 +79,8 @@ class PostgresFlywayTest extends AbstractWriterTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.flyway_schema_history");
+        assertThat(tables).contains("todotaking_todo.flyway_schema_history",
+                "todotaking_todo.sample_table");
     }
 
     @Test
@@ -95,9 +110,8 @@ class PostgresFlywayTest extends AbstractWriterTest {
                 Log.infov("version ''{0}'' - description ''{1}'' - script ''{2}'' - installed_by ''{3}'' - success ''{4}''",
                         version, description, script, installedBy, success);
 
-                if ("<< Flyway Schema Creation >>".equalsIgnoreCase(description) && success) {
+                if ("init".equalsIgnoreCase(description) && success) {
                     found = true;
-                    break;
                 }
             }
 
