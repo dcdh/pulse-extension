@@ -15,7 +15,7 @@ public record OwnedBy(String id) implements Identifiable {
 
     public OwnedBy {
         Objects.requireNonNull(id);
-        Validate.validState(PATTERN.matcher(id).matches(), "invalid id");
+        Validate.validState(PATTERN.matcher(id).matches(), "invalid id '%s'".formatted(id));
     }
 
     public static OwnedBy from(final AggregateId ownedBy) {
