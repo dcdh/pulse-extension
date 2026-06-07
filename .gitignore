@@ -96,3 +96,5 @@
 /integration-tests/infrastructure/realm.json
 /integration-tests/infrastructure/todotaking_todo_connection_identifier.sql
 /encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
+/common/deployment/realm.json
+/common/deployment/todotaking_todo_connection_identifier.sql
