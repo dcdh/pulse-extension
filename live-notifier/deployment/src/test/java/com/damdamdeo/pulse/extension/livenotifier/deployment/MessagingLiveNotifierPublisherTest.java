@@ -28,8 +28,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
-            .withConfigurationResource("application.properties")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false");
+            .withConfigurationResource("application.properties");
 
     @Inject
     Consumer consumer;

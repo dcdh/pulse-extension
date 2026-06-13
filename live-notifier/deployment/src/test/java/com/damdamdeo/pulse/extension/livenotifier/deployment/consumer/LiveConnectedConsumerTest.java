@@ -31,7 +31,6 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
             .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties")
             .overrideConfigKey("quarkus.oidc.client-id", "account")
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion())
             ));

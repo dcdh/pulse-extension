@@ -92,6 +92,7 @@ public class PulseConsumerProcessor {
 
     public static boolean shouldGenerate(final Capabilities capabilities) {
         return !capabilities.isPresent("com.damdamdeo.pulse-writer-extension")
-                && !capabilities.isPresent("com.damdamdeo.pulse-publisher-extension");
+                && !capabilities.isPresent("com.damdamdeo.pulse-publisher-extension")
+                && !capabilities.isPresent("com.damdamdeo.pulse-live-notifier-extension");
     }
 }

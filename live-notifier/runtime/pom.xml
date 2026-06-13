@@ -49,6 +49,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-security</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-kafka-extension</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>

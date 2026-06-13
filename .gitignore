@@ -98,3 +98,7 @@
 /encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
 /common/deployment/realm.json
 /common/deployment/pulse_passphrase.sql
+/writer/deployment/pulse_passphrase.sql
+/live-notifier/deployment/pulse_passphrase.sql
+/live-notifier/deployment/pulse_connection_identifier.sql
+/live-notifier/deployment/realm.json

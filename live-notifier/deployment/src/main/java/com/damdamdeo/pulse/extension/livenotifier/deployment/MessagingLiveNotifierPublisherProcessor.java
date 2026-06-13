@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.common.deployment.items.EligibleTypeForSerializationBuildItem;
+import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.items.EventBuildItem;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.LiveNotifierTopicNaming;
@@ -22,6 +23,7 @@ import io.quarkus.gizmo.SignatureBuilder;
 import io.quarkus.gizmo.Type;
 import jakarta.inject.Singleton;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import com.damdamdeo.pulse.extension.kafka.deployment.KafkaProcessor;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,12 @@ import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWrit
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
 public class MessagingLiveNotifierPublisherProcessor {
+
+    @BuildStep
+    List<ComposeServiceBuildItem> generateCompose() {
+        return List.of(
+                KafkaProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM);
+    }
 
     @BuildStep
     void generateChannelPublisher(final ApplicationInfoBuildItem applicationInfoBuildItem,
