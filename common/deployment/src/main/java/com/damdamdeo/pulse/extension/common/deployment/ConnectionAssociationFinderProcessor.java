@@ -7,20 +7,23 @@ import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionAssociationFinder;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 
 import java.nio.charset.StandardCharsets;
+import java.util.function.Supplier;
 
 public class ConnectionAssociationFinderProcessor {
+
+    public static final Supplier<Boolean> hasQuarkusJdbcPostgresInClassPath = () -> QuarkusClassLoader.isClassPresentAtRuntime("io.quarkus.jdbc.postgresql.runtime.PostgreSQLAgroalConnectionConfigurer");
 
     @BuildStep
     AdditionalBeanBuildItem additionalBeans(final Capabilities capabilities) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (capabilities.isPresent(Capability.OIDC)) {
+        if (capabilities.isPresent(Capability.OIDC) && hasQuarkusJdbcPostgresInClassPath.get()) {
             builder.addBeanClasses(JdbcPostgresConnectionIdentifierRepository.class, ConnectionAssociationFinder.class)
                     .setDefaultScope(DotNames.APPLICATION_SCOPED)
                     .setUnremovable();
@@ -30,10 +33,9 @@ public class ConnectionAssociationFinderProcessor {
 
     @BuildStep
     void generateAdditionalVolumeBuildItem(final Capabilities capabilities,
-                                           final ApplicationInfoBuildItem applicationInfoBuildItem,
                                            final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemBuildProducer) {
-        if (capabilities.isPresent(Capability.OIDC)) {
-            final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
+        if (capabilities.isPresent(Capability.OIDC) && hasQuarkusJdbcPostgresInClassPath.get()) {
+            final String schemaName = "pulse";
             additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
                     new ComposeServiceBuildItem.Volume("./%s_connection_identifier.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_connection_identifier.sql".formatted(schemaName),

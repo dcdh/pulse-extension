@@ -15,7 +15,6 @@ class DefaultQuarkusTransactionTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .withConfigurationResource("application.properties");
 
     @Inject

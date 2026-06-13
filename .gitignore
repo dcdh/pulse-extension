@@ -1,6 +1,7 @@
 /common/deployment/target/
 /common/deployment/quarkus-pulse-common-extension-deployment.iml
 /common/deployment/compose-devservices-pulse.yml
+/common/deployment/pulse_connection_identifier.sql
 /common/runtime/target/
 /common/runtime/quarkus-pulse-common-extension.iml
 
@@ -10,6 +11,7 @@
 /consumer/deployment/todoclient_registered_target_consumer.sql
 /consumer/deployment/todotaking_todo_idempotency_consumer.sql
 /consumer/deployment/todotaking_todo_target_consumer.sql
+/consumer/deployment/pulse_passphrase.sql
 /consumer/runtime/target/
 /consumer/runtime/quarkus-pulse-consumer-extension.iml
 /consumer/test-framework/target/
@@ -25,6 +27,7 @@
 /integration-tests/infrastructure/todotaking_todo_idempotency_consumer.sql
 /integration-tests/infrastructure/todotaking_todo_sequences.sql
 /integration-tests/infrastructure/todotaking_todo_sequences_table.sql
+/integration-tests/infrastructure/pulse_connection_identifier.sql
 
 /kafka/target/
 
@@ -51,6 +54,8 @@
 /writer/deployment/todotaking_todo_aggregates.sql
 /writer/deployment/todotaking_todo_sequences.sql
 /writer/deployment/todotaking_todo_sequences_table.sql
+/writer/deployment/pulse_connection_identifier.sql
+/writer/deployment/realm.json
 /writer/runtime/target/
 /writer/runtime/quarkus-pulse-writer-extension.iml
 
@@ -97,4 +102,3 @@
 /integration-tests/infrastructure/todotaking_todo_connection_identifier.sql
 /encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
 /common/deployment/realm.json
-/common/deployment/todotaking_todo_connection_identifier.sql

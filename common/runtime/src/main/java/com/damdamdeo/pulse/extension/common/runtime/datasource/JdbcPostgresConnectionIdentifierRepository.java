@@ -26,7 +26,7 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
     private static final String INSERT_SQL =
             // language=sql
             """
-                    INSERT INTO connection_identifier (
+                    INSERT INTO pulse.connection_identifier (
                         connection_identifier_hash,
                         identifiable_id
                     )
@@ -37,7 +37,7 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
             // language=sql
             """
                     SELECT identifiable_id
-                    FROM connection_identifier
+                    FROM pulse.connection_identifier
                     WHERE connection_identifier_hash = ?
                     """;
 

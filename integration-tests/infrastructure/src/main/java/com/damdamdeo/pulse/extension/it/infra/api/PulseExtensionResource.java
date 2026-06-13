@@ -127,7 +127,7 @@ public class PulseExtensionResource {
                 try (final PreparedStatement ps = connection.prepareStatement(
                         // language=sql
                         """
-                                SELECT connection_identifier_hash AS connection_identifier_hash, identifiable_id AS identifiable_id FROM connection_identifier
+                                SELECT connection_identifier_hash AS connection_identifier_hash, identifiable_id AS identifiable_id FROM pulse.connection_identifier
                                 """);
                      final ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {

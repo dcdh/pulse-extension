@@ -36,8 +36,6 @@ class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withEmptyApplication()
-            .overrideConfigKey("quarkus.vault.devservices.enabled", "false")
-            .overrideConfigKey("quarkus.compose.devservices.enabled", "true")
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
@@ -125,7 +123,7 @@ class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT connection_identifier_hash AS connection_identifier_hash, identifiable_id AS identifiable_id FROM connection_identifier
+                             SELECT connection_identifier_hash AS connection_identifier_hash, identifiable_id AS identifiable_id FROM pulse.connection_identifier
                              """);
              final ResultSet rs = ps.executeQuery()) {
             rs.next();

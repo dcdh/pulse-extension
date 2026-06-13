@@ -7,9 +7,10 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnectionIdentifierException;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
+import io.quarkus.builder.Version;
+import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,11 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withConfigurationResource("application.properties");
+            .withConfigurationResource("application.properties")
+            .setForcedDependencies(List.of(
+                    Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
+                    Dependency.of("io.quarkus", "quarkus-jdbc-postgresql", Version.getVersion())
+            ));
 
     @Inject
     JdbcPostgresConnectionIdentifierRepository jdbcPostgresConnectionIdentifierRepository;
@@ -44,7 +49,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
     void tearDown() {
         try (final Connection connection = dataSource.getConnection();
              final Statement stmt = connection.createStatement()) {
-            stmt.execute("TRUNCATE TABLE connection_identifier");
+            stmt.execute("TRUNCATE TABLE pulse.connection_identifier");
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +84,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT connection_identifier_hash AS connection_identifier_hash, identifiable_id AS identifiable_id FROM connection_identifier
+                             SELECT connection_identifier_hash AS connection_identifier_hash, identifiable_id AS identifiable_id FROM pulse.connection_identifier
                              """);
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
