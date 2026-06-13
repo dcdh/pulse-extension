@@ -102,8 +102,12 @@ public class ComposeProcessor {
                 final List<ComposeServiceBuildItem.Volume> volumes = composeServiceBuildItem.getVolumes();
                 final ComposeServiceBuildItem.DependsOn dependsOn = composeServiceBuildItem.getDependsOn();
                 service.put("image", imageName.name());
+                final Map<String, String> allLabels = new HashMap<>(labels.labels());
+                if (serviceName.isInit()) {
+                    allLabels.put("io.quarkus.devservices.compose.ignore", "true");
+                }
                 if (labels.hasLabels()) {
-                    service.put("labels", labels.labels());
+                    service.put("labels", allLabels);
                 }
                 if (serviceName.isInit()) {
                     service.put("restart", "no");
