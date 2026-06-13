@@ -27,9 +27,8 @@ public class CachingProcessor {
     @BuildStep
     List<ContentBuildItem> contentBuildItems() {
         final List<ContentBuildItem> contentBuildItems = new ArrayList<>();
-        contentBuildItems.add(new ContentBuildItem(new Title(2, "Caching configuration")));
+        contentBuildItems.add(new ContentBuildItem(new Title(2, "Passphrase caching configuration")));
         contentBuildItems.add(new ContentBuildItem(CodeBlock.fromProperties(CACHING_CONFIGURATIONS)));
         return contentBuildItems;
     }
-
 }
