@@ -9,22 +9,20 @@ import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
-import io.quarkus.maven.dependency.Dependency;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
 import static com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils.SERVICE_NAME;
+import static com.damdamdeo.pulse.extension.encryption.storage.deployment.EncryptionStorageProcessor.hasQuarkusJdbcPostgresInClassPath;
+import static com.damdamdeo.pulse.extension.encryption.storage.deployment.EncryptionStorageProcessor.hasVaultInClassPath;
 
 public class PostgresEncryptionStorageProcessor {
 
-    public static final Dependency QUARKUS_JDBC_POSTGRESQL_DEPENDENCY = Dependency.of("io.quarkus", "quarkus-jdbc-postgresql");
-
     @BuildStep
-    List<AdditionalVolumeBuildItem> generatePassphraseTable(final ApplicationInfoBuildItem applicationInfoBuildItem,
-                                                            final CurateOutcomeBuildItem curateOutcomeBuildItem) {
-        if (match(curateOutcomeBuildItem)) {
+    List<AdditionalVolumeBuildItem> generatePassphraseTable(final ApplicationInfoBuildItem applicationInfoBuildItem) {
+        if (match()) {
             final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
             return List.of(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(SERVICE_NAME),
@@ -45,8 +43,8 @@ public class PostgresEncryptionStorageProcessor {
     }
 
     @BuildStep
-    List<ComposeServiceBuildItem> generateCompose(final CurateOutcomeBuildItem curateOutcomeBuildItem) {
-        if (match(curateOutcomeBuildItem)) {
+    List<ComposeServiceBuildItem> generateCompose() {
+        if (match()) {
             return List.of(ComposeProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM);
         } else {
             return List.of();
@@ -54,8 +52,8 @@ public class PostgresEncryptionStorageProcessor {
     }
 
     @BuildStep
-    List<ContentBuildItem> generateContentBuildItems(final CurateOutcomeBuildItem curateOutcomeBuildItem) {
-        if (match(curateOutcomeBuildItem)) {
+    List<ContentBuildItem> generateContentBuildItems() {
+        if (match()) {
             return List.of(
                     new ContentBuildItem(new Title(2, "PostgreSQL Encryption storage")),
                     new ContentBuildItem(CodeBlock.fromProperties(Map.of("pulse.encryption-storage", "32 characters master key"))));
@@ -64,8 +62,7 @@ public class PostgresEncryptionStorageProcessor {
         }
     }
 
-    private boolean match(final CurateOutcomeBuildItem curateOutcomeBuildItem) {
-        return !EncryptionStorageProcessor.hasDependency(curateOutcomeBuildItem, VaultEncryptionStorageProcessor.QUARKUS_VAULT_DEPENDENCY) &&
-                EncryptionStorageProcessor.hasDependency(curateOutcomeBuildItem, QUARKUS_JDBC_POSTGRESQL_DEPENDENCY);
+    private boolean match() {
+        return !hasVaultInClassPath.get() && hasQuarkusJdbcPostgresInClassPath.get();
     }
 }

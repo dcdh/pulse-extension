@@ -2,16 +2,14 @@ package com.damdamdeo.pulse.extension.encryption.storage.deployment;
 
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
-import io.quarkus.maven.dependency.Dependency;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-public class VaultEncryptionStorageProcessor {
+import static com.damdamdeo.pulse.extension.encryption.storage.deployment.EncryptionStorageProcessor.hasVaultInClassPath;
 
-    public static final Dependency QUARKUS_VAULT_DEPENDENCY = Dependency.of("io.quarkiverse.vault", "quarkus-vault");
+public class VaultEncryptionStorageProcessor {
 
     public static ComposeServiceBuildItem OPEN_BAO_COMPOSE_SERVICE_BUILD_ITEM = new ComposeServiceBuildItem(
             new ComposeServiceBuildItem.ServiceName("openbao"),
@@ -73,8 +71,8 @@ public class VaultEncryptionStorageProcessor {
     );
 
     @BuildStep
-    List<ComposeServiceBuildItem> generateCompose(final CurateOutcomeBuildItem curateOutcomeBuildItem) {
-        if (EncryptionStorageProcessor.hasDependency(curateOutcomeBuildItem, QUARKUS_VAULT_DEPENDENCY)) {
+    List<ComposeServiceBuildItem> generateCompose() {
+        if (hasVaultInClassPath.get()) {
             return List.of(OPEN_BAO_COMPOSE_SERVICE_BUILD_ITEM, OPEN_BAO_INIT_COMPOSE_SERVICE_BUILD_ITEM);
         } else {
             return List.of();

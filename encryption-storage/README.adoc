@@ -1,0 +1,5 @@
+== Encryption storage
+
+It is not possible to do testing inside the deployment module because vault is an optional dependency due to the usage of Vault classes inside the production code.
+
+Deployment tests always include optional dependencies in the test-packaged application.

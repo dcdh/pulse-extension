@@ -103,3 +103,4 @@
 /encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
 /common/deployment/realm.json
 /consumer/deployment/todotaking_todo_passphrase.sql
+/common/deployment/pulse_passphrase.sql

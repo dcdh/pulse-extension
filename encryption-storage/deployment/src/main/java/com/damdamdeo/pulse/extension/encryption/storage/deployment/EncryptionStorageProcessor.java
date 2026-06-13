@@ -4,47 +4,33 @@ import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.DefaultPas
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.JdbcPostgresPassphraseRepository;
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.VaultPassphraseRepository;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
-import io.quarkus.deployment.Capabilities;
+import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
-import io.quarkus.maven.dependency.Dependency;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Supplier;
 
 public class EncryptionStorageProcessor {
+
+    public static final Supplier<Boolean> hasVaultInClassPath = () -> QuarkusClassLoader.isClassPresentAtRuntime("io.quarkus.vault.VaultKVSecretEngine");
+
+    public static final Supplier<Boolean> hasQuarkusJdbcPostgresInClassPath = () -> QuarkusClassLoader.isClassPresentAtRuntime("io.quarkus.jdbc.postgresql.runtime.PostgreSQLAgroalConnectionConfigurer");
 
     // no capability exposed by vault yet ...
     // https://github.com/quarkiverse/quarkus-vault/pull/507
     // check on dependency presence instead, which is bad
     @BuildStep
-    List<AdditionalBeanBuildItem> additionalBeans(final Capabilities capabilities,
-                                                  final CurateOutcomeBuildItem curateOutcomeBuildItem) {
-        final List<AdditionalBeanBuildItem> additionalBeanBuildItems = new ArrayList<>();
-//        if (capabilities.isPresent("io.quarkiverse.vault")) {
-//            additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
-//                    .addBeanClasses(VaultPassphraseRepository.class)
-//                    .build());
-//        }
-        if (hasDependency(curateOutcomeBuildItem, VaultEncryptionStorageProcessor.QUARKUS_VAULT_DEPENDENCY)) {
-            additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
-                    .addBeanClasses(VaultPassphraseRepository.class)
-                    .build());
-        } else if (hasDependency(curateOutcomeBuildItem, PostgresEncryptionStorageProcessor.QUARKUS_JDBC_POSTGRESQL_DEPENDENCY)) {
-            additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
-                    .addBeanClasses(JdbcPostgresPassphraseRepository.class, DefaultPassphraseObfuscator.class)
-                    .build());
+    AdditionalBeanBuildItem additionalBeans(final BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrorBuildItemBuildProducer) {
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        if (hasVaultInClassPath.get()) {
+            builder.addBeanClasses(VaultPassphraseRepository.class);
+        } else if (hasQuarkusJdbcPostgresInClassPath.get()) {
+            builder.addBeanClasses(JdbcPostgresPassphraseRepository.class, DefaultPassphraseObfuscator.class);
+        } else {
+            validationErrorBuildItemBuildProducer.produce(new ValidationPhaseBuildItem.ValidationErrorBuildItem(
+                    new IllegalStateException("No secret repository found - please add io.quarkiverse.vault:quarkus-vault or io.quarkus:quarkus-jdbc-postgresql dependency")));
         }
-        return additionalBeanBuildItems;
-    }
-
-    public static boolean hasDependency(final CurateOutcomeBuildItem curateOutcomeBuildItem,
-                                        final Dependency dependency) {
-        return curateOutcomeBuildItem.getApplicationModel()
-                .getDependencies()
-                .stream()
-                .anyMatch(dep ->
-                        dep.getGroupId().equals(dependency.getGroupId())
-                                && dep.getArtifactId().equals(dependency.getArtifactId()));
+        return builder.build();
     }
 }
