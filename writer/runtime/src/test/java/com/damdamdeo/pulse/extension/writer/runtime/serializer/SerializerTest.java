@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.runtime.serializer;
 
-import com.damdamdeo.pulse.extension.common.runtime.serialization.PulseObjectMapperCustomizer;
+import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObjectMapperProducer;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -148,7 +148,7 @@ class SerializerTest {
         OBJECT_MAPPER.addMixIn(FullTodo.class, FullTodoMixin.class);
         OBJECT_MAPPER.addMixIn(NombreDeConvives.class, NombreDeConvivesMixIn.class);
         OBJECT_MAPPER.addMixIn(CommandeEnCoursDePrise.class, CommandeEnCoursDePriseMixIn.class);
-        PulseObjectMapperCustomizer.customizeObjectMapper(OBJECT_MAPPER);
+        BusinessObjectMapperProducer.customizeObjectMapper(OBJECT_MAPPER);
     }
 
     private static final String TODO =

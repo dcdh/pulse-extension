@@ -1,11 +1,10 @@
 package com.damdamdeo.pulse.extension.common.runtime.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.jackson.ObjectMapperCustomizer;
 
 import java.util.Map;
 
-public abstract class MixinRegistrationObjectMapperCustomizer implements ObjectMapperCustomizer {
+public abstract class MixinRegistrationBusinessObjectMapperCustomizer implements BusinessObjectMapperCustomizer {
 
     @Override
     public void customize(final ObjectMapper objectMapper) {

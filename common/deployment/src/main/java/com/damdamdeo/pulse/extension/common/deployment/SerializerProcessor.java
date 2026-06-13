@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.common.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.DiscoveredClassBuildItem;
 import com.damdamdeo.pulse.extension.common.deployment.items.EligibleTypeForSerializationBuildItem;
-import com.damdamdeo.pulse.extension.common.runtime.serialization.MixinRegistrationObjectMapperCustomizer;
+import com.damdamdeo.pulse.extension.common.runtime.serialization.MixinRegistrationBusinessObjectMapperCustomizer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.arc.Unremovable;
@@ -244,8 +244,8 @@ public class SerializerProcessor {
                                             final OutputTargetBuildItem outputTargetBuildItem) {
         try (final ClassCreator beanClassCreator = ClassCreator.builder()
                 .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
-                .className(MixinRegistrationObjectMapperCustomizer.class.getName() + "Generated")
-                .superClass(MixinRegistrationObjectMapperCustomizer.class)
+                .className(MixinRegistrationBusinessObjectMapperCustomizer.class.getName() + "Generated")
+                .superClass(MixinRegistrationBusinessObjectMapperCustomizer.class)
                 .build()) {
 
             beanClassCreator.addAnnotation(Singleton.class);

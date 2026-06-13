@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
+import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObjectMapperProducer;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.*;
@@ -7,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import jakarta.inject.Provider;
 
 import javax.sql.DataSource;
@@ -30,6 +32,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     InstantProvider instantProvider;
 
     @Inject
+    @Named(BusinessObjectMapperProducer.BUSINESS_MAPPER)
     ObjectMapper objectMapper;
 
     @Inject

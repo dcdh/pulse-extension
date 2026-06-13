@@ -90,10 +90,10 @@ class EventSerDeTest extends AbstractWriterTest {
                     }
                     """;
 
-    record EventWithTime(LocalDateTime createAt) {
+    record EventWithTime(LocalDateTime createdAt) {
 
         EventWithTime {
-            Objects.requireNonNull(createAt);
+            Objects.requireNonNull(createdAt);
         }
     }
 
@@ -108,7 +108,7 @@ class EventSerDeTest extends AbstractWriterTest {
         // language=json
         final String expected = """
                 {
-                  "createAt":"2026-05-22T23:30:08"
+                  "createdAt":"2026-05-22T23:30:08"
                 }
                 """;
         JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);

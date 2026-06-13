@@ -5,11 +5,13 @@ import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootVa
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record JsonNodeAggregateRootValue(@JsonProperty("aggregate_root_payload") byte[] payload,
                                          @JsonProperty("owned_by") String ownedBy,
                                          @JsonProperty("belongs_to") String belongsTo) implements AggregateRootValue {
