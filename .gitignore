@@ -79,12 +79,9 @@
 /encryption-storage/integration-tests/vault/pulse-policy-policy.hcl
 /encryption-storage/integration-tests/jdbc-postgres/target/
 /encryption-storage/integration-tests/jdbc-postgres/compose-devservices-pulse.yml
-/encryption-storage/integration-tests/jdbc-postgres/todotaking_todo_passphrase.sql
-/integration-tests/infrastructure/todotaking_todo_passphrase.sql
 /integration-tests/infrastructure/pulse-policy-policy.hcl
 /integration-tests/infrastructure/todotaking_todo_pulse-policy-policy.hcl
 /keycloak/deployment/quarkus-pulse-keycloak-extension-deployment.iml
-/publisher/deployment/todotaking_todo_passphrase.sql
 /kafka/deployment/target/
 /kafka/deployment/quarkus-pulse-kafka-extension-deployment.iml
 /kafka/runtime/target/
@@ -94,13 +91,10 @@
 /kafka/docker-image/target/
 /build-report/deployment/quarkus-pulse-build-report-extension-deployment.iml
 /build-report/deployment/target/
-/writer/deployment/todotaking_todo_passphrase.sql
-/common/deployment/todotaking_todo_passphrase.sql
 /common/deployment/boom_passphrase.sql
 /bom/quarkus-pulse-extension-bom.iml
 /integration-tests/infrastructure/realm.json
 /integration-tests/infrastructure/todotaking_todo_connection_identifier.sql
 /encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
 /common/deployment/realm.json
-/consumer/deployment/todotaking_todo_passphrase.sql
 /common/deployment/pulse_passphrase.sql

@@ -7,8 +7,6 @@ import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildIte
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
-import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -21,9 +19,9 @@ import static com.damdamdeo.pulse.extension.encryption.storage.deployment.Encryp
 public class PostgresEncryptionStorageProcessor {
 
     @BuildStep
-    List<AdditionalVolumeBuildItem> generatePassphraseTable(final ApplicationInfoBuildItem applicationInfoBuildItem) {
+    List<AdditionalVolumeBuildItem> generatePassphraseTable() {
         if (match()) {
-            final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
+            final String schemaName = "pulse";
             return List.of(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(SERVICE_NAME),
                     new ComposeServiceBuildItem.Volume("./%s_passphrase.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_passphrase.sql".formatted(schemaName),
