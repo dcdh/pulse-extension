@@ -49,7 +49,7 @@ class AggregateIdGeneratorTest {
         assertThatThrownBy(() -> aggregateIdGenerator.generate(CustomFailingTodoId.class,
                 sequenceNumber -> new CustomFailingTodoId()))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("The string T*000001 does not match the pattern ^[a-zA-Z]+-?[A-Z0-9\\-]+$");
+                .hasMessage("The string T*000001 does not match the pattern ^[a-zA-Z0-9]+-?[A-Z0-9\\-]+$");
     }
 
     @Test
