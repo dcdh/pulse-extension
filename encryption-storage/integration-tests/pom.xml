@@ -21,6 +21,16 @@
         <skipITs>true</skipITs>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.damdamdeo.pulse</groupId>
+                <artifactId>quarkus-pulse-extension-bom</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>

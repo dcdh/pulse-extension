@@ -50,7 +50,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                 // language=sql
                 """
                         SELECT public.pgp_sym_decrypt(passphrase,?) as passphrase
-                        FROM passphrase
+                        FROM pulse.passphrase
                         WHERE owned_by_hashed = ?
                         """;
         try (final Connection connection = dataSource.get().getConnection();
@@ -82,7 +82,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
         final String sql =
                 // language=sql
                 """
-                        INSERT INTO passphrase(owned_by_hashed, passphrase)
+                        INSERT INTO pulse.passphrase(owned_by_hashed, passphrase)
                         VALUES (?, public.pgp_sym_encrypt(?::text,?))
                         """;
         try (final Connection connection = dataSource.get().getConnection();

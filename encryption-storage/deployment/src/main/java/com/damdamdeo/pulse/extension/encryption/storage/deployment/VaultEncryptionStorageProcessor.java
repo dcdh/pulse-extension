@@ -1,7 +1,11 @@
 package com.damdamdeo.pulse.extension.encryption.storage.deployment;
 
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
+import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -11,9 +15,11 @@ import static com.damdamdeo.pulse.extension.encryption.storage.deployment.Encryp
 
 public class VaultEncryptionStorageProcessor {
 
+    public static final ComposeServiceBuildItem.ImageName OPENBAO_IMAGE = new ComposeServiceBuildItem.ImageName("openbao/openbao:2.5.4");
+
     public static ComposeServiceBuildItem OPEN_BAO_COMPOSE_SERVICE_BUILD_ITEM = new ComposeServiceBuildItem(
             new ComposeServiceBuildItem.ServiceName("openbao"),
-            new ComposeServiceBuildItem.ImageName("openbao/openbao:2.5.4"),
+            OPENBAO_IMAGE,
             new ComposeServiceBuildItem.Labels(
                     Map.of("io.quarkus.devservices.compose.wait_for.logs", ".*OpenBao server started!.*")),
             new ComposeServiceBuildItem.Ports(List.of("8200")),
@@ -37,7 +43,7 @@ public class VaultEncryptionStorageProcessor {
 
     public static ComposeServiceBuildItem OPEN_BAO_INIT_COMPOSE_SERVICE_BUILD_ITEM = new ComposeServiceBuildItem(
             new ComposeServiceBuildItem.ServiceName("openbao-init"),
-            new ComposeServiceBuildItem.ImageName("openbao/openbao:2.5.4"),
+            OPENBAO_IMAGE,
             new ComposeServiceBuildItem.Labels(
                     Map.of("io.quarkus.devservices.compose.wait_for.logs", ".*Success! Uploaded policy.*")),
             new ComposeServiceBuildItem.Ports(List.of()),
@@ -76,6 +82,21 @@ public class VaultEncryptionStorageProcessor {
             return List.of(OPEN_BAO_COMPOSE_SERVICE_BUILD_ITEM, OPEN_BAO_INIT_COMPOSE_SERVICE_BUILD_ITEM);
         } else {
             return List.of();
+        }
+    }
+
+    @BuildStep
+    void validateOpenBaoConfiguration(final LaunchModeBuildItem launchMode,
+                                      // Caused by: java.lang.NoClassDefFoundError: io/quarkus/vault/runtime/config/VaultBuildTimeConfig
+                                      // when vault is not provided
+                                      // final VaultBuildTimeConfig config,
+                                      final BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrorBuildItemBuildProducer) {
+        final String imageName = ConfigProvider.getConfig().getOptionalValue("quarkus.vault.devservices.image-name", String.class)
+                .orElse(null);
+        if (hasVaultInClassPath.get() && launchMode.getLaunchMode().isDevOrTest() && !OPENBAO_IMAGE.name().equals(imageName)) {
+            validationErrorBuildItemBuildProducer.produce(
+                    new ValidationPhaseBuildItem.ValidationErrorBuildItem(
+                            new IllegalArgumentException("Missing configuration quarkus.vault.devservices.image-name=%s. You may need to setup quarkus.vault.authentication.userpass.* too".formatted(OPENBAO_IMAGE))));
         }
     }
 }

@@ -46,7 +46,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     void tearDown() {
         try (final Connection connection = dataSource.getConnection();
              final Statement stmt = connection.createStatement()) {
-            stmt.execute("TRUNCATE TABLE passphrase");
+            stmt.execute("TRUNCATE TABLE pulse.passphrase");
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
@@ -111,7 +111,7 @@ class JdbcPostgresPassphraseRepositoryTest {
              final PreparedStatement ps = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT owned_by_hashed AS owned_by_hashed, passphrase AS passphrase FROM passphrase
+                             SELECT owned_by_hashed AS owned_by_hashed, passphrase AS passphrase FROM pulse.passphrase
                              """);
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
