@@ -102,3 +102,10 @@
 /live-notifier/deployment/pulse_passphrase.sql
 /live-notifier/deployment/pulse_connection_identifier.sql
 /live-notifier/deployment/realm.json
+/obfuscator/integration-tests/jdbc-postgres/compose-devservices-pulse.yml
+/obfuscator/integration-tests/jdbc-postgres/pulse_obfuscator.sql
+/obfuscator/integration-tests/jdbc-postgres/quarkus-pulse-extension-obfuscator-integration-tests-jdbc-postgres.iml
+/integration-tests/infrastructure/pulse_obfuscator.sql
+/encryption-storage/integration-tests/jdbc-postgres/pulse_passphrase.sql
+/encryption-storage/integration-tests/jdbc-postgres/todotaking_todo_passphrase.sql
+/publisher/deployment/pulse_passphrase.sql

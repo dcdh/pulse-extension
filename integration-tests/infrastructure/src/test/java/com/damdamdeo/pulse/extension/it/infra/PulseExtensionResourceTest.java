@@ -18,6 +18,8 @@ import static org.hamcrest.Matchers.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PulseExtensionResourceTest {
 
+    private static final String UUID_PATTERN = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+
     @Test
     @Order(1)
     void testCreateTodoEndpoint() {
@@ -85,14 +87,11 @@ class PulseExtensionResourceTest {
                 .log().all()
                 .statusCode(200)
                 .body("size()", is(1))
-                .body("[0].todoId.userId.sequence", is("000001"))
-                .body("[0].todoId.sequence", is("000001"))
+                .body("[0].todoId", matchesPattern(UUID_PATTERN))
                 .body("[0].description", is("lorem ipsum"))
                 .body("[0].status", is("IN_PROGRESS"))
                 .body("[0].important", is(false))
-                .body("[0].checklist[0].todoChecklistId.todoId.userId.sequence", is("000001"))
-                .body("[0].checklist[0].todoChecklistId.todoId.sequence", is("000001"))
-                .body("[0].checklist[0].todoChecklistId.sequence", is("000001"))
+                .body("[0].checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
                 .body("[0].checklist[0].description", is("Make it works !"))
         ;
     }
@@ -118,7 +117,7 @@ class PulseExtensionResourceTest {
                 .body("purpose.name", equalTo("statistics"))
                 // aggregate root
                 .body("aggregateRootType.type", equalTo("User"))
-                .body("aggregateId.id", equalTo("U000001"))
+                .body("aggregateId", matchesPattern(UUID_PATTERN))
                 // version
                 .body("currentVersionInConsumption.version", equalTo(0))
                 // storedAt
@@ -136,7 +135,7 @@ class PulseExtensionResourceTest {
                 .body("decryptableEventPayload.decrypted", equalTo(true))
                 // aggregateRootLoaded
                 .body("aggregateRootLoaded.aggregateRootType.type", equalTo("User"))
-                .body("aggregateRootLoaded.aggregateId.id", equalTo("U000001"))
+                .body("aggregateRootLoaded.aggregateId", matchesPattern(UUID_PATTERN))
                 .body("aggregateRootLoaded.lastAggregateVersion.version", equalTo(0))
                 // encrypted aggregate payload
                 .body("aggregateRootLoaded.encryptedAggregateRootPayload.payload", not(emptyOrNullString()))

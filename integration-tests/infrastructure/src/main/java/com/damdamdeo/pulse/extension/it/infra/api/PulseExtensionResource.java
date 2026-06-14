@@ -35,13 +35,18 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.reactive.RestResponse;
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Path("/pulse-extension")
 @Produces(MediaType.APPLICATION_JSON)
@@ -200,15 +205,15 @@ public class PulseExtensionResource {
                 .orElseThrow(() -> new NotFoundException("Call not executed yet"));
     }
 
+    @ServerExceptionMapper
+    public RestResponse<String> mapException(UnableToFindException exception) {
+        return RestResponse.status(RestResponse.Status.INTERNAL_SERVER_ERROR, exception.getMessage());
+    }
+
     @GET
     @Path("/listConnectedUserTodos")
     @Authenticated
-    public Response listConnectedUserTodos() {
-        try {
-            final List<TodoProjection> todoProjections = todoProjectionQuery.getByConnectedUser();
-            return Response.ok(todoProjections).build();
-        } catch (final UnableToFindException e) {
-            return Response.serverError().entity(e.getMessage()).build();
-        }
+    public List<TodoProjection> listConnectedUserTodos() throws UnableToFindException {
+        return todoProjectionQuery.getByConnectedUser();
     }
 }

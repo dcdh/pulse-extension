@@ -105,3 +105,7 @@ Here is a reproducer to explain the issue https://github.com/dcdh/greeting-confi
 It is ok when
 
 In pulse this **CommonConfigBuilder** has been created and referenced in **resources/META-INF/services/io.smallrye.config.SmallRyeConfigBuilderCustomizer** of **quarkus-pulse-common-extension**
+
+== Postgresql
+
+Avoid depending on postgres extension and deployment extension using optional. It is not mandatory !

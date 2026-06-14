@@ -18,6 +18,7 @@
         <module>publisher</module>
         <module>consumer</module>
         <module>live-notifier</module>
+        <module>obfuscator</module>
         <module>encryption-storage</module>
         <module>hasher</module>
         <module>bom</module>
@@ -55,6 +56,11 @@
                 <groupId>io.quarkiverse.resteasy-problem</groupId>
                 <artifactId>quarkus-resteasy-problem-deployment</artifactId>
                 <version>${quarkus-resteasy-problem.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkiverse.vault</groupId>
+                <artifactId>quarkus-vault</artifactId>
+                <version>${quarkus-vault.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.skyscreamer</groupId>
