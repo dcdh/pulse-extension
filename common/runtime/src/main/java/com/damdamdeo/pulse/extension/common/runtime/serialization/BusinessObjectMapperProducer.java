@@ -9,7 +9,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.quarkus.arc.All;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public final class BusinessObjectMapperProducer {
     public static final String BUSINESS_MAPPER = "businessMapper";
 
     @Produces
-    @Named(BUSINESS_MAPPER)
+    @BusinessMapper
     public ObjectMapper produceBusinessMapper(@All List<BusinessObjectMapperCustomizer> customizers) {
         final ObjectMapper objectMapper = new ObjectMapper();
         customizers.forEach(customizer -> customizer.customize(objectMapper));

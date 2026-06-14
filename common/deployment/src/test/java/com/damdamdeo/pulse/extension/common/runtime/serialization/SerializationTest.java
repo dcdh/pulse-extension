@@ -15,7 +15,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import java.util.logging.Logger;
+
 class SerializationTest extends AbstractCommonTest {
+
+    final Logger LOGGER = Logger.getLogger(SerializationTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -23,6 +27,7 @@ class SerializationTest extends AbstractCommonTest {
             .withConfigurationResource("application.properties");
 
     @Inject
+    @BusinessMapper
     ObjectMapper objectMapper;
 
     @Test
@@ -39,6 +44,7 @@ class SerializationTest extends AbstractCommonTest {
         final String serializedJson = objectMapper.writeValueAsString(givenTodo);
 
         // Then
+        LOGGER.info(serializedJson);
         JSONAssert.assertEquals(
                 // language=json
                 """

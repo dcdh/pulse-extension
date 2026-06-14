@@ -55,7 +55,7 @@ class BusinessExceptionMapperTest extends AbstractWriterTest {
                 .body("paths['/businessException/myException']['get']['responses']['409'].description", equalTo("BusinessException"))
                 .body("paths['/businessException/myException']['get']['responses']['409']['content']['application/problem+json'].schema.$ref", equalTo("#/components/schemas/HttpProblem"));
     }
-// FCK prio 1
+
     @Test
     void shouldReturnExpectedResponseOnException() {
         given().contentType(MediaType.TEXT_PLAIN)
@@ -63,10 +63,10 @@ class BusinessExceptionMapperTest extends AbstractWriterTest {
                 .then()
                 .log().all()
                 .statusCode(409)
-                .body("statusCode", equalTo(409))
+                .body("status", equalTo(409))
                 .body("title", equalTo("Conflict"))
                 .body("detail", equalTo("MyException with context detail"))
-                .body("instance", equalTo("%2FbusinessException%2FmyException"));
+                .body("instance", equalTo("/businessException/myException"));
     }
 
     private static ValidatableResponse getOpenApi() {

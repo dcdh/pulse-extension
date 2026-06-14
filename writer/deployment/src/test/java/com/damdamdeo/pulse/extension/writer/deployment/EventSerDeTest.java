@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.UserId;
@@ -31,6 +32,7 @@ class EventSerDeTest extends AbstractWriterTest {
             .withConfigurationResource("application.properties");
 
     @Inject
+    @BusinessMapper
     ObjectMapper objectMapper;
 
     private final String listOfTodos =

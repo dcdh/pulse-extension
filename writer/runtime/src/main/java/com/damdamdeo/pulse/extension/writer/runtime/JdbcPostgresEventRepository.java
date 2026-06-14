@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
+import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObjectMapperProducer;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.*;
@@ -32,7 +33,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     InstantProvider instantProvider;
 
     @Inject
-    @Named(BusinessObjectMapperProducer.BUSINESS_MAPPER)
+    @BusinessMapper
     ObjectMapper objectMapper;
 
     @Inject
