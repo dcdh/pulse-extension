@@ -67,7 +67,7 @@ class CommandHandlerTest extends AbstractWriterTest {
         }
     }
 
-    static final class DuplicateTodoException extends DuplicateAggregateException {
+    public static final class DuplicateTodoException extends DuplicateAggregateException {
 
         private final TodoId todoId;
 
