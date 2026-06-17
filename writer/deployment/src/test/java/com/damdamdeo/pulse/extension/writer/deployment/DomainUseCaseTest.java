@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
-import com.damdamdeo.pulse.extension.core.usecase.GenericUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class GenericUseCaseTest extends AbstractWriterTest {
+class DomainUseCaseTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -31,13 +31,13 @@ class GenericUseCaseTest extends AbstractWriterTest {
     DataSource dataSource;
 
     @Inject
-    CreateTodoGenericUseCase createTodoGenericUseCase;
+    CreateTodoDomainUseCase createTodoUseCase;
 
     @Inject
-    BusinessExceptionTodoGenericUseCase businessExceptionTodoGenericUseCase;
+    BusinessExceptionTodoDomainUseCase businessExceptionTodoUseCase;
 
     @Inject
-    TechnicalExceptionTodoGenericUseCase technicalExceptionTodoUseCase;
+    TechnicalExceptionTodoDomainUseCase technicalExceptionTodoUseCase;
 
     @Order(1)
     @Test
@@ -45,7 +45,7 @@ class GenericUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        final Todo loremIpsum = createTodoGenericUseCase.execute(new CreateTodo("lorem ipsum"));
+        final Todo loremIpsum = createTodoUseCase.execute(new CreateTodo("lorem ipsum"));
 
         // Then
         assertAll(
@@ -60,7 +60,7 @@ class GenericUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        assertThatThrownBy(() -> businessExceptionTodoGenericUseCase.execute(new CreateTodo("lorem ipsum")))
+        assertThatThrownBy(() -> businessExceptionTodoUseCase.execute(new CreateTodo("lorem ipsum")))
                 .isInstanceOf(BusinessException.class)
                 .hasRootCauseInstanceOf(RuntimeException.class)
                 .hasRootCauseMessage("Something wrong happened");
@@ -84,7 +84,7 @@ class GenericUseCaseTest extends AbstractWriterTest {
         assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001");
     }
 
-    static class CreateTodoGenericUseCase implements GenericUseCase<CreateTodo, Todo> {
+    static class CreateTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
 
         @Inject
         CommandHandler<Todo, TodoId> commandHandler;
@@ -97,7 +97,7 @@ class GenericUseCaseTest extends AbstractWriterTest {
         }
     }
 
-    static class BusinessExceptionTodoGenericUseCase implements GenericUseCase<CreateTodo, Todo> {
+    static class BusinessExceptionTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
 
         @Inject
         CommandHandler<Todo, TodoId> commandHandler;
@@ -110,7 +110,7 @@ class GenericUseCaseTest extends AbstractWriterTest {
         }
     }
 
-    static class TechnicalExceptionTodoGenericUseCase implements GenericUseCase<CreateTodo, Todo> {
+    static class TechnicalExceptionTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
 
         @Inject
         CommandHandler<Todo, TodoId> commandHandler;
@@ -122,6 +122,4 @@ class GenericUseCaseTest extends AbstractWriterTest {
             throw new TechnicalException(new RuntimeException("Something wrong happened"));
         }
     }
-
 }
-

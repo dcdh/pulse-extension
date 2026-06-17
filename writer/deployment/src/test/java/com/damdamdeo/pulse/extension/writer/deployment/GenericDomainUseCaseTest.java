@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class UseCaseTest extends AbstractWriterTest {
+class GenericDomainUseCaseTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -31,10 +31,10 @@ class UseCaseTest extends AbstractWriterTest {
     DataSource dataSource;
 
     @Inject
-    CreateTodoUseCase createTodoUseCase;
+    CreateTodoUseCase createTodoGenericUseCase;
 
     @Inject
-    BusinessExceptionTodoUseCase businessExceptionTodoUseCase;
+    BusinessExceptionTodoUseCase businessExceptionTodoGenericUseCase;
 
     @Inject
     TechnicalExceptionTodoUseCase technicalExceptionTodoUseCase;
@@ -45,7 +45,7 @@ class UseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        final Todo loremIpsum = createTodoUseCase.execute(new CreateTodo("lorem ipsum"));
+        final Todo loremIpsum = createTodoGenericUseCase.execute(new CreateTodo("lorem ipsum"));
 
         // Then
         assertAll(
@@ -60,7 +60,7 @@ class UseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        assertThatThrownBy(() -> businessExceptionTodoUseCase.execute(new CreateTodo("lorem ipsum")))
+        assertThatThrownBy(() -> businessExceptionTodoGenericUseCase.execute(new CreateTodo("lorem ipsum")))
                 .isInstanceOf(BusinessException.class)
                 .hasRootCauseInstanceOf(RuntimeException.class)
                 .hasRootCauseMessage("Something wrong happened");
@@ -84,7 +84,7 @@ class UseCaseTest extends AbstractWriterTest {
         assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001");
     }
 
-    static class CreateTodoUseCase implements UseCase<TodoId, CreateTodo, Todo> {
+    static class CreateTodoUseCase implements UseCase<CreateTodo, Todo> {
 
         @Inject
         CommandHandler<Todo, TodoId> commandHandler;
@@ -97,7 +97,7 @@ class UseCaseTest extends AbstractWriterTest {
         }
     }
 
-    static class BusinessExceptionTodoUseCase implements UseCase<TodoId, CreateTodo, Todo> {
+    static class BusinessExceptionTodoUseCase implements UseCase<CreateTodo, Todo> {
 
         @Inject
         CommandHandler<Todo, TodoId> commandHandler;
@@ -110,7 +110,7 @@ class UseCaseTest extends AbstractWriterTest {
         }
     }
 
-    static class TechnicalExceptionTodoUseCase implements UseCase<TodoId, CreateTodo, Todo> {
+    static class TechnicalExceptionTodoUseCase implements UseCase<CreateTodo, Todo> {
 
         @Inject
         CommandHandler<Todo, TodoId> commandHandler;
@@ -122,4 +122,6 @@ class UseCaseTest extends AbstractWriterTest {
             throw new TechnicalException(new RuntimeException("Something wrong happened"));
         }
     }
+
 }
+

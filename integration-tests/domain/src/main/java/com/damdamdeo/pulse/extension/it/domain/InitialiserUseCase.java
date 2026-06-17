@@ -7,13 +7,13 @@ import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserAggregateIdProvider;
 import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserAggregateIdProviderException;
-import com.damdamdeo.pulse.extension.core.usecase.GenericUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.UseCase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
-public class InitialiserUseCase implements GenericUseCase<InitialiserCommand, Void> {
+public class InitialiserUseCase implements UseCase<InitialiserCommand, Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InitialiserUseCase.class);
 

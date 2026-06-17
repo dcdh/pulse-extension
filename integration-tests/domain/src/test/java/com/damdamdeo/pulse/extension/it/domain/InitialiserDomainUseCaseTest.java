@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class InitialiserUseCaseTest {
+class InitialiserDomainUseCaseTest {
 
     @Mock
     private ConnectedUserAggregateIdProvider connectedUserAggregateIdProvider;
