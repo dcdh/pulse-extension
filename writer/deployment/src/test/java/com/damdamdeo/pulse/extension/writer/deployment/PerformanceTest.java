@@ -41,7 +41,6 @@ class PerformanceTest extends AbstractWriterTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
-            .overrideConfigKey("quarkus.devservices.enabled", "true")
             .overrideConfigKey("quarkus.log.category.\"com.damdamdeo.pulse.extension.writer.runtime.projection\".level", "INFO");
 
     @Inject

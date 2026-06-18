@@ -22,7 +22,6 @@ class CommandHandlerTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.devservices.enabled", "true")
             .withConfigurationResource("application.properties");
 
     @Inject
