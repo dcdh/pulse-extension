@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.connectionidentifier;
 
 import java.util.Objects;
 
+// will not trigger a rollback
 public class AlreadyAssociatedException extends Exception {
 
     private final ConnectionIdentifier connectionIdentifier;
