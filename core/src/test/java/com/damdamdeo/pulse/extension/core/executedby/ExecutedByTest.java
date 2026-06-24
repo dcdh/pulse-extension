@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -73,6 +74,12 @@ class ExecutedByTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("by must not be blank");
         }
+
+        @Test
+        void shouldReturnUsername() {
+            // Given / When / Then
+            assertThat(new ExecutedBy.EndUser("bob@mail.com", true).username()).isEqualTo(new Username("bob@mail.com"));
+        }
     }
 
     @Nested
@@ -84,6 +91,38 @@ class ExecutedByTest {
             assertThatThrownBy(() -> new ExecutedBy.ServiceAccount("  "))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("by must not be blank");
+        }
+
+        @Test
+        void shouldThrowExceptionOnUsername() {
+            // Given / When / Then
+            assertThatThrownBy(() -> new ExecutedBy.ServiceAccount("cron-job").username())
+                    .isInstanceOf(UnsupportedOperationException.class)
+                    .hasMessage("Service account does not have a username");
+        }
+    }
+
+    @Nested
+    class Anonymous {
+
+        @Test
+        void shouldThrowExceptionOnUsername() {
+            // Given / When / Then
+            assertThatThrownBy(ExecutedBy.Anonymous.INSTANCE::username)
+                    .isInstanceOf(UnsupportedOperationException.class)
+                    .hasMessage("Anonymous does not have a username");
+        }
+    }
+
+    @Nested
+    class NotAvailable {
+
+        @Test
+        void shouldThrowExceptionOnUsername() {
+            // Given / When / Then
+            assertThatThrownBy(ExecutedBy.NotAvailable.INSTANCE::username)
+                    .isInstanceOf(UnsupportedOperationException.class)
+                    .hasMessage("Not available does not have a username");
         }
     }
 }

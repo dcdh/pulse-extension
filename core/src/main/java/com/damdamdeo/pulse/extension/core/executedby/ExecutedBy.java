@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 import java.util.Objects;
@@ -12,6 +13,8 @@ public sealed interface ExecutedBy
     String encode(ExecutedByEncoder executedByEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
 
     String value();
+
+    Username username();
 
     boolean decoded();
 
@@ -32,6 +35,11 @@ public sealed interface ExecutedBy
         @Override
         public String value() {
             return DISCRIMINANT;
+        }
+
+        @Override
+        public Username username() {
+            throw new UnsupportedOperationException("Anonymous does not have a username");
         }
 
         @Override
@@ -64,6 +72,11 @@ public sealed interface ExecutedBy
         }
 
         @Override
+        public Username username() {
+            return new Username(by);
+        }
+
+        @Override
         public boolean decoded() {
             return decoded;
         }
@@ -91,6 +104,11 @@ public sealed interface ExecutedBy
         }
 
         @Override
+        public Username username() {
+            throw new UnsupportedOperationException("Service account does not have a username");
+        }
+
+        @Override
         public boolean decoded() {
             return true;
         }
@@ -113,6 +131,11 @@ public sealed interface ExecutedBy
         @Override
         public String value() {
             return DISCRIMINANT;
+        }
+
+        @Override
+        public Username username() {
+            throw new UnsupportedOperationException("Not available does not have a username");
         }
 
         @Override

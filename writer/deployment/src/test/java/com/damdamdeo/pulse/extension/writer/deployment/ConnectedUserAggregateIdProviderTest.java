@@ -1,8 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserAggregateIdProvider;
-import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserAggregateIdProviderException;
+import com.damdamdeo.pulse.extension.core.connecteduser.*;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -16,17 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
@@ -57,20 +50,17 @@ class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
     public static class ConnectedUserProviderEndpoint {
 
         @Inject
-        ConnectedUserAggregateIdProvider connectedUserAggregateIdProvider;
+        ConnectedUserProvider connectedUserProvider;
 
         @GET
         public Response provideUserAggregateId() {
             try {
-                final UserAggregateId provide = connectedUserAggregateIdProvider.provide(UserAggregateId.class,
-                        (identifiable -> new UserAggregateId(identifiable.id())),
-                        (sequenceNumber -> new UserAggregateId("U" + AggregateId.SEPARATOR + sequenceNumber.number())));
+                final ConnectedUser provide = connectedUserProvider.provide();
                 return Response.ok(new UserAggregateId(provide.id())).build();
-            } catch (final ConnectedUserAggregateIdProviderException e) {
+            } catch (final ConnectedIsAnonymousException | UsernameNotAMailException |
+                           ConnectedUserNotAvailableException e) {
                 return Response.serverError()
-                        .entity(Map.of(
-                                "error", e.getCause()
-                        ))
+                        .entity(Map.of("error", e.getCause()))
                         .build();
             }
         }
@@ -116,22 +106,6 @@ class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
                 .get("/provide")
                 .then().log().all()
                 .statusCode(200)
-                .body("id", is("U-000001"));
-
-        final List<DatabaseConnectionIdentifier> databaseConnectionIdentifiers = new ArrayList<>();
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement(
-                     // language=sql
-                     """
-                             SELECT connection_identifier_hash AS connection_identifier_hash, identifiable_id AS identifiable_id FROM pulse.connection_identifier
-                             """);
-             final ResultSet rs = ps.executeQuery()) {
-            rs.next();
-            databaseConnectionIdentifiers.add(new DatabaseConnectionIdentifier(rs.getString("connection_identifier_hash"), rs.getString("identifiable_id")));
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        assertThat(databaseConnectionIdentifiers).containsExactly(
-                new DatabaseConnectionIdentifier("d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976", "U-000001"));
+                .body("id", is("bob@mail.com"));
     }
 }

@@ -18,7 +18,9 @@ package com.damdamdeo.pulse.extension.it.infra.api;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.UnableToFindException;
+import com.damdamdeo.pulse.extension.core.connecteduser.registration.ConnectedUserAlreadyRegisteredException;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserUseCase;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
@@ -206,14 +208,19 @@ public class PulseExtensionResource {
     }
 
     @ServerExceptionMapper
-    public RestResponse<String> mapException(UnableToFindException exception) {
+    public RestResponse<String> mapException(final ConnectionIdentifierProviderException exception) {
+        return RestResponse.status(RestResponse.Status.INTERNAL_SERVER_ERROR, exception.getMessage());
+    }
+
+    @ServerExceptionMapper
+    public RestResponse<String> mapException(final ConnectionIdentifierRepositoryException exception) {
         return RestResponse.status(RestResponse.Status.INTERNAL_SERVER_ERROR, exception.getMessage());
     }
 
     @GET
     @Path("/listConnectedUserTodos")
     @Authenticated
-    public List<TodoProjection> listConnectedUserTodos() throws UnableToFindException {
+    public List<TodoProjection> listConnectedUserTodos() throws ConnectionIdentifierProviderException, ConnectionIdentifierRepositoryException {
         return todoProjectionQuery.getByConnectedUser();
     }
 }

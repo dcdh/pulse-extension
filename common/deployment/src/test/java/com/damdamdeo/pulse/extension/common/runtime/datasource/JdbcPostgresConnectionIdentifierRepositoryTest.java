@@ -9,13 +9,18 @@ import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
+import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.quarkus.narayana.jta.QuarkusTransactionException;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionalException;
+import org.assertj.core.api.AbstractThrowableAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.postgresql.util.PSQLException;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -23,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,6 +46,9 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
 
     @Inject
     JdbcPostgresConnectionIdentifierRepository jdbcPostgresConnectionIdentifierRepository;
+
+    @Inject
+    TransactionManager transactionManager;
 
     @Inject
     DataSource dataSource;
@@ -71,12 +80,24 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
     }
 
     @Test
-    void shouldStore() throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException {
+    void shouldStoreThrowTransactionalExceptionWhenNotExecutedInTransaction() {
         // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
+        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
+
+        // When && Then
+        assertThatThrownBy(() -> jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001")))
+                .isExactlyInstanceOf(TransactionalException.class)
+                .hasMessage("ARJUNA016110: Transaction is required for invocation");
+    }
+
+    @Test
+    void shouldStore() {
+        // Given
+        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
 
         // When
-        jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001"));
+        QuarkusTransaction.requiringNew()
+                .call(() -> jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001")));
 
         // Then
         final List<DatabaseConnectionIdentifier> databaseConnectionIdentifiers = new ArrayList<>();
@@ -97,26 +118,81 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
     }
 
     @Test
-    void shouldFailToStoreWhenConnectionIdentifierIsAlreadyStored() throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException {
+    void shouldFailToStoreWhenConnectionIdentifierIsAlreadyStored() {
         // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001"));
+        final List<Integer> status = new ArrayList<>();
+        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
+        QuarkusTransaction.requiringNew().call(() -> jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001")));
 
         // When && Then
-        assertThatThrownBy(() -> jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000002")))
-                .isInstanceOf(DuplicateConnectionIdentifierException.class)
-                .hasMessage("Connection identifier hash already exists: 0000000000000000000000000000000000000000000000000000000000000000.")
-                .hasRootCauseInstanceOf(PSQLException.class);
+        QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            QuarkusTransaction.joiningExisting().call(() -> {
+                status.add(transactionManager.getStatus());
+                assertThatThrownBy(() -> jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000002")))
+                        .isInstanceOf(DuplicateConnectionIdentifierException.class)
+                        .hasMessage("Connection identifier hash already exists: 0000000000000000000000000000000000000000000000000000000000000000.");
+                status.add(transactionManager.getStatus());
+                return null;
+            });
+            status.add(transactionManager.getStatus());
+            return null;
+        });
+        // no rollback happened :)
+        assertThat(status).containsExactly(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_ACTIVE);
     }
 
     @Test
-    void shouldFindByHashReturnFoundAggregateFromIdentifiable() throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException {
+    void shouldRollbackTransactionWhenStoreTrowsConnectionIdentifierRepositoryException() {
         // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
-        jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001"));
+        final List<Integer> counts = new ArrayList<>();
+        final List<Integer> status = new ArrayList<>();
+        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
+        final UserAggregateId givenUserAggregateId = new UserAggregateId("U-000002");
+        final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
 
         // When
-        final Optional<Identifiable> byHash = jdbcPostgresConnectionIdentifierRepository.findByHash(givenConnectionIdentifier);
+        assertThatThrownBy(() -> QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            expectedException.set(assertThatThrownBy(() ->
+                    QuarkusTransaction.joiningExisting().call(() -> {
+                        jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, givenUserAggregateId);
+                        status.add(transactionManager.getStatus());
+
+                        counts.add(count());
+
+                        try (final Connection c = dataSource.getConnection()) {
+                            c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
+                        } catch (SQLException e) {
+                            // do nothing
+                        }
+                        jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, givenUserAggregateId);
+                        throw new IllegalStateException("Should not reach this point");
+                    })
+            ));
+            status.add(transactionManager.getStatus());
+            return null;
+        }));
+
+        counts.add(count());
+        // Then
+        // verify DB is empty (rollback happened)
+        assertAll(
+                () -> expectedException.get().isExactlyInstanceOf(QuarkusTransactionException.class)
+                        .hasCauseInstanceOf(ConnectionIdentifierRepositoryException.class),
+                () -> assertThat(counts).containsExactly(1, 0),
+                () -> assertThat(status).containsExactly(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_MARKED_ROLLBACK));
+    }
+
+    @Test
+    void shouldFindByHashReturnFoundAggregateFromIdentifiable() throws ConnectionIdentifierRepositoryException {
+        // Given
+        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
+        QuarkusTransaction.requiringNew()
+                .call(() -> jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001")));
+
+        // When
+        final Optional<Identifiable> byHash = jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
 
         // Then
         assertAll(
@@ -127,12 +203,63 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
     @Test
     void shouldFIndByHashReturnEmptyWhenNoIdentifiableAssociated() throws ConnectionIdentifierRepositoryException {
         // Given
-        final Hash<ConnectionIdentifier> givenConnectionIdentifier = new Hash<>("0000000000000000000000000000000000000000000000000000000000000000");
+        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
 
         // When
-        final Optional<Identifiable> byHash = jdbcPostgresConnectionIdentifierRepository.findByHash(givenConnectionIdentifier);
+        final Optional<Identifiable> byHash = jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
 
         // Then
         assertThat(byHash).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    void shouldRollbackTransactionWhenFindTrowsConnectionIdentifierRepositoryException() {
+        // Given
+        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
+        final List<Integer> status = new ArrayList<>();
+        final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
+
+        // When
+        assertThatThrownBy(() -> QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            expectedException.set(assertThatThrownBy(() ->
+                    QuarkusTransaction.joiningExisting().call(() -> {
+                        jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
+                        status.add(transactionManager.getStatus());
+
+                        try (final Connection c = dataSource.getConnection()) {
+                            c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
+                        } catch (SQLException e) {
+                            // do nothing
+                        }
+                        jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
+                        throw new IllegalStateException("Should not reach this point");
+                    }))
+            );
+            status.add(transactionManager.getStatus());
+            return null;
+        }));
+
+        // Then
+        assertAll(
+                () -> expectedException.get().isExactlyInstanceOf(QuarkusTransactionException.class)
+                        .hasCauseInstanceOf(ConnectionIdentifierRepositoryException.class),
+                () -> assertThat(status).containsExactly(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_MARKED_ROLLBACK)
+        );
+    }
+
+    private int count() {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT COUNT(*) AS count FROM pulse.connection_identifier
+                             """);
+             final ResultSet rs = ps.executeQuery()) {
+            rs.next();
+            return rs.getInt("count");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

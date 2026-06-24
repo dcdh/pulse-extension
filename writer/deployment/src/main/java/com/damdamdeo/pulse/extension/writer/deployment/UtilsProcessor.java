@@ -26,4 +26,11 @@ public final class UtilsProcessor {
         }
         return false;
     }
+
+    public static boolean hasSuperClass(final ClassInfo classInfo, final IndexView index, final Class<?> clazz) {
+        Objects.requireNonNull(classInfo);
+        Objects.requireNonNull(index);
+        Objects.requireNonNull(clazz);
+        return classInfo.superClassType() != null && classInfo.superClassType().name().equals(DotName.createSimple(clazz));
+    }
 }

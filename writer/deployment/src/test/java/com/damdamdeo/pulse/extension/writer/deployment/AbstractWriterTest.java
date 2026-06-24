@@ -11,23 +11,23 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AbstractWriterTest {
 
     @ApplicationScoped
     static class StubPassphraseRepository implements PassphraseRepository {
 
+        private Map<OwnedBy, Passphrase> passphrases = new HashMap<>();
+
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            return Optional.empty();
+            return Optional.ofNullable(passphrases.get(ownedBy));
         }
 
         @Override
         public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
+            passphrases.put(ownedBy, passphrase);
             return passphrase;
         }
     }
@@ -44,6 +44,26 @@ public abstract class AbstractWriterTest {
              final ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 aggregateRootIds.add(rs.getString("aggregate_root_id"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return aggregateRootIds;
+    }
+
+    protected List<String> listEventsAggregateRootIdAggregateRootTypeEventType(final DataSource dataSource) {
+        Objects.requireNonNull(dataSource);
+        final List<String> aggregateRootIds = new ArrayList<>();
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT aggregate_root_id, aggregate_root_type, event_type FROM event
+                             """);
+             final ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                aggregateRootIds.add(rs.getString("aggregate_root_id") + "|" + rs.getString("aggregate_root_type")
+                        + "|" + rs.getString("event_type"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

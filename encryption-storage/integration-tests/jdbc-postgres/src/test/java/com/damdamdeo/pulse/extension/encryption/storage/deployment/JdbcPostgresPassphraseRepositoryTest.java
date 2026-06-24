@@ -10,8 +10,14 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.JdbcPostgresPassphraseRepository;
+import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.quarkus.narayana.jta.QuarkusTransactionException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionManager;
+import jakarta.transaction.TransactionalException;
+import org.assertj.core.api.AbstractThrowableAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,6 +47,9 @@ class JdbcPostgresPassphraseRepositoryTest {
 
     @Inject
     JdbcPostgresPassphraseRepository jdbcPostgresPassphraseRepository;
+
+    @Inject
+    TransactionManager transactionManager;
 
     @BeforeEach
     @AfterEach
@@ -65,28 +75,71 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenPassphraseDoesNotExists() throws UnableToRetrievePassphraseException {
+    void shouldRetrieveThrowTransactionalExceptionWhenNotExecutedInTransaction() {
+        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1))
+                .isExactlyInstanceOf(TransactionalException.class)
+                .hasMessage("ARJUNA016110: Transaction is required for invocation");
+    }
+
+    @Test
+    void shouldReturnEmptyWhenPassphraseDoesNotExists() {
         // Given
 
         // When
-        final Optional<Passphrase> passphrase = jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = QuarkusTransaction.requiringNew()
+                .call(() -> jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1));
 
         // Then
         assertThat(passphrase).isEmpty();
     }
 
     @Test
-    void shouldReturnStoredPassphrase() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+    void shouldReturnStoredPassphrase() {
         // Given
-        jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
+        QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE));
 
         // When
-        final Optional<Passphrase> passphrase = jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1));
 
         // Then
         assertAll(
                 () -> assertThat(passphrase).isNotEmpty(),
                 () -> assertThat(passphrase.get().passphrase()).containsExactly(PassphraseSample.PASSPHRASE.passphrase()));
+    }
+
+    @Test
+    void shouldRollbackTransactionWhenUnableToRetrievePassphraseExceptionIsThrown() {
+        // Given
+        final List<Integer> status = new ArrayList<>();
+        final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
+
+        // When
+        assertThatThrownBy(() -> QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            expectedException.set(assertThatThrownBy(() ->
+                    QuarkusTransaction.joiningExisting().call(() -> {
+                        jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+                        status.add(transactionManager.getStatus());
+
+                        try (final Connection c = dataSource.getConnection()) {
+                            c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
+                        } catch (SQLException e) {
+                            // do nothing
+                        }
+                        jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+                        throw new IllegalStateException("Should not reach this point");
+                    })
+            ));
+            status.add(transactionManager.getStatus());
+            return null;
+        }));
+
+        // Then
+        assertAll(
+                () -> expectedException.get().isExactlyInstanceOf(QuarkusTransactionException.class)
+                        .hasCauseInstanceOf(UnableToRetrievePassphraseException.class),
+                () -> assertThat(status).containsExactly(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_MARKED_ROLLBACK)
+        );
     }
 
     record PassphraseRecord(String ownedByHashed, String passphrase) {
@@ -98,14 +151,21 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldStorePassphrase() throws PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+    void shouldStoreThrowTransactionalExceptionWhenNotExecutedInTransaction() {
+        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE))
+                .isExactlyInstanceOf(TransactionalException.class)
+                .hasMessage("ARJUNA016110: Transaction is required for invocation");
+    }
+
+    @Test
+    void shouldStorePassphrase() {
         // Given
 
         // When
-        final Passphrase stored = jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
+        final Passphrase stored = QuarkusTransaction.requiringNew()
+                .call(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE));
 
         // Then
-
         final List<PassphraseRecord> passphrases = new ArrayList<>();
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(
@@ -128,13 +188,82 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() throws PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+    void shouldThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() {
         // Given
-        jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
+        final List<Integer> status = new ArrayList<>();
+        QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE));
 
         // When && Then
-        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE))
-                .isExactlyInstanceOf(PassphraseAlreadyExistsException.class)
-                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
+        QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            QuarkusTransaction.joiningExisting().call(() -> {
+                status.add(transactionManager.getStatus());
+                assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE))
+                        .isExactlyInstanceOf(PassphraseAlreadyExistsException.class)
+                        .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
+                status.add(transactionManager.getStatus());
+                return null;
+            });
+            status.add(transactionManager.getStatus());
+            return null;
+        });
+        // no rollback happened :)
+        assertThat(status).containsExactly(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_ACTIVE);
+    }
+
+    @Test
+    void shouldRollbackTransactionWhenUnableToStorePassphraseExceptionIsThrown() {
+        // Given
+        final List<Integer> counts = new ArrayList<>();
+        final List<Integer> status = new ArrayList<>();
+        final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
+
+        // When
+        assertThatThrownBy(() -> QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            expectedException.set(assertThatThrownBy(() ->
+                    QuarkusTransaction.joiningExisting().call(() -> {
+                        jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
+                        status.add(transactionManager.getStatus());
+
+                        counts.add(count());
+
+                        try (final Connection c = dataSource.getConnection()) {
+                            c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
+                        } catch (SQLException e) {
+                            // do nothing
+                        }
+                        jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
+                        throw new IllegalStateException("Should not reach this point");
+                    })
+            ));
+            status.add(transactionManager.getStatus());
+            return null;
+        }));
+
+        counts.add(count());
+
+        // Then
+        // verify DB is empty (rollback happened)
+        assertAll(
+                () -> expectedException.get().isExactlyInstanceOf(QuarkusTransactionException.class)
+                        .hasCauseInstanceOf(UnableToStorePassphraseException.class),
+                () -> assertThat(counts).containsExactly(1, 0),
+                () -> assertThat(status).containsExactly(Status.STATUS_ACTIVE, Status.STATUS_ACTIVE, Status.STATUS_MARKED_ROLLBACK));
+    }
+
+    private int count() {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT COUNT(*) AS count FROM pulse.passphrase
+                             """);
+             final ResultSet rs = ps.executeQuery()) {
+            rs.next();
+            return rs.getInt("count");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

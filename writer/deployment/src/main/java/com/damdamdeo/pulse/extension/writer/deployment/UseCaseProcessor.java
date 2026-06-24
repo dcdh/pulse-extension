@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.usecase.UseCase;
+import com.damdamdeo.pulse.extension.core.connecteduser.registration.AbstractRegistrationDomainUseCase;
+import com.damdamdeo.pulse.extension.core.connecteduser.update.AbstractUpdateUserNameUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.UseCase;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.processor.DotNames;
@@ -48,7 +50,9 @@ public class UseCaseProcessor {
                     final Declaration target = context.declaration();
                     if (target.kind() == AnnotationTarget.Kind.CLASS) {
                         if (UtilsProcessor.hasDirectImplementation(target.asClass(), index, UseCase.class)
-                                || UtilsProcessor.hasDirectImplementation(target.asClass(), index, DomainUseCase.class)) {
+                                || UtilsProcessor.hasDirectImplementation(target.asClass(), index, DomainUseCase.class)
+                                || UtilsProcessor.hasSuperClass(target.asClass(), index, AbstractRegistrationDomainUseCase.class)
+                                || UtilsProcessor.hasSuperClass(target.asClass(), index, AbstractUpdateUserNameUseCase.class)) {
                             context.add(transactionalAnnotation);
                         }
                     }

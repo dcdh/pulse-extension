@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.common.runtime.datasource.JdbcPostgresConne
 import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionAssociationFinder;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
@@ -14,21 +14,28 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
-public class ConnectionAssociationFinderProcessor {
+public class ConnectionIdentifierProcessor {
 
     public static final Supplier<Boolean> hasQuarkusJdbcPostgresInClassPath = () -> QuarkusClassLoader.isClassPresentAtRuntime("io.quarkus.jdbc.postgresql.runtime.PostgreSQLAgroalConnectionConfigurer");
 
     @BuildStep
-    AdditionalBeanBuildItem additionalBeans(final Capabilities capabilities) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+    List<AdditionalBeanBuildItem> produceAdditionalBeanBuildItem(final Capabilities capabilities) {
+        final List<AdditionalBeanBuildItem> additionalBeanBuildItems = new ArrayList<>();
+        additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
+                .addBeanClasses(ConnectionIdentifierProvider.class)
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .setUnremovable()
+                .build());
         if (capabilities.isPresent(Capability.OIDC) && hasQuarkusJdbcPostgresInClassPath.get()) {
-            builder.addBeanClasses(JdbcPostgresConnectionIdentifierRepository.class, ConnectionAssociationFinder.class)
-                    .setDefaultScope(DotNames.APPLICATION_SCOPED)
-                    .setUnremovable();
+            additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
+                    .addBeanClasses(JdbcPostgresConnectionIdentifierRepository.class)
+                    .build());
         }
-        return builder.build();
+        return additionalBeanBuildItems;
     }
 
     @BuildStep

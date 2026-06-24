@@ -7,6 +7,7 @@ import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
 @Singleton
 @Unremovable
 @DefaultBean
+@Transactional(TxType.MANDATORY)
 public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepository {
 
     static final Logger LOGGER = Logger.getLogger(JdbcPostgresIdempotencyRepository.class.getName());
@@ -56,12 +58,11 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
                 }
                 return Optional.empty();
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new IdempotencyException("Failed to find idempotency entry", e);
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRED)
     @Override
     public void upsert(final IdempotencyKey idempotencyKey, final CurrentVersionInConsumption currentVersionInConsumption) throws IdempotencyException {
         Objects.requireNonNull(idempotencyKey);

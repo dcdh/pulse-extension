@@ -5,11 +5,11 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnectionIdentifierException;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
-import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import jakarta.transaction.Transactional;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -31,9 +31,10 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
                         identifiable_id
                     )
                     VALUES (?, ?)
+                    ON CONFLICT (connection_identifier_hash) DO NOTHING
                     """;
 
-    private static final String SELECT_SQL =
+    private static final String SELECT_BY_CONNECTION_IDENTIFIER_SQL =
             // language=sql
             """
                     SELECT identifiable_id
@@ -52,57 +53,41 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
     Provider<DataSource> dataSource;
 
     @Override
-    public void store(final Hash<ConnectionIdentifier> connectionIdentifierHash, final Identifiable identifiable)
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public ConnectionIdentifier store(final ConnectionIdentifier connectionIdentifier, final Identifiable identifiable)
             throws DuplicateConnectionIdentifierException, ConnectionIdentifierRepositoryException {
-        Objects.requireNonNull(connectionIdentifierHash);
+        Objects.requireNonNull(connectionIdentifier);
         Objects.requireNonNull(identifiable);
         try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
-            preparedStatement.setString(1, connectionIdentifierHash.value());
+            preparedStatement.setString(1, connectionIdentifier.id());
             preparedStatement.setString(2, identifiable.id());
-            preparedStatement.executeUpdate();
-        } catch (final SQLException exception) {
-            if (isUniqueViolation(exception)) {
+            final int updated = preparedStatement.executeUpdate();
+            if (updated == 0) {
                 throw new DuplicateConnectionIdentifierException(
-                        "Connection identifier hash already exists: %s.".formatted(connectionIdentifierHash.value()),
-                        exception);
+                        "Connection identifier hash already exists: %s.".formatted(connectionIdentifier.id()));
             }
-            throw new ConnectionIdentifierRepositoryException("Unable to store connection identifier.",
-                    exception);
+        } catch (final SQLException exception) {
+            throw new ConnectionIdentifierRepositoryException("Unable to store connection identifier.", exception);
         }
+        return connectionIdentifier;
     }
 
     @Override
-    public Optional<Identifiable> findByHash(final Hash<ConnectionIdentifier> connectionIdentifierHash) throws ConnectionIdentifierRepositoryException {
-        Objects.requireNonNull(connectionIdentifierHash);
+    public Optional<Identifiable> find(final ConnectionIdentifier connectionIdentifier) throws ConnectionIdentifierRepositoryException {
+        Objects.requireNonNull(connectionIdentifier);
         try (final Connection connection = dataSource.get().getConnection();
-             final PreparedStatement preparedStatement = connection.prepareStatement(SELECT_SQL)) {
-            preparedStatement.setString(1, connectionIdentifierHash.value());
+             final PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_CONNECTION_IDENTIFIER_SQL)) {
+            preparedStatement.setString(1, connectionIdentifier.id());
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (!resultSet.next()) {
                     return Optional.empty();
                 }
-                return Optional.of(
-                        new AnyIdentifiable(
-                                resultSet.getString("identifiable_id")));
+                return Optional.of(new AnyIdentifiable(resultSet.getString("identifiable_id")));
             }
         } catch (final SQLException exception) {
             throw new ConnectionIdentifierRepositoryException("Unable to find identifiable by hash.", exception);
         }
-    }
-
-    private boolean isUniqueViolation(final SQLException exception) {
-        SQLException current = exception;
-        while (current != null) {
-            /*
-             * PostgreSQL unique violation SQL state
-             */
-            if ("23505".equals(current.getSQLState())) {
-                return true;
-            }
-            current = current.getNextException();
-        }
-        return false;
     }
 }
 

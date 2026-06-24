@@ -9,6 +9,8 @@ import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 import org.apache.commons.text.CaseUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -20,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 
 @ApplicationScoped
+@Transactional(TxType.MANDATORY)
 @Unremovable
 public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
 

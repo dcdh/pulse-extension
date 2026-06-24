@@ -26,7 +26,7 @@ class OwnedByTest {
         final OwnedBy from = OwnedBy.from(given);
 
         // Then
-        assertThat(from.id()).isEqualTo("CustomIdentifiable|0123456789");
+        assertThat(from.id()).isEqualTo("0123456789");
     }
 
     @Test
@@ -38,7 +38,7 @@ class OwnedByTest {
         final OwnedBy from = OwnedBy.from(given);
 
         // Then
-        assertThat(from.id()).isEqualTo("TodoId|U000001-T000001");
+        assertThat(from.id()).isEqualTo("U000001-T000001");
     }
 
     @Test
@@ -50,6 +50,6 @@ class OwnedByTest {
         final OwnedBy himself = OwnedBy.himself(given);
 
         // Then
-        assertThat(himself.id()).isEqualTo("TodoId|U000001-T000001");
+        assertThat(himself.id()).isEqualTo("U000001-T000001");
     }
 }

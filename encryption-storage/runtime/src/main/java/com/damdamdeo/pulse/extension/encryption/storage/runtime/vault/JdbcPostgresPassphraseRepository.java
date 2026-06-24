@@ -8,6 +8,7 @@ import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Provider;
 import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -19,7 +20,7 @@ import java.util.Optional;
 
 @ApplicationScoped
 @Unremovable
-@Transactional
+@Transactional(value = TxType.MANDATORY)
 @DefaultBean
 public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
@@ -84,35 +85,21 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                 """
                         INSERT INTO pulse.passphrase(owned_by_hashed, passphrase)
                         VALUES (?, public.pgp_sym_encrypt(?::text,?))
+                        ON CONFLICT (owned_by_hashed) DO NOTHING
                         """;
         try (final Connection connection = dataSource.get().getConnection();
              final PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, ownerHash);
             stmt.setString(2, new String(passphrase.passphrase()));
             stmt.setString(3, masterKey.key());
-            stmt.executeUpdate();
+            final int updated = stmt.executeUpdate();
+            if (updated == 0) {
+                throw new PassphraseAlreadyExistsException(ownedBy);
+            }
             return new Passphrase(passphrase.passphrase().clone());
         } catch (final SQLException sqlException) {
-            if (isUniqueViolation(sqlException)) {
-                throw new PassphraseAlreadyExistsException(ownedBy);
-            } else {
-                throw new UnableToStorePassphraseException(sqlException);
-            }
+            throw new UnableToStorePassphraseException(sqlException);
         }
-    }
-
-    private boolean isUniqueViolation(final SQLException exception) {
-        SQLException current = exception;
-        while (current != null) {
-            /*
-             * PostgreSQL unique violation SQL state
-             */
-            if ("23505".equals(current.getSQLState())) {
-                return true;
-            }
-            current = current.getNextException();
-        }
-        return false;
     }
 
     private String hash(final OwnedBy ownedBy) {

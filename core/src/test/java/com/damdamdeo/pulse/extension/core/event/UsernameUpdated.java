@@ -5,9 +5,9 @@ import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 
 import java.util.Objects;
 
-public record UserRegistered(Username username) implements Event<UserId> {
+public record UsernameUpdated(Username username) implements Event<UserId> {
 
-    public UserRegistered {
+    public UsernameUpdated {
         Objects.requireNonNull(username);
     }
 }

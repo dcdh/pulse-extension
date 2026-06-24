@@ -7,8 +7,10 @@ import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
+import jakarta.transaction.TransactionalException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
@@ -74,17 +77,31 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldFindLastAggregateVersionByReturnEmptyWhenNotPresent() {
-        // Given
-
-        // When
-        final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
+    void shouldFindLastAggregateVersionByThrowTransactionalExceptionWhenNotExecutedInTransaction() {
+        assertThatThrownBy(() -> jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                 new IdempotencyKey(
                         new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())));
+                        new AnyAggregateId(TodoId.USER_1_TODO_1.id()))))
+                .isExactlyInstanceOf(TransactionalException.class)
+                .hasMessage("ARJUNA016110: Transaction is required for invocation");
+    }
+
+    @Test
+    void shouldFindLastAggregateVersionByReturnEmptyWhenNotPresent() {
+        // Given
+
+        // When
+        final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = QuarkusTransaction.requiringNew()
+                .call(() -> jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
+                        new IdempotencyKey(
+                                new Purpose("statistics"),
+                                new FromApplication("TodoTaking", "Todo"),
+                                Table.EVENT,
+                                AggregateRootType.from(Todo.class),
+                                new AnyAggregateId(TodoId.USER_1_TODO_1.id()))));
 
         // Then
         assertThat(lastAggregateVersionBy).isEmpty();
@@ -112,13 +129,14 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         }
 
         // When
-        final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
-                new IdempotencyKey(
-                        new Purpose("statistics"),
-                        new FromApplication("TodoTaking", "Todo"),
-                        Table.EVENT,
-                        AggregateRootType.from(Todo.class),
-                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())));
+        final Optional<LastConsumedAggregateVersion> lastAggregateVersionBy = QuarkusTransaction.requiringNew()
+                .call(() -> jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
+                        new IdempotencyKey(
+                                new Purpose("statistics"),
+                                new FromApplication("TodoTaking", "Todo"),
+                                Table.EVENT,
+                                AggregateRootType.from(Todo.class),
+                                new AnyAggregateId(TodoId.USER_1_TODO_1.id()))));
 
         // Then
         assertThat(lastAggregateVersionBy).isEqualTo(Optional.of(
@@ -126,17 +144,31 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldUpsertInsertWhenNotPresent() {
-        // Given
-
-        // When
-        jdbcPostgresIdempotencyRepository.upsert(
+    void shouldUpsertThrowTransactionalExceptionWhenNotExecutedInTransaction() {
+        assertThatThrownBy(() -> jdbcPostgresIdempotencyRepository.upsert(
                 new IdempotencyKey(
                         new Purpose("statistics"),
                         new FromApplication("TodoTaking", "Todo"),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
-                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0));
+                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0)))
+                .isExactlyInstanceOf(TransactionalException.class)
+                .hasMessage("ARJUNA016110: Transaction is required for invocation");
+    }
+
+    @Test
+    void shouldUpsertInsertWhenNotPresent() {
+        // Given
+
+        // When
+        QuarkusTransaction.requiringNew()
+                .run(() -> jdbcPostgresIdempotencyRepository.upsert(
+                        new IdempotencyKey(
+                                new Purpose("statistics"),
+                                new FromApplication("TodoTaking", "Todo"),
+                                Table.EVENT,
+                                AggregateRootType.from(Todo.class),
+                                new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0)));
 
         // Then
         // language=sql
@@ -182,13 +214,14 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         }
 
         // When
-        jdbcPostgresIdempotencyRepository.upsert(
-                new IdempotencyKey(
-                        new Purpose("statistics"),
-                        new FromApplication("TodoTaking", "Todo"),
-                        Table.EVENT,
-                        AggregateRootType.from(Todo.class),
-                        new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(1));
+        QuarkusTransaction.requiringNew()
+                .run(() -> jdbcPostgresIdempotencyRepository.upsert(
+                        new IdempotencyKey(
+                                new Purpose("statistics"),
+                                new FromApplication("TodoTaking", "Todo"),
+                                Table.EVENT,
+                                AggregateRootType.from(Todo.class),
+                                new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(1)));
 
         // Then
         // language=sql

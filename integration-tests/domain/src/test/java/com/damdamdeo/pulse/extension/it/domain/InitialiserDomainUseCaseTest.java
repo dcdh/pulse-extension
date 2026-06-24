@@ -5,8 +5,7 @@ import com.damdamdeo.pulse.extension.core.command.AddNewTodoItem;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.RegisterUser;
-import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserAggregateIdProvider;
-import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserAggregateIdProviderException;
+import com.damdamdeo.pulse.extension.core.connecteduser.registration.UserRegistrationDomainUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,26 +25,19 @@ import static org.mockito.Mockito.*;
 class InitialiserDomainUseCaseTest {
 
     @Mock
-    private ConnectedUserAggregateIdProvider connectedUserAggregateIdProvider;
+    UserRegistrationDomainUseCase userRegistrationDomainUseCase;
 
     @Mock
-    private CommandHandler<User, UserId> userCommandHandler;
+    CommandHandler<Todo, TodoId> todoCommandHandler;
 
     @Mock
-    private CommandHandler<Todo, TodoId> todoCommandHandler;
+    CommandHandler<TodoChecklist, TodoChecklistId> todoChecklistCommandHandler;
 
-    @Mock
-    private CommandHandler<TodoChecklist, TodoChecklistId> todoChecklistCommandHandler;
-
-    private InitialiserUseCase initialiserUseCase;
+    InitialiserUseCase initialiserUseCase;
 
     @BeforeEach
-    void setUp() {
-        initialiserUseCase = new InitialiserUseCase(
-                connectedUserAggregateIdProvider,
-                userCommandHandler,
-                todoCommandHandler,
-                todoChecklistCommandHandler);
+    void setup() {
+        initialiserUseCase = new InitialiserUseCase(userRegistrationDomainUseCase, todoCommandHandler, todoChecklistCommandHandler);
     }
 
     @Test
@@ -63,15 +55,15 @@ class InitialiserDomainUseCaseTest {
         final TodoChecklistId todoChecklistId = new TodoChecklistId(todoId, TodoChecklistId.SEQUENCE_NUMBER_1);
         final TodoChecklist todoChecklist = new TodoChecklist(todoChecklistId);
 
-        when(connectedUserAggregateIdProvider.provide(eq(UserId.class), any(), any())).thenReturn(userId);
-        when(userCommandHandler.handle(eq(userId), any(RegisterUser.class), any())).thenReturn(user);
+        when(userRegistrationDomainUseCase.execute(new RegisterUser())).thenReturn(user);
         when(todoCommandHandler.handle(
                 ArgumentMatchers.<Function<SequenceNumber, TodoId>>any(),
-                eq(new CreateTodo("lorem ipsum")), any())).thenReturn(todo);
+                eq(new CreateTodo("lorem ipsum")),
+                ArgumentMatchers.<Function<TodoId, DuplicateAggregateException>>any())).thenReturn(todo);
         when(todoChecklistCommandHandler.handle(
                 ArgumentMatchers.<Function<SequenceNumber, TodoChecklistId>>any(),
                 eq(new AddNewTodoItem(todoId, "Make it works !")),
-                any()
+                ArgumentMatchers.<Function<TodoChecklistId, DuplicateAggregateException>>any()
         )).thenReturn(todoChecklist);
 
         // When
@@ -79,32 +71,13 @@ class InitialiserDomainUseCaseTest {
 
         // Then
         assertAll(
-                () -> verify(connectedUserAggregateIdProvider, times(1)).provide(eq(UserId.class), any(), any()),
-                () -> verify(userCommandHandler, times(1)).handle(any(UserId.class), any(RegisterUser.class), any()),
-                () -> verify(todoCommandHandler).handle(ArgumentMatchers.<Function<SequenceNumber, TodoId>>any(), any(CreateTodo.class), any()),
+                () -> verify(userRegistrationDomainUseCase, times(1)).execute(any()),
+                () -> verify(todoCommandHandler).handle(ArgumentMatchers.<Function<SequenceNumber, TodoId>>any(),
+                        any(CreateTodo.class),
+                        ArgumentMatchers.<Function<TodoId, DuplicateAggregateException>>any()),
                 () -> verify(todoChecklistCommandHandler).handle(ArgumentMatchers.<Function<SequenceNumber, TodoChecklistId>>any(),
-                        any(AddNewTodoItem.class), any()));
-    }
-
-    @Test
-    void shouldThrowTechnicalExceptionWhenConnectedUserProviderFails() throws Exception {
-        // Given
-        final InitialiserCommand command = new InitialiserCommand();
-
-        when(connectedUserAggregateIdProvider.provide(
-                eq(UserId.class),
-                any(),
-                any()
-        )).thenThrow(new ConnectedUserAggregateIdProviderException(new RuntimeException("Something went wrong")));
-
-        // When / Then
-        assertThatThrownBy(() -> initialiserUseCase.execute(command))
-                .isInstanceOf(TechnicalException.class)
-                .cause()
-                .isInstanceOf(ConnectedUserAggregateIdProviderException.class)
-                .cause()
-                .isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("Something went wrong");
+                        any(AddNewTodoItem.class),
+                        ArgumentMatchers.<Function<TodoChecklistId, DuplicateAggregateException>>any()));
     }
 
     @Test
@@ -112,67 +85,5 @@ class InitialiserDomainUseCaseTest {
         // When / Then
         assertThatThrownBy(() -> initialiserUseCase.execute(null))
                 .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
-    void shouldPropagateBusinessException() throws Exception {
-        // Given
-        final InitialiserCommand command = new InitialiserCommand();
-
-        final UserId userId = UserId.USER_1;
-
-        when(connectedUserAggregateIdProvider.provide(eq(UserId.class), any(), any())).thenReturn(userId);
-        when(userCommandHandler.handle(eq(userId), any(RegisterUser.class), any()))
-                .thenThrow(new DuplicateUserException(userId));
-
-        // When / Then
-        assertThatThrownBy(() -> initialiserUseCase.execute(command))
-                .isInstanceOf(DuplicateUserException.class)
-                .hasFieldOrPropertyWithValue("userId", UserId.USER_1);
-    }
-
-    @Test
-    void shouldPropagateTodoDuplicateException() throws Exception {
-        // Given
-        final InitialiserCommand command = new InitialiserCommand();
-
-        final UserId userId = UserId.USER_1;
-        final User user = new User(userId);
-
-        when(connectedUserAggregateIdProvider.provide(eq(UserId.class), any(), any())).thenReturn(userId);
-        when(userCommandHandler.handle(eq(userId), any(RegisterUser.class), any())).thenReturn(user);
-        when(todoCommandHandler.handle(
-                ArgumentMatchers.<Function<SequenceNumber, TodoId>>any(),
-                any(CreateTodo.class), any())).thenThrow(new DuplicateTodoException(TodoId.USER_1_TODO_1));
-
-        // When / Then
-        assertThatThrownBy(() -> initialiserUseCase.execute(command))
-                .isInstanceOf(DuplicateTodoException.class)
-                .hasFieldOrPropertyWithValue("todoId", TodoId.USER_1_TODO_1);
-    }
-
-    @Test
-    void shouldPropagateTodoChecklistDuplicateException() throws Exception {
-        // Given
-        final InitialiserCommand command = new InitialiserCommand();
-
-        final UserId userId = UserId.USER_1;
-        final User user = new User(userId);
-        final TodoId todoId = TodoId.USER_1_TODO_1;
-        final Todo todo = new Todo(todoId);
-
-        when(connectedUserAggregateIdProvider.provide(eq(UserId.class), any(), any())).thenReturn(userId);
-        when(userCommandHandler.handle(eq(userId), any(RegisterUser.class), any())).thenReturn(user);
-        when(todoCommandHandler.handle(ArgumentMatchers.<Function<SequenceNumber, TodoId>>any(),
-                any(CreateTodo.class), any())).thenReturn(todo);
-        when(todoChecklistCommandHandler.handle(
-                ArgumentMatchers.<Function<SequenceNumber, TodoChecklistId>>any(),
-                any(AddNewTodoItem.class),
-                any())).thenThrow(new DuplicateTodoChecklistException(TodoChecklistId.USER_1_TODO_1_1));
-
-        // When / Then
-        assertThatThrownBy(() -> initialiserUseCase.execute(command))
-                .isInstanceOf(DuplicateTodoChecklistException.class)
-                .hasFieldOrPropertyWithValue("todoChecklistId", TodoChecklistId.USER_1_TODO_1_1);
     }
 }

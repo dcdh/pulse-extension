@@ -35,13 +35,12 @@ class PulseExtensionResourceTest {
                 .then().log().all()
                 .statusCode(200)
                 // sequences
-                .body("sequences", hasSize(6))
+                .body("sequences", hasSize(5))
                 .body("sequences", hasItems(
                         "todotaking_todo.seq_customfailingtodoid",
                         "todotaking_todo.seq_customidentifiable",
                         "todotaking_todo.seq_todochecklistid",
                         "todotaking_todo.seq_todoid",
-                        "todotaking_todo.seq_useraggregateid",
                         "todotaking_todo.seq_userid"
                 ))
                 // sequenceByIdentifiableClazzAndOwnedBy
@@ -55,22 +54,22 @@ class PulseExtensionResourceTest {
                 // aggregateRoots
                 .body("aggregateRoots", hasSize(3))
                 .body("aggregateRoots", hasItems(
-                        "U000001|User|0|UserId|U000001|U000001",
-                        "U000001-T000001|Todo|0|UserId|U000001|U000001",
-                        "U000001-T000001-CL000001|TodoChecklist|0|UserId|U000001|U000001-T000001"
+                        "U000001|User|0|U000001|U000001",
+                        "U000001-T000001|Todo|0|U000001|U000001",
+                        "U000001-T000001-CL000001|TodoChecklist|0|U000001|U000001-T000001"
                 ))
                 // events
                 .body("events", hasSize(3))
                 .body("events", hasItems(
-                        "U000001|User|0|UserRegistered|UserId|U000001|U000001",
-                        "U000001-T000001|Todo|0|NewTodoCreated|UserId|U000001|U000001",
-                        "U000001-T000001-CL000001|TodoChecklist|0|TodoItemAdded|UserId|U000001|U000001-T000001"
+                        "U000001|User|0|UserRegistered|U000001|U000001",
+                        "U000001-T000001|Todo|0|NewTodoCreated|U000001|U000001",
+                        "U000001-T000001-CL000001|TodoChecklist|0|TodoItemAdded|U000001|U000001-T000001"
                 ))
                 // vaultKeys
                 .body("vaultKeys", hasSize(2))
                 .body("vaultKeys", hasItems(
                         "/owner/",
-                        "/owner/1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d"));
+                        "/owner/825262468b4cb777358139eafbdec2e0477f898202d8cab60ae9c3a8e79a0de9"));
     }
 
     @Test
@@ -127,7 +126,7 @@ class PulseExtensionResourceTest {
                 // encrypted payload
                 .body("encryptedPayload.payload", not(emptyOrNullString()))
                 // ownership
-                .body("ownedBy.id", equalTo("UserId|U000001"))
+                .body("ownedBy.id", equalTo("U000001"))
                 .body("belongsTo.id", equalTo("U000001"))
                 // executedBy
                 .body("executedBy", equalTo("EU:bob@mail.com"))
@@ -145,7 +144,7 @@ class PulseExtensionResourceTest {
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.id.sequence",
                         equalTo("000001"))
                 // aggregate ownership
-                .body("aggregateRootLoaded.ownedBy.id", equalTo("UserId|U000001"))
+                .body("aggregateRootLoaded.ownedBy.id", equalTo("U000001"))
                 .body("aggregateRootLoaded.belongsTo.id", equalTo("U000001"));
     }
 
