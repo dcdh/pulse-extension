@@ -31,15 +31,17 @@ public class AsciiDocVisitor implements Visitor {
     public void visit(final CodeBlock codeBlock) {
         Objects.requireNonNull(codeBlock);
         final String content = codeBlock.content();
-        builder.append("[source,")
-                .append(codeBlock.source())
-                .append("]\n")
-                .append("----\n")
-                .append(content);
-        if (!(content.endsWith("\n") || content.endsWith("\r"))) {
-            builder.append("\n----\n\n");
-        } else {
-            builder.append("----\n\n");
+        if (!content.isBlank()) {
+            builder.append("[source,")
+                    .append(codeBlock.source())
+                    .append("]\n")
+                    .append("----\n")
+                    .append(content);
+            if (!(content.endsWith("\n") || content.endsWith("\r"))) {
+                builder.append("\n----\n\n");
+            } else {
+                builder.append("----\n\n");
+            }
         }
     }
 
