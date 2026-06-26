@@ -202,7 +202,7 @@ public class ComposeProcessor {
             contentBuildItemProducer.produce(new ContentBuildItem(new Title(2, "Additional volumes")));
             additionalVolumeBuildItems.forEach(additionalVolumeBuildItem -> {
                 contentBuildItemProducer.produce(new ContentBuildItem(new Title(3, additionalVolumeBuildItem.getServiceName().name()
-                        + " " + additionalVolumeBuildItem.getVolume().src())));
+                        + " " + additionalVolumeBuildItem.getVolume().src().substring(2))));
                 contentBuildItemProducer.produce(new ContentBuildItem(new BasicTable(
                         List.of(
                                 new TableRow(List.of("src", additionalVolumeBuildItem.getVolume().src())),
