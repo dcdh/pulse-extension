@@ -57,6 +57,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.github.victools</groupId>
+            <artifactId>jsonschema-generator</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
             <scope>test</scope>

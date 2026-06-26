@@ -21,8 +21,6 @@ import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 @Unremovable
 public final class BusinessObjectMapperProducer {
 
-    public static final String BUSINESS_MAPPER = "businessMapper";
-
     @Produces
     @BusinessMapper
     public ObjectMapper produceBusinessMapper(@All List<BusinessObjectMapperCustomizer> customizers) {

@@ -25,6 +25,9 @@ public final class Todo extends AggregateRoot<TodoId> {
     private Status status;
     private boolean important = false;
 
+    @Nullable
+    private String nullableField;
+
     public Todo(final TodoId id) {
         super(id);
     }

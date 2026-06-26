@@ -58,7 +58,7 @@ public class SerializerProcessor {
         return buildItems;
     }
 
-    private static boolean isAbstractClass(final Class<?> clazz) {
+    public static boolean isAbstractClass(final Class<?> clazz) {
         return Modifier.isAbstract(clazz.getModifiers())
                 && !clazz.isInterface();
     }

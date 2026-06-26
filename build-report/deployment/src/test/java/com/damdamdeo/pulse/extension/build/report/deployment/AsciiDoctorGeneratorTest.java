@@ -43,7 +43,7 @@ class AsciiDoctorGeneratorTest {
                 """
                         = Guide Quarkus
                         :toc: left
-                        :toclevels: 2
+                        :toclevels: 3
                         
                         Introduction.
                         

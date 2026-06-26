@@ -15,7 +15,7 @@ public class AsciiDocVisitor implements Visitor {
                 .append("\n");
         if (title.level() == 1) {
             builder.append(":toc: left\n")
-                    .append(":toclevels: 2\n");
+                    .append(":toclevels: 3\n");
         }
         builder.append("\n");
     }
