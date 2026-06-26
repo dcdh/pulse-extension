@@ -85,9 +85,9 @@ public class PulsePublisherProcessor {
         return List.of(
                 new ContentBuildItem(new Title(2, "Publisher Debezium configuration")),
                 new ContentBuildItem(CodeBlock.fromJson(
-                        new ObjectMapper().writeValueAsString(
-                                KafkaConnectorConfigurationGenerator.generate(
-                                        FromApplication.from(applicationInfoBuildItem.getName()), "localhost", 8083, "datasourceUsername", "datasourcePassword", "database", 1)))),
+                        KafkaConnectorConfigurationGenerator.generate(
+                                FromApplication.from(applicationInfoBuildItem.getName()), "localhost", 8083, "datasourceUsername", "datasourcePassword", "database", 1),
+                        new ObjectMapper())),
                 new ContentBuildItem(new Admonition(AdmonitionType.NOTE, "host, port, datasourceUsername, datasourcePassword, database, topicCreationDefaultPartitions are determined at runtime"))
         );
     }
