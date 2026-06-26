@@ -201,7 +201,8 @@ public class ComposeProcessor {
             contentBuildItemProducer.produce(new ContentBuildItem(CodeBlock.fromYaml(dockerCompose)));
             contentBuildItemProducer.produce(new ContentBuildItem(new Title(2, "Additional volumes")));
             additionalVolumeBuildItems.forEach(additionalVolumeBuildItem -> {
-                contentBuildItemProducer.produce(new ContentBuildItem(new Title(3, additionalVolumeBuildItem.getServiceName().name())));
+                contentBuildItemProducer.produce(new ContentBuildItem(new Title(3, additionalVolumeBuildItem.getServiceName().name()
+                        + " " + additionalVolumeBuildItem.getVolume().src())));
                 contentBuildItemProducer.produce(new ContentBuildItem(new BasicTable(
                         List.of(
                                 new TableRow(List.of("src", additionalVolumeBuildItem.getVolume().src())),
