@@ -42,6 +42,8 @@ class AsciiDoctorGeneratorTest {
                 // language=ad
                 """
                         = Guide Quarkus
+                        :toc: left
+                        :toclevels: 2
                         
                         Introduction.
                         

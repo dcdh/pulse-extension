@@ -12,7 +12,12 @@ public class AsciiDocVisitor implements Visitor {
         builder.repeat("=", title.level())
                 .append(" ")
                 .append(title.content())
-                .append("\n\n");
+                .append("\n");
+        if (title.level() == 1) {
+            builder.append(":toc: left\n")
+                    .append(":toclevels: 2\n");
+        }
+        builder.append("\n");
     }
 
     @Override
