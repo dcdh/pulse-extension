@@ -13,7 +13,7 @@ class AsciiDoctorGeneratorTest {
     void shouldGenerateExpectedDoc() {
         // Given
         final List<Content> givenContents = List.of(
-                new Title(1, "Guide Quarkus"),
+                new Title(Title.Level.FIRST, "Guide Quarkus"),
                 new Paragraph("Introduction."),
                 new Admonition(
                         AdmonitionType.NOTE,

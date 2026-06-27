@@ -20,7 +20,7 @@ public class BuildReportProcessor {
     void generate(final List<ContentBuildItem> contentBuildItems,
                   final OutputTargetBuildItem outputTargetBuildItem) {
         final String generated = AsciiDoctorGenerator.generate(
-                Stream.concat(Stream.of(new ContentBuildItem(new Title(1, "Build Report"))),
+                Stream.concat(Stream.of(new ContentBuildItem(new Title(Title.Level.FIRST, "Build Report"))),
                                 contentBuildItems.stream())
                         .map(ContentBuildItem::content).toList());
         final Path generationReportPath = outputTargetBuildItem.getOutputDirectory().resolve("generationReport.adoc");

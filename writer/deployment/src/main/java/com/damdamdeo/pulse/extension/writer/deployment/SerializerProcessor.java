@@ -59,11 +59,11 @@ public class SerializerProcessor {
 
         final IndexView index = indexItem.getIndex();
         return Stream.concat(
-                Stream.of(new Title(2, "Json Schema Definitions")),
+                Stream.of(new Title(Title.Level.SECOND, "Json Schema Definitions")),
                 eligibleTypeForSerializationBuildItems.stream()
                         .flatMap(eligibleTypeForSerializationBuildItem -> {
                             final List<Content> contents = new ArrayList<>();
-                            contents.add(new Title(3, eligibleTypeForSerializationBuildItem.clazz().getSimpleName() + "s"));
+                            contents.add(new Title(Title.Level.THIRD, eligibleTypeForSerializationBuildItem.clazz().getSimpleName() + "s"));
                             final List<ClassInfo> classesInfoToGenerateJsonSchema = new ArrayList<>();
                             if (eligibleTypeForSerializationBuildItem.clazz().isInterface()) {
                                 final Collection<ClassInfo> clazzes = index.getAllKnownImplementations(DotName.createSimple(eligibleTypeForSerializationBuildItem.clazz()));
@@ -91,7 +91,7 @@ public class SerializerProcessor {
                                             .flatMap(jsonSchema -> {
                                                 try {
                                                     return Stream.of(
-                                                            new Title(4, jsonSchema.getKey().getSimpleName()),
+                                                            new Title(Title.Level.FOURTH, jsonSchema.getKey().getSimpleName()),
                                                             CodeBlock.fromJson(jsonSchema.getValue(), objectMapper));
                                                 } catch (final JsonProcessingException e) {
                                                     throw new RuntimeException(e);

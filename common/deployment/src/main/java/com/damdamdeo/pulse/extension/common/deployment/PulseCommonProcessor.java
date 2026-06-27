@@ -81,7 +81,7 @@ public class PulseCommonProcessor {
         datasourceConfiguration.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(
                 new RunTimeConfigurationDefaultBuildItem(key, value)));
 
-        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Datasource configuration")));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Datasource configuration")));
         contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(datasourceConfiguration)));
     }
 

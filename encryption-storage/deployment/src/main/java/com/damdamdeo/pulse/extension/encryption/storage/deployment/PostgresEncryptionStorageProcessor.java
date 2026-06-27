@@ -53,7 +53,7 @@ public class PostgresEncryptionStorageProcessor {
     List<ContentBuildItem> generateContentBuildItems() {
         if (match()) {
             return List.of(
-                    new ContentBuildItem(new Title(2, "PostgreSQL Encryption storage")),
+                    new ContentBuildItem(new Title(Title.Level.SECOND, "PostgreSQL Encryption storage")),
                     new ContentBuildItem(CodeBlock.fromProperties(Map.of("pulse.encryption-storage", "32 characters master key"))));
         } else {
             return List.of();

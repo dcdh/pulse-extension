@@ -27,7 +27,7 @@ public class CachingProcessor {
     @BuildStep
     List<ContentBuildItem> contentBuildItems() {
         final List<ContentBuildItem> contentBuildItems = new ArrayList<>();
-        contentBuildItems.add(new ContentBuildItem(new Title(2, "Obfuscator caching configuration")));
+        contentBuildItems.add(new ContentBuildItem(new Title(Title.Level.SECOND, "Obfuscator caching configuration")));
         contentBuildItems.add(new ContentBuildItem(CodeBlock.fromProperties(CACHING_CONFIGURATIONS)));
         return contentBuildItems;
     }

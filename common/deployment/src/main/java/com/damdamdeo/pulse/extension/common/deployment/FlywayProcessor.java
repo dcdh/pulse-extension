@@ -42,7 +42,7 @@ public class FlywayProcessor {
             FLYWAY_CONFIGURATIONS.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(
                     new RunTimeConfigurationDefaultBuildItem(key, value)));
 
-            contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Flyway configuration")));
+            contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Flyway configuration")));
             contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(FLYWAY_CONFIGURATIONS)));
         }
     }

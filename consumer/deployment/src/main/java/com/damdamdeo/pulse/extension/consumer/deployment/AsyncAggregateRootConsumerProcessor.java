@@ -256,7 +256,7 @@ public class AsyncAggregateRootConsumerProcessor {
         configurations.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer
                 .produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
 
-        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Async AggregateRoot Consumer configuration")));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Async AggregateRoot Consumer configuration")));
         contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(configurations)));
     }
 }

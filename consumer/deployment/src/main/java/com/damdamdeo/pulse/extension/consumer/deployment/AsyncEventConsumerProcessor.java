@@ -258,7 +258,7 @@ public class AsyncEventConsumerProcessor {
         configurations.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer
                 .produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
 
-        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Async Event Consumer configuration")));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Async Event Consumer configuration")));
         contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(configurations)));
     }
 }

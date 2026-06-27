@@ -197,11 +197,11 @@ public class ComposeProcessor {
                 yaml.dump(root, stringWriter);
                 dockerCompose = stringWriter.toString();
             }
-            contentBuildItemProducer.produce(new ContentBuildItem(new Title(2, "Docker compose")));
+            contentBuildItemProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Docker compose")));
             contentBuildItemProducer.produce(new ContentBuildItem(CodeBlock.fromYaml(dockerCompose)));
-            contentBuildItemProducer.produce(new ContentBuildItem(new Title(2, "Additional volumes")));
+            contentBuildItemProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Additional volumes")));
             additionalVolumeBuildItems.forEach(additionalVolumeBuildItem -> {
-                contentBuildItemProducer.produce(new ContentBuildItem(new Title(3, additionalVolumeBuildItem.getServiceName().name()
+                contentBuildItemProducer.produce(new ContentBuildItem(new Title(Title.Level.THIRD, additionalVolumeBuildItem.getServiceName().name()
                         + " " + additionalVolumeBuildItem.getVolume().src().substring(2))));
                 contentBuildItemProducer.produce(new ContentBuildItem(new BasicTable(
                         List.of(

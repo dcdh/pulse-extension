@@ -55,7 +55,7 @@ public class MessagingLiveNotifierPublisherProcessor {
         configurations.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer
                 .produce(new RunTimeConfigurationDefaultBuildItem(key, value)));
 
-        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(2, "Live Notifier configuration")));
+        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Live Notifier configuration")));
         contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(configurations)));
     }
 

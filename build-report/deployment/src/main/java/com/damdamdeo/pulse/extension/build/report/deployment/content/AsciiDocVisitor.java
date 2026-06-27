@@ -9,11 +9,17 @@ public class AsciiDocVisitor implements Visitor {
     @Override
     public void visit(final Title title) {
         Objects.requireNonNull(title);
-        builder.repeat("=", title.level())
+        final int level = switch (title.level()) {
+            case FIRST -> 1;
+            case SECOND -> 2;
+            case THIRD -> 3;
+            case FOURTH -> 4;
+        };
+        builder.repeat("=", level)
                 .append(" ")
                 .append(title.content())
                 .append("\n");
-        if (title.level() == 1) {
+        if (Title.Level.FIRST.equals(title.level())) {
             builder.append(":toc: left\n")
                     .append(":toclevels: 3\n");
         }

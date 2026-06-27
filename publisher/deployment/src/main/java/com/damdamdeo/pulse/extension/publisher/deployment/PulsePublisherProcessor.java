@@ -83,7 +83,7 @@ public class PulsePublisherProcessor {
     @BuildStep
     List<ContentBuildItem> contentBuildItems(final ApplicationInfoBuildItem applicationInfoBuildItem) throws JsonProcessingException {
         return List.of(
-                new ContentBuildItem(new Title(2, "Publisher Debezium configuration")),
+                new ContentBuildItem(new Title(Title.Level.SECOND, "Publisher Debezium configuration")),
                 new ContentBuildItem(CodeBlock.fromJson(
                         KafkaConnectorConfigurationGenerator.generate(
                                 FromApplication.from(applicationInfoBuildItem.getName()), "localhost", 8083, "datasourceUsername", "datasourcePassword", "database", 1),
