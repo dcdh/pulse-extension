@@ -53,7 +53,7 @@ class JdbcPostgresSchemaAndTableTest extends AbstractConsumerTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.aggregate_root", "todoclient_registered.aggregate_root");
+        assertThat(tables).contains("todo_taking.aggregate_root", "todo_registered.aggregate_root");
     }
 
 }

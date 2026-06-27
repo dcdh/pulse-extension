@@ -57,7 +57,8 @@ class SerializationTest extends AbstractCommonTest {
                           },
                           "description": "lorem ipsum",
                           "status": "IN_PROGRESS",
-                          "important": false
+                          "important": false,
+                          "nullableField": null
                         }
                         """, serializedJson, JSONCompareMode.STRICT);
     }

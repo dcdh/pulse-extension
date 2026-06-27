@@ -120,7 +120,7 @@ class PurposeEventChannelConsumerTest {
     void shouldExecuteWhenNotConsumedYetOnFirstEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final EventKey givenEventKey = TodoEventKey.of();
         final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.empty()).when(idempotencyRepository).findLastAggregateVersionBy(
@@ -148,7 +148,7 @@ class PurposeEventChannelConsumerTest {
     void shouldExecuteWhenNotConsumedYetOnNextEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final EventKey givenEventKey = TodoEventKey.of();
         final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(0))).when(idempotencyRepository).findLastAggregateVersionBy(
@@ -176,7 +176,7 @@ class PurposeEventChannelConsumerTest {
     void shouldNotConsumeWhenAlreadyConsumed() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final EventKey givenEventKey = TodoEventKey.of();
         final EventValue givenEventValue = TodoEventValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(1))).when(idempotencyRepository).findLastAggregateVersionBy(

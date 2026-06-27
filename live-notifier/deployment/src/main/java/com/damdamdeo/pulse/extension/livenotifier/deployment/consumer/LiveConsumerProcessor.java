@@ -22,7 +22,7 @@ public class LiveConsumerProcessor {
     void generateChannelConsumer(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                  final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
                                  final BuildProducer<ContentBuildItem> contentBuildItemBuildProducer) {
-        final String topic = new LiveNotifierTopicNaming(FromApplication.from(applicationInfoBuildItem.getName())).name();
+        final String topic = new LiveNotifierTopicNaming(new FromApplication(applicationInfoBuildItem.getName())).name();
         final Map<String, String> configurations = Map.of(
                 "mp.messaging.incoming.live-notification-in.group.id", "%s_%s".formatted(applicationInfoBuildItem.getName(), UUID.randomUUID()),
                 "mp.messaging.incoming.live-notification-in.enable.auto.commit", "true",

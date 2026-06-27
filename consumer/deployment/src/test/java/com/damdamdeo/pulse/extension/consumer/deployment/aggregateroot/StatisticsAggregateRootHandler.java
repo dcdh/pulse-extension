@@ -20,8 +20,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @AsyncAggregateRootConsumerChannel(
         purpose = "statistics",
         sources = {
-                @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
-                @Source(functionalDomain = "TodoClient", componentName = "Registered")})
+                @Source(applicationNaming = "TodoTaking"),
+                @Source(applicationNaming = "TodoRegistered")})
 public class StatisticsAggregateRootHandler implements AsyncAggregateRootChannelMessageHandler<JsonNode> {
 
     private Call call = null;
@@ -36,7 +36,7 @@ public class StatisticsAggregateRootHandler implements AsyncAggregateRootChannel
                               final OwnedBy ownedBy,
                               final BelongsTo belongsTo,
                               final DecryptablePayload<JsonNode> decryptablePayload) {
-        Log.info("StatisticsAggregateRootHandler.handleMessage() called from application: %s with purpose: %s".formatted(fromApplication.value(), purpose));
+        Log.info("StatisticsAggregateRootHandler.handleMessage() called from application: %s with purpose: %s".formatted(fromApplication.name(), purpose));
         this.call = new Call(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption,
                 encryptedPayload, ownedBy, belongsTo, decryptablePayload);
     }

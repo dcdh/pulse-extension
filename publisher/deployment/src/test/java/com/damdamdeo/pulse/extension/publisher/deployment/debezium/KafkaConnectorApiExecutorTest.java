@@ -38,7 +38,7 @@ class KafkaConnectorApiExecutorTest extends AbstractPublisherTest {
         final CreatedConnectorResponseDTO createdConnectorResponseDTO = kafkaConnectorApiExecutor.registerConnector(givenKafkaConnectorConfigurationDTO);
 
         // Then
-        assertThat(createdConnectorResponseDTO).isEqualTo(new CreatedConnectorResponseDTO("todotaking_todo"));
+        assertThat(createdConnectorResponseDTO).isEqualTo(new CreatedConnectorResponseDTO("todo_taking"));
     }
 
     @Test
@@ -47,11 +47,11 @@ class KafkaConnectorApiExecutorTest extends AbstractPublisherTest {
         // Given
 
         // When
-        final KafkaConnectorStatusDTO kafkaConnectorStatusDTO = kafkaConnectorApiExecutor.connectorStatus(new ConnectorNaming("todotaking_todo"));
+        final KafkaConnectorStatusDTO kafkaConnectorStatusDTO = kafkaConnectorApiExecutor.connectorStatus("todo_taking");
 
         // Then
         assertAll(
-                () -> assertThat(kafkaConnectorStatusDTO.name()).isEqualTo("todotaking_todo"),
+                () -> assertThat(kafkaConnectorStatusDTO.name()).isEqualTo("todo_taking"),
                 () -> assertThat(kafkaConnectorStatusDTO.connector().state()).isEqualTo("RUNNING"),
                 () -> assertThat(kafkaConnectorStatusDTO.connector().workerId()).isNotNull(),
                 () -> assertThat(kafkaConnectorStatusDTO.connector().version()).isEqualTo("3.5.0.Final"),
@@ -65,9 +65,9 @@ class KafkaConnectorApiExecutorTest extends AbstractPublisherTest {
         // Given
 
         // When
-        final List<ConnectorNaming> allConnectors = kafkaConnectorApiExecutor.getAllConnectors();
+        final List<String> allConnectors = kafkaConnectorApiExecutor.getAllConnectors();
 
         // Then
-        assertThat(allConnectors).containsExactly(new ConnectorNaming("todotaking_todo"));
+        assertThat(allConnectors).containsExactly("todo_taking");
     }
 }

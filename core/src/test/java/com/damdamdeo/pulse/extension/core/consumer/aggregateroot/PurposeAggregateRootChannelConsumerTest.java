@@ -93,7 +93,7 @@ class PurposeAggregateRootChannelConsumerTest {
     void shouldExecuteWhenNotConsumedYetOnFirstEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final AggregateRootKey givenAggregateRootKey = TodoAggregateRootKey.of();
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.empty()).when(idempotencyRepository).findLastAggregateVersionBy(
@@ -122,7 +122,7 @@ class PurposeAggregateRootChannelConsumerTest {
     void shouldExecuteWhenNotConsumedYetOnNextEvent() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final AggregateRootKey givenAggregateRootKey = TodoAggregateRootKey.of();
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(0))).when(idempotencyRepository).findLastAggregateVersionBy(
@@ -150,7 +150,7 @@ class PurposeAggregateRootChannelConsumerTest {
     void shouldNotConsumeWhenAlreadyConsumed() throws UnableToExecuteException {
         // Given
         final Purpose givenPurpose = new Purpose("statistics");
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final AggregateRootKey givenAggregateRootKey = TodoAggregateRootKey.of();
         final AggregateRootValue givenTodoAggregateRootValue = TodoAggregateRootValue.of();
         doReturn(Optional.of(new LastConsumedAggregateVersion(1))).when(idempotencyRepository).findLastAggregateVersionBy(

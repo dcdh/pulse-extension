@@ -76,10 +76,10 @@ class KafkaConnectorConfigurationGeneratorTest extends AbstractPublisherTest {
                 // language=json
                 """
                         {
-                          "name": "todotaking_todo",
+                          "name": "todo_taking",
                           "config": {
-                            "name": "todotaking_todo",
-                            "schema": "todotaking_todo",
+                            "name": "todo_taking",
+                            "schema": "todo_taking",
                             "database.hostname": "postgres",
                             "database.port": "5432",
                             "database.user": "quarkus",
@@ -104,17 +104,17 @@ class KafkaConnectorConfigurationGeneratorTest extends AbstractPublisherTest {
                             "transforms.partitioner.partition.topic.num": 2,
                             "transforms.partitioner.partition.hash.function": "java",
                             "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
-                            "schema.include.list": "todotaking_todo",
-                            "table.include.list": "todotaking_todo.event,todotaking_todo.aggregate_root",
+                            "schema.include.list": "todo_taking",
+                            "table.include.list": "todo_taking.event,todo_taking.aggregate_root",
                             "tombstones.on.delete": "false",
                             "compression.type": "lz4",
                             "topic.creation.default.replication.factor": 1,
                             "topic.creation.default.partitions": 2,
                             "topic.creation.default.cleanup.policy": "compact",
                             "topic.creation.default.compression.type": "lz4",
-                            "publication.name": "todotaking_todo_publication",
+                            "publication.name": "todo_taking_publication",
                             "publication.autocreate.mode": "all_tables",
-                            "slot.name": "todotaking_todo_slot",
+                            "slot.name": "todo_taking_slot",
                             "slot.drop.on.stop": "false"
                           }
                         }

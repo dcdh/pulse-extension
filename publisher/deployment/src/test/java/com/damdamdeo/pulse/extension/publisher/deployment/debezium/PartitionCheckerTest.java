@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
@@ -41,10 +42,10 @@ class PartitionCheckerTest extends AbstractPublisherTest {
         // Given
         try (final AdminClient adminClient = AdminClient.create(Map.of(
                 AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class)))) {
-            final FromApplication fromApplication = new FromApplication("TodoTaking", "Todo");
+            final FromApplication fromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
             final CreateTopicsResult topics = adminClient.createTopics(List.of(
-                    new NewTopic(new CdcTopicNaming(fromApplication, Table.EVENT).name(), 3, (short) 1),
-                    new NewTopic(new CdcTopicNaming(fromApplication, Table.AGGREGATE_ROOT).name(), 4, (short) 1)));
+                    new NewTopic(CdcTopicNaming.from(fromApplication, Table.EVENT).name(), 3, (short) 1),
+                    new NewTopic(CdcTopicNaming.from(fromApplication, Table.AGGREGATE_ROOT).name(), 4, (short) 1)));
             topics.all().get();
         } catch (final ExecutionException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -54,7 +55,7 @@ class PartitionCheckerTest extends AbstractPublisherTest {
         assertThatThrownBy(() -> partitionChecker.onStart(new StartupEvent()))
                 .isExactlyInstanceOf(InvalidTopicsException.class)
                 .hasFieldOrPropertyWithValue("invalidTopics", Set.of(
-                        new InvalidTopic("pulse.todotaking_todo.aggregate_root", 4),
-                        new InvalidTopic("pulse.todotaking_todo.event", 3)));
+                        new InvalidTopic("pulse.todo_taking.aggregate_root", 4),
+                        new InvalidTopic("pulse.todo_taking.event", 3)));
     }
 }

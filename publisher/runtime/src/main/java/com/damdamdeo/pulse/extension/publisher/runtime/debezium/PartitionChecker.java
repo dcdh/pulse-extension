@@ -21,14 +21,14 @@ public class PartitionChecker {
 
     private final DebeziumConfiguration debeziumConfiguration;
     private final String bootstrapServers;
-    private final String quarkusApplicationName;
+    private final FromApplication fromApplication;
 
     public PartitionChecker(final DebeziumConfiguration debeziumConfiguration,
-                            @ConfigProperty(name = "kafka.bootstrap.servers") final String bootstrapServers,
-                            @ConfigProperty(name = "quarkus.application.name") final String quarkusApplicationName) {
+                            final ApplicationNamingProvider applicationNamingProvider,
+                            @ConfigProperty(name = "kafka.bootstrap.servers") final String bootstrapServers) {
         this.debeziumConfiguration = Objects.requireNonNull(debeziumConfiguration);
         this.bootstrapServers = Objects.requireNonNull(bootstrapServers);
-        this.quarkusApplicationName = Objects.requireNonNull(quarkusApplicationName);
+        this.fromApplication = new FromApplication(applicationNamingProvider.provide());
     }
 
     public void onStart(@Observes @Priority(50) final StartupEvent ev) throws InvalidTopicsException {
@@ -36,8 +36,8 @@ public class PartitionChecker {
             try (final AdminClient adminClient = AdminClient.create(Map.of(
                     AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
                 final List<String> topicsToCheck = List.of(
-                        new CdcTopicNaming(FromApplication.from(quarkusApplicationName), Table.EVENT).name(),
-                        new CdcTopicNaming(FromApplication.from(quarkusApplicationName), Table.AGGREGATE_ROOT).name());
+                        CdcTopicNaming.from(fromApplication, Table.EVENT).name(),
+                        CdcTopicNaming.from(fromApplication, Table.AGGREGATE_ROOT).name());
                 final List<String> topicsPresents = adminClient.listTopics().listings().get()
                         .stream().map(TopicListing::name)
                         .filter(topicsToCheck::contains)

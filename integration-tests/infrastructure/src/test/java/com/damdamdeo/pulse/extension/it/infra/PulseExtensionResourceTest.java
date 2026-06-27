@@ -37,11 +37,11 @@ class PulseExtensionResourceTest {
                 // sequences
                 .body("sequences", hasSize(5))
                 .body("sequences", hasItems(
-                        "todotaking_todo.seq_customfailingtodoid",
-                        "todotaking_todo.seq_customidentifiable",
-                        "todotaking_todo.seq_todochecklistid",
-                        "todotaking_todo.seq_todoid",
-                        "todotaking_todo.seq_userid"
+                        "todo_taking.seq_customfailingtodoid",
+                        "todo_taking.seq_customidentifiable",
+                        "todo_taking.seq_todochecklistid",
+                        "todo_taking.seq_todoid",
+                        "todo_taking.seq_userid"
                 ))
                 // sequenceByIdentifiableClazzAndOwnedBy
                 .body("sequenceByIdentifiableClazzAndOwnedBy", hasSize(1))
@@ -110,8 +110,7 @@ class PulseExtensionResourceTest {
                 .log().all()
                 .statusCode(200)
                 // fromApplication
-                .body("fromApplication.functionalDomain", equalTo("TodoTaking"))
-                .body("fromApplication.componentName", equalTo("Todo"))
+                .body("fromApplication.applicationNaming.name", equalTo("TodoTaking"))
                 // purpose
                 .body("purpose.name", equalTo("statistics"))
                 // aggregate root

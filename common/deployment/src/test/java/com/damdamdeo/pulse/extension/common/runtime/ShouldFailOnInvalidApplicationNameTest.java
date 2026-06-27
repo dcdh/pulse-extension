@@ -18,7 +18,7 @@ class ShouldFailOnInvalidApplicationNameTest extends AbstractCommonTest {
                     .hasNoSuppressedExceptions()
                     .rootCause()
                     .isExactlyInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Invalid application name 'BOOM' - it should match '^[a-zA-Z]{1,64}_[a-zA-Z]{1,64}$'")
+                    .hasMessage("Invalid application name 'BOOM' - it should match '^(?:[A-Z][a-z0-9]+){2,}$'")
                     .hasNoSuppressedExceptions());
 
     @Test

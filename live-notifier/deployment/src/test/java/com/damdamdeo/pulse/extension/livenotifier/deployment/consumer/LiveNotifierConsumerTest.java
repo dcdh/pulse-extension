@@ -57,7 +57,7 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
     void shouldGenerateMessagingConfiguration() {
         assertAll(
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.group.id", String.class))
-                        .startsWith("TodoTaking_Todo_"),
+                        .startsWith("TodoTaking_"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.enable.auto.commit", String.class))
                         .isEqualTo("true"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.auto.offset.reset", String.class))
@@ -65,7 +65,7 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.connector", String.class))
                         .isEqualTo("smallrye-kafka"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.topic", String.class))
-                        .isEqualTo("pulse.live-notification.todotaking_todo"),
+                        .isEqualTo("pulse.live-notification.todo-taking"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.live-notification-in.value.deserializer", String.class))
                         .isEqualTo("org.apache.kafka.common.serialization.ByteArrayDeserializer")
         );

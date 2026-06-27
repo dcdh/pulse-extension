@@ -1,10 +1,7 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
-import com.damdamdeo.pulse.extension.core.BelongsTo;
-import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoChecklist;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
@@ -47,10 +44,10 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PartitionTest extends AbstractPublisherTest {
 
-    private static final FromApplication FROM_APPLICATION = new FromApplication("TodoTaking", "Todo");
+    private static final FromApplication FROM_APPLICATION = new FromApplication(new ApplicationNaming("TodoTaking"));
 
-    private static final String EVENT_TOPIC = new CdcTopicNaming(FROM_APPLICATION, Table.EVENT).name();
-    private static final String AGGREGATE_ROOT_TOPIC = new CdcTopicNaming(FROM_APPLICATION, Table.AGGREGATE_ROOT).name();
+    private static final String EVENT_TOPIC = CdcTopicNaming.from(FROM_APPLICATION, Table.EVENT).name();
+    private static final String AGGREGATE_ROOT_TOPIC = CdcTopicNaming.from(FROM_APPLICATION, Table.AGGREGATE_ROOT).name();
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

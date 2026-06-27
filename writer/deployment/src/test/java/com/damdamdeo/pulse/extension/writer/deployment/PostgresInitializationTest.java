@@ -51,6 +51,6 @@ class PostgresInitializationTest extends AbstractWriterTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.event", "todotaking_todo.aggregate_root");
+        assertThat(tables).contains("todo_taking.event", "todo_taking.aggregate_root");
     }
 }

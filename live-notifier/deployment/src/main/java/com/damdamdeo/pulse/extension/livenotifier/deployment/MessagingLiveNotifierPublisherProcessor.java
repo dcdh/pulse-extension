@@ -43,7 +43,7 @@ public class MessagingLiveNotifierPublisherProcessor {
     void generateChannelPublisher(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                   final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
                                   final BuildProducer<ContentBuildItem> contentBuildItemBuildProducer) {
-        final String topic = new LiveNotifierTopicNaming(FromApplication.from(applicationInfoBuildItem.getName())).name();
+        final String topic = new LiveNotifierTopicNaming(new FromApplication(applicationInfoBuildItem.getName())).name();
         final Map<String, String> configurations = Map.of(
                 "mp.messaging.outgoing.live-notification-out.group.id", applicationInfoBuildItem.getName(),
                 "mp.messaging.outgoing.live-notification-out.enable.auto.commit", "true",

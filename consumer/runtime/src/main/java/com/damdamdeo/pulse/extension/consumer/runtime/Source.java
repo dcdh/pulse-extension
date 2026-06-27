@@ -5,7 +5,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime;
  */
 public @interface Source {
 
-    String functionalDomain();
+    public static final String APPLICATION_NAMING = "applicationNaming";
 
-    String componentName();
+    String applicationNaming();
 }

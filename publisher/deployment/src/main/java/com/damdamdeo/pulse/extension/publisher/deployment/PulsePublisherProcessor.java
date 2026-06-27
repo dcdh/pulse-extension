@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.kafka.deployment.KafkaProcessor;
 import com.damdamdeo.pulse.extension.publisher.runtime.debezium.*;
@@ -34,7 +35,7 @@ public class PulsePublisherProcessor {
     @BuildStep
     List<AdditionalBeanBuildItem> additionalBeans() {
         return Stream.of(DebeziumConfigurator.class, KafkaConnectorApiExecutor.class,
-                        FromApplicationProvider.class, ConnectorNamingProvider.class,
+                        ApplicationNamingProvider.class,
                         KafkaConnectorConfigurationGenerator.class, PartitionChecker.class)
                 .map(beanClazz -> AdditionalBeanBuildItem.builder().addBeanClass(beanClazz).build())
                 .toList();
@@ -86,7 +87,7 @@ public class PulsePublisherProcessor {
                 new ContentBuildItem(new Title(Title.Level.SECOND, "Publisher Debezium configuration")),
                 new ContentBuildItem(CodeBlock.fromJson(
                         KafkaConnectorConfigurationGenerator.generate(
-                                FromApplication.from(applicationInfoBuildItem.getName()), "localhost", 8083, "datasourceUsername", "datasourcePassword", "database", 1),
+                                new FromApplication(new ApplicationNaming(applicationInfoBuildItem.getName())), "localhost", 8083, "datasourceUsername", "datasourcePassword", "database", 1),
                         new ObjectMapper())),
                 new ContentBuildItem(new Admonition(AdmonitionType.NOTE, "host, port, datasourceUsername, datasourcePassword, database, topicCreationDefaultPartitions are determined at runtime"))
         );

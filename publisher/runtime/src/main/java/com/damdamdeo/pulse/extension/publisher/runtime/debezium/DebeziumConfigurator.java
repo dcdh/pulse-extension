@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
 import io.smallrye.faulttolerance.api.TypedGuard;
@@ -25,16 +27,16 @@ public final class DebeziumConfigurator {
             .build();
 
     private final DebeziumConfiguration debeziumConfiguration;
-    private final ConnectorNamingProvider connectorNamingProvider;
+    private final ApplicationNamingProvider applicationNamingProvider;
     private final KafkaConnectorConfigurationGenerator kafkaConnectorConfigurationGenerator;
     private final KafkaConnectorApiExecutor kafkaConnectorApiExecutor;
 
     public DebeziumConfigurator(final DebeziumConfiguration debeziumConfiguration,
-                                final ConnectorNamingProvider connectorNamingProvider,
+                                final ApplicationNamingProvider applicationNamingProvider,
                                 final KafkaConnectorConfigurationGenerator kafkaConnectorConfigurationGenerator,
                                 final KafkaConnectorApiExecutor kafkaConnectorApiExecutor) {
         this.debeziumConfiguration = Objects.requireNonNull(debeziumConfiguration);
-        this.connectorNamingProvider = Objects.requireNonNull(connectorNamingProvider);
+        this.applicationNamingProvider = Objects.requireNonNull(applicationNamingProvider);
         this.kafkaConnectorConfigurationGenerator = Objects.requireNonNull(kafkaConnectorConfigurationGenerator);
         this.kafkaConnectorApiExecutor = Objects.requireNonNull(kafkaConnectorApiExecutor);
     }
@@ -42,10 +44,11 @@ public final class DebeziumConfigurator {
     public void onStart(@Observes @Priority(40) final StartupEvent ev) throws Exception {
         if (debeziumConfiguration.enabled()) {
             GUARD.call(() -> {
-                final ConnectorNaming connectorNaming = connectorNamingProvider.provide();
-                final List<ConnectorNaming> connectors = kafkaConnectorApiExecutor.getAllConnectors();
-                if (!connectors.contains(connectorNaming)) {
-                    LOGGER.fine("No connector found for " + connectorNaming.name());
+                final ApplicationNaming applicationNaming = applicationNamingProvider.provide();
+                final SchemaName schemaName = SchemaName.from(applicationNaming);
+                final List<String> connectors = kafkaConnectorApiExecutor.getAllConnectors();
+                if (!connectors.contains(schemaName.name())) {
+                    LOGGER.fine("No connector found for " + applicationNaming.name());
                     final KafkaConnectorConfigurationDTO kafkaConnectorConfigurationDTO = kafkaConnectorConfigurationGenerator.generateConnectorConfiguration();
                     LOGGER.info("Configuring connector with " + kafkaConnectorConfigurationDTO.toString());
                     kafkaConnectorApiExecutor.registerConnector(kafkaConnectorConfigurationDTO);
@@ -53,9 +56,9 @@ public final class DebeziumConfigurator {
                     int i = 0;
                     do {
                         TimeUnit.SECONDS.sleep(2);
-                        final KafkaConnectorStatusDTO kafkaConnectorStatusDTO = kafkaConnectorApiExecutor.connectorStatus(connectorNaming);
+                        final KafkaConnectorStatusDTO kafkaConnectorStatusDTO = kafkaConnectorApiExecutor.connectorStatus(applicationNaming.name());
                         isRunning = kafkaConnectorStatusDTO.isRunning();
-                        LOGGER.info("Connector status for " + connectorNaming.name() + " is running " + isRunning);
+                        LOGGER.info("Connector status for " + applicationNaming.name() + " is running " + isRunning);
                         i++;
                     } while (!isRunning && i < 10);
                     if (!isRunning) {

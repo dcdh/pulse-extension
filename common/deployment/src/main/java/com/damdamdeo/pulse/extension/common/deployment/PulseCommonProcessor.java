@@ -12,7 +12,8 @@ import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObject
 import com.damdamdeo.pulse.extension.common.runtime.serialization.PulseObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
-import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -56,10 +57,11 @@ public class PulseCommonProcessor {
     @BuildStep
     void validateApplicationNaming(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                    final BuildProducer<ValidationErrorBuildItem> validationErrorBuildItemProducer) {
-        if (!FromApplication.FULL_PATTERN.matcher(applicationInfoBuildItem.getName()).matches()) {
+        if (!ApplicationNaming.UPPER_CAMEL_CASE_PATTERN.matcher(applicationInfoBuildItem.getName()).matches()) {
             validationErrorBuildItemProducer.produce(new ValidationErrorBuildItem(
                     new IllegalArgumentException(
-                            "Invalid application name '%s' - it should match '%s'".formatted(applicationInfoBuildItem.getName(), FromApplication.FULL_PATTERN.pattern()))));
+                            "Invalid application name '%s' - it should match '%s'".formatted(applicationInfoBuildItem.getName(),
+                                    ApplicationNaming.UPPER_CAMEL_CASE_PATTERN.pattern()))));
         }
     }
 
@@ -76,13 +78,19 @@ public class PulseCommonProcessor {
     void datasourceConfiguration(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                  final BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
                                  final BuildProducer<ContentBuildItem> contentBuildItemBuildProducer) {
-        final Map<String, String> datasourceConfiguration = Map.of("quarkus.datasource.jdbc.additional-jdbc-properties.currentSchema",
-                applicationInfoBuildItem.getName().toLowerCase(), "quarkus.datasource.jdbc.max-size", "100");
-        datasourceConfiguration.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(
-                new RunTimeConfigurationDefaultBuildItem(key, value)));
+        try {
+            final SchemaName databaseSchema = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName()));
 
-        contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Datasource configuration")));
-        contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(datasourceConfiguration)));
+            final Map<String, String> datasourceConfiguration = Map.of("quarkus.datasource.jdbc.additional-jdbc-properties.currentSchema",
+                    databaseSchema.name(), "quarkus.datasource.jdbc.max-size", "100");
+            datasourceConfiguration.forEach((key, value) -> runTimeConfigurationDefaultBuildItemBuildProducer.produce(
+                    new RunTimeConfigurationDefaultBuildItem(key, value)));
+
+            contentBuildItemBuildProducer.produce(new ContentBuildItem(new Title(Title.Level.SECOND, "Datasource configuration")));
+            contentBuildItemBuildProducer.produce(new ContentBuildItem(CodeBlock.fromProperties(datasourceConfiguration)));
+        } catch (final IllegalStateException exception) {
+            // Do nothing will be caught later
+        }
     }
 
     @BuildStep

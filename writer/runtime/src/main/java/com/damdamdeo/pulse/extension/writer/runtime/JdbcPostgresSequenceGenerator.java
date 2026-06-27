@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.runtime;
 
-import com.damdamdeo.pulse.extension.core.For;
-import com.damdamdeo.pulse.extension.core.SequenceGenerationException;
-import com.damdamdeo.pulse.extension.core.SequenceGenerator;
-import com.damdamdeo.pulse.extension.core.SequenceNumber;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -66,8 +63,7 @@ public class JdbcPostgresSequenceGenerator implements SequenceGenerator {
     public <A extends Identifiable> SequenceNumber nextFor(final For<A> identifiable) throws SequenceGenerationException {
         Objects.requireNonNull(identifiable);
         try (final Connection connection = dataSource.get().getConnection()) {
-            try (final PreparedStatement preparedStatement = connection.prepareStatement("SELECT %s.next_sequence_by_identifiable_clazz_and_belongs_to_value(?,?)"
-                    .formatted(quarkusApplicationName))) {
+            try (final PreparedStatement preparedStatement = connection.prepareStatement("SELECT next_sequence_by_identifiable_clazz_and_belongs_to_value(?,?)")) {
                 preparedStatement.setString(1, identifiable.identifiableClazz().getSimpleName());
                 preparedStatement.setString(2, identifiable.belongsTo().id());
                 try (final ResultSet resultSet = preparedStatement.executeQuery()) {

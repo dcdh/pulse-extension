@@ -11,6 +11,8 @@ import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyDese
 import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValue;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValueDeserializer;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
 import com.damdamdeo.pulse.extension.kafka.deployment.KafkaProcessor;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -58,7 +60,7 @@ public class PulseConsumerProcessor {
                     ComposeProcessor.POSTGRES_COMPOSE_SERVICE_BUILD_ITEM,
                     KafkaProcessor.KAFKA_COMPOSE_SERVICE_BUILD_ITEM));
         }
-        final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
+        final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
         final AdditionalVolumeBuildItem additionalVolumeBuildItem = new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
                 new ComposeServiceBuildItem.Volume("./%s_idempotency_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_idempotency_consumer.sql".formatted(schemaName),

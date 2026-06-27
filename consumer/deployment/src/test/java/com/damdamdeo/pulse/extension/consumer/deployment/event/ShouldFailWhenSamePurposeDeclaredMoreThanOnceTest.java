@@ -49,7 +49,7 @@ class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumer
     @ApplicationScoped
     @AsyncEventConsumerChannel(purpose = "statistics",
             sources = {
-                    @Source(functionalDomain = "TodoClient", componentName = "Registered")
+                    @Source(applicationNaming = "TodoRegistered")
             })
     static final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
@@ -73,7 +73,7 @@ class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumer
     @ApplicationScoped
     @AsyncEventConsumerChannel(purpose = "statistics",
             sources = {
-                    @Source(functionalDomain = "TodoClient", componentName = "Registered")
+                    @Source(applicationNaming = "TodoRegistered")
             })
     static final class StatisticsAgainEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 

@@ -22,8 +22,8 @@ public final class KafkaConnectorApiExecutor {
                 .build(KafkaConnectorApi.class);
     }
 
-    public List<ConnectorNaming> getAllConnectors() {
-        return kafkaConnectorApi.getAllConnectors().stream().map(ConnectorNaming::new).toList();
+    public List<String> getAllConnectors() {
+        return kafkaConnectorApi.getAllConnectors();
     }
 
     public CreatedConnectorResponseDTO registerConnector(final KafkaConnectorConfigurationDTO connectorConfiguration) {
@@ -31,8 +31,8 @@ public final class KafkaConnectorApiExecutor {
         return kafkaConnectorApi.registerConnector(connectorConfiguration);
     }
 
-    public KafkaConnectorStatusDTO connectorStatus(final ConnectorNaming connectorNaming) {
-        Objects.requireNonNull(connectorNaming);
-        return kafkaConnectorApi.connectorStatus(connectorNaming.name());
+    public KafkaConnectorStatusDTO connectorStatus(final String connectorName) {
+        Objects.requireNonNull(connectorName);
+        return kafkaConnectorApi.connectorStatus(connectorName);
     }
 }

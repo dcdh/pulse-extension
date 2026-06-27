@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.livenotifier.runtime;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public record LiveNotifierTopicNaming(FromApplication fromApplication) {
 
@@ -11,9 +12,8 @@ public record LiveNotifierTopicNaming(FromApplication fromApplication) {
     }
 
     public String name() {
-        final String schema = "%s_%s".formatted(
-                fromApplication.functionalDomain().toLowerCase(),
-                fromApplication.componentName().toLowerCase());
-        return "pulse.live-notification.%s".formatted(schema);
+        return "pulse.live-notification.%s".formatted(fromApplication.applicationNaming()
+                .split().stream().map(String::toLowerCase)
+                .collect(Collectors.joining("-")));
     }
 }

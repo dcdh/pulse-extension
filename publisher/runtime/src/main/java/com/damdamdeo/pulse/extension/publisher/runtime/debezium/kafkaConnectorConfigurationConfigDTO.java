@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
@@ -45,8 +46,8 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
         private String databaseDbname;
         private Integer topicCreationDefaultPartitions = 1;
 
-        public Builder withSchema(final String schema) {
-            this.schema = schema;
+        public Builder withSchema(final SchemaName schemaName) {
+            this.schema = schemaName.name();
             return this;
         }
 

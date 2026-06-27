@@ -47,7 +47,7 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, idempotencyKey.purpose().name());
-            ps.setString(2, idempotencyKey.fromApplication().value());
+            ps.setString(2, idempotencyKey.fromApplication().name());
             ps.setString(3, idempotencyKey.table().name());
             ps.setString(4, idempotencyKey.aggregateRootType().type());
             ps.setString(5, idempotencyKey.aggregateId().id());
@@ -77,7 +77,7 @@ public final class JdbcPostgresIdempotencyRepository implements IdempotencyRepos
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, idempotencyKey.purpose().name());
-            ps.setString(2, idempotencyKey.fromApplication().value());
+            ps.setString(2, idempotencyKey.fromApplication().name());
             ps.setString(3, idempotencyKey.table().name());
             ps.setString(4, idempotencyKey.aggregateRootType().type());
             ps.setString(5, idempotencyKey.aggregateId().id());

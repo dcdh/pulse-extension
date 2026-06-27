@@ -9,11 +9,10 @@ import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncAggregateRootConsumerChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.Source;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.*;
-import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
-import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Purpose;
-import com.damdamdeo.pulse.extension.core.consumer.Table;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AbstractPurposeAggregateRootChannelConsumer;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootKey;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootValue;
@@ -67,9 +66,9 @@ public class AsyncAggregateRootConsumerProcessor {
                         final List<FromApplication> sources = annotationInstance.value("sources").asArrayList().stream()
                                 .map(annotationValue -> {
                                     final AnnotationInstance nested = annotationValue.asNested();
-                                    return FromApplication.of(
-                                            nested.value("functionalDomain").asString(),
-                                            nested.value("componentName").asString());
+                                    return new FromApplication(
+                                            new ApplicationNaming(
+                                                    nested.value(Source.APPLICATION_NAMING).asString()));
                                 }).toList();
                         return new DiscoveredAsyncAggregateRootConsumerChannel(purpose, sources);
                     })
@@ -106,8 +105,8 @@ public class AsyncAggregateRootConsumerProcessor {
             return discoveredAsyncAggregateRootConsumerChannels.stream()
                     .flatMap(discoveredAsyncAggregateRootConsumerChannel -> discoveredAsyncAggregateRootConsumerChannel.sources().stream())
                     .distinct()
-                    .map(FromApplication::value)
-                    .map(String::toLowerCase)
+                    .map(SchemaName::from)
+                    .map(SchemaName::name)
                     .map(schemaName -> new AdditionalVolumeBuildItem(
                             new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
                             new ComposeServiceBuildItem.Volume("./%s_target_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_target_consumer.sql".formatted(schemaName),
@@ -146,7 +145,7 @@ public class AsyncAggregateRootConsumerProcessor {
                 ).forEach(targetWithSource -> {
                     final String className = AbstractPurposeAggregateRootChannelConsumer.class.getPackageName() + "."
                             + capitalize(targetWithSource.purpose().name())
-                            + capitalize(targetWithSource.fromApplication().value())
+                            + targetWithSource.fromApplication().name()
                             + "TargetAggregateRootChannelConsumer";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
@@ -203,9 +202,8 @@ public class AsyncAggregateRootConsumerProcessor {
                                     MethodDescriptor.ofConstructor(Purpose.class, String.class),
                                     consume.load(targetWithSource.purpose().name()));
                             final ResultHandle applicationNamingParam = consume.newInstance(
-                                    MethodDescriptor.ofConstructor(FromApplication.class, String.class, String.class),
-                                    consume.load(targetWithSource.fromApplication().functionalDomain()),
-                                    consume.load(targetWithSource.fromApplication().componentName()));
+                                    MethodDescriptor.ofConstructor(FromApplication.class, String.class),
+                                    consume.load(targetWithSource.fromApplication().name()));
                             final ResultHandle aggregateRootKeyParam = consume.invokeVirtualMethod(
                                     MethodDescriptor.ofMethod(ConsumerRecord.class, "key", Object.class), recordParam);
                             final ResultHandle aggregateRootValueParam = consume.invokeVirtualMethod(
@@ -237,7 +235,7 @@ public class AsyncAggregateRootConsumerProcessor {
                         .map(src -> new TargetWithSource(discoveredAsyncAggregateRootConsumerChannel.target(), src))
                 ).map(targetWithSource -> {
                     final String channelNaming = targetWithSource.channel(TABLE);
-                    final String topic = new CdcTopicNaming(targetWithSource.fromApplication(), Table.AGGREGATE_ROOT).name();
+                    final String topic = CdcTopicNaming.from(targetWithSource.fromApplication(), Table.AGGREGATE_ROOT).name();
                     return Map.of(
                             "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName(),
                             "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",

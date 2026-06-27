@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.publisher;
 
+import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
+import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.Table;
 import io.quarkus.kafka.client.serialization.ObjectMapperDeserializer;
 import io.smallrye.reactive.messaging.kafka.companion.ConsumerBuilder;
 import io.smallrye.reactive.messaging.kafka.companion.ConsumerTask;
@@ -27,18 +30,18 @@ public class Consumer {
     private enum Target {
         EVENT {
             @Override
-            String topicSuffixName() {
-                return "event";
+            Table table() {
+                return Table.EVENT;
             }
         },
         AGGREGATE_ROOT {
             @Override
-            String topicSuffixName() {
-                return "aggregate_root";
+            Table table() {
+                return Table.AGGREGATE_ROOT;
             }
         };
 
-        abstract String topicSuffixName();
+        abstract Table table();
     }
 
     public List<Record<JsonNodeEventKey, JsonNodeEventValue>> consumeFromTEvent() {
@@ -53,7 +56,7 @@ public class Consumer {
         Objects.requireNonNull(target);
         Objects.requireNonNull(keyClass);
         Objects.requireNonNull(valueClass);
-        final String topic = "pulse.%s.%s".formatted(quarkusApplicationName.toLowerCase(), target.topicSuffixName());
+        final String topic = CdcTopicNaming.from(new FromApplication(quarkusApplicationName), target.table()).name();
         try (final ConsumerBuilder<K, V> consumer = new ConsumerBuilder<>(
                 Map.of(
                         BOOTSTRAP_SERVERS_CONFIG, ConfigProvider.getConfig().getValue("kafka.bootstrap.servers", String.class),

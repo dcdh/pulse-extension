@@ -2,7 +2,8 @@ package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
-import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.consumer.runtime.Source;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -80,20 +81,18 @@ public class ValidationProcessor {
         }
     }
 
-    record InvalidSourceDuplicates(String target, String functionalDomain, String componentName,
-                                   Long count) implements InvalidDuplicates {
+    record InvalidSourceDuplicates(String target, String applicationName, Long count) implements InvalidDuplicates {
 
         InvalidSourceDuplicates {
             Objects.requireNonNull(target);
-            Objects.requireNonNull(functionalDomain);
-            Objects.requireNonNull(componentName);
+            Objects.requireNonNull(applicationName);
             Objects.requireNonNull(count);
         }
 
         @Override
         public String invalidMessage() {
-            return "functionalDomain '%s' componentName '%s' declared more than once '%d' in purpose '%s'"
-                    .formatted(functionalDomain, componentName, count, target);
+            return "applicationNaming '%s' declared more than once '%d' in purpose '%s'"
+                    .formatted(applicationName, count, target);
         }
     }
 
@@ -110,11 +109,8 @@ public class ValidationProcessor {
                     invalidNamings.add(InvalidNaming.ofTarget(preValidationEventChannel.purpose(), Purpose.TARGET_PATTERN));
                 }
                 for (final PreValidationSource preValidationSource : preValidationEventChannel.sources()) {
-                    if (!FromApplication.PART_PATTERN.matcher(preValidationSource.functionalDomain()).matches()) {
-                        invalidNamings.add(InvalidNaming.ofFunctional(preValidationSource.functionalDomain(), FromApplication.PART_PATTERN));
-                    }
-                    if (!FromApplication.PART_PATTERN.matcher(preValidationSource.componentName()).matches()) {
-                        invalidNamings.add(InvalidNaming.ofComponent(preValidationSource.componentName(), FromApplication.PART_PATTERN));
+                    if (!ApplicationNaming.UPPER_CAMEL_CASE_PATTERN.matcher(preValidationSource.applicationNaming()).matches()) {
+                        invalidNamings.add(InvalidNaming.ofFunctional(preValidationSource.applicationNaming(), ApplicationNaming.UPPER_CAMEL_CASE_PATTERN));
                     }
                 }
             }
@@ -140,7 +136,7 @@ public class ValidationProcessor {
                         .entrySet().stream()
                         .filter(tc -> tc.getValue() > 1L)
                         .forEach(tc -> invalidDuplicates.add(
-                                new InvalidSourceDuplicates(target, tc.getKey().functionalDomain(), tc.getKey().componentName(), tc.getValue())));
+                                new InvalidSourceDuplicates(target, tc.getKey().applicationNaming(), tc.getValue())));
             }
             return invalidDuplicates;
         }
@@ -154,11 +150,10 @@ public class ValidationProcessor {
         }
     }
 
-    record PreValidationSource(String functionalDomain, String componentName) {
+    record PreValidationSource(String applicationNaming) {
 
         PreValidationSource {
-            Objects.requireNonNull(functionalDomain);
-            Objects.requireNonNull(componentName);
+            Objects.requireNonNull(applicationNaming);
         }
     }
 
@@ -180,8 +175,7 @@ public class ValidationProcessor {
                                             .map(source -> {
                                                 final AnnotationInstance nested = source.asNested();
                                                 return new PreValidationSource(
-                                                        nested.value("functionalDomain").asString(),
-                                                        nested.value("componentName").asString());
+                                                        nested.value(Source.APPLICATION_NAMING).asString());
                                             })
                                             .toList();
 

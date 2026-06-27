@@ -9,11 +9,9 @@ import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.ConsumerChannelToValidateBuildItem;
 import com.damdamdeo.pulse.extension.consumer.deployment.items.DiscoveredAsyncEventConsumerChannel;
+import com.damdamdeo.pulse.extension.consumer.runtime.Source;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.*;
-import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
-import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
-import com.damdamdeo.pulse.extension.core.consumer.Purpose;
-import com.damdamdeo.pulse.extension.core.consumer.Table;
+import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.event.AbstractPurposeEventChannelConsumer;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventKey;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
@@ -67,9 +65,8 @@ public class AsyncEventConsumerProcessor {
                         final List<FromApplication> sources = annotationInstance.value("sources").asArrayList().stream()
                                 .map(annotationValue -> {
                                     final AnnotationInstance nested = annotationValue.asNested();
-                                    return FromApplication.of(
-                                            nested.value("functionalDomain").asString(),
-                                            nested.value("componentName").asString());
+                                    return new FromApplication(
+                                            nested.value(Source.APPLICATION_NAMING).asString());
                                 }).toList();
                         return new DiscoveredAsyncEventConsumerChannel(purpose, sources);
                     })
@@ -108,8 +105,8 @@ public class AsyncEventConsumerProcessor {
             return discoveredAsyncEventConsumerChannels.stream()
                     .flatMap(discoveredAsyncEventConsumerChannel -> discoveredAsyncEventConsumerChannel.sources().stream())
                     .distinct()
-                    .map(FromApplication::value)
-                    .map(String::toLowerCase)
+                    .map(SchemaName::from)
+                    .map(SchemaName::name)
                     .map(schemaName -> new AdditionalVolumeBuildItem(
                             new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
                             new ComposeServiceBuildItem.Volume("./%s_target_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_target_consumer.sql".formatted(schemaName),
@@ -148,7 +145,7 @@ public class AsyncEventConsumerProcessor {
                 ).forEach(targetWithSource -> {
                     final String className = AbstractPurposeEventChannelConsumer.class.getPackageName() + "."
                             + capitalize(targetWithSource.purpose().name())
-                            + capitalize(targetWithSource.fromApplication().value())
+                            + targetWithSource.fromApplication().name()
                             + "TargetEventChannelConsumer";
                     try (final ClassCreator beanClassCreator = ClassCreator.builder()
                             .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
@@ -205,9 +202,8 @@ public class AsyncEventConsumerProcessor {
                                     MethodDescriptor.ofConstructor(Purpose.class, String.class),
                                     consume.load(targetWithSource.purpose().name()));
                             final ResultHandle applicationNamingParam = consume.newInstance(
-                                    MethodDescriptor.ofConstructor(FromApplication.class, String.class, String.class),
-                                    consume.load(targetWithSource.fromApplication().functionalDomain()),
-                                    consume.load(targetWithSource.fromApplication().componentName()));
+                                    MethodDescriptor.ofConstructor(FromApplication.class, String.class),
+                                    consume.load(targetWithSource.fromApplication().name()));
                             final ResultHandle eventKeyParam = consume.invokeVirtualMethod(
                                     MethodDescriptor.ofMethod(ConsumerRecord.class, "key", Object.class), recordParam);
                             final ResultHandle eventValueParam = consume.invokeVirtualMethod(
@@ -239,7 +235,7 @@ public class AsyncEventConsumerProcessor {
                         .map(src -> new TargetWithSource(discoveredAsyncEventConsumerChannel.target(), src))
                 ).map(targetWithSource -> {
                     final String channelNaming = targetWithSource.channel(TABLE);
-                    final String topic = new CdcTopicNaming(targetWithSource.fromApplication(), Table.EVENT).name();
+                    final String topic = CdcTopicNaming.from(targetWithSource.fromApplication(), Table.EVENT).name();
                     return Map.of(
                             "mp.messaging.incoming.%s.group.id".formatted(channelNaming), applicationInfoBuildItem.getName(),
                             "mp.messaging.incoming.%s.enable.auto.commit".formatted(channelNaming), "true",

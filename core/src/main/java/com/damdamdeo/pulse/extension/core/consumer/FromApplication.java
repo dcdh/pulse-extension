@@ -1,35 +1,51 @@
 package com.damdamdeo.pulse.extension.core.consumer;
 
-import org.apache.commons.lang3.Validate;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
 
-public record FromApplication(String functionalDomain, String componentName) {
+public final class FromApplication {
+    private final ApplicationNaming applicationNaming;
 
-    private final static String SEPARATOR = "_";
-    public final static Pattern PART_PATTERN = Pattern.compile("^[a-zA-Z]{1,64}$");
-    public final static Pattern FULL_PATTERN = Pattern.compile("^[a-zA-Z]{1,64}_[a-zA-Z]{1,64}$");
-
-    public FromApplication {
-        Objects.requireNonNull(functionalDomain);
-        Validate.validState(PART_PATTERN.matcher(functionalDomain).matches());
-        Objects.requireNonNull(componentName);
-        Validate.validState(PART_PATTERN.matcher(componentName).matches());
+    public FromApplication(final ApplicationNaming applicationNaming) {
+        Objects.requireNonNull(applicationNaming);
+        this.applicationNaming = applicationNaming;
     }
 
-    public static FromApplication of(final String functionalDomain, final String componentName) {
-        return new FromApplication(functionalDomain, componentName);
+    public FromApplication(final String applicationNaming) {
+        Objects.requireNonNull(applicationNaming);
+        this(ApplicationNaming.of(applicationNaming));
     }
 
-    public static FromApplication from(final String applicationName) {
-        Objects.requireNonNull(applicationName);
-        Validate.validState(FULL_PATTERN.matcher(applicationName).matches());
-        final String[] split = applicationName.split("_");
-        return new FromApplication(split[0], split[1]);
+    public String name() {
+        return applicationNaming.name();
     }
 
-    public String value() {
-        return functionalDomain + SEPARATOR + componentName;
+    public ApplicationNaming applicationNaming() {
+        return applicationNaming;
+    }
+
+    public ApplicationNaming getApplicationNaming() {
+        return applicationNaming;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (FromApplication) obj;
+        return Objects.equals(this.applicationNaming, that.applicationNaming);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(applicationNaming);
+    }
+
+    @Override
+    public String toString() {
+        return "FromApplication{" +
+                "applicationNaming=" + applicationNaming +
+                '}';
     }
 }

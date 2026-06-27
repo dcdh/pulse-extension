@@ -56,7 +56,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
     @Test
     void shouldThrowUnknownAggregateRootExceptionWhenAggregateDoesNotExists() {
         // Given
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
         final AggregateId givenAggregateId = new AnyAggregateId("Damien-Unknown");
 
@@ -84,7 +84,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
         final byte[] encryptedPayload = openPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
         // language=sql
         final String sql = """
-                    INSERT INTO todotaking_todo.aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    INSERT INTO todo_taking.aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -99,7 +99,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
-        final FromApplication givenFromApplication = new FromApplication("TodoTaking", "Todo");
+        final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
         final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
         final AggregateId givenAggregateId = new AnyAggregateId(TodoId.USER_1_TODO_1.id());
 

@@ -25,8 +25,8 @@ import java.util.function.Supplier;
 @AsyncEventConsumerChannel(
         purpose = "statistics",
         sources = {
-                @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
-                @Source(functionalDomain = "TodoClient", componentName = "Registered")})
+                @Source(applicationNaming = "TodoTaking"),
+                @Source(applicationNaming = "TodoRegistered")})
 public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
     private Call call = null;

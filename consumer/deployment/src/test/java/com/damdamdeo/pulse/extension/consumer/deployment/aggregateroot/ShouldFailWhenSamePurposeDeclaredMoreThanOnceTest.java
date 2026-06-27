@@ -43,7 +43,7 @@ class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumer
     @ApplicationScoped
     @AsyncAggregateRootConsumerChannel(purpose = "statistics",
             sources = {
-                    @Source(functionalDomain = "TodoClient", componentName = "Registered")
+                    @Source(applicationNaming = "TodoRegistered")
             })
     static final class StatisticsAggregateRootHandler implements AsyncAggregateRootChannelMessageHandler<JsonNode> {
 
@@ -63,7 +63,7 @@ class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumer
     @ApplicationScoped
     @AsyncAggregateRootConsumerChannel(purpose = "statistics",
             sources = {
-                    @Source(functionalDomain = "TodoClient", componentName = "Registered")
+                    @Source(applicationNaming = "TodoRegistered")
             })
     static final class StatisticsAgainAggregateRootHandler implements AsyncAggregateRootChannelMessageHandler<JsonNode> {
 

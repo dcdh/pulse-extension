@@ -32,7 +32,7 @@ class ShouldFailOnApplicationDuplicationTest extends AbstractConsumerTest {
                     .hasNoSuppressedExceptions()
                     .rootCause()
                     .isExactlyInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("functionalDomain 'TodoTaking' componentName 'Todo' declared more than once '2' in purpose 'statistics'")
+                    .hasMessage("applicationNaming 'TodoTaking' declared more than once '2' in purpose 'statistics'")
                     .hasNoSuppressedExceptions());
 
     @Test
@@ -43,8 +43,8 @@ class ShouldFailOnApplicationDuplicationTest extends AbstractConsumerTest {
     @ApplicationScoped
     @AsyncAggregateRootConsumerChannel(purpose = "statistics",
             sources = {
-                    @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
-                    @Source(functionalDomain = "TodoTaking", componentName = "Todo")
+                    @Source(applicationNaming = "TodoTaking"),
+                    @Source(applicationNaming = "TodoTaking")
             })
     static final class StatisticsEventHandler implements AsyncAggregateRootChannelMessageHandler<JsonNode> {
 

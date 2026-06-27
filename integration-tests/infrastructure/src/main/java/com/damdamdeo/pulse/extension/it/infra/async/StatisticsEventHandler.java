@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.consumer.runtime.Source;
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
@@ -24,13 +25,13 @@ import java.util.function.Supplier;
 @ApplicationScoped
 @AsyncEventConsumerChannel(purpose = "statistics",
         sources = {
-                @Source(functionalDomain = "TodoTaking", componentName = "Todo"),
-                @Source(functionalDomain = "TodoClient", componentName = "Registered")})
+                @Source(applicationNaming = "TodoTaking"),
+                @Source(applicationNaming = "TodoRegistered")})
 public final class StatisticsEventHandler implements AsyncEventChannelMessageHandler<JsonNode> {
 
     private Call call = null;
 
-    private final static FromApplication TODO_TAKING_TODO = new FromApplication("TodoTaking", "Todo");
+    private final static FromApplication TODO_TAKING_TODO = new FromApplication(new ApplicationNaming("TodoTaking"));
 
     @Override
     public void handleMessage(final FromApplication fromApplication,

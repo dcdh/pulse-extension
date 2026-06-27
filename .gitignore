@@ -8,10 +8,10 @@
 /consumer/deployment/target/
 /consumer/deployment/quarkus-pulse-consumer-extension-deployment.iml
 /consumer/deployment/compose-devservices-pulse.yml
-/consumer/deployment/todoclient_registered_target_consumer.sql
-/consumer/deployment/todotaking_todo_idempotency_consumer.sql
-/consumer/deployment/todotaking_todo_target_consumer.sql
 /consumer/deployment/pulse_passphrase.sql
+/consumer/deployment/todo_registered_target_consumer.sql
+/consumer/deployment/todo_taking_target_consumer.sql
+/consumer/deployment/todo_taking_idempotency_consumer.sql
 /consumer/runtime/target/
 /consumer/runtime/quarkus-pulse-consumer-extension.iml
 /consumer/test-framework/target/
@@ -23,10 +23,10 @@
 /integration-tests/domain/target/
 /integration-tests/infrastructure/target/
 /integration-tests/infrastructure/compose-devservices-pulse.yml
-/integration-tests/infrastructure/todotaking_todo_aggregates.sql
-/integration-tests/infrastructure/todotaking_todo_idempotency_consumer.sql
-/integration-tests/infrastructure/todotaking_todo_sequences.sql
-/integration-tests/infrastructure/todotaking_todo_sequences_table.sql
+/integration-tests/infrastructure/todo_taking_aggregates.sql
+/integration-tests/infrastructure/todo_taking_idempotency_consumer.sql
+/integration-tests/infrastructure/todo_taking_sequences.sql
+/integration-tests/infrastructure/todo_taking_sequences_table.sql
 /integration-tests/infrastructure/pulse_connection_identifier.sql
 
 /kafka/target/
@@ -41,9 +41,10 @@
 /publisher/deployment/target/
 /publisher/deployment/compose-devservices-pulse.yml
 /publisher/deployment/quarkus-pulse-publisher-extension-deployment.iml
-/publisher/deployment/todotaking_todo_aggregates.sql
-/publisher/deployment/todotaking_todo_sequences.sql
-/publisher/deployment/todotaking_todo_sequences_table.sql
+/publisher/deployment/pulse_passphrase.sql
+/publisher/deployment/todo_taking_aggregates.sql
+/publisher/deployment/todo_taking_sequences.sql
+/publisher/deployment/todo_taking_sequences_table.sql
 /publisher/runtime/target/
 /publisher/runtime/quarkus-pulse-publisher-extension.iml
 /publisher/test-framework/target/
@@ -51,10 +52,10 @@
 /writer/deployment/target/
 /writer/deployment/compose-devservices-pulse.yml
 /writer/deployment/quarkus-pulse-writer-extension-deployment.iml
-/writer/deployment/todotaking_todo_aggregates.sql
-/writer/deployment/todotaking_todo_sequences.sql
-/writer/deployment/todotaking_todo_sequences_table.sql
 /writer/deployment/pulse_connection_identifier.sql
+/writer/deployment/todo_taking_aggregates.sql
+/writer/deployment/todo_taking_sequences_table.sql
+/writer/deployment/todo_taking_sequences.sql
 /writer/deployment/realm.json
 /writer/runtime/target/
 /writer/runtime/quarkus-pulse-writer-extension.iml
@@ -80,7 +81,6 @@
 /encryption-storage/integration-tests/jdbc-postgres/target/
 /encryption-storage/integration-tests/jdbc-postgres/compose-devservices-pulse.yml
 /integration-tests/infrastructure/pulse-policy-policy.hcl
-/integration-tests/infrastructure/todotaking_todo_pulse-policy-policy.hcl
 /keycloak/deployment/quarkus-pulse-keycloak-extension-deployment.iml
 /kafka/deployment/target/
 /kafka/deployment/quarkus-pulse-kafka-extension-deployment.iml
@@ -94,7 +94,6 @@
 /common/deployment/boom_passphrase.sql
 /bom/quarkus-pulse-extension-bom.iml
 /integration-tests/infrastructure/realm.json
-/integration-tests/infrastructure/todotaking_todo_connection_identifier.sql
 /encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
 /common/deployment/realm.json
 /common/deployment/pulse_passphrase.sql
@@ -102,10 +101,12 @@
 /live-notifier/deployment/pulse_passphrase.sql
 /live-notifier/deployment/pulse_connection_identifier.sql
 /live-notifier/deployment/realm.json
+/obfuscator/deployment/target/
+/obfuscator/runtime/target/
 /obfuscator/integration-tests/jdbc-postgres/compose-devservices-pulse.yml
 /obfuscator/integration-tests/jdbc-postgres/pulse_obfuscator.sql
 /obfuscator/integration-tests/jdbc-postgres/quarkus-pulse-extension-obfuscator-integration-tests-jdbc-postgres.iml
+/obfuscator/integration-tests/jdbc-postgres/target/
 /integration-tests/infrastructure/pulse_obfuscator.sql
 /encryption-storage/integration-tests/jdbc-postgres/pulse_passphrase.sql
-/encryption-storage/integration-tests/jdbc-postgres/todotaking_todo_passphrase.sql
-/publisher/deployment/pulse_passphrase.sql
+

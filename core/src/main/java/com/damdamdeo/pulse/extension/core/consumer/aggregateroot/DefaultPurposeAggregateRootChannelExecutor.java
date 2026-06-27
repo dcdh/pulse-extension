@@ -101,7 +101,7 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
         Objects.requireNonNull(aggregateRootKey);
         Objects.requireNonNull(aggregateRootValue);
         LOGGER.fine("Message from target '%s' - applicationNaming '%s' - aggregateRootType '%s' - aggregateId '%s' - currentVersionInConsumption '%s' already consumed"
-                .formatted(purpose.name(), fromApplication.value(), aggregateRootKey.toAggregateRootType().type(), aggregateRootKey.toAggregateId().id(),
+                .formatted(purpose.name(), fromApplication.applicationNaming().name(), aggregateRootKey.toAggregateRootType().type(), aggregateRootKey.toAggregateId().id(),
                         aggregateRootKey.toCurrentVersionInConsumption().version()));
     }
 }

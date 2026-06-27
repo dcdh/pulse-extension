@@ -8,18 +8,13 @@ import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerCh
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
 import com.damdamdeo.pulse.extension.core.event.EventType;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.QuarkusUnitTest;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -31,7 +26,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
 import java.time.*;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,23 +65,24 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
     @Test
     void shouldGenerateMessagingConfiguration() {
         assertAll(
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.group.id", String.class))
-                        .isEqualTo("TodoTaking_Todo"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.enable.auto.commit", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getPropertyNames()).contains("quarkus.messaging.incoming.statistics-todo-registered-event-in.group.id"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.group.id", String.class))
+                        .isEqualTo("TodoTaking"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.enable.auto.commit", String.class))
                         .isEqualTo("true"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.auto.offset.reset", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.auto.offset.reset", String.class))
                         .isEqualTo("earliest"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.connector", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.connector", String.class))
                         .isEqualTo("smallrye-kafka"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.topic", String.class))
-                        .isEqualTo("pulse.todotaking_todo.event"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.key.deserializer", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.topic", String.class))
+                        .isEqualTo("pulse.todo_registered.event"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.key.deserializer", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKeyDeserializer"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.value.deserializer", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.value.deserializer", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValueDeserializer"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.value.deserializer.key-type", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.value.deserializer.key-type", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventKey"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-event-in.value.deserializer.value-type", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-registered-event-in.value.deserializer.value-type", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.event.JsonNodeEventValue")
         );
     }
@@ -102,7 +97,7 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
         // When
         final Response response = producer.produceEvent(
                 "statistics",
-                new FromApplication("TodoTaking", "Todo"),
+                new FromApplication(new ApplicationNaming("TodoTaking")),
                 // language=json
                 """
                         {
@@ -133,7 +128,7 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
         expectedAggregateRootPayload.put("important", false);
         assertThat(statisticsEventHandler.getCall()).isEqualTo(
                 new Call(
-                        new FromApplication("TodoTaking", "Todo"),
+                        new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
@@ -165,7 +160,7 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
         // When
         final Response response = producer.produceEvent(
                 "statistics",
-                new FromApplication("TodoTaking", "Todo"),
+                new FromApplication(new ApplicationNaming("TodoTaking")),
                 // language=json
                 """
                         {
@@ -190,7 +185,7 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
         await().atMost(10, TimeUnit.SECONDS).until(() -> statisticsEventHandler.getCall() != null);
         assertThat(statisticsEventHandler.getCall()).isEqualTo(
                 new Call(
-                        new FromApplication("TodoTaking", "Todo"),
+                        new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId(TodoId.USER_2_TODO_1.id()),

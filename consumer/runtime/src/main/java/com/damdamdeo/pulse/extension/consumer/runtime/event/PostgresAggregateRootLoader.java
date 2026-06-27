@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.LastAggregateVersion;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoader;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaderException;
@@ -57,7 +58,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                     """
                             SELECT last_version, aggregate_root_payload, owned_by, belongs_to FROM %s.aggregate_root
                             WHERE aggregate_root_type = ? AND aggregate_root_id = ?
-                            """.formatted(fromApplication.value().toLowerCase()))) {
+                            """.formatted(SchemaName.from(fromApplication).name()))) {
                 ps.setString(1, aggregateRootType.type());
                 ps.setString(2, aggregateId.id());
                 try (final ResultSet rs = ps.executeQuery()) {

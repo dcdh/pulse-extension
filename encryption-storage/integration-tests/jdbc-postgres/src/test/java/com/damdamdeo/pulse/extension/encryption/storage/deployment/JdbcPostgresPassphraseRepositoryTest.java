@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @QuarkusTest
 class JdbcPostgresPassphraseRepositoryTest {
 
-    private static final String USER_1_SHA3_256 = "1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d";
+    private static final String USER_1_SHA3_256 = "825262468b4cb777358139eafbdec2e0477f898202d8cab60ae9c3a8e79a0de9";
 
     @Inject
     Hasher hasher;
@@ -182,7 +182,7 @@ class JdbcPostgresPassphraseRepositoryTest {
         assertAll(
                 () -> assertThat(stored).isEqualTo(PassphraseSample.PASSPHRASE),
                 () -> assertThat(passphrases.size()).isEqualTo(1),
-                () -> assertThat(passphrases.getFirst().ownedByHashed()).isEqualTo("1db42019098571b7944ca44ddd7ecf3a93ccc58c35053906ba3bef5b45a5824d"),
+                () -> assertThat(passphrases.getFirst().ownedByHashed()).isEqualTo("825262468b4cb777358139eafbdec2e0477f898202d8cab60ae9c3a8e79a0de9"),
                 () -> assertThat(passphrases.getFirst().passphrase()).startsWith("\\x")
         );
     }

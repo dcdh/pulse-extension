@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.idempotency;
 import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.consumer.*;
@@ -73,7 +74,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.idempotency");
+        assertThat(tables).contains("todo_taking.idempotency");
     }
 
     @Test
@@ -81,7 +82,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         assertThatThrownBy(() -> jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                 new IdempotencyKey(
                         new Purpose("statistics"),
-                        new FromApplication("TodoTaking", "Todo"),
+                        new FromApplication(new ApplicationNaming("TodoTaking")),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()))))
@@ -98,7 +99,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                 .call(() -> jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                         new IdempotencyKey(
                                 new Purpose("statistics"),
-                                new FromApplication("TodoTaking", "Todo"),
+                                new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
                                 AggregateRootType.from(Todo.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()))));
@@ -118,7 +119,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
+            ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());
@@ -133,7 +134,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                 .call(() -> jdbcPostgresIdempotencyRepository.findLastAggregateVersionBy(
                         new IdempotencyKey(
                                 new Purpose("statistics"),
-                                new FromApplication("TodoTaking", "Todo"),
+                                new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
                                 AggregateRootType.from(Todo.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()))));
@@ -148,7 +149,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         assertThatThrownBy(() -> jdbcPostgresIdempotencyRepository.upsert(
                 new IdempotencyKey(
                         new Purpose("statistics"),
-                        new FromApplication("TodoTaking", "Todo"),
+                        new FromApplication(new ApplicationNaming("TodoTaking")),
                         Table.EVENT,
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0)))
@@ -165,7 +166,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                 .run(() -> jdbcPostgresIdempotencyRepository.upsert(
                         new IdempotencyKey(
                                 new Purpose("statistics"),
-                                new FromApplication("TodoTaking", "Todo"),
+                                new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
                                 AggregateRootType.from(Todo.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0)));
@@ -179,7 +180,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
+            ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());
@@ -203,7 +204,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
+            ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());
@@ -218,7 +219,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                 .run(() -> jdbcPostgresIdempotencyRepository.upsert(
                         new IdempotencyKey(
                                 new Purpose("statistics"),
-                                new FromApplication("TodoTaking", "Todo"),
+                                new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
                                 AggregateRootType.from(Todo.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(1)));
@@ -232,7 +233,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(querySql)) {
             ps.setString(1, "statistics");
-            ps.setString(2, new FromApplication("TodoTaking", "Todo").value());
+            ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
             ps.setString(4, Todo.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());

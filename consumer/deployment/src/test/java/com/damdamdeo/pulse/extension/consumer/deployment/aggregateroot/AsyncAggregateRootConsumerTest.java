@@ -5,19 +5,14 @@ import com.damdamdeo.pulse.extension.consumer.Producer;
 import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.AsyncAggregateRootConsumerChannel;
 import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.PassphraseSample;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.QuarkusUnitTest;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -28,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,23 +62,24 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
     @Test
     void shouldGenerateMessagingConfiguration() {
         assertAll(
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.group.id", String.class))
-                        .isEqualTo("TodoTaking_Todo"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.enable.auto.commit", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getPropertyNames()).contains("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.group.id"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.group.id", String.class))
+                        .isEqualTo("TodoTaking"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.enable.auto.commit", String.class))
                         .isEqualTo("true"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.auto.offset.reset", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.auto.offset.reset", String.class))
                         .isEqualTo("earliest"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.connector", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.connector", String.class))
                         .isEqualTo("smallrye-kafka"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.topic", String.class))
-                        .isEqualTo("pulse.todotaking_todo.aggregate_root"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.key.deserializer", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.topic", String.class))
+                        .isEqualTo("pulse.todo_taking.aggregate_root"),
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.key.deserializer", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.JsonNodeAggregateRootKeyDeserializer"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.value.deserializer", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.value.deserializer", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.JsonNodeAggregateRootValueDeserializer"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.value.deserializer.key-type", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.value.deserializer.key-type", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.JsonNodeAggregateRootKey"),
-                () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.incoming.statistics-todotaking-todo-aggregate-root-in.value.deserializer.value-type", String.class))
+                () -> assertThat(ConfigProvider.getConfig().getValue("quarkus.messaging.incoming.statistics-todo-taking-aggregate-root-in.value.deserializer.value-type", String.class))
                         .isEqualTo("com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.JsonNodeAggregateRootValue")
         );
     }
@@ -99,7 +94,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
         // When
         final EncryptedPayload payload = producer.produceAggregateRoot(
                 "statistics",
-                new FromApplication("TodoTaking", "Todo"),
+                new FromApplication(new ApplicationNaming("TodoTaking")),
                 // language=json
                 """
                         {
@@ -123,7 +118,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
         expectedAggregateRootPayload.put("important", false);
         assertThat(statisticsAggregateRootHandler.getCall()).isEqualTo(
                 new Call(
-                        new FromApplication("TodoTaking", "Todo"),
+                        new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
@@ -144,7 +139,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
         // When
         final EncryptedPayload payload = producer.produceAggregateRoot(
                 "statistics",
-                new FromApplication("TodoTaking", "Todo"),
+                new FromApplication(new ApplicationNaming("TodoTaking")),
                 // language=json
                 """
                         {
@@ -163,7 +158,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
         await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
         assertThat(statisticsAggregateRootHandler.getCall()).isEqualTo(
                 new Call(
-                        new FromApplication("TodoTaking", "Todo"),
+                        new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId(TodoId.USER_2_TODO_1.id()),

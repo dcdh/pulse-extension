@@ -58,8 +58,8 @@ class PostgresEncryptionTest {
     // "\l" liste databases
     // "\c quarkus" le name est là
     // "\dt" lister les tables
-    // "\dt todotaking_todo.*" lister les tables dans le schema todotaking_todo
-    // "\df todotaking_todo.*" lister les procedure stockée dans le schema todotaking_todo
+    // "\dt todo_taking.*" lister les tables dans le schema todo_taking
+    // "\df todo_taking.*" lister les procedure stockée dans le schema todo_taking
     // "\dx" lister les extensions
     // SELECT public.pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
     @Test

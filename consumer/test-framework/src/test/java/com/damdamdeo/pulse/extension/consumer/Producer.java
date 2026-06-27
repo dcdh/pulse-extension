@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
@@ -60,9 +61,9 @@ public class Producer {
         final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
         // language=sql
         final String aggregateRootSql = """
-                    INSERT INTO todotaking_todo.aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
+                    INSERT INTO %s.aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """;
+                """.formatted(SchemaName.from(fromApplication).name());
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
             ps.setString(1, aggregateRootClass.getSimpleName());
@@ -85,7 +86,7 @@ public class Producer {
                         AUTO_OFFSET_RESET_CONFIG, "latest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeEventKey>(), new ObjectMapperSerializer<JsonNodeEventValue>())
-                .fromRecords(new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.EVENT).name(),
+                .fromRecords(new ProducerRecord<>(CdcTopicNaming.from(fromApplication, Table.EVENT).name(),
                         new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                         new JsonNodeEventValue(
                                 ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
@@ -113,7 +114,7 @@ public class Producer {
         final String aggregateRootSql = """
                     INSERT INTO %s.aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """.formatted(fromApplication.value());
+                """.formatted(SchemaName.from(fromApplication).name());
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(aggregateRootSql)) {
             ps.setString(1, aggregateRootClass.getSimpleName());
@@ -136,7 +137,7 @@ public class Producer {
                         AUTO_OFFSET_RESET_CONFIG, "latest",
                         ProducerConfig.CLIENT_ID_CONFIG, "companion-" + UUID.randomUUID()),
                 Duration.ofSeconds(10), new ObjectMapperSerializer<JsonNodeAggregateRootKey>(), new ObjectMapperSerializer<JsonNodeAggregateRootValue>())
-                .fromRecords(new ProducerRecord<>(new CdcTopicNaming(fromApplication, Table.AGGREGATE_ROOT).name(),
+                .fromRecords(new ProducerRecord<>(CdcTopicNaming.from(fromApplication, Table.AGGREGATE_ROOT).name(),
                         new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                         new JsonNodeAggregateRootValue(1L,
                                 encryptedPayload,

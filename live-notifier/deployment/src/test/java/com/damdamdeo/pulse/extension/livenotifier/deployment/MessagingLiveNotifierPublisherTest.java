@@ -46,7 +46,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
                 Todo.OWNED_BY_USER_1, audienceBob);
 
         // Then
-        final List<Record> records = consumer.consume("pulse.live-notification.todotaking_todo");
+        final List<Record> records = consumer.consume("pulse.live-notification.todo-taking");
         final Headers headers = records.getFirst().getHeaders();
         final List<String> headersName = Stream.of(headers.toArray()).map(Header::key).toList();
 
@@ -54,7 +54,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
                 () -> assertThat(headersName).containsExactly("event-name", "content-type", "owned-by", "audience"),
                 () -> assertThat(getValuesByKey(headers, "event-name")).containsExactly("TodoEvents"),
                 () -> assertThat(getValuesByKey(headers, "content-type")).containsExactly("application/vnd.com.damdamdeo.pulse.extension.core.event.NewTodoCreated.api+json"),
-                () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("UserId|U000001"),
+                () -> assertThat(getValuesByKey(headers, "owned-by")).containsExactly("U000001"),
                 () -> assertThat(getValuesByKey(headers, "audience")).isNotEmpty(),
                 () -> assertThat(getValuesByKey(headers, "audience").getFirst()).startsWith("FROM_LIST_OF_ELIGIBILITY:EU:"),// It is encoded and not deterministic
                 () -> assertThat(records.getFirst().getKey()).isNull(),
@@ -65,7 +65,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
     void shouldGenerateMessagingConfiguration() {
         assertAll(
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.group.id", String.class))
-                        .isEqualTo("TodoTaking_Todo"),
+                        .isEqualTo("TodoTaking"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.enable.auto.commit", String.class))
                         .isEqualTo("true"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.auto.offset.reset", String.class))
@@ -73,7 +73,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.connector", String.class))
                         .isEqualTo("smallrye-kafka"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.topic", String.class))
-                        .isEqualTo("pulse.live-notification.todotaking_todo"),
+                        .isEqualTo("pulse.live-notification.todo-taking"),
                 () -> assertThat(ConfigProvider.getConfig().getValue("mp.messaging.outgoing.live-notification-out.value.serializer", String.class))
                         .isEqualTo("org.apache.kafka.common.serialization.ByteArraySerializer")
         );

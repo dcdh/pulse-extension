@@ -79,8 +79,8 @@ class PostgresFlywayTest extends AbstractWriterTest {
         }
 
         // Then
-        assertThat(tables).contains("todotaking_todo.flyway_schema_history",
-                "todotaking_todo.sample_table");
+        assertThat(tables).contains("todo_taking.flyway_schema_history",
+                "todo_taking.sample_table");
     }
 
     @Test
@@ -94,7 +94,7 @@ class PostgresFlywayTest extends AbstractWriterTest {
                      // language=sql
                      """
                              SELECT version, description, script, installed_by, success
-                             FROM todotaking_todo.flyway_schema_history
+                             FROM todo_taking.flyway_schema_history
                              ORDER BY installed_rank
                              """
              );

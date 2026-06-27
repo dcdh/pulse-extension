@@ -4,7 +4,9 @@ import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildIte
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
+import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.command.JvmCommandHandlerRegistry;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.writer.deployment.items.IdentifiableBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
@@ -51,7 +53,7 @@ public class PulseWriterProcessor {
     void generateAdditionalVolumeBuildItem(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                            final List<IdentifiableBuildItem> identifiableBuildItems,
                                            final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemBuildProducer) {
-        final String schemaName = applicationInfoBuildItem.getName().toLowerCase();
+        final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
         final String sequences = identifiableBuildItems.stream().map(IdentifiableBuildItem::identifiableClazz)
                 .map(JdbcPostgresSequenceGenerator::sequenceNameFor)
                 .map(sequenceName ->
