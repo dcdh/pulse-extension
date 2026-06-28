@@ -53,73 +53,93 @@ public class PulseWriterProcessor {
     void generateAdditionalVolumeBuildItem(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                            final List<IdentifiableBuildItem> identifiableBuildItems,
                                            final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemBuildProducer) {
-        final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
-        final String sequences = identifiableBuildItems.stream().map(IdentifiableBuildItem::identifiableClazz)
-                .map(JdbcPostgresSequenceGenerator::sequenceNameFor)
-                .map(sequenceName ->
-                        // language=sql
-                        """
-                                CREATE SCHEMA IF NOT EXISTS %1$s;
-                                CREATE SEQUENCE IF NOT EXISTS %1$s.%2$s
-                                START WITH 1
-                                INCREMENT BY 1
-                                MINVALUE 1
-                                CACHE 1;
-                                """.formatted(schemaName, sequenceName))
-                .collect(Collectors.joining());
-        additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
-                new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                new ComposeServiceBuildItem.Volume("./%s_sequences.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_sequences.sql".formatted(schemaName),
-                        sequences.getBytes(StandardCharsets.UTF_8), "sql")));
         final String sequenceByAggregateRootTypeAndBelongsTo =
                 // language=sql
                 """
                         CREATE SCHEMA IF NOT EXISTS %1$s;
-                        CREATE TABLE %1$s.sequence_by_identifiable_clazz_and_belongs_to (
+                        
+                        DO $MAIN$
+                        BEGIN
+                        
+                          CREATE TABLE %1$s.sequences (
+                            owned_by character varying(255) not null,
                             identifiable_clazz character varying(255) not null,
                             belongs_to character varying(255) not null,
                             next_value bigint not null check (next_value > 0),
                             CONSTRAINT identifiable_clazz_and_belongs_to_pkey PRIMARY KEY (identifiable_clazz, belongs_to)
-                        );
+                          );
                         
-                        CREATE OR REPLACE FUNCTION %1$s.next_sequence_by_identifiable_clazz_and_belongs_to_value(
-                            p_identifiable_clazz TEXT,
-                            p_belongs_to TEXT
-                        )
-                        RETURNS BIGINT
-                        LANGUAGE plpgsql
-                        AS $$
-                        DECLARE
-                            v_next BIGINT;
-                        BEGIN
-                            INSERT INTO %1$s.sequence_by_identifiable_clazz_and_belongs_to (
-                                identifiable_clazz,
-                                belongs_to,
-                                next_value
-                            )
-                            VALUES (
-                                p_identifiable_clazz,
-                                p_belongs_to,
-                                1
-                            )
-                            ON CONFLICT (
-                                identifiable_clazz,
-                                belongs_to
-                            )
-                            DO UPDATE
-                                SET next_value =
-                                    sequence_by_identifiable_clazz_and_belongs_to.next_value + 1
-                            RETURNING next_value
-                            INTO v_next;
-                        
-                            RETURN v_next;
+                          --------------------------------------------------------------------------
+                          -- check_owner
+                          --------------------------------------------------------------------------
+                          CREATE OR REPLACE FUNCTION %1$s.check_owner()
+                          RETURNS trigger AS $_$
+                          BEGIN
+                            IF OLD.owned_by <> NEW.owned_by THEN
+                              RAISE EXCEPTION 'Sequence already owned by %%', OLD.owned_by USING ERRCODE = 'P0001';
+                            END IF;
+                            RETURN NEW;
+                          END;
+                          $_$ LANGUAGE plpgsql;
+                          
+                          CREATE TRIGGER check_owner_trigger
+                          BEFORE UPDATE ON %1$s.sequences
+                          FOR EACH ROW
+                          EXECUTE FUNCTION %1$s.check_owner();
+                          
+                          --------------------------------------------------------------------------
+                          -- check_next_value_increment
+                          --------------------------------------------------------------------------
+                          CREATE OR REPLACE FUNCTION %1$s.check_next_value_increment()
+                          RETURNS trigger AS
+                          $_$
+                          BEGIN
+                            IF NEW.next_value <> OLD.next_value + 1 THEN
+                              RAISE EXCEPTION
+                                'next_value must be incremented by exactly 1 (old=%%, new=%%)',
+                                OLD.next_value,
+                                NEW.next_value
+                                USING ERRCODE = 'P0001';
+                            END IF;
+                          
+                            RETURN NEW;
+                          END;
+                          $_$ LANGUAGE plpgsql;
+                          
+                          CREATE TRIGGER check_next_value_increment_trigger
+                          BEFORE UPDATE OF next_value
+                          ON %1$s.sequences
+                          FOR EACH ROW
+                          EXECUTE FUNCTION %1$s.check_next_value_increment();
+                          
+                          --------------------------------------------------------------------------
+                          -- prevent_delete
+                          --------------------------------------------------------------------------
+                          CREATE OR REPLACE FUNCTION %1$s.prevent_delete()
+                          RETURNS trigger AS
+                          $_$
+                          BEGIN
+                            RAISE EXCEPTION
+                              'Deletion of sequences is not allowed (identifiable_clazz=%%, belongs_to=%%).',
+                              OLD.identifiable_clazz,
+                              OLD.belongs_to
+                              USING ERRCODE = 'P0001';
+                          END;
+                          $_$ LANGUAGE plpgsql;
+                          
+                          CREATE TRIGGER prevent_delete_trigger
+                          BEFORE DELETE
+                          ON %1$s.sequences
+                          FOR EACH ROW
+                          EXECUTE FUNCTION %1$s.prevent_delete();
                         END;
-                        $$;
-                        """.formatted(schemaName);
+                        $MAIN$;
+                        """.formatted("pulse");
         additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                new ComposeServiceBuildItem.Volume("./%s_sequences_table.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_sequences_table.sql".formatted(schemaName),
+                new ComposeServiceBuildItem.Volume("./%s_sequences_tables.sql".formatted("pulse"), "/docker-entrypoint-initdb.d/%s_sequences_tables.sql".formatted("pulse"),
                         sequenceByAggregateRootTypeAndBelongsTo.getBytes(StandardCharsets.UTF_8), "sql")));
+        final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
         final String aggregates =
                 // language=sql
                 """

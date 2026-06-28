@@ -35,18 +35,14 @@ class PulseExtensionResourceTest {
                 .then().log().all()
                 .statusCode(200)
                 // sequences
-                .body("sequences", hasSize(5))
-                .body("sequences", hasItems(
-                        "todo_taking.seq_customfailingtodoid",
-                        "todo_taking.seq_customidentifiable",
-                        "todo_taking.seq_todochecklistid",
-                        "todo_taking.seq_todoid",
-                        "todo_taking.seq_userid"
-                ))
-                // sequenceByIdentifiableClazzAndOwnedBy
-                .body("sequenceByIdentifiableClazzAndOwnedBy", hasSize(1))
-                .body("sequenceByIdentifiableClazzAndOwnedBy[0]",
-                        equalTo("TodoChecklistId|U000001-T000001|1"))
+                .body("sequences", hasSize(0))
+                // sequencesTable
+                .body("sequencesTable", hasSize(3))
+                .body("sequencesTable",
+                        contains(
+                                "TodoTaking|TodoChecklistId|U000001-T000001|1",
+                                "TodoTaking|TodoId|himself|1",
+                                "TodoTaking|UserId|himself|1"))
                 // databaseConnectionIdentifiers
                 .body("databaseConnectionIdentifiers", hasSize(1))
                 .body("databaseConnectionIdentifiers[0]",

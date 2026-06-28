@@ -25,8 +25,7 @@
 /integration-tests/infrastructure/compose-devservices-pulse.yml
 /integration-tests/infrastructure/todo_taking_aggregates.sql
 /integration-tests/infrastructure/todo_taking_idempotency_consumer.sql
-/integration-tests/infrastructure/todo_taking_sequences.sql
-/integration-tests/infrastructure/todo_taking_sequences_table.sql
+/integration-tests/infrastructure/pulse_sequences_tables.sql
 /integration-tests/infrastructure/pulse_connection_identifier.sql
 
 /kafka/target/
@@ -43,8 +42,6 @@
 /publisher/deployment/quarkus-pulse-publisher-extension-deployment.iml
 /publisher/deployment/pulse_passphrase.sql
 /publisher/deployment/todo_taking_aggregates.sql
-/publisher/deployment/todo_taking_sequences.sql
-/publisher/deployment/todo_taking_sequences_table.sql
 /publisher/runtime/target/
 /publisher/runtime/quarkus-pulse-publisher-extension.iml
 /publisher/test-framework/target/
@@ -53,9 +50,8 @@
 /writer/deployment/compose-devservices-pulse.yml
 /writer/deployment/quarkus-pulse-writer-extension-deployment.iml
 /writer/deployment/pulse_connection_identifier.sql
-/writer/deployment/todo_taking_aggregates.sql
-/writer/deployment/todo_taking_sequences_table.sql
-/writer/deployment/todo_taking_sequences.sql
+/writer/deployment/pulse_passphrase.sql
+/writer/deployment/pulse_sequences_tables.sql
 /writer/deployment/realm.json
 /writer/runtime/target/
 /writer/runtime/quarkus-pulse-writer-extension.iml
@@ -97,7 +93,6 @@
 /encryption-storage/integration-tests/jdbc-postgres/quarkus-pulse-extension-encryption-storage-integration-tests-jdbc-postgres_passphrase.sql
 /common/deployment/realm.json
 /common/deployment/pulse_passphrase.sql
-/writer/deployment/pulse_passphrase.sql
 /live-notifier/deployment/pulse_passphrase.sql
 /live-notifier/deployment/pulse_connection_identifier.sql
 /live-notifier/deployment/realm.json
@@ -109,4 +104,4 @@
 /obfuscator/integration-tests/jdbc-postgres/target/
 /integration-tests/infrastructure/pulse_obfuscator.sql
 /encryption-storage/integration-tests/jdbc-postgres/pulse_passphrase.sql
-
+/writer/deployment/todo_taking_aggregates.sql

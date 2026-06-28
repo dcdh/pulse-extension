@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
 import com.damdamdeo.pulse.extension.core.ApplicationNaming;
+import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;

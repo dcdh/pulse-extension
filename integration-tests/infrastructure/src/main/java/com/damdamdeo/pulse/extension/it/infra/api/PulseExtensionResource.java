@@ -72,7 +72,7 @@ public class PulseExtensionResource {
     VaultKVSecretEngine vaultKVSecretEngine;
 
     public record CreationalWorkflowResponse(List<String> sequences,
-                                             List<String> sequenceByIdentifiableClazzAndOwnedBy,
+                                             List<String> sequencesTable,
                                              List<String> databaseConnectionIdentifiers,
                                              List<String> aggregateRoots,
                                              List<String> events,
@@ -80,7 +80,7 @@ public class PulseExtensionResource {
 
         public CreationalWorkflowResponse {
             Objects.requireNonNull(sequences);
-            Objects.requireNonNull(sequenceByIdentifiableClazzAndOwnedBy);
+            Objects.requireNonNull(sequencesTable);
             Objects.requireNonNull(databaseConnectionIdentifiers);
             Objects.requireNonNull(aggregateRoots);
             Objects.requireNonNull(events);
@@ -97,7 +97,7 @@ public class PulseExtensionResource {
             initialiserUseCase.execute(new InitialiserCommand());
 
             final List<String> sequences = new ArrayList<>();
-            final List<String> sequenceByIdentifiableClazzAndBelongsTo = new ArrayList<>();
+            final List<String> sequencesTable = new ArrayList<>();
             final List<String> databaseConnectionIdentifiers = new ArrayList<>();
             final List<String> aggregateRoots = new ArrayList<>();
             final List<String> events = new ArrayList<>();
@@ -119,16 +119,17 @@ public class PulseExtensionResource {
                 try (final PreparedStatement ps = connection.prepareStatement(
                         // language=sql
                         """
-                                    SELECT identifiable_clazz, belongs_to, next_value
-                                    FROM sequence_by_identifiable_clazz_and_belongs_to
+                                    SELECT owned_by, identifiable_clazz, belongs_to, next_value
+                                    FROM pulse.sequences
                                     ORDER BY identifiable_clazz, belongs_to;
                                 """);
                      final ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
+                        final String ownedBy = rs.getString("owned_by");
                         final String identifiableClazz = rs.getString("identifiable_clazz");
                         final String belongsTo = rs.getString("belongs_to");
                         final int nextValue = rs.getInt("next_value");
-                        sequenceByIdentifiableClazzAndBelongsTo.add(identifiableClazz + "|" + belongsTo + "|" + nextValue);
+                        sequencesTable.add(ownedBy + "|" + identifiableClazz + "|" + belongsTo + "|" + nextValue);
                     }
                 }
                 try (final PreparedStatement ps = connection.prepareStatement(
@@ -179,7 +180,7 @@ public class PulseExtensionResource {
             final List<String> vaultKeys = new ArrayList<>();
             walk("/", 1, 3, vaultKeys);
             return Response.ok(new CreationalWorkflowResponse(sequences,
-                    sequenceByIdentifiableClazzAndBelongsTo,
+                    sequencesTable,
                     databaseConnectionIdentifiers,
                     aggregateRoots,
                     events, vaultKeys)).build();

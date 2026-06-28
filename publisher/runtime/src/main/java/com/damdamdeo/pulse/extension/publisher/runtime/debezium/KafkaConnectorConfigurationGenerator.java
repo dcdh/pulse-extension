@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
+import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import io.quarkus.agroal.runtime.DataSourcesJdbcRuntimeConfig;

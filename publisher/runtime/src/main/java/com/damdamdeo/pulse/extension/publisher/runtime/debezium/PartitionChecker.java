@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.publisher.runtime.debezium;
 
+import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
