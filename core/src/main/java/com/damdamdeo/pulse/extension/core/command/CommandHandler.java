@@ -45,8 +45,12 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
             }
             final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
             final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
-            List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-            newEvents.forEach(newEvent -> onStoredEventListeners.forEach(onStoredEventListener -> onStoredEventListener.execute(id, newEvent.event())));
+            final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+            for (final VersionizedEvent<K> newEvent : newEvents) {
+                for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
+                    onStoredEventListener.execute(id, newEvent.event());
+                }
+            }
             eventRepository.save(newEvents, aggregate, executionContext.executedBy());
             return aggregate;
         });
@@ -72,8 +76,12 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     }
                     final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
                     final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
-                    List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-                    newEvents.forEach(newEvent -> onStoredEventListeners.forEach(onStoredEventListener -> onStoredEventListener.execute(id, newEvent.event())));
+                    final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+                    for (final VersionizedEvent<K> newEvent : newEvents) {
+                        for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
+                            onStoredEventListener.execute(id, newEvent.event());
+                        }
+                    }
                     eventRepository.save(newEvents, aggregate, executionContext.executedBy());
                     return aggregate;
                 });
@@ -102,8 +110,12 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
             }
             final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
             final A aggregate = stateApplier.executeCommand(command, executionContext);
-            List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-            newEvents.forEach(newEvent -> onStoredEventListeners.forEach(onStoredEventListener -> onStoredEventListener.execute(command.id(), newEvent.event())));
+            final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+            for (final VersionizedEvent<K> newEvent : newEvents) {
+                for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
+                    onStoredEventListener.execute(command.id(), newEvent.event());
+                }
+            }
             eventRepository.save(newEvents, aggregate, executionContext.executedBy());
             return aggregate;
         }));
