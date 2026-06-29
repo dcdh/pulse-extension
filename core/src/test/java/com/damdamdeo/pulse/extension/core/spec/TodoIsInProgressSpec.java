@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.Todo;
 
 import java.util.Objects;
 
-public final class TodoIsInProgressSpec extends CompositeSpecification<Todo> {
+public final class TodoIsInProgressSpec implements CompositeSpecification<Todo> {
 
     @Override
     public boolean isSatisfiedBy(final Todo todo, final ExecutionContext executionContext) {

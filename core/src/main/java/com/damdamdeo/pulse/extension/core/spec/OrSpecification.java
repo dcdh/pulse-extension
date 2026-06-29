@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class OrSpecification<T> extends CompositeSpecification<T> implements Specification<T> {
+public final class OrSpecification<T> implements CompositeSpecification<T> {
 
     private final List<Specification<T>> specifications;
 

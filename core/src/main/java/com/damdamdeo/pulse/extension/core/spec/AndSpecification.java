@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class AndSpecification<T> extends CompositeSpecification<T> {
+public final class AndSpecification<T> implements CompositeSpecification<T> {
 
     private final List<Specification<T>> specifications;
 

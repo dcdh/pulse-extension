@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.ExecutionContext;
 
 import java.util.Objects;
 
-public final class NotSpecification<T> extends CompositeSpecification<T> {
+public final class NotSpecification<T> implements CompositeSpecification<T> {
 
     private final Specification<T> specification;
 
