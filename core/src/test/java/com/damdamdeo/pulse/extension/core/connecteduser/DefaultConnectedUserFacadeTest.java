@@ -36,11 +36,11 @@ class DefaultConnectedUserFacadeTest {
         when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.of(givenIdentifiable));
 
         // When
-        final boolean result = facade.isRegistered();
+        final Optional<Identifiable> connected = facade.isRegistered();
 
         // Then
         assertAll(
-                () -> assertTrue(result),
+                () -> assertEquals(Optional.of(givenIdentifiable), connected),
                 () -> verify(connectionIdentifierProvider).provide(),
                 () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
         );
@@ -54,11 +54,11 @@ class DefaultConnectedUserFacadeTest {
         when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.empty());
 
         // When
-        final boolean result = facade.isRegistered();
+        final Optional<Identifiable> connected = facade.isRegistered();
 
         // Then
         assertAll(
-                () -> assertFalse(result),
+                () -> assertEquals(Optional.empty(), connected),
                 () -> verify(connectionIdentifierProvider).provide(),
                 () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
         );

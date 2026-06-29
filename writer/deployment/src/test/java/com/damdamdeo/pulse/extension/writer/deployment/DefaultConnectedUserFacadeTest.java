@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
@@ -53,8 +54,8 @@ class DefaultConnectedUserFacadeTest {
 
         @GET
         @Path("isRegistered")
-        public boolean isRegistered() {
-            return defaultConnectedUserFacade.isRegistered();
+        public String isRegistered() {
+            return defaultConnectedUserFacade.isRegistered().map(Identifiable::id).orElse(null);
         }
 
         @POST
@@ -97,8 +98,7 @@ class DefaultConnectedUserFacadeTest {
                 .log().all()
                 .get("/registration/isRegistered")
                 .then().log().all()
-                .statusCode(200)
-                .body(equalTo("false"));
+                .statusCode(204);
     }
 
     @Test
@@ -141,6 +141,6 @@ class DefaultConnectedUserFacadeTest {
                 .get("/registration/isRegistered")
                 .then().log().all()
                 .statusCode(200)
-                .body(equalTo("true"));
+                .body(equalTo("U000001"));
     }
 }
