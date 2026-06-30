@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.common.deployment;
 
-import com.damdamdeo.pulse.extension.common.runtime.datasource.JdbcPostgresConnectionIdentifierRepository;
+import com.damdamdeo.pulse.extension.common.runtime.connectionidentifier.JdbcPostgresConnectionIdentifierRepository;
 import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildItem;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;

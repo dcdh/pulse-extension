@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.deployment;
+package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
 
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
@@ -34,7 +34,8 @@ class DefaultConnectedUserFacadeTest {
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
-                    Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion())
+                    Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
+                    Dependency.of("io.quarkus", "quarkus-rest-jackson", Version.getVersion())
             ));
 
     @Path("/registration")

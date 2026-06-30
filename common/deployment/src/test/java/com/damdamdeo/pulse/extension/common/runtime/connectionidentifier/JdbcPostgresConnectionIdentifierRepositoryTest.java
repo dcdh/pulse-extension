@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime.datasource;
+package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
 
 import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
 import com.damdamdeo.pulse.extension.core.AggregateId;
