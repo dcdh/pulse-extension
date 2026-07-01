@@ -44,7 +44,7 @@ public class CachedObfuscator implements Obfuscator {
     @Override
     public String deObfuscate(final String obfuscated) throws UnableToDeObfuscateException, UnknownObfuscatedException {
         Objects.requireNonNull(obfuscated);
-        CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
+        final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
         final CompletableFuture<String> deObfuscatedFromCache = caffeineCache.getIfPresent(obfuscated);
         if (deObfuscatedFromCache == null) {
             final String deObfuscate = delegate.deObfuscate(obfuscated);

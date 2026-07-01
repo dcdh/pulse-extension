@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnectionIdentifierException;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
+import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,8 +20,10 @@ import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
 
+// TODO extraire into a new module to have an optional dependency on JdbcPostgres
 @ApplicationScoped
 @Unremovable
+@DefaultBean
 public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIdentifierRepository {
 
     private static final String INSERT_SQL =
@@ -41,13 +44,6 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
                     FROM pulse.connection_identifier
                     WHERE connection_identifier_hash = ?
                     """;
-
-    record AnyIdentifiable(String id) implements Identifiable {
-
-        AnyIdentifiable {
-            Objects.requireNonNull(id);
-        }
-    }
 
     @Inject
     Provider<DataSource> dataSource;

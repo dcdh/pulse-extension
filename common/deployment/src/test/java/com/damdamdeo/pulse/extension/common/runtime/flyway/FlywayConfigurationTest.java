@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.flyway;
 
-import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
+import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -13,11 +13,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class FlywayConfigurationTest extends AbstractCommonTest {
+class FlywayConfigurationTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-jdbc-postgresql", Version.getVersion()),

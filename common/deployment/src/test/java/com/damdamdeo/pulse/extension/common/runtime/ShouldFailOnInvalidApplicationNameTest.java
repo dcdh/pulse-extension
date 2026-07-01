@@ -7,10 +7,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ShouldFailOnInvalidApplicationNameTest extends AbstractCommonTest {
+class ShouldFailOnInvalidApplicationNameTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties")
             .overrideConfigKey("quarkus.application.name", "BOOM")

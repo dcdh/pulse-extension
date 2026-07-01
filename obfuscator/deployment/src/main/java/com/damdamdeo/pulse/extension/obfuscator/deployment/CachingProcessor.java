@@ -3,6 +3,8 @@ package com.damdamdeo.pulse.extension.obfuscator.deployment;
 import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 
@@ -18,17 +20,25 @@ public class CachingProcessor {
             "quarkus.cache.caffeine.\"obfuscator\".expire-after-write", "7D");
 
     @BuildStep
-    List<RunTimeConfigurationDefaultBuildItem> defineDefaultConfiguration() {
-        return CACHING_CONFIGURATIONS.entrySet().stream()
-                .map(e -> new RunTimeConfigurationDefaultBuildItem(e.getKey(), e.getValue()))
-                .toList();
+    List<RunTimeConfigurationDefaultBuildItem> defineDefaultConfiguration(final Capabilities capabilities) {
+        if (capabilities.isPresent(Capability.CACHE)) {
+            return CACHING_CONFIGURATIONS.entrySet().stream()
+                    .map(e -> new RunTimeConfigurationDefaultBuildItem(e.getKey(), e.getValue()))
+                    .toList();
+        } else {
+            return List.of();
+        }
     }
 
     @BuildStep
-    List<ContentBuildItem> contentBuildItems() {
-        final List<ContentBuildItem> contentBuildItems = new ArrayList<>();
-        contentBuildItems.add(new ContentBuildItem(new Title(Title.Level.SECOND, "Obfuscator caching configuration")));
-        contentBuildItems.add(new ContentBuildItem(CodeBlock.fromProperties(CACHING_CONFIGURATIONS)));
-        return contentBuildItems;
+    List<ContentBuildItem> contentBuildItems(final Capabilities capabilities) {
+        if (capabilities.isPresent(Capability.CACHE)) {
+            final List<ContentBuildItem> contentBuildItems = new ArrayList<>();
+            contentBuildItems.add(new ContentBuildItem(new Title(Title.Level.SECOND, "Obfuscator caching configuration")));
+            contentBuildItems.add(new ContentBuildItem(CodeBlock.fromProperties(CACHING_CONFIGURATIONS)));
+            return contentBuildItems;
+        } else {
+            return List.of();
+        }
     }
 }

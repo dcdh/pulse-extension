@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
 
+import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
@@ -30,11 +31,12 @@ class DefaultConnectedUserFacadeTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
+                    Dependency.of("io.quarkus", "quarkus-jdbc-postgresql", Version.getVersion()),
                     Dependency.of("io.quarkus", "quarkus-rest-jackson", Version.getVersion())
             ));
 

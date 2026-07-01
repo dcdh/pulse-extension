@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
-import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
+import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import io.quarkus.builder.Version;
@@ -20,14 +20,16 @@ import java.util.Set;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-class QuarkusOidcExecutionContextProviderTest extends AbstractCommonTest {
+class QuarkusOidcExecutionContextProviderTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties")
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
+                    Dependency.of("io.quarkus", "quarkus-jdbc-postgresql", Version.getVersion()),
                     Dependency.of("io.quarkus", "quarkus-rest-jackson", Version.getVersion())
             ));
 

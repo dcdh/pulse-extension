@@ -37,6 +37,7 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-cache-deployment</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

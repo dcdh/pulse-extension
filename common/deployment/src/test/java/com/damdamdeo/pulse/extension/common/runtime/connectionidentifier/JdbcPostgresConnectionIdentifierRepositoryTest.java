@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
 
-import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
+import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifier;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
@@ -8,6 +8,8 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnecti
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import io.quarkus.builder.Version;
+import io.quarkus.cache.Cache;
+import io.quarkus.cache.CacheName;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.narayana.jta.QuarkusTransactionException;
@@ -34,10 +36,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest {
+class JdbcPostgresConnectionIdentifierRepositoryTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
@@ -53,6 +56,10 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
     @Inject
     DataSource dataSource;
 
+    @Inject
+    @CacheName("connectionIdentifier")
+    Cache cache;
+
     @BeforeEach
     @AfterEach
     void tearDown() {
@@ -62,6 +69,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest extends AbstractCommonTest 
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
+        cache.invalidateAll().await().indefinitely();
     }
 
     record UserAggregateId(String id) implements AggregateId {

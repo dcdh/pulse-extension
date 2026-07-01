@@ -8,6 +8,8 @@ import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.runtime.LaunchMode;
 
 import java.util.function.Supplier;
 
@@ -21,15 +23,19 @@ public class EncryptionStorageProcessor {
     // https://github.com/quarkiverse/quarkus-vault/pull/507
     // check on dependency presence instead, which is bad
     @BuildStep
-    AdditionalBeanBuildItem additionalBeans(final BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrorBuildItemBuildProducer) {
+    AdditionalBeanBuildItem additionalBeans(final LaunchModeBuildItem launchMode,
+                                            final BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrorBuildItemBuildProducer) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        if (LaunchMode.TEST.equals(launchMode.getLaunchMode())) {
+            return builder.build();
+        }
         if (hasVaultInClassPath.get()) {
             builder.addBeanClasses(VaultPassphraseRepository.class);
         } else if (hasQuarkusJdbcPostgresInClassPath.get()) {
             builder.addBeanClasses(JdbcPostgresPassphraseRepository.class, DefaultPassphraseObfuscator.class);
         } else {
             validationErrorBuildItemBuildProducer.produce(new ValidationPhaseBuildItem.ValidationErrorBuildItem(
-                    new IllegalStateException("No secret repository found - please add io.quarkiverse.vault:quarkus-vault or io.quarkus:quarkus-jdbc-postgresql dependency")));
+                    new IllegalStateException("No passphrase repository found - please add io.quarkiverse.vault:quarkus-vault or io.quarkus:quarkus-jdbc-postgresql dependency")));
         }
         return builder.build();
     }

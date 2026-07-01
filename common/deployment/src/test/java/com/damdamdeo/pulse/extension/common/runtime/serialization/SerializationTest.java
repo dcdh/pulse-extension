@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.serialization;
 
-import com.damdamdeo.pulse.extension.common.runtime.AbstractCommonTest;
+import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
@@ -17,12 +17,13 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.logging.Logger;
 
-class SerializationTest extends AbstractCommonTest {
+class SerializationTest {
 
     final Logger LOGGER = Logger.getLogger(SerializationTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
