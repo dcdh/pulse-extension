@@ -3,9 +3,12 @@ package com.damdamdeo.pulse.extension.obfuscator.deployment;
 import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
+import com.damdamdeo.pulse.extension.obfuscator.runtime.CachedObfuscator;
+import com.damdamdeo.pulse.extension.obfuscator.runtime.annotation.DeObfuscatingParamConverterProvider;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 
 import java.util.ArrayList;
@@ -18,6 +21,16 @@ public class CachingProcessor {
             "quarkus.cache.caffeine.\"obfuscator\".initial-capacity", "10000",
             "quarkus.cache.caffeine.\"obfuscator\".maximum-size", "10000",
             "quarkus.cache.caffeine.\"obfuscator\".expire-after-write", "7D");
+
+    @BuildStep
+    List<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItem(final Capabilities capabilities) {
+        if (capabilities.isPresent(Capability.CACHE)) {
+            return List.of(new AdditionalIndexedClassesBuildItem(DeObfuscatingParamConverterProvider.class.getName(),
+                    CachedObfuscator.class.getName()));
+        } else {
+            return List.of();
+        }
+    }
 
     @BuildStep
     List<RunTimeConfigurationDefaultBuildItem> defineDefaultConfiguration(final Capabilities capabilities) {

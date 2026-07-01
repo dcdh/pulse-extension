@@ -41,8 +41,7 @@ public class ObfuscatorProcessor {
 
     @BuildStep
     AdditionalIndexedClassesBuildItem additionalIndexedClassesBuildItem() {
-        return new AdditionalIndexedClassesBuildItem(DeObfuscatingParamConverterProvider.class.getName(),
-                CachedObfuscator.class.getName());
+        return new AdditionalIndexedClassesBuildItem(DeObfuscatingParamConverterProvider.class.getName());
     }
 
     @BuildStep

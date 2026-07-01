@@ -8,8 +8,6 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnecti
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import io.quarkus.builder.Version;
-import io.quarkus.cache.Cache;
-import io.quarkus.cache.CacheName;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.narayana.jta.QuarkusTransactionException;
@@ -42,6 +40,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties")
+            .overrideConfigKey("quarkus.arc.exclude-types", CachedConnectionIdentifierRepository.class.getName())
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
                     Dependency.of("io.quarkus", "quarkus-jdbc-postgresql", Version.getVersion())
@@ -56,10 +55,6 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
     @Inject
     DataSource dataSource;
 
-    @Inject
-    @CacheName("connectionIdentifier")
-    Cache cache;
-
     @BeforeEach
     @AfterEach
     void tearDown() {
@@ -69,7 +64,6 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
-        cache.invalidateAll().await().indefinitely();
     }
 
     record UserAggregateId(String id) implements AggregateId {
