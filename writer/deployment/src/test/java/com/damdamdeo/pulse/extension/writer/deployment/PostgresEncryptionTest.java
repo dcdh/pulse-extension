@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +43,12 @@ class PostgresEncryptionTest {
 
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-            return Optional.of(PassphraseSample.PASSPHRASE);
+            return Optional.of(PassphraseSample.PASSPHRASE_1);
+        }
+
+        @Override
+        public List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
 
         @Override
@@ -75,7 +81,7 @@ class PostgresEncryptionTest {
              )) {
             connection.setAutoCommit(false);
             encryptedPreparedStatement.setString(1, "Hello world!");
-            encryptedPreparedStatement.setString(2, new String(PassphraseSample.PASSPHRASE.passphrase()));
+            encryptedPreparedStatement.setString(2, new String(PassphraseSample.PASSPHRASE_1.passphrase()));
             try (final ResultSet encryptedResultSet = encryptedPreparedStatement.executeQuery()) {
                 encryptedResultSet.next();
                 encrypted = encryptedResultSet.getBytes(1);
@@ -108,7 +114,7 @@ These values ensure that:
 
         // When
         final EncryptedPayload encrypted = encryptionService.encrypt(givenToEncrypt.getBytes(StandardCharsets.UTF_8),
-                PassphraseSample.PASSPHRASE);
+                PassphraseSample.PASSPHRASE_1);
 
         byte[] decrypted;
         try (final Connection connection = dataSource.getConnection();
@@ -120,7 +126,7 @@ These values ensure that:
              )) {
             connection.setAutoCommit(false);
             encryptedPreparedStatement.setBytes(1, encrypted.payload());
-            encryptedPreparedStatement.setString(2, new String(PassphraseSample.PASSPHRASE.passphrase()));
+            encryptedPreparedStatement.setString(2, new String(PassphraseSample.PASSPHRASE_1.passphrase()));
             try (final ResultSet decryptedResultSet = encryptedPreparedStatement.executeQuery()) {
                 decryptedResultSet.next();
                 decrypted = decryptedResultSet.getBytes(1);

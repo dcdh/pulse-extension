@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -23,6 +21,11 @@ public abstract class AbstractWriterTest {
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
             return Optional.ofNullable(passphrases.get(ownedBy));
+        }
+
+        @Override
+        public List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
 
         @Override

@@ -1,20 +1,24 @@
 package com.damdamdeo.pulse.extension.common.runtime;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
-public class StubPassphraseRepository  implements PassphraseRepository {
+public class StubPassphraseRepository implements PassphraseRepository {
 
     @Override
     public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
-        return Optional.of(PassphraseSample.PASSPHRASE);
+        return Optional.of(PassphraseSample.PASSPHRASE_1);
+    }
+
+    @Override
+    public List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+        throw new IllegalStateException("Should not be called");
     }
 
     @Override

@@ -2,10 +2,7 @@ package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
-import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
@@ -17,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -37,7 +35,12 @@ class DefaultPassphraseProviderTest {
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
             retrieveCalled.set(true);
-            return Optional.of(PassphraseSample.PASSPHRASE);
+            return Optional.of(PassphraseSample.PASSPHRASE_1);
+        }
+
+        @Override
+        public List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
 
         @Override
@@ -75,17 +78,17 @@ class DefaultPassphraseProviderTest {
 
         // Then
         assertAll(
-                () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE.passphrase()),
+                () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE_1.passphrase()),
                 () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isTrue(),
                 () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(Todo.OWNED_BY_USER_1).get())
-                        .isEqualTo(PassphraseSample.PASSPHRASE)
+                        .isEqualTo(PassphraseSample.PASSPHRASE_1)
         );
     }
 
     @Test
     void shouldReuseCache() throws UnableToProvidePassphraseException {
         // Given
-        cache.as(CaffeineCache.class).get(Todo.OWNED_BY_USER_1, ownedBy -> PassphraseSample.PASSPHRASE)
+        cache.as(CaffeineCache.class).get(Todo.OWNED_BY_USER_1, ownedBy -> PassphraseSample.PASSPHRASE_1)
                 .await().indefinitely();
 
         // When
@@ -93,7 +96,7 @@ class DefaultPassphraseProviderTest {
 
         // Then
         assertAll(
-                () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE.passphrase()),
+                () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE_1.passphrase()),
                 () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isFalse());
     }
 }

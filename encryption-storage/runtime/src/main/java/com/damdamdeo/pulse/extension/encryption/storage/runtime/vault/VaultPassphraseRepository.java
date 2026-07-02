@@ -10,9 +10,7 @@ import io.quarkus.vault.VaultKVSecretEngine;
 import io.quarkus.vault.client.VaultClientException;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -48,6 +46,21 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
                 throw new UnableToRetrievePassphraseException(vaultClientException);
             }
         }
+    }
+
+    @Override
+    public List<RetrievedPassphrase> retrieve(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+        Objects.requireNonNull(multiples);
+        final List<RetrievedPassphrase> retrievedPassphrases = new ArrayList<>(multiples.size());
+        for (final OwnedBy ownedBy : multiples) {
+            final Optional<Passphrase> retrieved = retrieve(ownedBy);
+            if (retrieved.isPresent()) {
+                retrievedPassphrases.add(new RetrievedPassphrase(ownedBy, retrieved.get()));
+            } else {
+                retrievedPassphrases.add(new RetrievedPassphrase(ownedBy, null));
+            }
+        }
+        return retrievedPassphrases;
     }
 
     @Override

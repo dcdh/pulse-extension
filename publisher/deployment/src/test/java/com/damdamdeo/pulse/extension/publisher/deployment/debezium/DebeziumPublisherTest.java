@@ -55,7 +55,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
                           "status": "DONE",
                           "important": false
                         }
-                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload();
         // language=sql
         final String sql = """
                 INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by) 
@@ -130,7 +130,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
                           "status": "DONE",
                           "important": false
                         }
-                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload();
+                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload();
         // language=sql
         final String sql = """
                     INSERT INTO aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)

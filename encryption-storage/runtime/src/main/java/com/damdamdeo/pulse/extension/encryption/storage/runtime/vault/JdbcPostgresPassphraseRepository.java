@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.encryption.storage.runtime.vault;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -11,12 +12,8 @@ import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Objects;
-import java.util.Optional;
+import java.sql.*;
+import java.util.*;
 
 @ApplicationScoped
 @Unremovable
@@ -42,10 +39,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     @Override
     public Optional<Passphrase> retrieve(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(ownedBy);
-        final MasterKey masterKey = passphraseConfiguration.masterKey()
-                .map(MasterKey::new)
-                .orElseThrow(() -> new UnableToRetrievePassphraseException(
-                        new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
+        final MasterKey masterKey = retrieveMasterKey();
         final String ownerHash = hash(ownedBy);
         final String sql =
                 // language=sql
@@ -71,14 +65,49 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
+    public List<RetrievedPassphrase> retrieve(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+        Objects.requireNonNull(multiples);
+        final MasterKey masterKey = retrieveMasterKey();
+        final Map<OwnedBy, RetrievedPassphrase> retrievedPassphrases = new HashMap<>(multiples.size());
+        final Map<Hash<OwnedBy>, OwnedBy> ownedByHash = new HashMap<>(multiples.size());
+        final Map<OwnedBy, Hash<OwnedBy>> hashByOwnedBy = new HashMap<>(multiples.size());
+        for (final OwnedBy ownedBy : multiples) {
+            ownedByHash.put(hasher.hash(ownedBy), ownedBy);
+            hashByOwnedBy.put(ownedBy, hasher.hash(ownedBy));
+            retrievedPassphrases.put(ownedBy, new RetrievedPassphrase(ownedBy, null));
+        }
+        final String sql =
+                // language=sql
+                """
+                        SELECT public.pgp_sym_decrypt(passphrase,?) as passphrase, owned_by_hashed as owned_by_hashed
+                        FROM pulse.passphrase
+                        WHERE owned_by_hashed = ANY(?::varchar[])
+                        """;
+        try (final Connection connection = dataSource.get().getConnection();
+             final PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, masterKey.key());
+            final Array eventsArray = connection.createArrayOf("varchar", multiples.stream()
+                    .map(ownedBy -> hashByOwnedBy.get(ownedBy).value())
+                    .toArray(String[]::new));
+            stmt.setArray(2, eventsArray);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    final OwnedBy ownedByHashed = Objects.requireNonNull(ownedByHash.get(new Hash<OwnedBy>(rs.getString("owned_by_hashed"))));
+                    retrievedPassphrases.put(ownedByHashed, new RetrievedPassphrase(ownedByHashed, new Passphrase(rs.getString("passphrase").toCharArray())));
+                }
+            }
+            return new ArrayList<>(retrievedPassphrases.values());
+        } catch (final SQLException sqlException) {
+            throw new UnableToRetrievePassphraseException(sqlException);
+        }
+    }
+
+    @Override
     public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException,
             UnableToStorePassphraseException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(passphrase);
-        final MasterKey masterKey = passphraseConfiguration.masterKey()
-                .map(MasterKey::new)
-                .orElseThrow(() -> new UnableToStorePassphraseException(
-                        new IllegalStateException("Missing 'pulse.encryption-storage.master-key'")));
+        final MasterKey masterKey = retrieveMasterKey();
         final String ownerHash = hash(ownedBy);
         final String sql =
                 // language=sql
@@ -104,5 +133,11 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
     private String hash(final OwnedBy ownedBy) {
         return hasher.hash(ownedBy).value();
+    }
+
+    private MasterKey retrieveMasterKey() {
+        return passphraseConfiguration.masterKey()
+                .map(MasterKey::new)
+                .orElseThrow(() -> new IllegalStateException("Missing 'pulse.encryption-storage.master-key'"));
     }
 }

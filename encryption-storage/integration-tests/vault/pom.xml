@@ -24,5 +24,12 @@
             <version>${quarkus-vault.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-hasher-extension</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

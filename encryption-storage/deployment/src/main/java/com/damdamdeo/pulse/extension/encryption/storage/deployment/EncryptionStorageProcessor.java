@@ -26,14 +26,11 @@ public class EncryptionStorageProcessor {
     AdditionalBeanBuildItem additionalBeans(final LaunchModeBuildItem launchMode,
                                             final BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrorBuildItemBuildProducer) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (LaunchMode.TEST.equals(launchMode.getLaunchMode())) {
-            return builder.build();
-        }
         if (hasVaultInClassPath.get()) {
             builder.addBeanClasses(VaultPassphraseRepository.class);
         } else if (hasQuarkusJdbcPostgresInClassPath.get()) {
             builder.addBeanClasses(JdbcPostgresPassphraseRepository.class, DefaultPassphraseObfuscator.class);
-        } else {
+        } else if (!LaunchMode.TEST.equals(launchMode.getLaunchMode())) {
             validationErrorBuildItemBuildProducer.produce(new ValidationPhaseBuildItem.ValidationErrorBuildItem(
                     new IllegalStateException("No passphrase repository found - please add io.quarkiverse.vault:quarkus-vault or io.quarkus:quarkus-jdbc-postgresql dependency")));
         }

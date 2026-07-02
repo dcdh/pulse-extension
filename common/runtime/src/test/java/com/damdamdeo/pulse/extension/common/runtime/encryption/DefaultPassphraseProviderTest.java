@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.common.runtime.encryption;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.encryption.*;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +34,7 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldRetrievePassphrase() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException {
         // Given
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE)).when(passphraseRepository).retrieve(Todo.OWNED_BY_USER_1);
+        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).retrieve(Todo.OWNED_BY_USER_1);
 
         // When
         final Passphrase customOrganizations = passphraseProvider.provide(Todo.OWNED_BY_USER_1);
@@ -45,9 +46,9 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldReturnGeneratedPassphraseWhenRetrieveReturnEmpty() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any());
-        doReturn(PassphraseSample.PASSPHRASE).when(passphraseGenerator).generate();
-        doReturn(PassphraseSample.PASSPHRASE).when(passphraseRepository).store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE);
+        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any(OwnedBy.class));
+        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
+        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseRepository).store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
 
         // When
         final Passphrase customOrganizations = passphraseProvider.provide(Todo.OWNED_BY_USER_1);
@@ -59,8 +60,8 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldGenerateANewPassphraseWhenRetrieveReturnEmpty() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException {
         // Given
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any());
-        doReturn(PassphraseSample.PASSPHRASE).when(passphraseGenerator).generate();
+        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any(OwnedBy.class));
+        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
 
         // When
         passphraseProvider.provide(Todo.OWNED_BY_USER_1);
@@ -73,8 +74,8 @@ class DefaultPassphraseProviderTest {
     void shouldStoreGeneratedPassphraseWhenRetrieveReturnEmpty() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException,
             PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any());
-        doReturn(PassphraseSample.PASSPHRASE).when(passphraseGenerator).generate();
+        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any(OwnedBy.class));
+        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
 
         // When
         passphraseProvider.provide(Todo.OWNED_BY_USER_1);

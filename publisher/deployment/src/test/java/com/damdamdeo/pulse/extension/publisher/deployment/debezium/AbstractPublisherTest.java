@@ -1,11 +1,10 @@
 package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.List;
 import java.util.Optional;
 
 public abstract class AbstractPublisherTest {
@@ -16,6 +15,11 @@ public abstract class AbstractPublisherTest {
         @Override
         public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
             throw new IllegalStateException("Should not be called !");
+        }
+
+        @Override
+        public List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
 
         @Override

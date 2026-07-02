@@ -134,7 +134,7 @@ class PartitionTest extends AbstractPublisherTest {
                                   "status": "DONE",
                                   "important": false
                                 }
-                                """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload());
+                                """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload());
                 tEventPS.setString(7, Todo.OWNED_BY_USER_1.id());
                 tEventPS.setString(8, belongsTo.id());
                 tEventPS.setString(9, "EU:encodedbob");
@@ -152,7 +152,7 @@ class PartitionTest extends AbstractPublisherTest {
                                   "status": "DONE",
                                   "important": false
                                 }
-                                """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE).payload());
+                                """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload());
                 tAggregateRootPS.setString(5, Todo.OWNED_BY_USER_1.id());
                 tAggregateRootPS.setString(6, belongsTo.id());
                 tAggregateRootPS.executeUpdate();

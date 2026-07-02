@@ -1,10 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseAlreadyExistsException;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseRepository;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import io.quarkus.test.QuarkusUnitTest;
@@ -37,7 +34,7 @@ class QueryEventStoreTest {
 
         @Override
         public Passphrase provide(final OwnedBy ownedBy) {
-            return PassphraseSample.PASSPHRASE;
+            return PassphraseSample.PASSPHRASE_1;
         }
     }
 
@@ -46,7 +43,12 @@ class QueryEventStoreTest {
 
         @Override
         public Optional<Passphrase> retrieve(OwnedBy ownedBy) {
-            return Optional.of(PassphraseSample.PASSPHRASE);
+            return Optional.of(PassphraseSample.PASSPHRASE_1);
+        }
+
+        @Override
+        public List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
 
         @Override

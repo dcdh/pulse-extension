@@ -139,7 +139,7 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
 
         @Override
         public Passphrase provide(final OwnedBy ownedBy) {
-            return PassphraseSample.PASSPHRASE;
+            return PassphraseSample.PASSPHRASE_1;
         }
     }
 

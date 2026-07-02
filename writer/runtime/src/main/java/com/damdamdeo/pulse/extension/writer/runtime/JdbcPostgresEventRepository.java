@@ -295,14 +295,15 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                  final PreparedStatement findStmt = connection.prepareStatement(
                          // language=sql
                          """
-                                 SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.stored_at as stored_at, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND event_type IN (%s) ORDER BY e.version ASC
-                                 """.formatted(events.stream().map(v -> "?").collect(Collectors.joining(", "))))) {
+                                 SELECT e.aggregate_root_type AS aggregate_root_type, e.event_type AS event_type, e.version AS version, e.stored_at as stored_at, e.owned_by AS owned_by, e.belongs_to AS belongs_to, e.executed_by AS executed_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? AND event_type = ANY(?::varchar[]) ORDER BY e.version ASC
+                                 """)) {
                 connection.setAutoCommit(false);
                 findStmt.setString(1, id.id());
                 findStmt.setString(2, getAggregateClass().getSimpleName());
-                for (int i = 0; i < events.size(); i++) {
-                    findStmt.setString(i + 3, events.get(i).getSimpleName());
-                }
+                final Array eventsArray = connection.createArrayOf("varchar", events.stream()
+                        .map(Class::getSimpleName)
+                        .toArray(String[]::new));
+                findStmt.setArray(3, eventsArray);
                 final List<EventMetadata> eventsMetadata = new ArrayList<>();
                 try (final ResultSet resultSet = findStmt.executeQuery()) {
                     while (resultSet.next()) {
