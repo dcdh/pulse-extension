@@ -92,6 +92,22 @@ class CachedConnectionIdentifierRepositoryTest {
     }
 
     @Test
+    void shouldStorePutInCache() throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException {
+        // Given
+
+        // When
+        connectionIdentifierRepository.store(new ConnectionIdentifier(UserId.USER_1.id()), UserId.USER_1);
+
+        // Then
+        assertAll(
+                () -> assertThat(cache.as(CaffeineCache.class).keySet()).containsExactly("U000001"),
+                () -> assertThat(cache.as(CaffeineCache.class).get("U000001", (_) -> {
+                    throw new IllegalStateException("Should not be called");
+                }).await().indefinitely())
+                        .isEqualTo(UserId.USER_1));
+    }
+
+    @Test
     void shouldFindDoNotStoreInCacheWhenNotFound() throws ConnectionIdentifierRepositoryException {
         // Given
 
@@ -110,6 +126,7 @@ class CachedConnectionIdentifierRepositoryTest {
     void shouldFindUseCacheWhenExists() throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException {
         // Given
         connectionIdentifierRepository.store(new ConnectionIdentifier(UserId.USER_1.id()), UserId.USER_1);
+        cache.invalidateAll().await().indefinitely();
 
         // When
         final Optional<Identifiable> identifiableCallOne = connectionIdentifierRepository.find(new ConnectionIdentifier(UserId.USER_1.id()));
@@ -120,6 +137,10 @@ class CachedConnectionIdentifierRepositoryTest {
                 () -> assertThat(identifiableCallOne).contains(UserId.USER_1),
                 () -> assertThat(identifiableCallOne).isEqualTo(identifiableCallTwo),
                 () -> assertThat(cache.as(CaffeineCache.class).keySet()).containsExactly("U000001"),
+                () -> assertThat(cache.as(CaffeineCache.class).get("U000001", (_) -> {
+                    throw new IllegalStateException("Should not be called");
+                }).await().indefinitely())
+                        .isEqualTo(UserId.USER_1),
                 () -> assertThat(stubConnectionIdentifierRepository.getCalled()).containsExactly("storeU000001U000001", "findU000001"));
     }
 }

@@ -38,6 +38,8 @@ public class CachedConnectionIdentifierRepository implements ConnectionIdentifie
     public ConnectionIdentifier store(final ConnectionIdentifier connectionIdentifier, final Identifiable identifiable) throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException {
         Objects.requireNonNull(connectionIdentifier);
         Objects.requireNonNull(identifiable);
+        final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
+        caffeineCache.put(connectionIdentifier.id(), CompletableFuture.completedFuture(identifiable));
         return delegate.store(connectionIdentifier, identifiable);
     }
 
