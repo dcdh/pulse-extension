@@ -19,6 +19,8 @@ import java.util.function.Function;
 @DefaultBean
 public final class VaultPassphraseRepository implements PassphraseRepository {
 
+    private static final String PASSPHRASE = "passphrase";
+
     private final VaultKVSecretEngine vaultKVSecretEngine;
     private final Hasher hasher;
 
@@ -34,10 +36,10 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
         final String path = getOwnedByHasherStringBiFunction(ownedBy);
         try {
             final Map<String, String> data = vaultKVSecretEngine.readSecret(path);
-            if (data == null || !data.containsKey("passphrase")) {
+            if (data == null || !data.containsKey(PASSPHRASE)) {
                 return Optional.empty();
             }
-            final String passphrase = data.get("passphrase");
+            final String passphrase = data.get(PASSPHRASE);
             return Optional.of(new Passphrase(passphrase.toCharArray()));
         } catch (final VaultClientException vaultClientException) {
             if (Integer.valueOf(404).equals(vaultClientException.getStatus())) {
@@ -69,10 +71,10 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(passphrase);
         final String path = getOwnedByHasherStringBiFunction(ownedBy);
-        final Map<String, String> secret = Map.of("passphrase", new String(passphrase.passphrase()));
+        final Map<String, String> secret = Map.of(PASSPHRASE, new String(passphrase.passphrase()));
         try {
             final Map<String, String> existing = vaultKVSecretEngine.readSecret(path);
-            if (existing != null && existing.containsKey("passphrase")) {
+            if (existing != null && existing.containsKey(PASSPHRASE)) {
                 throw new PassphraseAlreadyExistsException(ownedBy);
             } else {
                 vaultKVSecretEngine.writeSecret(path, secret);

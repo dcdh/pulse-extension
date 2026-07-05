@@ -21,6 +21,8 @@ import java.util.*;
 @DefaultBean
 public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
+    private static final String PASSPHRASE = "passphrase";
+
     private final PassphraseConfiguration passphraseConfiguration;
     private final Provider<DataSource> dataSource;
     private final Hasher hasher;
@@ -56,7 +58,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                 if (!rs.next()) {
                     return Optional.empty();
                 }
-                return Optional.of(new Passphrase(rs.getString("passphrase").toCharArray()))
+                return Optional.of(new Passphrase(rs.getString(PASSPHRASE).toCharArray()))
                         .map(passphraseObfuscator::obfuscate);
             }
         } catch (final SQLException sqlException) {
@@ -93,7 +95,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     final OwnedBy ownedByHashed = Objects.requireNonNull(ownedByHash.get(new Hash<OwnedBy>(rs.getString("owned_by_hashed"))));
-                    retrievedPassphrases.put(ownedByHashed, new RetrievedPassphrase(ownedByHashed, new Passphrase(rs.getString("passphrase").toCharArray())));
+                    retrievedPassphrases.put(ownedByHashed, new RetrievedPassphrase(ownedByHashed, new Passphrase(rs.getString(PASSPHRASE).toCharArray())));
                 }
             }
             return new ArrayList<>(retrievedPassphrases.values());
