@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.notifier.SseB
 import com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.notifier.UnknownClientProvider;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 
@@ -13,7 +14,7 @@ public class LiveNotifierProcessor {
     @BuildStep
     AdditionalBeanBuildItem produceAdditionalBeanBuildItem(final Capabilities capabilities) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (capabilities.isPresent("io.quarkus.oidc")) {
+        if (capabilities.isPresent(Capability.OIDC)) {
             builder.addBeanClass(QuarkusOidcClientProvider.class);
         }
         return builder
