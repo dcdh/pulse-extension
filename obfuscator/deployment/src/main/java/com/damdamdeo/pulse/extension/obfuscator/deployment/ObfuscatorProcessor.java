@@ -4,7 +4,10 @@ import com.damdamdeo.pulse.extension.compose.deployment.AdditionalVolumeBuildIte
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
 import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
-import com.damdamdeo.pulse.extension.obfuscator.runtime.*;
+import com.damdamdeo.pulse.extension.obfuscator.runtime.DefaultObfuscator;
+import com.damdamdeo.pulse.extension.obfuscator.runtime.JdbcPostgresObfuscatorRepository;
+import com.damdamdeo.pulse.extension.obfuscator.runtime.ObfuscatorObjectMapperCustomizer;
+import com.damdamdeo.pulse.extension.obfuscator.runtime.UUIDProvider;
 import com.damdamdeo.pulse.extension.obfuscator.runtime.annotation.DeObfuscatingParamConverterProvider;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
@@ -33,8 +36,7 @@ public class ObfuscatorProcessor {
                     new IllegalStateException("No Obfuscator found - please add io.quarkus:quarkus-jdbc-postgresql dependency")));
         }
         additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
-                .addBeanClasses(UUIDProvider.class, DefaultObfuscator.class, ObfuscatorObjectMapperCustomizer.class,
-                        CachedObfuscator.class)
+                .addBeanClasses(UUIDProvider.class, DefaultObfuscator.class, ObfuscatorObjectMapperCustomizer.class)
                 .build());
         return additionalBeanBuildItems;
     }

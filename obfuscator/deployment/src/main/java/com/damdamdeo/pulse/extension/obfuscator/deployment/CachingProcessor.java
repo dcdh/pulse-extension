@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.build.report.deployment.ContentBuildItem;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.obfuscator.runtime.CachedObfuscator;
-import com.damdamdeo.pulse.extension.obfuscator.runtime.annotation.DeObfuscatingParamConverterProvider;
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -25,8 +25,16 @@ public class CachingProcessor {
     @BuildStep
     List<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItem(final Capabilities capabilities) {
         if (capabilities.isPresent(Capability.CACHE)) {
-            return List.of(new AdditionalIndexedClassesBuildItem(DeObfuscatingParamConverterProvider.class.getName(),
-                    CachedObfuscator.class.getName()));
+            return List.of(new AdditionalIndexedClassesBuildItem(CachedObfuscator.class.getName()));
+        } else {
+            return List.of();
+        }
+    }
+
+    @BuildStep
+    List<AdditionalBeanBuildItem> additionalBeanBuildItems(final Capabilities capabilities) {
+        if (capabilities.isPresent(Capability.CACHE)) {
+            return List.of(AdditionalBeanBuildItem.builder().addBeanClass(CachedObfuscator.class).build());
         } else {
             return List.of();
         }
