@@ -19,8 +19,7 @@ public class TopicManager {
                 AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers))) {
             final TopicsCompanion topicsCompanion = new TopicsCompanion(adminClient, Duration.ofSeconds(10));
             final Set<String> topics = topicsCompanion.list();
-            topicsCompanion.delete(topics);
-            topics.forEach(topic -> topicsCompanion.createAndWait(topic, 1));
+            topicsCompanion.clearIfExists(topics);
         }
     }
 }
