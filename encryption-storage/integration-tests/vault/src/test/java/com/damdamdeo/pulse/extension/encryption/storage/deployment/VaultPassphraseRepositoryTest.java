@@ -48,7 +48,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -60,7 +60,7 @@ class VaultPassphraseRepositoryTest {
         vaultKVSecretEngine.writeSecret(SECRET_PATH_OWNED_BY_USER_1, Map.of());
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -73,7 +73,7 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(

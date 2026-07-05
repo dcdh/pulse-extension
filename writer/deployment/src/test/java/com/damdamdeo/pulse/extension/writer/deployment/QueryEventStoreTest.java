@@ -42,7 +42,7 @@ class QueryEventStoreTest {
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override
-        public Optional<Passphrase> retrieve(OwnedBy ownedBy) {
+        public Optional<Passphrase> findBy(OwnedBy ownedBy) {
             return Optional.of(PassphraseSample.PASSPHRASE_1);
         }
 

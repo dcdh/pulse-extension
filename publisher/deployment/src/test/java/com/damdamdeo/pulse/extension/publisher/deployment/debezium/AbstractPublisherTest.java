@@ -13,7 +13,7 @@ public abstract class AbstractPublisherTest {
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override
-        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
+        public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
             throw new IllegalStateException("Should not be called !");
         }
 

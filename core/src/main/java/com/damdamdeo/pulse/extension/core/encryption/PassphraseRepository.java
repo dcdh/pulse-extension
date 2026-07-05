@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface PassphraseRepository {
 
-    Optional<Passphrase> retrieve(OwnedBy ownedBy) throws UnableToRetrievePassphraseException;
+    Optional<Passphrase> findBy(OwnedBy ownedBy) throws UnableToRetrievePassphraseException;
 
     List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException;
 

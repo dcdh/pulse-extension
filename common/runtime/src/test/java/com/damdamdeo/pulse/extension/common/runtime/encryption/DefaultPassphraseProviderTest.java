@@ -34,7 +34,7 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldRetrievePassphrase() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException {
         // Given
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).retrieve(Todo.OWNED_BY_USER_1);
+        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).findBy(Todo.OWNED_BY_USER_1);
 
         // When
         final Passphrase customOrganizations = passphraseProvider.provide(Todo.OWNED_BY_USER_1);
@@ -46,7 +46,7 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldReturnGeneratedPassphraseWhenRetrieveReturnEmpty() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any(OwnedBy.class));
+        doReturn(Optional.empty()).when(passphraseRepository).findBy(any(OwnedBy.class));
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseRepository).store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
 
@@ -60,7 +60,7 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldGenerateANewPassphraseWhenRetrieveReturnEmpty() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException {
         // Given
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any(OwnedBy.class));
+        doReturn(Optional.empty()).when(passphraseRepository).findBy(any(OwnedBy.class));
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
 
         // When
@@ -74,7 +74,7 @@ class DefaultPassphraseProviderTest {
     void shouldStoreGeneratedPassphraseWhenRetrieveReturnEmpty() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException,
             PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(any(OwnedBy.class));
+        doReturn(Optional.empty()).when(passphraseRepository).findBy(any(OwnedBy.class));
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
 
         // When

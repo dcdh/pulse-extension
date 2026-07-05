@@ -48,7 +48,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                 final PBEDataDecryptorFactory decryptorFactory = new JcePBEDataDecryptorFactoryBuilder(
                         new JcaPGPDigestCalculatorProviderBuilder().build())
                         .setProvider("BC")
-                        .build(passphraseRepository.retrieve(ownedBy)
+                        .build(passphraseRepository.findBy(ownedBy)
                                 .map(Passphrase::passphrase)
                                 .orElseThrow(() -> new UnknownPassphraseException(ownedBy)));
 

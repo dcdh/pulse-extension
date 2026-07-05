@@ -35,7 +35,7 @@ class OpenPGPDecryptionServiceTest {
     void shouldDecrypt() throws UnableToRetrievePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).retrieve(Todo.OWNED_BY_USER_1);
+        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).findBy(Todo.OWNED_BY_USER_1);
 
         // When
         final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1);
@@ -49,7 +49,7 @@ class OpenPGPDecryptionServiceTest {
     void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToRetrievePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
-        doReturn(Optional.empty()).when(passphraseRepository).retrieve(Todo.OWNED_BY_USER_1);
+        doReturn(Optional.empty()).when(passphraseRepository).findBy(Todo.OWNED_BY_USER_1);
 
         // When && Then
         assertThatThrownBy(() -> decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1))

@@ -39,7 +39,7 @@ class CachedPassphraseRepositoryTest {
         final Map<OwnedBy, Passphrase> stored = new HashMap<>();
 
         @Override
-        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
+        public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
             called.add("retrieve" + ownedBy.id());
             return stored.containsKey(ownedBy) ? Optional.of(stored.get(ownedBy)) : Optional.empty();
         }
@@ -103,12 +103,12 @@ class CachedPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRetrievePutInCache() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+    void shouldFindByPutInCache() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
 
         // When
-        passphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
-        passphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+        passphraseRepository.findBy(Todo.OWNED_BY_USER_1);
+        passphraseRepository.findBy(Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -120,14 +120,14 @@ class CachedPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRetrieveAfterStoringPutInCache() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+    void shouldFindByAfterStoringPutInCache() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
         passphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
         cache.invalidateAll().await().indefinitely();
 
         // When
-        passphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
-        passphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+        passphraseRepository.findBy(Todo.OWNED_BY_USER_1);
+        passphraseRepository.findBy(Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(

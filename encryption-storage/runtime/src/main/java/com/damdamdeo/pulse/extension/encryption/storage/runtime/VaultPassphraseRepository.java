@@ -31,7 +31,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
-    public Optional<Passphrase> retrieve(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
+    public Optional<Passphrase> findBy(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(ownedBy);
         final String path = getOwnedByHasherStringBiFunction(ownedBy);
         try {
@@ -55,7 +55,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
         Objects.requireNonNull(multiples);
         final List<RetrievedPassphrase> retrievedPassphrases = new ArrayList<>(multiples.size());
         for (final OwnedBy ownedBy : multiples) {
-            final Optional<Passphrase> retrieved = retrieve(ownedBy);
+            final Optional<Passphrase> retrieved = findBy(ownedBy);
             if (retrieved.isPresent()) {
                 retrievedPassphrases.add(new RetrievedPassphrase(ownedBy, retrieved.get()));
             } else {

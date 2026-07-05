@@ -34,7 +34,7 @@ class DefaultPassphraseProviderTest {
         final AtomicBoolean retrieveCalled = new AtomicBoolean(false);
 
         @Override
-        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
+        public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
             retrieveCalled.set(true);
             return Optional.of(PassphraseSample.PASSPHRASE_1);
         }

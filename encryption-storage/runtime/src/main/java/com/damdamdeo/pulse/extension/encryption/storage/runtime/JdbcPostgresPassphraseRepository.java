@@ -39,7 +39,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
-    public Optional<Passphrase> retrieve(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
+    public Optional<Passphrase> findBy(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(ownedBy);
         final MasterKey masterKey = retrieveMasterKey();
         final String ownerHash = hash(ownedBy);

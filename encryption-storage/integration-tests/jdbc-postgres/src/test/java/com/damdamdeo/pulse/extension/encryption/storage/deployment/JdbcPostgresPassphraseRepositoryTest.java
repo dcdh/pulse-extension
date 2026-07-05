@@ -56,8 +56,8 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRetrieveThrowTransactionalExceptionWhenNotExecutedInTransaction() {
-        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1))
+    void shouldFindByThrowTransactionalExceptionWhenNotExecutedInTransaction() {
+        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_1))
                 .isExactlyInstanceOf(TransactionalException.class)
                 .hasMessage("ARJUNA016110: Transaction is required for invocation");
     }
@@ -68,7 +68,7 @@ class JdbcPostgresPassphraseRepositoryTest {
 
         // When
         final Optional<Passphrase> passphrase = QuarkusTransaction.requiringNew()
-                .call(() -> jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1));
+                .call(() -> jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_1));
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -80,7 +80,7 @@ class JdbcPostgresPassphraseRepositoryTest {
         QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1));
 
         // When
-        final Optional<Passphrase> passphrase = QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1));
+        final Optional<Passphrase> passphrase = QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_1));
 
         // Then
         assertAll(
@@ -89,7 +89,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRollbackTransactionWhenUnableToRetrievePassphraseExceptionIsThrown() {
+    void shouldRollbackTransactionWhenUnableToFindByPassphraseExceptionIsThrown() {
         // Given
         final List<Integer> status = new ArrayList<>();
         final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
@@ -99,7 +99,7 @@ class JdbcPostgresPassphraseRepositoryTest {
             status.add(transactionManager.getStatus());
             expectedException.set(assertThatThrownBy(() ->
                     QuarkusTransaction.joiningExisting().call(() -> {
-                        jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+                        jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
                         status.add(transactionManager.getStatus());
 
                         try (final Connection c = dataSource.getConnection()) {
@@ -107,7 +107,7 @@ class JdbcPostgresPassphraseRepositoryTest {
                         } catch (SQLException e) {
                             // do nothing
                         }
-                        jdbcPostgresPassphraseRepository.retrieve(Todo.OWNED_BY_USER_1);
+                        jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
                         throw new IllegalStateException("Should not reach this point");
                     })
             ));

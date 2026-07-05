@@ -20,7 +20,7 @@ public class DefaultPassphraseProvider implements PassphraseProvider {
     public Passphrase provide(final OwnedBy ownedBy) throws UnableToProvidePassphraseException {
         Objects.requireNonNull(ownedBy);
         try {
-            final Optional<Passphrase> retrieved = passphraseRepository.retrieve(ownedBy);
+            final Optional<Passphrase> retrieved = passphraseRepository.findBy(ownedBy);
             if (retrieved.isPresent()) {
                 return retrieved.get();
             } else {

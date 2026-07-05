@@ -36,12 +36,12 @@ public class CachedPassphraseRepository implements PassphraseRepository {
     Cache cache;
 
     @Override
-    public Optional<Passphrase> retrieve(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
+    public Optional<Passphrase> findBy(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(ownedBy);
         final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
         final CompletableFuture<RetrievedPassphrase> findFromCache = caffeineCache.getIfPresent(ownedBy);
         if (findFromCache == null) {
-            final Optional<Passphrase> found = delegate.retrieve(ownedBy);
+            final Optional<Passphrase> found = delegate.findBy(ownedBy);
             if (found.isPresent()) {
                 caffeineCache.put(ownedBy, CompletableFuture.completedFuture(new RetrievedPassphrase(ownedBy, found.get())));
             } else {

@@ -12,7 +12,7 @@ import java.util.Optional;
 public class StubPassphraseRepository implements PassphraseRepository {
 
     @Override
-    public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
+    public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
         return Optional.of(PassphraseSample.PASSPHRASE_1);
     }
 

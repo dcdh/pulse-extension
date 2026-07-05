@@ -52,7 +52,7 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(audience);
         try {
-            final Optional<Passphrase> retrievedPassphrase = passphraseRepository.retrieve(ownedBy);
+            final Optional<Passphrase> retrievedPassphrase = passphraseRepository.findBy(ownedBy);
             if (retrievedPassphrase.isPresent()) {
                 final byte[] jsonPayload = objectMapper.writeValueAsBytes(payload);
                 final EncryptedPayload encryptedPayload = encryptionService.encrypt(jsonPayload, retrievedPassphrase.get());

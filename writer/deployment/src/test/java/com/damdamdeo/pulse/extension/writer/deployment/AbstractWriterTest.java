@@ -19,7 +19,7 @@ public abstract class AbstractWriterTest {
         private Map<OwnedBy, Passphrase> passphrases = new HashMap<>();
 
         @Override
-        public Optional<Passphrase> retrieve(final OwnedBy ownedBy) {
+        public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
             return Optional.ofNullable(passphrases.get(ownedBy));
         }
 
