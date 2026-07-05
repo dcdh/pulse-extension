@@ -100,8 +100,8 @@ class CachedConnectionIdentifierRepositoryTest {
 
         // Then
         assertAll(
-                () -> assertThat(cache.as(CaffeineCache.class).keySet()).containsExactly("U000001"),
-                () -> assertThat(cache.as(CaffeineCache.class).get("U000001", (_) -> {
+                () -> assertThat(cache.as(CaffeineCache.class).keySet()).containsExactly(new ConnectionIdentifier("U000001")),
+                () -> assertThat(cache.as(CaffeineCache.class).get(new ConnectionIdentifier("U000001"), (_) -> {
                     throw new IllegalStateException("Should not be called");
                 }).await().indefinitely())
                         .isEqualTo(UserId.USER_1));
@@ -136,8 +136,8 @@ class CachedConnectionIdentifierRepositoryTest {
         assertAll(
                 () -> assertThat(identifiableCallOne).contains(UserId.USER_1),
                 () -> assertThat(identifiableCallOne).isEqualTo(identifiableCallTwo),
-                () -> assertThat(cache.as(CaffeineCache.class).keySet()).containsExactly("U000001"),
-                () -> assertThat(cache.as(CaffeineCache.class).get("U000001", (_) -> {
+                () -> assertThat(cache.as(CaffeineCache.class).keySet()).containsExactly(new ConnectionIdentifier("U000001")),
+                () -> assertThat(cache.as(CaffeineCache.class).get(new ConnectionIdentifier("U000001"), (_) -> {
                     throw new IllegalStateException("Should not be called");
                 }).await().indefinitely())
                         .isEqualTo(UserId.USER_1),

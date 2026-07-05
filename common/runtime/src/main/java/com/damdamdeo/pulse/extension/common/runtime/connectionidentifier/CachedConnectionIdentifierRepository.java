@@ -30,6 +30,7 @@ public class CachedConnectionIdentifierRepository implements ConnectionIdentifie
     @Delegate
     ConnectionIdentifierRepository delegate;
 
+    // https://github.com/quarkusio/quarkus/issues/19676
     @Inject
     @CacheName("connectionIdentifier")
     Cache cache;
@@ -38,22 +39,23 @@ public class CachedConnectionIdentifierRepository implements ConnectionIdentifie
     public ConnectionIdentifier store(final ConnectionIdentifier connectionIdentifier, final Identifiable identifiable) throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException {
         Objects.requireNonNull(connectionIdentifier);
         Objects.requireNonNull(identifiable);
+        final ConnectionIdentifier stored = delegate.store(connectionIdentifier, identifiable);
         final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
-        caffeineCache.put(connectionIdentifier.id(), CompletableFuture.completedFuture(identifiable));
-        return delegate.store(connectionIdentifier, identifiable);
+        caffeineCache.put(connectionIdentifier, CompletableFuture.completedFuture(identifiable));
+        return stored;
     }
 
     @Override
     public Optional<Identifiable> find(final ConnectionIdentifier connectionIdentifier) throws ConnectionIdentifierRepositoryException {
         Objects.requireNonNull(connectionIdentifier);
         final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
-        final CompletableFuture<AnyIdentifiable> findFromCache = caffeineCache.getIfPresent(connectionIdentifier.id());
+        final CompletableFuture<AnyIdentifiable> findFromCache = caffeineCache.getIfPresent(connectionIdentifier);
         if (findFromCache == null) {
             final Optional<Identifiable> identifiable = delegate.find(connectionIdentifier);
             if (identifiable.isEmpty()) {
                 return Optional.empty();
             }
-            caffeineCache.put(connectionIdentifier.id(), CompletableFuture.completedFuture(identifiable.get()));
+            caffeineCache.put(connectionIdentifier, CompletableFuture.completedFuture(identifiable.get()));
             return identifiable;
         } else {
             try {
