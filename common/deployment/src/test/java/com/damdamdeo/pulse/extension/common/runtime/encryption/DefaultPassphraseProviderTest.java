@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,15 +82,16 @@ class DefaultPassphraseProviderTest {
                 () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE_1.passphrase()),
                 () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isTrue(),
                 () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(Todo.OWNED_BY_USER_1).get())
-                        .isEqualTo(PassphraseSample.PASSPHRASE_1)
+                        .isEqualTo(new RetrievedPassphrase(Todo.OWNED_BY_USER_1,
+                                PassphraseSample.PASSPHRASE_1))
         );
     }
 
     @Test
     void shouldReuseCache() throws UnableToProvidePassphraseException {
         // Given
-        cache.as(CaffeineCache.class).get(Todo.OWNED_BY_USER_1, ownedBy -> PassphraseSample.PASSPHRASE_1)
-                .await().indefinitely();
+        cache.as(CaffeineCache.class).put(Todo.OWNED_BY_USER_1, CompletableFuture.completedFuture(
+                new RetrievedPassphrase(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1)));
 
         // When
         final Passphrase provided = defaultPassphraseProvider.provide(Todo.OWNED_BY_USER_1);

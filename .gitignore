@@ -105,3 +105,5 @@
 /integration-tests/infrastructure/pulse_obfuscator.sql
 /encryption-storage/integration-tests/jdbc-postgres/pulse_passphrase.sql
 /writer/deployment/todo_taking_aggregates.sql
+/encryption-storage/deployment/compose-devservices-pulse.yml
+/encryption-storage/deployment/pulse-policy-policy.hcl

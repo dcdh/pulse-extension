@@ -31,6 +31,11 @@
             <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-cache</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>io.quarkiverse.vault</groupId>
             <artifactId>quarkus-vault</artifactId>
             <version>${quarkus-vault.version}</version>

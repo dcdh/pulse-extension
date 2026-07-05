@@ -1,19 +1,11 @@
-package com.damdamdeo.pulse.extension.common.runtime.encryption;
+package com.damdamdeo.pulse.extension.core.encryption;
 
-import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import io.quarkus.arc.DefaultBean;
-import io.quarkus.arc.Unremovable;
-import io.quarkus.cache.CacheResult;
-import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Objects;
 import java.util.Optional;
 
-@ApplicationScoped
-@Unremovable
-@DefaultBean
-public final class DefaultPassphraseProvider implements PassphraseProvider {
+public class DefaultPassphraseProvider implements PassphraseProvider {
 
     private final PassphraseRepository passphraseRepository;
     private final PassphraseGenerator passphraseGenerator;
@@ -24,8 +16,6 @@ public final class DefaultPassphraseProvider implements PassphraseProvider {
         this.passphraseGenerator = Objects.requireNonNull(passphraseGenerator);
     }
 
-    // https://github.com/quarkusio/quarkus/issues/19676
-    @CacheResult(cacheName = "passphrase")
     @Override
     public Passphrase provide(final OwnedBy ownedBy) throws UnableToProvidePassphraseException {
         Objects.requireNonNull(ownedBy);

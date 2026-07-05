@@ -5,10 +5,6 @@ import com.damdamdeo.pulse.extension.build.report.deployment.content.CodeBlock;
 import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.SmallryeConfigApplicationNamingProvider;
-import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseGenerator;
-import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseProvider;
-import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService;
-import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObjectMapperProducer;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.PulseObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
@@ -47,10 +43,6 @@ public class PulseCommonProcessor {
                 .addBeanClasses(
                         PulseObjectMapperCustomizer.class,
                         BusinessObjectMapperProducer.class,
-                        DefaultPassphraseGenerator.class,
-                        DefaultPassphraseProvider.class,
-                        OpenPGPDecryptionService.class,
-                        OpenPGPEncryptionService.class,
                         SmallryeConfigApplicationNamingProvider.class)
                 .build());
         return additionalBeanBuildItems;
