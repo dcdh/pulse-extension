@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment.projection;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
+import com.damdamdeo.pulse.extension.core.encryption.UnableToBanPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.projection.MultipleResultAggregateQuery;
@@ -140,6 +141,11 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
         @Override
         public Passphrase provide(final OwnedBy ownedBy) {
             return PassphraseSample.PASSPHRASE_1;
+        }
+
+        @Override
+        public Passphrase ban(final OwnedBy ownedBy) throws UnableToBanPassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
     }
 

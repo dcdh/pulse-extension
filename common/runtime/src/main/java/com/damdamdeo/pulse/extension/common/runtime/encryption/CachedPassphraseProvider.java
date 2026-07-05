@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
-import com.damdamdeo.pulse.extension.core.encryption.RetrievedPassphrase;
-import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.CachedPassphraseRepository;
 import io.quarkus.arc.Unremovable;
@@ -49,5 +46,12 @@ public class CachedPassphraseProvider implements PassphraseProvider {
                 throw new UnableToProvidePassphraseException(exception);
             }
         }
+    }
+
+    @Override
+    public Passphrase ban(final OwnedBy ownedBy) throws UnableToBanPassphraseException {
+        Objects.requireNonNull(ownedBy);
+        // nothing to do regarding caching. Will be done in delegate methode.
+        return delegate.ban(ownedBy);
     }
 }

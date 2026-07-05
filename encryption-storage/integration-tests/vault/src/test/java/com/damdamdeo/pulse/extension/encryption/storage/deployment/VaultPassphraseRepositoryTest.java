@@ -44,7 +44,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenPathDoesNotExists() throws UnableToRetrievePassphraseException {
+    void shouldFindByReturnEmptyWhenPathDoesNotExists() throws UnableToRetrievePassphraseException {
         // Given
 
         // When
@@ -55,7 +55,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnEmptyWhenPassphraseDoesNotExists() throws UnableToRetrievePassphraseException {
+    void shouldFindByReturnEmptyWhenPassphraseDoesNotExists() throws UnableToRetrievePassphraseException {
         // Given
         vaultKVSecretEngine.writeSecret(SECRET_PATH_OWNED_BY_USER_1, Map.of());
 
@@ -67,7 +67,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldReturnStoredPassphrase() throws UnableToRetrievePassphraseException {
+    void shouldFindByReturnStoredPassphrase() throws UnableToRetrievePassphraseException {
         // Given
         vaultKVSecretEngine.writeSecret(SECRET_PATH_OWNED_BY_USER_1,
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
@@ -97,7 +97,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() {
+    void shouldStoreThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() {
         // Given
         vaultKVSecretEngine.writeSecret(SECRET_PATH_OWNED_BY_USER_1,
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
@@ -105,6 +105,29 @@ class VaultPassphraseRepositoryTest {
         // When && Then
         assertThatThrownBy(() -> vaultPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1))
                 .isExactlyInstanceOf(PassphraseAlreadyExistsException.class)
+                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
+    }
+
+    @Test
+    void shouldUpdate() throws UnableToStorePassphraseException, UnknownPassphraseException {
+        // Given
+        vaultKVSecretEngine.writeSecret(SECRET_PATH_OWNED_BY_USER_1,
+                Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
+
+        // When
+        final Passphrase passphrase = vaultPassphraseRepository.update(Todo.OWNED_BY_USER_1, new Passphrase(null));
+
+        // Then
+        assertThat(passphrase).isEqualTo(new Passphrase(null));
+    }
+
+    @Test
+    void shouldUpdateThrowUnknownPassphraseExceptionWhenPassphraseDoesNotExists() {
+        // Given
+
+        // When && Then
+        assertThatThrownBy(() -> vaultPassphraseRepository.update(Todo.OWNED_BY_USER_1, new Passphrase(null)))
+                .isExactlyInstanceOf(UnknownPassphraseException.class)
                 .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
     }
 

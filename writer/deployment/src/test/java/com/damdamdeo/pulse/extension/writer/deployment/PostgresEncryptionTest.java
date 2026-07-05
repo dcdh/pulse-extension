@@ -47,6 +47,11 @@ class PostgresEncryptionTest {
         }
 
         @Override
+        public Passphrase get(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+            throw new IllegalStateException("Should not be called");
+        }
+
+        @Override
         public List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
             throw new IllegalStateException("Should not be called");
         }
@@ -54,6 +59,11 @@ class PostgresEncryptionTest {
         @Override
         public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
             throw new IllegalStateException("Should not be called !");
+        }
+
+        @Override
+        public Passphrase update(final OwnedBy ownedBy, final Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
     }
 
@@ -69,7 +79,7 @@ class PostgresEncryptionTest {
     // "\dx" lister les extensions
     // SELECT public.pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
     @Test
-    void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() throws UnableToRetrievePassphraseException {
+    void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() throws UnableToRetrievePassphraseException, UnknownPassphraseException {
         // Given
         byte[] encrypted;
         try (final Connection connection = dataSource.getConnection();

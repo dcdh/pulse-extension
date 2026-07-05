@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -71,6 +72,11 @@ class JdbcPostgresEventRepositoryTest {
         public Passphrase provide(final OwnedBy ownedBy) {
             return PassphraseSample.PASSPHRASE_1;
         }
+
+        @Override
+        public Passphrase ban(final OwnedBy ownedBy) throws UnableToBanPassphraseException {
+            throw new IllegalStateException("Should not be called");
+        }
     }
 
     @ApplicationScoped
@@ -82,12 +88,22 @@ class JdbcPostgresEventRepositoryTest {
         }
 
         @Override
+        public Passphrase get(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+            throw new IllegalStateException("Should not be called");
+        }
+
+        @Override
         public List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
             throw new IllegalStateException("Should not be called");
         }
 
         @Override
         public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
+            throw new IllegalStateException("Should not be called");
+        }
+
+        @Override
+        public Passphrase update(final OwnedBy ownedBy, final Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
             throw new IllegalStateException("Should not be called");
         }
     }

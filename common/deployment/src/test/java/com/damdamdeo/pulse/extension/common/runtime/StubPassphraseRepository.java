@@ -8,6 +8,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Optional;
 
+// remove in favor to com.damdamdeo.pulse.extension.encryption.storage.deployment.StubPassphraseRepository;
+@Deprecated(forRemoval = true)
 @ApplicationScoped
 public class StubPassphraseRepository implements PassphraseRepository {
 
@@ -17,12 +19,22 @@ public class StubPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
+    public Passphrase get(OwnedBy ownedBy) throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+        throw new IllegalStateException("Should not be called");
+    }
+
+    @Override
     public List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
         throw new IllegalStateException("Should not be called");
     }
 
     @Override
     public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
-        throw new UnsupportedOperationException("Should not be called");
+        throw new IllegalStateException("Should not be called");
+    }
+
+    @Override
+    public Passphrase update(OwnedBy ownedBy, Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
+        throw new IllegalStateException("Should not be called");
     }
 }

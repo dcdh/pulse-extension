@@ -58,6 +58,24 @@ public class CachedPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
+    public Passphrase get(final OwnedBy ownedBy) throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+        Objects.requireNonNull(ownedBy);
+        final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
+        final CompletableFuture<RetrievedPassphrase> findFromCache = caffeineCache.getIfPresent(ownedBy);
+        if (findFromCache == null) {
+            final Passphrase passphrase = delegate.get(ownedBy);
+            caffeineCache.put(ownedBy, CompletableFuture.completedFuture(new RetrievedPassphrase(ownedBy, passphrase)));
+            return passphrase;
+        } else {
+            try {
+                return findFromCache.get().passphrase();
+            } catch (final InterruptedException | ExecutionException exception) {
+                throw new UnableToRetrievePassphraseException(exception);
+            }
+        }
+    }
+
+    @Override
     public List<RetrievedPassphrase> list(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(multiples);
         try {
@@ -92,5 +110,15 @@ public class CachedPassphraseRepository implements PassphraseRepository {
         final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
         caffeineCache.put(ownedBy, CompletableFuture.completedFuture(new RetrievedPassphrase(ownedBy, passphrase)));
         return stored;
+    }
+
+    @Override
+    public Passphrase update(final OwnedBy ownedBy, final Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
+        Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(passphrase);
+        final Passphrase updated = delegate.update(ownedBy, passphrase);
+        final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
+        caffeineCache.put(ownedBy, CompletableFuture.completedFuture(new RetrievedPassphrase(ownedBy, passphrase)));
+        return updated;
     }
 }

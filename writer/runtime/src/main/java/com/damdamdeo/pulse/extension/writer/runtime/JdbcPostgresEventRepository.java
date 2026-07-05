@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K extends AggregateId> implements EventRepository<A, K> {
 
@@ -148,7 +147,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                         events.add(new ExecutedByEvent<>(event, executedBy));
                     }
                 } catch (ClassNotFoundException | IOException | UnableToDecodeException |
-                         UnableToRetrievePassphraseException e) {
+                         UnableToRetrievePassphraseException | UnknownPassphraseException e) {
                     throw new EventStoreException(e);
                 }
                 return events;
@@ -185,7 +184,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                     events.add(new ExecutedByEvent<>(event, executedBy));
                 }
             } catch (ClassNotFoundException | IOException | UnableToDecodeException |
-                     UnableToRetrievePassphraseException e) {
+                     UnableToRetrievePassphraseException | UnknownPassphraseException e) {
                 throw new EventStoreException(e);
             }
             return events;
@@ -218,7 +217,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 } else {
                     return Optional.empty();
                 }
-            } catch (IOException | UnableToRetrievePassphraseException e) {
+            } catch (IOException | UnableToRetrievePassphraseException | UnknownPassphraseException e) {
                 throw new EventStoreException(e);
             }
         } catch (final SQLException e) {

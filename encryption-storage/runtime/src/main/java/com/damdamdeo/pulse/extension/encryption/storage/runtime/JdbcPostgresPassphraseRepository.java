@@ -10,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Provider;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
+import org.apache.commons.lang3.Validate;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -58,11 +59,22 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                 if (!rs.next()) {
                     return Optional.empty();
                 }
-                return Optional.of(new Passphrase(rs.getString(PASSPHRASE).toCharArray()))
+                return Optional.of(new Passphrase(rs.getString(PASSPHRASE) != null ? rs.getString(PASSPHRASE).toCharArray() : null))
                         .map(passphraseObfuscator::obfuscate);
             }
         } catch (final SQLException sqlException) {
             throw new UnableToRetrievePassphraseException(sqlException);
+        }
+    }
+
+    @Override
+    public Passphrase get(OwnedBy ownedBy) throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+        Objects.requireNonNull(ownedBy);
+        final Optional<Passphrase> found = findBy(ownedBy);
+        if (found.isPresent()) {
+            return found.get();
+        } else {
+            throw new UnknownPassphraseException(ownedBy);
         }
     }
 
@@ -128,6 +140,30 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
                 throw new PassphraseAlreadyExistsException(ownedBy);
             }
             return new Passphrase(passphrase.passphrase().clone());
+        } catch (final SQLException sqlException) {
+            throw new UnableToStorePassphraseException(sqlException);
+        }
+    }
+
+    @Override
+    public Passphrase update(final OwnedBy ownedBy, final Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
+        Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(passphrase);
+        Validate.validState(passphrase.passphrase() == null);
+        final String ownerHash = hash(ownedBy);
+        final String sql =
+                // language=sql
+                """
+                        UPDATE pulse.passphrase SET passphrase = null WHERE owned_by_hashed = ?
+                        """;
+        try (final Connection connection = dataSource.get().getConnection();
+             final PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, ownerHash);
+            final int updated = stmt.executeUpdate();
+            if (updated == 0) {
+                throw new UnknownPassphraseException(ownedBy);
+            }
+            return passphrase;
         } catch (final SQLException sqlException) {
             throw new UnableToStorePassphraseException(sqlException);
         }

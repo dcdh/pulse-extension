@@ -9,6 +9,7 @@ import io.quarkus.arc.Unremovable;
 import io.quarkus.vault.VaultKVSecretEngine;
 import io.quarkus.vault.client.VaultClientException;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.apache.commons.lang3.Validate;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -51,6 +52,17 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
+    public Passphrase get(OwnedBy ownedBy) throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+        Objects.requireNonNull(ownedBy);
+        final Optional<Passphrase> found = findBy(ownedBy);
+        if (found.isPresent()) {
+            return found.get();
+        } else {
+            throw new UnknownPassphraseException(ownedBy);
+        }
+    }
+
+    @Override
     public List<RetrievedPassphrase> list(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(multiples);
         final List<RetrievedPassphrase> retrievedPassphrases = new ArrayList<>(multiples.size());
@@ -88,6 +100,25 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
             } else {
                 throw new UnableToStorePassphraseException(vaultClientException);
             }
+        }
+    }
+
+    @Override
+    public Passphrase update(final OwnedBy ownedBy, final Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
+        Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(passphrase);
+        Validate.validState(passphrase.passphrase() == null);
+        final String path = getOwnedByHasherStringBiFunction(ownedBy);
+        final Map<String, String> secret = new HashMap<>();
+        try {
+            vaultKVSecretEngine.readSecret(path);// trigger an UnknownPassphraseException if the secret does not exist
+            vaultKVSecretEngine.writeSecret(path, secret);
+            return passphrase;
+        } catch (final VaultClientException vaultClientException) {
+            if (Integer.valueOf(404).equals(vaultClientException.getStatus())) {
+                throw new UnknownPassphraseException(ownedBy);
+            }
+            throw new UnableToStorePassphraseException(vaultClientException);
         }
     }
 

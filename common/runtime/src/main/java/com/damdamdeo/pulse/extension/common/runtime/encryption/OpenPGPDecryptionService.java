@@ -27,15 +27,15 @@ public final class OpenPGPDecryptionService implements DecryptionService {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    private final PassphraseRepository passphraseRepository;
+    private final PassphraseProvider passphraseProvider;
 
-    public OpenPGPDecryptionService(final PassphraseRepository passphraseRepository) {
-        this.passphraseRepository = Objects.requireNonNull(passphraseRepository);
+    public OpenPGPDecryptionService(final PassphraseProvider passphraseProvider) {
+        this.passphraseProvider = Objects.requireNonNull(passphraseProvider);
     }
 
     @Override
     public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy)
-            throws DecryptionException, UnknownPassphraseException, UnableToRetrievePassphraseException {
+            throws DecryptionException {
         Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
         try (final InputStream in = new ByteArrayInputStream(encrypted.payload())) {
@@ -48,9 +48,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                 final PBEDataDecryptorFactory decryptorFactory = new JcePBEDataDecryptorFactoryBuilder(
                         new JcaPGPDigestCalculatorProviderBuilder().build())
                         .setProvider("BC")
-                        .build(passphraseRepository.findBy(ownedBy)
-                                .map(Passphrase::passphrase)
-                                .orElseThrow(() -> new UnknownPassphraseException(ownedBy)));
+                        .build(passphraseProvider.provide(ownedBy).passphrase());
 
                 try (final InputStream clear = encData.getDataStream(decryptorFactory)) {
                     final PGPObjectFactory plainFact = new PGPObjectFactory(clear, new JcaKeyFingerprintCalculator());
@@ -64,7 +62,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                 }
             }
             throw new DecryptionException(ownedBy, "Invalid PGP structure");
-        } catch (final IOException | PGPException e) {
+        } catch (final IOException | PGPException | UnableToProvidePassphraseException e) {
             throw new DecryptionException(ownedBy, e);
         }
     }

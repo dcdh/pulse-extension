@@ -3,7 +3,8 @@ package com.damdamdeo.pulse.extension.common.runtime.encryption;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.encryption.*;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.encryption.storage.deployment.StubPassphraseRepository;
+import com.damdamdeo.pulse.extension.encryption.storage.runtime.CachedPassphraseRepository;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
 import io.quarkus.cache.CaffeineCache;
@@ -14,11 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
@@ -26,31 +22,15 @@ class DefaultPassphraseProviderTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties");
 
     @Singleton
-    static class StubPassphraseRepository implements PassphraseRepository {
-
-        final AtomicBoolean retrieveCalled = new AtomicBoolean(false);
+    static class StubPassphraseGenerator implements PassphraseGenerator {
 
         @Override
-        public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
-            retrieveCalled.set(true);
-            return Optional.of(PassphraseSample.PASSPHRASE_1);
-        }
-
-        @Override
-        public List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
-            throw new IllegalStateException("Should not be called");
-        }
-
-        @Override
-        public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
-            return null;
-        }
-
-        public void reset() {
-            this.retrieveCalled.set(false);
+        public Passphrase generate() {
+            return PassphraseSample.PASSPHRASE_1;
         }
     }
 
@@ -58,10 +38,13 @@ class DefaultPassphraseProviderTest {
     DefaultPassphraseProvider defaultPassphraseProvider;
 
     @Inject
+    PassphraseRepository passphraseRepository;
+
+    @Inject
     StubPassphraseRepository stubPassphraseRepository;
 
     @Inject
-    @CacheName("passphrase")
+    @CacheName(CachedPassphraseRepository.CACHE_NAME)
     Cache cache;
 
     @BeforeEach
@@ -80,7 +63,8 @@ class DefaultPassphraseProviderTest {
         // Then
         assertAll(
                 () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE_1.passphrase()),
-                () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isTrue(),
+                () -> assertThat(stubPassphraseRepository.getCalled()).containsExactly(
+                        "retrieveU000001", "storeU0000017-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&"),
                 () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(Todo.OWNED_BY_USER_1).get())
                         .isEqualTo(new RetrievedPassphrase(Todo.OWNED_BY_USER_1,
                                 PassphraseSample.PASSPHRASE_1))
@@ -88,10 +72,9 @@ class DefaultPassphraseProviderTest {
     }
 
     @Test
-    void shouldReuseCache() throws UnableToProvidePassphraseException {
+    void shouldReuseCache() throws UnableToProvidePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        cache.as(CaffeineCache.class).put(Todo.OWNED_BY_USER_1, CompletableFuture.completedFuture(
-                new RetrievedPassphrase(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1)));
+        passphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
 
         // When
         final Passphrase provided = defaultPassphraseProvider.provide(Todo.OWNED_BY_USER_1);
@@ -99,6 +82,21 @@ class DefaultPassphraseProviderTest {
         // Then
         assertAll(
                 () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE_1.passphrase()),
-                () -> assertThat(stubPassphraseRepository.retrieveCalled.get()).isFalse());
+                () -> assertThat(stubPassphraseRepository.getCalled()).containsExactly("storeU0000017-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&"));
+    }
+
+    @Test
+    void shouldBanUpdateCache() throws UnableToBanPassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+        // Given
+        passphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
+
+        // When
+        final Passphrase banned = defaultPassphraseProvider.ban(Todo.OWNED_BY_USER_1);
+
+        // Then
+        assertAll(
+                () -> assertThat(banned).isEqualTo(new Passphrase(null)),
+                () -> assertThat(stubPassphraseRepository.getCalled()).containsExactly(
+                        "storeU0000017-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&", "updateU000001"));
     }
 }

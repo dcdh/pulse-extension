@@ -23,19 +23,19 @@ class OpenPGPDecryptionServiceTest {
     private OpenPGPDecryptionService decryptionService;
 
     @Mock
-    PassphraseRepository passphraseRepository;
+    PassphraseProvider passphraseProvider;
 
     @BeforeEach
     void setUp() {
         encryptionService = new OpenPGPEncryptionService();
-        decryptionService = new OpenPGPDecryptionService(passphraseRepository);
+        decryptionService = new OpenPGPDecryptionService(passphraseProvider);
     }
 
     @Test
-    void shouldDecrypt() throws UnableToRetrievePassphraseException {
+    void shouldDecrypt() throws UnableToProvidePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).findBy(Todo.OWNED_BY_USER_1);
+        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
 
         // When
         final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1);
@@ -46,10 +46,10 @@ class OpenPGPDecryptionServiceTest {
 
     // Meaning that the organization has been deleted from Vault ...
     @Test
-    void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToRetrievePassphraseException {
+    void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToProvidePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
-        doReturn(Optional.empty()).when(passphraseRepository).findBy(Todo.OWNED_BY_USER_1);
+        doReturn(Optional.empty()).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
 
         // When && Then
         assertThatThrownBy(() -> decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1))

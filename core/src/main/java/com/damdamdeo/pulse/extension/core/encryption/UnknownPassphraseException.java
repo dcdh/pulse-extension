@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 import java.util.Objects;
 
-public final class UnknownPassphraseException extends RuntimeException {
+public final class UnknownPassphraseException extends Exception {
 
     private final OwnedBy ownedBy;
 

@@ -24,6 +24,11 @@ public abstract class AbstractWriterTest {
         }
 
         @Override
+        public Passphrase get(OwnedBy ownedBy) throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+            throw new IllegalStateException("Should not be called");
+        }
+
+        @Override
         public List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
             throw new IllegalStateException("Should not be called");
         }
@@ -32,6 +37,11 @@ public abstract class AbstractWriterTest {
         public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException {
             passphrases.put(ownedBy, passphrase);
             return passphrase;
+        }
+
+        @Override
+        public Passphrase update(OwnedBy ownedBy, Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
+            throw new IllegalStateException("Should not be called");
         }
     }
 

@@ -15,6 +15,9 @@ public final class Todo extends AggregateRoot<TodoId> {
     public static final OwnedBy OWNED_BY_USER_2 = OwnedBy.from(UserId.USER_2);
     public static final OwnedBy OWNED_BY_USER_3 = OwnedBy.from(UserId.USER_3);
     public static final OwnedBy OWNED_BY_USER_4 = OwnedBy.from(UserId.USER_4);
+    public static final OwnedBy OWNED_BY_USER_5 = OwnedBy.from(UserId.USER_5);
+    public static final OwnedBy OWNED_BY_USER_6 = OwnedBy.from(UserId.USER_6);
+    public static final OwnedBy OWNED_BY_USER_7 = OwnedBy.from(UserId.USER_7);
 
     public static final BelongsTo BELONGS_TO_USER_1 = BelongsTo.from(UserId.USER_1);
     public static final BelongsTo BELONGS_TO_USER_2 = BelongsTo.from(UserId.USER_2);

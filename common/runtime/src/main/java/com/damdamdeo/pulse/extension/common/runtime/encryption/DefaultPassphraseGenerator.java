@@ -29,6 +29,6 @@ public final class DefaultPassphraseGenerator implements PassphraseGenerator {
             passphrase[i] = CHARS.charAt(index);
         }
 
-        return new Passphrase(passphrase);
+        return Passphrase.ofValid(passphrase);
     }
 }
