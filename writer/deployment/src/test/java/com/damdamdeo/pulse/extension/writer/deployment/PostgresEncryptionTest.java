@@ -79,7 +79,7 @@ class PostgresEncryptionTest {
     // "\dx" lister les extensions
     // SELECT public.pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
     @Test
-    void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() throws UnableToRetrievePassphraseException, UnknownPassphraseException {
+    void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() throws DecryptionException {
         // Given
         byte[] encrypted;
         try (final Connection connection = dataSource.getConnection();

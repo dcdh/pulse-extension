@@ -10,11 +10,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(MockitoExtension.class)
 class OpenPGPDecryptionServiceTest {
@@ -32,10 +32,10 @@ class OpenPGPDecryptionServiceTest {
     }
 
     @Test
-    void shouldDecrypt() throws UnableToProvidePassphraseException {
+    void shouldDecrypt() throws DecryptionException, UnableToProvidePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
+        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
 
         // When
         final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1);
@@ -49,11 +49,15 @@ class OpenPGPDecryptionServiceTest {
     void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToProvidePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
-        doReturn(Optional.empty()).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
+        doThrow(new UnableToProvidePassphraseException(new PassphraseBannedException()))
+                .when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
 
         // When && Then
         assertThatThrownBy(() -> decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1))
-                .isExactlyInstanceOf(UnknownPassphraseException.class)
-                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
+                .isExactlyInstanceOf(DecryptionException.class)
+                .cause()
+                .isExactlyInstanceOf(UnableToProvidePassphraseException.class)
+                .cause()
+                .isExactlyInstanceOf(PassphraseBannedException.class);
     }
 }

@@ -55,14 +55,10 @@ public class MessagingConsumer {
             final DecryptedPayload decryptedPayload = decryptionService.decrypt(new EncryptedPayload(consumerRecord.value()), ownedBy);
             final Object payload = mapToObject(decryptedPayload.payload(), className);
             notifyEventProducer.fire(new NotifyEvent(eventName, payload, audience));
-        } catch (final UnknownPassphraseException unknownPassphraseException) {
-            LOGGER.fine("Unknown passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
         } catch (final DecryptionException decryptionException) {
             LOGGER.fine("Fail to decrypt for %s %s - notification will not be sent".formatted(ownedBy.id(), decryptionException.getMessage()));
         } catch (final UnableToDecodeException unableToDecodeException) {
             LOGGER.fine("Fail to decode for %s %s - notification will not be sent".formatted(ownedBy.id(), unableToDecodeException.getMessage()));
-        } catch (final UnableToRetrievePassphraseException unableToRetrievePassphraseException) {
-            LOGGER.fine("Fail to retrieve passphrase for %s - notification will not be sent".formatted(ownedBy.id()));
         }
     }
 

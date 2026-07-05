@@ -5,12 +5,16 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphrase
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.DefaultPassphraseProvider;
+import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
+import org.jboss.jandex.AnnotationTransformation;
+import org.jboss.jandex.DotName;
 
 import java.util.List;
 
@@ -26,6 +30,13 @@ public class EncryptionProcessor {
                 .setDefaultScope(DotNames.APPLICATION_SCOPED)
                 .setUnremovable()
                 .build();
+    }
+
+    @BuildStep
+    AnnotationsTransformerBuildItem defaultBeanTransformer() {
+        return new AnnotationsTransformerBuildItem(AnnotationTransformation.forClasses()
+                .whenClass(cl -> DotName.createSimple(DefaultPassphraseProvider.class).equals(cl.name()))
+                .transform(ctx -> ctx.add(DefaultBean.class)));
     }
 
     @BuildStep

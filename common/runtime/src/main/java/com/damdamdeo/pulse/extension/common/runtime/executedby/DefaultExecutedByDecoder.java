@@ -1,6 +1,9 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
-import com.damdamdeo.pulse.extension.core.encryption.*;
+import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
+import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
@@ -29,11 +32,7 @@ public class DefaultExecutedByDecoder implements ExecutedByDecoder {
             final DecryptedPayload decrypted = decryptionService.decrypt(new EncryptedPayload(Base64.decode(encoded)), ownedBy);
             return Optional.of(new String(decrypted.payload()));
         } catch (final DecryptionException decryptionException) {
-            throw new RuntimeException(decryptionException);
-        } catch (final UnknownPassphraseException unknownPassphraseException) {
-            return Optional.empty();
-        } catch (final UnableToRetrievePassphraseException unableToRetrievePassphraseException) {
-            throw new UnableToDecodeException(unableToRetrievePassphraseException);
+            throw new UnableToDecodeException(decryptionException);
         }
     }
 }

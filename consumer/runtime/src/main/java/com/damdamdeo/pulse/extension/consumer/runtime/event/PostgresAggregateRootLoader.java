@@ -70,7 +70,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                         try {
                             final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
                             decryptablePayload = DecryptablePayload.ofDecrypted(objectMapper.readTree(decryptedPayload.payload()));
-                        } catch (final UnknownPassphraseException unknownPassphraseException) {
+                        } catch (final DecryptionException decryptionException) {
                             decryptablePayload = DecryptablePayload.ofUndecryptable();
                         }
                         final BelongsTo belongsTo = new BelongsTo(rs.getString("belongs_to"));
@@ -84,7 +84,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                                 belongsTo);
                     }
                     throw new UnknownAggregateRootException(aggregateRootType, aggregateId);
-                } catch (final IOException | UnableToRetrievePassphraseException e) {
+                } catch (final IOException e) {
                     throw new AggregateRootLoaderException(aggregateRootType, aggregateId, e);
                 }
             }

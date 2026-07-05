@@ -77,10 +77,8 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
                     final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
                     final T decryptedAggregateRootPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
                     decryptableEventPayload = DecryptablePayload.ofDecrypted(decryptedAggregateRootPayload);
-                } catch (final UnknownPassphraseException unknownPassphraseException) {
+                } catch (final DecryptionException decryptionException) {
                     decryptableEventPayload = DecryptablePayload.ofUndecryptable();
-                } catch (final UnableToRetrievePassphraseException unableToRetrievePassphraseException) {
-                    throw new UnableToExecuteException(unableToRetrievePassphraseException);
                 }
                 synchronized (this) {
                     asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, encryptedPayload, ownedBy,

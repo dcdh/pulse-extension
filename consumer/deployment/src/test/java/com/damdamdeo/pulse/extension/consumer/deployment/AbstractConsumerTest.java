@@ -18,6 +18,8 @@ public abstract class AbstractConsumerTest {
         public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
             if (Todo.OWNED_BY_USER_1.equals(ownedBy)) {
                 return Optional.of(PassphraseSample.PASSPHRASE_1);
+            } else if (Todo.OWNED_BY_USER_2.equals(ownedBy)) {
+                return Optional.of(new Passphrase(null));
             } else {
                 return Optional.empty();
             }

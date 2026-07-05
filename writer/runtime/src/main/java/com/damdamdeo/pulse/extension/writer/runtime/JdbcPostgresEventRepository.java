@@ -146,8 +146,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                         eventClazzDiscovery.from(resultSet.getString("event_type")));
                         events.add(new ExecutedByEvent<>(event, executedBy));
                     }
-                } catch (ClassNotFoundException | IOException | UnableToDecodeException |
-                         UnableToRetrievePassphraseException | UnknownPassphraseException e) {
+                } catch (ClassNotFoundException | IOException | UnableToDecodeException | DecryptionException e) {
                     throw new EventStoreException(e);
                 }
                 return events;
@@ -183,8 +182,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                     eventClazzDiscovery.from(resultSet.getString("event_type")));
                     events.add(new ExecutedByEvent<>(event, executedBy));
                 }
-            } catch (ClassNotFoundException | IOException | UnableToDecodeException |
-                     UnableToRetrievePassphraseException | UnknownPassphraseException e) {
+            } catch (ClassNotFoundException | IOException | UnableToDecodeException | DecryptionException e) {
                 throw new EventStoreException(e);
             }
             return events;
@@ -217,7 +215,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 } else {
                     return Optional.empty();
                 }
-            } catch (IOException | UnableToRetrievePassphraseException | UnknownPassphraseException e) {
+            } catch (IOException | DecryptionException e) {
                 throw new EventStoreException(e);
             }
         } catch (final SQLException e) {

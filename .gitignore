@@ -107,3 +107,4 @@
 /writer/deployment/todo_taking_aggregates.sql
 /encryption-storage/deployment/compose-devservices-pulse.yml
 /encryption-storage/deployment/pulse-policy-policy.hcl
+/publisher/deployment/pulse_sequences_tables.sql

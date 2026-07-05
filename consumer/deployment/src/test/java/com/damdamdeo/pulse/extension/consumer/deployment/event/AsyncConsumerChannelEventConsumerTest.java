@@ -151,7 +151,7 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldConsumeEventWhenPassPhraseDoesNotExistsAnymore() throws UnableToEncodeException {
+    void shouldConsumeEventWhenPassPhraseIsBan() throws UnableToEncodeException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(

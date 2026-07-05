@@ -92,10 +92,8 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
                     final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
                     final T decryptedEventPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
                     decryptableEventPayload = DecryptablePayload.ofDecrypted(decryptedEventPayload);
-                } catch (final UnknownPassphraseException unknownPassphraseException) {
+                } catch (final DecryptionException decryptionException) {
                     decryptableEventPayload = DecryptablePayload.ofUndecryptable();
-                } catch (final UnableToRetrievePassphraseException unableToRetrievePassphraseException) {
-                    throw new UnableToExecuteException(unableToRetrievePassphraseException);
                 }
                 final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(fromApplication, aggregateRootType, aggregateId);
                 synchronized (this) {
