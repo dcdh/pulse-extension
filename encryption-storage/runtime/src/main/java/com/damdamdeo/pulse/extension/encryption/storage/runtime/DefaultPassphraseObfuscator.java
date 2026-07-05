@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.encryption.storage.runtime.vault;
+package com.damdamdeo.pulse.extension.encryption.storage.runtime;
 
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import io.quarkus.arc.DefaultBean;

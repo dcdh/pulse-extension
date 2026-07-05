@@ -1,8 +1,8 @@
 package com.damdamdeo.pulse.extension.encryption.storage.deployment;
 
-import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.DefaultPassphraseObfuscator;
-import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.JdbcPostgresPassphraseRepository;
-import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.VaultPassphraseRepository;
+import com.damdamdeo.pulse.extension.encryption.storage.runtime.DefaultPassphraseObfuscator;
+import com.damdamdeo.pulse.extension.encryption.storage.runtime.JdbcPostgresPassphraseRepository;
+import com.damdamdeo.pulse.extension.encryption.storage.runtime.VaultPassphraseRepository;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.ValidationPhaseBuildItem;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;

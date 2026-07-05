@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
-import com.damdamdeo.pulse.extension.encryption.storage.runtime.vault.VaultPassphraseRepository;
+import com.damdamdeo.pulse.extension.encryption.storage.runtime.VaultPassphraseRepository;
 import com.damdamdeo.pulse.extension.hasher.runtime.HasherProvider;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.vault.VaultKVSecretEngine;

@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.encryption.storage.runtime.vault;
+package com.damdamdeo.pulse.extension.encryption.storage.runtime;
 
 import org.apache.commons.lang3.Validate;
 
