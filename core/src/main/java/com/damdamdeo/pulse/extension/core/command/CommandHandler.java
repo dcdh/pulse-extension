@@ -86,7 +86,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     return aggregate;
                 });
             } catch (final SequenceGenerationException e) {
-                throw new RuntimeException(e);
+                throw new TechnicalException(e);
             }
         });
     }
