@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface EventRepository<A extends AggregateRoot<K>, K extends AggregateId> {
 
-    void save(List<VersionizedEvent<K>> events, AggregateRoot<K> aggregateRoot, ExecutedBy executed_by) throws EventStoreException;
+    void save(List<VersionizedEvent<K>> events, AggregateRoot<K> aggregateRoot, ExecutedBy executedBy) throws EventStoreException;
 
     List<ExecutedByEvent<K>> loadOrderByVersionASC(K id) throws EventStoreException;
 
