@@ -47,7 +47,7 @@ class QueryEventStoreTest {
         }
 
         @Override
-        public List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+        public List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
             throw new IllegalStateException("Should not be called");
         }
 

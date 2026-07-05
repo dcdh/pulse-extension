@@ -51,7 +51,7 @@ public final class VaultPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
-    public List<RetrievedPassphrase> retrieve(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+    public List<RetrievedPassphrase> list(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(multiples);
         final List<RetrievedPassphrase> retrievedPassphrases = new ArrayList<>(multiples.size());
         for (final OwnedBy ownedBy : multiples) {

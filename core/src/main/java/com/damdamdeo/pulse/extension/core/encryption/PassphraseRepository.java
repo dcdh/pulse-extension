@@ -9,7 +9,7 @@ public interface PassphraseRepository {
 
     Optional<Passphrase> retrieve(OwnedBy ownedBy) throws UnableToRetrievePassphraseException;
 
-    List<RetrievedPassphrase> retrieve(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException;
+    List<RetrievedPassphrase> list(List<OwnedBy> multiples) throws UnableToRetrievePassphraseException;
 
     Passphrase store(OwnedBy ownedBy, Passphrase passphrase) throws PassphraseAlreadyExistsException, UnableToStorePassphraseException;
 }

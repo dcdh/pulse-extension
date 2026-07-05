@@ -109,7 +109,7 @@ class VaultPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRetrieveMultiplesPassphrase() throws UnableToRetrievePassphraseException {
+    void shouldListPassphrase() throws UnableToRetrievePassphraseException {
         // Given
         vaultKVSecretEngine.writeSecret(SECRET_PATH_OWNED_BY_USER_1,
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
@@ -117,7 +117,7 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_2.passphrase())));
 
         // When
-        final List<RetrievedPassphrase> retrieved = vaultPassphraseRepository.retrieve(List.of(Todo.OWNED_BY_USER_1, Todo.OWNED_BY_USER_2, Todo.OWNED_BY_USER_3));
+        final List<RetrievedPassphrase> retrieved = vaultPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_1, Todo.OWNED_BY_USER_2, Todo.OWNED_BY_USER_3));
 
         // Then
         assertThat(retrieved).containsExactlyInAnyOrder(new RetrievedPassphrase(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1),

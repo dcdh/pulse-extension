@@ -45,7 +45,7 @@ class CachedPassphraseRepositoryTest {
         }
 
         @Override
-        public List<RetrievedPassphrase> retrieve(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+        public List<RetrievedPassphrase> list(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
             called.add("retrieve" + multiples.stream().map(OwnedBy::id).collect(Collectors.joining(",")));
             return multiples.stream().map(ownedBy -> new RetrievedPassphrase(ownedBy, stored.get(ownedBy))).toList();
         }
@@ -140,13 +140,13 @@ class CachedPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRetrieveMultiplesAfterStoringPutInCache() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+    void shouldListAfterStoringPutInCache() throws UnableToRetrievePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
         passphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
         cache.invalidateAll().await().indefinitely();
 
         // When
-        passphraseRepository.retrieve(List.of(Todo.OWNED_BY_USER_1, Todo.OWNED_BY_USER_2));
+        passphraseRepository.list(List.of(Todo.OWNED_BY_USER_1, Todo.OWNED_BY_USER_2));
 
         // Then
         assertAll(

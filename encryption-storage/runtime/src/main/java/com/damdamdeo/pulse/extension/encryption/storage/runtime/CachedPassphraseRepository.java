@@ -58,7 +58,7 @@ public class CachedPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
-    public List<RetrievedPassphrase> retrieve(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+    public List<RetrievedPassphrase> list(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(multiples);
         try {
             final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
@@ -73,7 +73,7 @@ public class CachedPassphraseRepository implements PassphraseRepository {
                 }
             }
             if (!missing.isEmpty()) {
-                final List<RetrievedPassphrase> retrievedPassphrasesFromDelegate = delegate.retrieve(missing);
+                final List<RetrievedPassphrase> retrievedPassphrasesFromDelegate = delegate.list(missing);
                 retrievedPassphrasesFromDelegate.forEach(retrievedPassphraseFromDelegate -> caffeineCache.put(retrievedPassphraseFromDelegate.ownedBy(),
                         CompletableFuture.completedFuture(retrievedPassphraseFromDelegate)));
                 retrievedPassphrases.addAll(retrievedPassphrasesFromDelegate);

@@ -67,7 +67,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
-    public List<RetrievedPassphrase> retrieve(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
+    public List<RetrievedPassphrase> list(final List<OwnedBy> multiples) throws UnableToRetrievePassphraseException {
         Objects.requireNonNull(multiples);
         final MasterKey masterKey = retrieveMasterKey();
         final Map<OwnedBy, RetrievedPassphrase> retrievedPassphrases = new HashMap<>(multiples.size());

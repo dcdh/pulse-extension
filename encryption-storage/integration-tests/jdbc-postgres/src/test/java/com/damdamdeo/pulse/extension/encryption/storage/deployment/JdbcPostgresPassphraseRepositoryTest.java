@@ -132,14 +132,14 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRetrieveMultiplesThrowTransactionalExceptionWhenNotExecutedInTransaction() {
-        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.retrieve(List.of(Todo.OWNED_BY_USER_1)))
+    void shouldListThrowTransactionalExceptionWhenNotExecutedInTransaction() {
+        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_1)))
                 .isExactlyInstanceOf(TransactionalException.class)
                 .hasMessage("ARJUNA016110: Transaction is required for invocation");
     }
 
     @Test
-    void shouldRetrieveMultiplesPassphrase() {
+    void shouldListPassphrase() {
         // Given
         QuarkusTransaction.requiringNew().call(() -> {
             jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
@@ -148,7 +148,7 @@ class JdbcPostgresPassphraseRepositoryTest {
         });
 
         // When
-        final List<RetrievedPassphrase> retrieved = QuarkusTransaction.joiningExisting().call(() -> jdbcPostgresPassphraseRepository.retrieve(List.of(Todo.OWNED_BY_USER_1, Todo.OWNED_BY_USER_2, Todo.OWNED_BY_USER_3)));
+        final List<RetrievedPassphrase> retrieved = QuarkusTransaction.joiningExisting().call(() -> jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_1, Todo.OWNED_BY_USER_2, Todo.OWNED_BY_USER_3)));
 
         // Then
         assertThat(retrieved).containsExactlyInAnyOrder(new RetrievedPassphrase(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1),
@@ -157,7 +157,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    void shouldRollbackTransactionWhenUnableToRetrieveMultiplesPassphraseExceptionIsThrown() {
+    void shouldRollbackTransactionWhenUnableToListPassphraseExceptionIsThrown() {
         // Given
         final List<Integer> counts = new ArrayList<>();
         final List<Integer> status = new ArrayList<>();
@@ -168,7 +168,7 @@ class JdbcPostgresPassphraseRepositoryTest {
             status.add(transactionManager.getStatus());
             expectedException.set(assertThatThrownBy(() ->
                     QuarkusTransaction.joiningExisting().call(() -> {
-                        jdbcPostgresPassphraseRepository.retrieve(List.of(Todo.OWNED_BY_USER_1));
+                        jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_1));
                         status.add(transactionManager.getStatus());
 
                         counts.add(count());
@@ -178,7 +178,7 @@ class JdbcPostgresPassphraseRepositoryTest {
                         } catch (SQLException e) {
                             // do nothing
                         }
-                        jdbcPostgresPassphraseRepository.retrieve(List.of(Todo.OWNED_BY_USER_1));
+                        jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_1));
                         throw new IllegalStateException("Should not reach this point");
                     })
             ));
