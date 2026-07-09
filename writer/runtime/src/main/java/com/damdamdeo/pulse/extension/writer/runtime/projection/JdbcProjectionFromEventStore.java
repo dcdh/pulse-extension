@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.projection.*;
+import com.damdamdeo.pulse.extension.core.query.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
@@ -76,6 +76,8 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
                     final String response = projectionResultSet.getString("response");
                     LOGGER.fine(response);
                     responses.add(
+                            FCK retourner le Result !
+                            FCK j'ai un objectmapper ... passer par celui - ci !!!
                             objectMapper.readValue(response, getProjectionClass()));
                 }
             } catch (final JsonProcessingException | SQLException e) {

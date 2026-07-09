@@ -6,10 +6,10 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToBanPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.projection.MultipleResultAggregateQuery;
-import com.damdamdeo.pulse.extension.core.projection.Projection;
-import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
-import com.damdamdeo.pulse.extension.core.projection.SingleResultAggregateQuery;
+import com.damdamdeo.pulse.extension.core.query.MultipleResultAggregateQuery;
+import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
+import com.damdamdeo.pulse.extension.core.query.SingleResultAggregateQuery;
 import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,6 +40,14 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
                           Status status,
                           boolean important,
                           List<TodoChecklistProjection> checklist) implements Projection {
+
+        @Override
+        public List<AggregateId> aggregateIds() {
+            final List<AggregateId> aggregateIds = new ArrayList<>(checklist.size() + 1);
+            aggregateIds.add(todoId);
+            checklist.stream().map(TodoChecklistProjection::todoChecklistId).forEach(aggregateIds::add);
+            return aggregateIds;
+        }
     }
 
     record TodoChecklistProjection(TodoChecklistId todoChecklistId, String description) {

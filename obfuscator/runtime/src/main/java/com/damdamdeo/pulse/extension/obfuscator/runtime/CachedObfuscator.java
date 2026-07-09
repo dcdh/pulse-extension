@@ -36,7 +36,7 @@ public class CachedObfuscator implements Obfuscator {
     public String obfuscate(final String value) throws UnableToObfuscateException {
         Objects.requireNonNull(value);
         final String obfuscated = delegate.obfuscate(value);
-        CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
+        final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
         caffeineCache.put(obfuscated, CompletableFuture.completedFuture(value));
         return obfuscated;
     }

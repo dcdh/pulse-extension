@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.projection;
+package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;

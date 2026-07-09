@@ -22,6 +22,7 @@
         <module>encryption-storage</module>
         <module>hasher</module>
         <module>bom</module>
+        <module>query</module>
         <module>integration-tests</module>
     </modules>
 

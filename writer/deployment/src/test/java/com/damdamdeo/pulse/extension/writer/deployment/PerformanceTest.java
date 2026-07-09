@@ -4,9 +4,9 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.projection.Projection;
-import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
-import com.damdamdeo.pulse.extension.core.projection.SingleResultAggregateQuery;
+import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
+import com.damdamdeo.pulse.extension.core.query.SingleResultAggregateQuery;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.context.api.ManagedExecutorConfig;
 import jakarta.inject.Inject;
@@ -59,6 +59,10 @@ class PerformanceTest extends AbstractWriterTest {
                           String description,
                           Status status,
                           boolean important) implements Projection {
+
+        public List<AggregateId> aggregateIds() {
+            return List.of(todoId);
+        }
     }
 
     public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {

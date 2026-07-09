@@ -3,8 +3,9 @@ package com.damdamdeo.pulse.extension.it.infra.query;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.projection.MultipleResultAggregateQuery;
-import com.damdamdeo.pulse.extension.core.projection.ProjectionFromEventStore;
+import com.damdamdeo.pulse.extension.core.query.MultipleResultAggregateQuery;
+import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
+import com.damdamdeo.pulse.extension.core.query.Query;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.lang3.Validate;
@@ -14,7 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
-public class TodoProjectionQuery {
+public class TodoProjectionQuery implements Query<> {
 
     @Inject
     ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
