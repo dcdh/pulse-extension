@@ -7,7 +7,7 @@ import com.damdamdeo.pulse.extension.core.command.Transaction;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.InternalQueryEventStore;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.projection.Projection;
+import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository;

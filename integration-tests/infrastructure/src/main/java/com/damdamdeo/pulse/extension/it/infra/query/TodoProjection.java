@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.it.infra.query;
 
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.projection.Projection;
+import com.damdamdeo.pulse.extension.core.query.Projection;
 
 import java.util.List;
 import java.util.Objects;
