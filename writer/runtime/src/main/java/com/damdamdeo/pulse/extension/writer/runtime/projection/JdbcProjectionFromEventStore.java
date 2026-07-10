@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.runtime.projection;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -14,10 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 
 public abstract class JdbcProjectionFromEventStore<P extends Projection> implements ProjectionFromEventStore<P> {
@@ -34,7 +32,7 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
     ObjectMapper objectMapper;
 
     @Override
-    public Optional<P> findBy(final OwnedBy ownedBy, final AggregateId aggregateId, final SingleResultAggregateQuery singleResultAggregateQuery) throws ProjectionException {
+    public Optional<Result<P>> findBy(final OwnedBy ownedBy, final AggregateId aggregateId, final SingleResultAggregateQuery singleResultAggregateQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateQuery);
@@ -47,9 +45,10 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
                 if (projectionResultSet.next()) {
                     final String response = projectionResultSet.getString("response");
                     LOGGER.fine(response);
-                    return Optional.of(
-                            objectMapper.readValue(response, getProjectionClass())
-                    );
+                    final P result = objectMapper.readValue(response, getProjectionClass());
+                    // TODO: Implement aggregateIds retrieval
+                    final Set<AnyAggregateId> aggregateIds = new HashSet<>();
+                    return Optional.of(Result.of(result, aggregateIds));
                 } else {
                     return Optional.empty();
                 }
@@ -62,7 +61,7 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
     }
 
     @Override
-    public List<P> findAll(final OwnedBy ownedBy, final MultipleResultAggregateQuery multipleResultAggregateQuery) throws ProjectionException {
+    public Result<P> findAll(final OwnedBy ownedBy, final MultipleResultAggregateQuery multipleResultAggregateQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(multipleResultAggregateQuery);
         try {
@@ -81,7 +80,9 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
             } catch (final JsonProcessingException | SQLException e) {
                 throw new ProjectionException(ownedBy, e);
             }
-            return responses;
+            // TODO: Implement aggregateIds retrieval
+            final Set<AnyAggregateId> aggregateIds = new HashSet<>();
+            return Result.of(responses, aggregateIds);
         } catch (UnableToProvidePassphraseException e) {
             throw new ProjectionException(ownedBy, e);
         }

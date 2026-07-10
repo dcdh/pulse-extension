@@ -18,13 +18,15 @@ package com.damdamdeo.pulse.extension.it.infra.api;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
 import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.connecteduser.registration.ConnectedUserAlreadyRegisteredException;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProviderException;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
+import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserUseCase;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
 import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
+import com.damdamdeo.pulse.extension.it.infra.query.ListTodos;
 import com.damdamdeo.pulse.extension.it.infra.query.TodoProjection;
 import com.damdamdeo.pulse.extension.it.infra.query.TodoProjectionQuery;
 import io.quarkus.security.Authenticated;
@@ -221,7 +223,7 @@ public class PulseExtensionResource {
     @GET
     @Path("/listConnectedUserTodos")
     @Authenticated
-    public List<TodoProjection> listConnectedUserTodos() throws ConnectionIdentifierProviderException, ConnectionIdentifierRepositoryException {
-        return todoProjectionQuery.getByConnectedUser();
+    public Result<TodoProjection> listConnectedUserTodos() throws QueryException {
+        return todoProjectionQuery.execute(new ListTodos());
     }
 }

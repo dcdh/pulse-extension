@@ -1,20 +1,21 @@
 package com.damdamdeo.pulse.extension.it.infra.query;
 
-import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProviderException;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.query.MultipleResultAggregateQuery;
-import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
+import com.damdamdeo.pulse.extension.core.query.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.lang3.Validate;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
-public class TodoProjectionQuery {
+public class TodoProjectionQuery implements Query<ListTodos, TodoProjection> {
 
     @Inject
     ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
@@ -65,9 +66,15 @@ public class TodoProjectionQuery {
                 """.formatted(new String(passphrase.passphrase()), ownedBy.id());
     };
 
-    public List<TodoProjection> getByConnectedUser() throws ConnectionIdentifierProviderException, ConnectionIdentifierRepositoryException {
-        Optional<Identifiable> identifiable = connectionIdentifierRepository.find(connectionIdentifierProvider.provide());
-        Validate.validState(identifiable.isPresent());
-        return todoProjectionProjectionFromEventStore.findAll(OwnedBy.from(identifiable.get()), multipleResultAggregateQuery);
+    @Override
+    public Result<TodoProjection> execute(final ListTodos input) throws QueryException {
+        Objects.requireNonNull(input);
+        try {
+            Optional<Identifiable> identifiable = connectionIdentifierRepository.find(connectionIdentifierProvider.provide());
+            Validate.validState(identifiable.isPresent());
+            return todoProjectionProjectionFromEventStore.findAll(OwnedBy.from(identifiable.get()), multipleResultAggregateQuery);
+        } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {
+            throw new QueryException(exception);
+        }
     }
 }

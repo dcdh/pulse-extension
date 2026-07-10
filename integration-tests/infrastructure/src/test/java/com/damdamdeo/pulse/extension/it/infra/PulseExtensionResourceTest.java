@@ -81,14 +81,20 @@ class PulseExtensionResourceTest {
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("size()", is(1))
-                .body("[0].todoId", matchesPattern(UUID_PATTERN))
-                .body("[0].description", is("lorem ipsum"))
-                .body("[0].status", is("IN_PROGRESS"))
-                .body("[0].important", is(false))
-                .body("[0].checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
-                .body("[0].checklist[0].description", is("Make it works !"))
-        ;
+                .body("projections.size()", is(1))
+                .body("projections[0].todoId", matchesPattern(UUID_PATTERN))
+                .body("projections[0].description", is("lorem ipsum"))
+                .body("projections[0].status", is("IN_PROGRESS"))
+                .body("projections[0].important", is(false))
+                .body("projections[0].checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
+                .body("projections[0].checklist[0].description", is("Make it works !"))
+                .body("first.todoId", matchesPattern(UUID_PATTERN))
+                .body("first.description", is("lorem ipsum"))
+                .body("first.status", is("IN_PROGRESS"))
+                .body("first.important", is(false))
+                .body("first.checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
+                .body("first.checklist[0].description", is("Make it works !"))
+                .body("aggregateIds.size()", is(0));
     }
 
     @Test

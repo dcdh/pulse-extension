@@ -6,10 +6,7 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToBanPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.query.MultipleResultAggregateQuery;
-import com.damdamdeo.pulse.extension.core.query.Projection;
-import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
-import com.damdamdeo.pulse.extension.core.query.SingleResultAggregateQuery;
+import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -20,10 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
@@ -196,22 +195,24 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
                 ), BOB);
 
         // When
-        final Optional<TodoProjection> foundBy = todoProjectionProjectionFromEventStore.findBy(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
+        final Optional<Result<TodoProjection>> foundBy = todoProjectionProjectionFromEventStore.findBy(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
 
         // Then
         assertThat(foundBy).isEqualTo(Optional.of(
-                new TodoProjection(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                        "IMPORTANT: pulse extension development",
-                        Status.IN_PROGRESS,
-                        true,
-                        List.of(
-                                new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
-                                        "Implement Projection feature"
+                Result.of(
+                        new TodoProjection(
+                                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                "IMPORTANT: pulse extension development",
+                                Status.IN_PROGRESS,
+                                true,
+                                List.of(
+                                        new TodoChecklistProjection(
+                                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                                "Implement Projection feature"
+                                        )
                                 )
-                        )
-                )
+                        ),
+                        new HashSet<>())
         ));
     }
 
@@ -221,12 +222,40 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
         // Given
 
         // When
-        List<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(Todo.OWNED_BY_USER_1,
+        final Result<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(Todo.OWNED_BY_USER_1,
                 new TodoProjectionMultipleResultAggregateQuery());
 
         // Then
-        assertThat(todos).containsExactly(
-                new TodoProjection(
+        assertAll(
+                () -> assertThat(todos.projections()).containsExactly(
+                        new TodoProjection(
+                                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                "IMPORTANT: pulse extension development",
+                                Status.IN_PROGRESS,
+                                true,
+                                List.of(
+                                        new TodoChecklistProjection(
+                                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                                "Implement Projection feature"
+                                        )
+                                )
+                        ),
+                        new TodoProjection(
+                                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
+                                "Organization vacancies",
+                                Status.IN_PROGRESS,
+                                false,
+                                List.of(
+                                        new TodoChecklistProjection(
+                                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                                "Go see family"
+                                        )
+                                )
+                        )
+                ),
+                () -> assertThat(todos.count()).isEqualTo(2),
+                () -> assertThat(todos.aggregateIds()).isEmpty(),
+                () -> assertThat(todos.getFirst()).isEqualTo(new TodoProjection(
                         new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                         "IMPORTANT: pulse extension development",
                         Status.IN_PROGRESS,
@@ -237,19 +266,7 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
                                         "Implement Projection feature"
                                 )
                         )
-                ),
-                new TodoProjection(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
-                        "Organization vacancies",
-                        Status.IN_PROGRESS,
-                        false,
-                        List.of(
-                                new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
-                                        "Go see family"
-                                )
-                        )
-                )
+                ))
         );
     }
 }
