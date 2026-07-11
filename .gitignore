@@ -113,3 +113,5 @@
 /query/deployment/pulse_sequences_tables.sql
 /query/deployment/todo_taking_aggregates.sql
 /query/deployment/quarkus-pulse-query-extension-deployment.iml
+/query/deployment/target/
+/query/runtime/target/
