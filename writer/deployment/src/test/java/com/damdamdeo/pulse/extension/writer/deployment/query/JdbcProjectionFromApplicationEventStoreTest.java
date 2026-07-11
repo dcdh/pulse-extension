@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.deployment.projection;
+package com.damdamdeo.pulse.extension.writer.deployment.query;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
@@ -17,9 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -33,14 +33,16 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties");
 
-    record TodoProjection(TodoId todoId,
-                          String description,
-                          Status status,
-                          boolean important,
-                          List<TodoChecklistProjection> checklist) implements Projection {
+    record TodoProjection(
+            TodoId todoId,
+            String description,
+            Status status,
+            boolean important,
+            List<TodoChecklistProjection> checklist) implements Projection {
     }
 
-    record TodoChecklistProjection(TodoChecklistId todoChecklistId, String description) {
+    record TodoChecklistProjection(
+            TodoChecklistId todoChecklistId, String description) {
     }
 
     public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
@@ -212,7 +214,8 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
                                         )
                                 )
                         ),
-                        new HashSet<>())
+                        Set.of(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)))
         ));
     }
 
@@ -254,7 +257,12 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
                         )
                 ),
                 () -> assertThat(todos.count()).isEqualTo(2),
-                () -> assertThat(todos.aggregateIds()).isEmpty(),
+                () -> assertThat(todos.aggregateIds()).containsExactlyInAnyOrder(
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
+                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1)
+                ),
                 () -> assertThat(todos.getFirst()).isEqualTo(new TodoProjection(
                         new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
                         "IMPORTANT: pulse extension development",

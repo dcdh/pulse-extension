@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository;
-import com.damdamdeo.pulse.extension.writer.runtime.projection.JdbcProjectionFromEventStore;
+import com.damdamdeo.pulse.extension.writer.runtime.query.JdbcProjectionFromEventStore;
 import io.quarkus.arc.All;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;

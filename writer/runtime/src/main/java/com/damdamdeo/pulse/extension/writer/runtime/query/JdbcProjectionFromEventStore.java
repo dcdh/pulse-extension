@@ -1,21 +1,24 @@
-package com.damdamdeo.pulse.extension.writer.runtime.projection;
+package com.damdamdeo.pulse.extension.writer.runtime.query;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import jakarta.inject.Inject;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public abstract class JdbcProjectionFromEventStore<P extends Projection> implements ProjectionFromEventStore<P> {
@@ -39,20 +42,20 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
         try {
             final String query = singleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
             LOGGER.fine(query);
+            final AggregateIdCollector collector = new AggregateIdCollector();
+            final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
                  final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
                 if (projectionResultSet.next()) {
                     final String response = projectionResultSet.getString("response");
                     LOGGER.fine(response);
-                    final P result = objectMapper.readValue(response, getProjectionClass());
-                    // TODO: Implement aggregateIds retrieval
-                    final Set<AnyAggregateId> aggregateIds = new HashSet<>();
-                    return Optional.of(Result.of(result, aggregateIds));
+                    final P result = reader.readValue(response, getProjectionClass());
+                    return Optional.of(Result.of(result, collector.aggregateId()));
                 } else {
                     return Optional.empty();
                 }
-            } catch (final JsonProcessingException | SQLException e) {
+            } catch (final IOException | SQLException e) {
                 throw new ProjectionException(ownedBy, aggregateId, e);
             }
         } catch (UnableToProvidePassphraseException e) {
@@ -67,6 +70,8 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
         try {
             final String query = multipleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), ownedBy);
             LOGGER.fine(query);
+            final AggregateIdCollector collector = new AggregateIdCollector();
+            final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
             final List<P> responses = new ArrayList<>();
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
@@ -75,14 +80,12 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
                     final String response = projectionResultSet.getString("response");
                     LOGGER.fine(response);
                     responses.add(
-                            objectMapper.readValue(response, getProjectionClass()));
+                            reader.readValue(response, getProjectionClass()));
                 }
-            } catch (final JsonProcessingException | SQLException e) {
+            } catch (final IOException | SQLException e) {
                 throw new ProjectionException(ownedBy, e);
             }
-            // TODO: Implement aggregateIds retrieval
-            final Set<AnyAggregateId> aggregateIds = new HashSet<>();
-            return Result.of(responses, aggregateIds);
+            return Result.of(responses, collector.aggregateId());
         } catch (UnableToProvidePassphraseException e) {
             throw new ProjectionException(ownedBy, e);
         }
