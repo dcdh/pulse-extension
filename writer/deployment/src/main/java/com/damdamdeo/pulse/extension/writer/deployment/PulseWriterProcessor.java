@@ -20,7 +20,6 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class PulseWriterProcessor {
 
@@ -61,7 +60,7 @@ public class PulseWriterProcessor {
                         DO $MAIN$
                         BEGIN
                         
-                          CREATE TABLE %1$s.sequences (
+                          CREATE TABLE IF NOT EXISTS %1$s.sequences (
                             owned_by character varying(255) not null,
                             identifiable_clazz character varying(255) not null,
                             belongs_to character varying(255) not null,

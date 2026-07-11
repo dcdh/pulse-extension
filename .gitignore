@@ -108,3 +108,8 @@
 /encryption-storage/deployment/compose-devservices-pulse.yml
 /encryption-storage/deployment/pulse-policy-policy.hcl
 /publisher/deployment/pulse_sequences_tables.sql
+/query/deployment/compose-devservices-pulse.yml
+/query/deployment/pulse_passphrase.sql
+/query/deployment/pulse_sequences_tables.sql
+/query/deployment/todo_taking_aggregates.sql
+/query/deployment/quarkus-pulse-query-extension-deployment.iml

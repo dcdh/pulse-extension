@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.runtime.query;
+package com.damdamdeo.pulse.extension.query.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 

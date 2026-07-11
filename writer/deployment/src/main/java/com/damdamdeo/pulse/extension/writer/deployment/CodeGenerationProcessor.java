@@ -7,11 +7,9 @@ import com.damdamdeo.pulse.extension.core.command.Transaction;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.event.InternalQueryEventStore;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import com.damdamdeo.pulse.extension.writer.deployment.items.AggregateRootBuildItem;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresEventRepository;
-import com.damdamdeo.pulse.extension.writer.runtime.query.JdbcProjectionFromEventStore;
 import io.quarkus.arc.All;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -19,7 +17,6 @@ import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
 import jakarta.inject.Singleton;
@@ -203,42 +200,5 @@ public class CodeGenerationProcessor {
                 writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
             }
         });
-    }
-
-    @BuildStep
-    void generateJdbcProjectionFromEventStore(final CombinedIndexBuildItem combinedIndexBuildItem,
-                                              final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
-                                              final OutputTargetBuildItem outputTargetBuildItem) {
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementations(Projection.class)
-                .forEach(projectionClassInfo -> {
-                    try {
-                        final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
-                        try (final ClassCreator beanClassCreator = ClassCreator.builder()
-                                .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
-                                .className(projectionClass.getName().replaceAll("\\$", "_") + "JdbcProjectionFromEventStore")
-                                .signature(SignatureBuilder.forClass()
-                                        .setSuperClass(
-                                                Type.parameterizedType(
-                                                        Type.classType(JdbcProjectionFromEventStore.class),
-                                                        Type.classType(projectionClass))))
-                                .setFinal(true)
-                                .build()) {
-                            beanClassCreator.addAnnotation(Singleton.class);
-                            beanClassCreator.addAnnotation(Unremovable.class);
-                            beanClassCreator.addAnnotation(DefaultBean.class);
-
-                            try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
-                                getAggregateClass.setModifiers(Modifier.PROTECTED);
-                                getAggregateClass.returnValue(getAggregateClass.loadClass(projectionClass));
-                            }
-
-                            writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
-                        }
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
     }
 }

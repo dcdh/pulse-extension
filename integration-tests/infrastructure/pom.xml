@@ -36,6 +36,10 @@
         </dependency>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-query-extension</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-obfuscator-extension</artifactId>
         </dependency>
         <!-- /pulse extensions -->

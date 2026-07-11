@@ -1,8 +1,8 @@
-package com.damdamdeo.pulse.extension.writer.deployment;
+package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
-import com.damdamdeo.pulse.extension.writer.runtime.query.AggregateIdDeserializer;
+import com.damdamdeo.pulse.extension.query.runtime.AggregateIdDeserializer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -16,7 +16,7 @@ import java.util.*;
 
 import static org.objectweb.asm.Type.getType;
 
-public class QueryProcessor {
+public class JacksonProcessor {
 
     private static final DotName PROJECTION = DotName.createSimple(Projection.class);
     private static final DotName AGGREGATE_ID = DotName.createSimple(AggregateId.class);

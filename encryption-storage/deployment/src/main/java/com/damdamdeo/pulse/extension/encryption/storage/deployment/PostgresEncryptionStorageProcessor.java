@@ -29,7 +29,7 @@ public class PostgresEncryptionStorageProcessor {
                             """
                                     CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
                                     CREATE SCHEMA IF NOT EXISTS %1$s;
-                                    CREATE TABLE %1$s.passphrase (
+                                    CREATE TABLE IF NOT EXISTS %1$s.passphrase (
                                         owned_by_hashed VARCHAR(255) PRIMARY KEY,
                                         passphrase bytea
                                     );

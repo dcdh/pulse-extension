@@ -99,7 +99,7 @@ public class ConnectionIdentifierProcessor {
                             // language=sql
                             """
                                     CREATE SCHEMA IF NOT EXISTS %1$s;
-                                    CREATE TABLE %1$s.connection_identifier (
+                                    CREATE TABLE IF NOT EXISTS %1$s.connection_identifier (
                                         connection_identifier_hash varchar(64) NOT NULL,
                                         identifiable_id varchar(255) NOT NULL,
                                         CONSTRAINT connection_identifier_hash_unique

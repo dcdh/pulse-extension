@@ -1,15 +1,14 @@
-package com.damdamdeo.pulse.extension.writer.deployment.query;
+package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
-import com.damdamdeo.pulse.extension.core.encryption.UnableToBanPassphraseException;
-import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
-import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
+import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
 import io.quarkus.test.QuarkusUnitTest;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -25,12 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
+class JdbcProjectionFromApplicationEventStoreTest {
 
     private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(StubPassphraseProvider.class))
             .withConfigurationResource("application.properties");
 
     record TodoProjection(
@@ -128,73 +128,71 @@ class JdbcProjectionFromApplicationEventStoreTest extends AbstractWriterTest {
     }
 
     @Inject
-    EventRepository<Todo, TodoId> todoEventRepository;
-
-    @Inject
-    EventRepository<TodoChecklist, TodoChecklistId> todoChecklistEventRepository;
-
-    @Inject
     ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
 
-    @ApplicationScoped
-    static class StubPassphraseProvider implements PassphraseProvider {
-
-        @Override
-        public Passphrase provide(final OwnedBy ownedBy) {
-            return PassphraseSample.PASSPHRASE_1;
-        }
-
-        @Override
-        public Passphrase ban(final OwnedBy ownedBy) throws UnableToBanPassphraseException {
-            throw new IllegalStateException("Should not be called");
-        }
-    }
+    @Inject
+    EventTestRepository eventTestRepository;
 
     @Test
     @Order(1)
     void shouldFindBy() {
         // Given
-        todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new ExecutedByEvent<>(new NewTodoCreated("IMPORTANT: pulse extension development"), ExecutedBy.NotAvailable.INSTANCE))),
-                new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                        "IMPORTANT: pulse extension development",
-                        Status.IN_PROGRESS,
-                        true
-                ), BOB);
-        todoChecklistEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new ExecutedByEvent<>(new TodoItemAdded("Implement Projection feature"), ExecutedBy.NotAvailable.INSTANCE))),
-                new TodoChecklist(
-                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
-                        "Implement Projection feature"
-                ), BOB);
-        todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new ExecutedByEvent<>(new NewTodoCreated("Organization vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
-                new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
-                        "Organization vacancies",
-                        Status.IN_PROGRESS,
-                        false
-                ), BOB);
-        todoChecklistEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new ExecutedByEvent<>(new TodoItemAdded("Go see family"), ExecutedBy.NotAvailable.INSTANCE))),
-                new TodoChecklist(
-                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
-                        "Go see family"
-                ), BOB);
-        todoEventRepository.save(List.of(
-                        new VersionizedEvent<>(new AggregateVersion(0),
-                                new ExecutedByEvent<>(new NewTodoCreated("Bob vacancies"), ExecutedBy.NotAvailable.INSTANCE))),
-                new Todo(
-                        new TodoId(UserId.USER_2, TodoId.SEQUENCE_NUMBER_1),
-                        "Bob vacancies",
-                        Status.IN_PROGRESS,
-                        false
-                ), BOB);
+        {
+            final Todo todo = new Todo(
+                    new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                    "IMPORTANT: pulse extension development",
+                    Status.IN_PROGRESS,
+                    true);
+            eventTestRepository.insert(
+                    new NewTodoCreated("IMPORTANT: pulse extension development"),
+                    todo,
+                    todo.ownedBy(),
+                    BOB);
+        }
+        {
+            final TodoChecklist todoChecklist = new TodoChecklist(
+                    new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                    "Implement Projection feature");
+            eventTestRepository.insert(
+                    new TodoItemAdded("Implement Projection feature"),
+                    todoChecklist,
+                    todoChecklist.ownedBy(),
+                    BOB);
+        }
+        {
+            final Todo todo = new Todo(
+                    new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
+                    "Organization vacancies",
+                    Status.IN_PROGRESS,
+                    false);
+            eventTestRepository.insert(
+                    new NewTodoCreated("Organization vacancies"),
+                    todo,
+                    todo.ownedBy(),
+                    BOB);
+        }
+        {
+            final TodoChecklist todoChecklist = new TodoChecklist(
+                    new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
+                    "Go see family");
+            eventTestRepository.insert(
+                    new TodoItemAdded("Go see family"),
+                    todoChecklist,
+                    todoChecklist.ownedBy(),
+                    BOB);
+        }
+        {
+            final Todo todo = new Todo(
+                    new TodoId(UserId.USER_2, TodoId.SEQUENCE_NUMBER_1),
+                    "Bob vacancies",
+                    Status.IN_PROGRESS,
+                    false);
+            eventTestRepository.insert(
+                    new NewTodoCreated("Bob vacancies"),
+                    todo,
+                    todo.ownedBy(),
+                    BOB);
+        }
 
         // When
         final Optional<Result<TodoProjection>> foundBy = todoProjectionProjectionFromEventStore.findBy(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());

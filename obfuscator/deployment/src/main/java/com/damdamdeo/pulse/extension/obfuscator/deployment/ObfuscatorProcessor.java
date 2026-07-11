@@ -63,13 +63,13 @@ public class ObfuscatorProcessor {
                             // language=sql
                             """
                                     CREATE SCHEMA IF NOT EXISTS %1$s;
-                                    CREATE TABLE %1$s.obfuscator (
+                                    CREATE TABLE IF NOT EXISTS %1$s.obfuscator (
                                         original   TEXT NOT NULL,
                                         obfuscated UUID NOT NULL,
                                         CONSTRAINT obfuscator_original_unique UNIQUE (original)
                                     );
-                                    CREATE INDEX idx_obfuscator_original ON %1$s.obfuscator (original);
-                                    CREATE INDEX idx_obfuscator_obfuscated ON %1$s.obfuscator (obfuscated);
+                                    CREATE INDEX IF NOT EXISTS idx_obfuscator_original ON %1$s.obfuscator (original);
+                                    CREATE INDEX IF NOT EXISTS idx_obfuscator_obfuscated ON %1$s.obfuscator (obfuscated);
                                     """.formatted(schemaName).getBytes(StandardCharsets.UTF_8), "sql")));
         }
     }

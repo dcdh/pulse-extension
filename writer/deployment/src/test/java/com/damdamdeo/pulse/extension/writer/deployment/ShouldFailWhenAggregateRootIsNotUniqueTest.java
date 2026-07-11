@@ -20,7 +20,7 @@ public class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTe
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()
                     .rootCause()
-                    .hasMessage("AggregateRoot 'TodoAggregateRoot' declared more than once '2'")
+                    .hasMessage("AggregateRoot 'Todo' declared more than once '2'")
                     .hasNoSuppressedExceptions());
 
     @Test
@@ -30,9 +30,9 @@ public class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTe
 
     public static class PackageOne {
 
-        public static final class TodoAggregateRoot extends AggregateRoot<TodoId> {
+        public static final class Todo extends AggregateRoot<TodoId> {
 
-            public TodoAggregateRoot(final TodoId id) {
+            public Todo(final TodoId id) {
                 super(id);
             }
 
@@ -50,9 +50,9 @@ public class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTe
 
     public static class PackageTwo {
 
-        public static final class TodoAggregateRoot extends AggregateRoot<TodoId> {
+        public static final class Todo extends AggregateRoot<TodoId> {
 
-            TodoAggregateRoot(final TodoId id) {
+            Todo(final TodoId id) {
                 super(id);
             }
 
