@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -13,6 +14,7 @@ public abstract class GuardQuery<I, P extends Projection> implements Query<I, P>
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;
     private final ExecutedByResolver executedByResolver;
+    private final AggregateIdDecomposer aggregateIdDecomposer;
     private final Query<I, P> decorated;
 
     public GuardQuery(final ExecutionContextProvider executionContextProvider,
@@ -22,6 +24,7 @@ public abstract class GuardQuery<I, P extends Projection> implements Query<I, P>
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.backendUserVisibilityRolesProvider = Objects.requireNonNull(backendUserVisibilityRolesProvider);
         this.executedByResolver = Objects.requireNonNull(executedByResolver);
+        this.aggregateIdDecomposer = new AggregateIdDecomposer();
         this.decorated = Objects.requireNonNull(decorated);
     }
 
@@ -42,7 +45,8 @@ public abstract class GuardQuery<I, P extends Projection> implements Query<I, P>
                 }
                 case IN_EXECUTED_BY -> {
                     final Result<P> executed = decorated.execute(input);
-                    final Set<ExecutedBy> executedByEligibles = executedByResolver.resolve(executed.aggregateIds());
+                    final Set<AggregateId> uncompounded = aggregateIdDecomposer.unCompound(executed.aggregateIds());
+                    final Set<ExecutedBy> executedByEligibles = executedByResolver.resolve(uncompounded);
                     final ExecutionContext executionContext = executionContextProvider.provide();
                     if (executedByEligibles.contains(executionContext.executedBy())) {
                         yield executed;
