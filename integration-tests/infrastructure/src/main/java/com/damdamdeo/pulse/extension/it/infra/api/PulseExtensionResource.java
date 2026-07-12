@@ -24,9 +24,10 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserUseCase;
+import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
 import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
-import com.damdamdeo.pulse.extension.it.infra.query.ListTodos;
+import com.damdamdeo.pulse.extension.it.infra.query.FailingProjectionQuery;
 import com.damdamdeo.pulse.extension.it.infra.query.TodoProjection;
 import com.damdamdeo.pulse.extension.it.infra.query.TodoProjectionQuery;
 import io.quarkus.security.Authenticated;
@@ -66,6 +67,9 @@ public class PulseExtensionResource {
 
     @Inject
     TodoProjectionQuery todoProjectionQuery;
+
+    @Inject
+    FailingProjectionQuery failingProjectionQuery;
 
     @Inject
     DataSource dataSource;
@@ -225,5 +229,11 @@ public class PulseExtensionResource {
     @Authenticated
     public Result<TodoProjection> listConnectedUserTodos() throws QueryException {
         return todoProjectionQuery.execute(new ListTodos());
+    }
+
+    @GET
+    @Path("/failingProjectionQuery")
+    public Result<TodoProjection> failingProjectionQuery() throws QueryException {
+        return failingProjectionQuery.execute(new ListTodos());
     }
 }

@@ -30,20 +30,9 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot(javaArchive -> javaArchive.addClasses(StubPassphraseProvider.class))
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(StubPassphraseProvider.class,
+                    TodoProjection.class, TodoChecklistProjection.class))
             .withConfigurationResource("application.properties");
-
-    record TodoProjection(
-            TodoId todoId,
-            String description,
-            Status status,
-            boolean important,
-            List<TodoChecklistProjection> checklist) implements Projection {
-    }
-
-    record TodoChecklistProjection(
-            TodoChecklistId todoChecklistId, String description) {
-    }
 
     public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
 

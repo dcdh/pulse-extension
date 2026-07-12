@@ -151,6 +151,22 @@ class PulseExtensionResourceTest {
                 .body("aggregateRootLoaded.belongsTo.id", equalTo("U000001"));
     }
 
+    @Test
+    @Order(4)
+    void shouldExecuteFailingProjectionQueryReturnExpectedFailFromExceptionMapper() {
+        // Given
+
+        // When && Then
+        given()
+                .when().get("/pulse-extension/failingProjectionQuery")
+                .then()
+                .log().all()
+                .statusCode(409)
+                .body("status", equalTo(409))
+                .body("title", equalTo("Conflict"))
+                .body("instance", equalTo("/pulse-extension/failingProjectionQuery"));
+    }
+
     private String getAccessToken() {
         final String authServerUrl = ConfigProvider.getConfig().getValue("quarkus.oidc.auth-server-url", String.class);
         final String clientId = ConfigProvider.getConfig().getValue("quarkus.oidc.client-id", String.class);

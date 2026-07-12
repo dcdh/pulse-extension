@@ -7,10 +7,12 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.lang3.Validate;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -76,5 +78,10 @@ public class TodoProjectionQuery implements Query<ListTodos, TodoProjection> {
         } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {
             throw new QueryException(exception);
         }
+    }
+
+    @Override
+    public List<Audience> audiences() {
+        return List.of(Audience.EVERYONE);
     }
 }
