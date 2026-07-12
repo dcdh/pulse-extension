@@ -20,8 +20,8 @@ public class DatabaseProcessor {
                                             final LaunchModeBuildItem launchModeBuildItem,
                                             final ApplicationInfoBuildItem applicationInfoBuildItem,
                                             final BuildProducer<AdditionalVolumeBuildItem> additionalVolumeBuildItemBuildProducer) {
+        final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
         if (launchModeBuildItem.getLaunchMode().isDevOrTest() && shouldGenerate(capabilities)) {
-            final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
             // TODO find a way to to mutualization with write extension
             final String aggregates =
                     // language=sql
@@ -191,6 +191,53 @@ public class DatabaseProcessor {
                     new ComposeServiceBuildItem.Volume("./%s_aggregates.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregates.sql".formatted(schemaName),
                             aggregates.getBytes(StandardCharsets.UTF_8), "sql")));
         }
+        // language=sql
+        final String query = """
+                CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+                CREATE SCHEMA IF NOT EXISTS %1$s;
+                CREATE TABLE IF NOT EXISTS %1$s.aggregate_executed_by (
+                    aggregate_root_id character varying(255) not null,
+                    executed_by character varying(255) not null,
+                    owned_by character varying(255) not null,
+                    PRIMARY KEY (aggregate_root_id, executed_by)
+                );
+                
+                --------------------------------------------------------------------------
+                -- insert_aggregate_executed_by
+                --------------------------------------------------------------------------
+                CREATE OR REPLACE FUNCTION %1$s.insert_aggregate_executed_by()
+                RETURNS trigger
+                LANGUAGE plpgsql
+                AS $_$
+                BEGIN
+                    INSERT INTO %1$s.aggregate_executed_by (
+                        aggregate_root_id,
+                        executed_by,
+                        owned_by
+                    )
+                    VALUES (
+                        NEW.aggregate_root_id,
+                        NEW.executed_by,
+                        NEW.owned_by
+                    )
+                    ON CONFLICT (aggregate_root_id, executed_by) DO NOTHING;
+                
+                    RETURN NEW;
+                END;
+                $_$;
+                
+                DROP TRIGGER IF EXISTS trg_insert_aggregate_executed_by ON %1$s.event;
+                
+                CREATE TRIGGER trg_insert_aggregate_executed_by
+                AFTER INSERT
+                ON %1$s.event
+                FOR EACH ROW
+                EXECUTE FUNCTION %1$s.insert_aggregate_executed_by();
+                """.formatted(schemaName);
+        additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
+                new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
+                new ComposeServiceBuildItem.Volume("./%s_query.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_query.sql".formatted(schemaName),
+                        query.getBytes(StandardCharsets.UTF_8), "sql")));
     }
 
     public static boolean shouldGenerate(final Capabilities capabilities) {

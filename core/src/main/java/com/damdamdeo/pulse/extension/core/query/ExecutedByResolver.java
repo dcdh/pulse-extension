@@ -7,5 +7,5 @@ import java.util.Set;
 
 public interface ExecutedByResolver {
 
-    Set<ExecutedBy> resolve(Set<AggregateId> aggregatesId);
+    Set<ExecutedBy> resolve(Set<AggregateId> aggregatesId) throws UnableToResolveException;
 }

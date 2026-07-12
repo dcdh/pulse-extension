@@ -191,7 +191,7 @@ class GuardQueryTest {
     }
 
     @Test
-    void shouldThrowQueryExceptionWhenNoAudienceAllowsExecution() throws QueryException {
+    void shouldThrowQueryExceptionWhenNoAudienceAllowsExecution() throws QueryException, UnableToResolveException {
         // Given
         final ExecutionContext context = new ExecutionContext(BOB, Set.of());
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());

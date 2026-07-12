@@ -44,14 +44,18 @@ public abstract class GuardQuery<I, P extends Projection> implements Query<I, P>
                     yield null;
                 }
                 case IN_EXECUTED_BY -> {
-                    final Result<P> executed = decorated.execute(input);
-                    final Set<AggregateId> uncompounded = aggregateIdDecomposer.unCompound(executed.aggregateIds());
-                    final Set<ExecutedBy> executedByEligibles = executedByResolver.resolve(uncompounded);
-                    final ExecutionContext executionContext = executionContextProvider.provide();
-                    if (executedByEligibles.contains(executionContext.executedBy())) {
-                        yield executed;
+                    try {
+                        final Result<P> executed = decorated.execute(input);
+                        final Set<AggregateId> uncompounded = aggregateIdDecomposer.unCompound(executed.aggregateIds());
+                        final Set<ExecutedBy> executedByEligibles = executedByResolver.resolve(uncompounded);
+                        final ExecutionContext executionContext = executionContextProvider.provide();
+                        if (executedByEligibles.contains(executionContext.executedBy())) {
+                            yield executed;
+                        }
+                        yield null;
+                    } catch (final UnableToResolveException e) {
+                        throw new QueryException(e);
                     }
-                    yield null;
                 }
             };
             if (result != null) {
