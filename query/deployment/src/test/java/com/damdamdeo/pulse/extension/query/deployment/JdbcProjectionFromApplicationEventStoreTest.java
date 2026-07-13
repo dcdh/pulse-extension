@@ -121,7 +121,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
     @Inject
     EventTestRepository eventTestRepository;
-
+// FCK prio 1
     @Test
     @Order(1)
     void shouldFindBy() {

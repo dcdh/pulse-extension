@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.it.infra.query;
+package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 

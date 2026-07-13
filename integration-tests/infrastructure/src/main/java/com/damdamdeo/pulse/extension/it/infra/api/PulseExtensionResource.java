@@ -22,13 +22,13 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.Result;
+import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserUseCase;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
 import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
 import com.damdamdeo.pulse.extension.it.infra.query.FailingProjectionQuery;
-import com.damdamdeo.pulse.extension.it.infra.query.TodoProjection;
 import com.damdamdeo.pulse.extension.it.infra.query.TodoProjectionQuery;
 import io.quarkus.security.Authenticated;
 import io.quarkus.vault.VaultKVSecretEngine;

@@ -4,6 +4,8 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.query.TodoChecklistProjection;
+import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import com.damdamdeo.pulse.extension.query.runtime.JdbcPostgresExecutedByResolver;
 import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
