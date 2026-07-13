@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoId;
 
@@ -18,5 +19,10 @@ public record TodoProjection(TodoId todoId,
         Objects.requireNonNull(status);
         Objects.requireNonNull(important);
         Objects.requireNonNull(checklist);
+    }
+
+    @Override
+    public AggregateId id() {
+        return todoId;
     }
 }
