@@ -115,3 +115,5 @@
 /query/deployment/quarkus-pulse-query-extension-deployment.iml
 /query/deployment/target/
 /query/runtime/target/
+/query/deployment/todo_taking_query.sql
+/integration-tests/infrastructure/todo_taking_query.sql
