@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
+import com.damdamdeo.pulse.extension.core.query.SampleInput;
 import com.damdamdeo.pulse.extension.core.query.SingleResultAggregateQuery;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import io.quarkus.test.QuarkusUnitTest;
@@ -47,7 +48,7 @@ class PerformanceTest extends AbstractWriterTest {
     EventRepository<Todo, TodoId> todoEventRepository;
 
     @Inject
-    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<SampleInput, TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     DataSource dataSource;
@@ -55,10 +56,10 @@ class PerformanceTest extends AbstractWriterTest {
     @Inject
     SequenceGenerator sequenceGenerator;
 
-    public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
+    public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery<SampleInput> {
 
         @Override
-        public String query(final Passphrase passphrase, final AggregateId aggregateId) {
+        public String query(final Passphrase passphrase, final AggregateId aggregateId, final SampleInput input) {
             // language=sql
             return """
                     WITH decrypted AS (
@@ -101,10 +102,10 @@ class PerformanceTest extends AbstractWriterTest {
 
     private static final class FindByTaskSupplier implements Supplier<Long> {
 
-        private final ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+        private final ProjectionFromEventStore<SampleInput, TodoProjection> todoProjectionProjectionFromEventStore;
         private final SequenceGenerator sequenceGenerator;
 
-        private FindByTaskSupplier(final ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore,
+        private FindByTaskSupplier(final ProjectionFromEventStore<SampleInput, TodoProjection> todoProjectionProjectionFromEventStore,
                                    final SequenceGenerator sequenceGenerator) {
             this.todoProjectionProjectionFromEventStore = Objects.requireNonNull(todoProjectionProjectionFromEventStore);
             this.sequenceGenerator = Objects.requireNonNull(sequenceGenerator);
@@ -115,7 +116,7 @@ class PerformanceTest extends AbstractWriterTest {
             try {
                 final Instant start = Instant.now();
                 final SequenceNumber sequenceNumber = sequenceGenerator.nextFor(TodoId.class);
-                todoProjectionProjectionFromEventStore.findBy(OwnedBy.from(new TodoId(UserId.USER_1, sequenceNumber)), new TodoId(UserId.USER_1, sequenceNumber), new TodoProjectionSingleResultAggregateQuery());
+                todoProjectionProjectionFromEventStore.findBy(OwnedBy.from(new TodoId(UserId.USER_1, sequenceNumber)), new TodoId(UserId.USER_1, sequenceNumber), new SampleInput(), new TodoProjectionSingleResultAggregateQuery());
                 return Duration.between(start, Instant.now()).toMillis();
             } catch (SequenceGenerationException e) {
                 throw new RuntimeException(e);

@@ -1,4 +1,6 @@
 package com.damdamdeo.pulse.extension.it.domain;
 
-public record ListTodos() {
+import com.damdamdeo.pulse.extension.core.query.Input;
+
+public record ListTodos() implements Input {
 }

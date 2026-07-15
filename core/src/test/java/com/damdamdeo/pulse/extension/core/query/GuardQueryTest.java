@@ -32,9 +32,9 @@ class GuardQueryTest {
     ExecutedByResolver executedByResolver;
 
     @Mock
-    Query<String, TestProjection> decorated;
+    Query<SampleInput, TestProjection> decorated;
 
-    GuardQuery<String, TestProjection> guardQuery;
+    GuardQuery<SampleInput, TestProjection> guardQuery;
 
     @BeforeEach
     void setUp() {
@@ -52,15 +52,15 @@ class GuardQueryTest {
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
 
         when(decorated.audiences()).thenReturn(List.of(Audience.EVERYONE));
-        when(decorated.execute("input")).thenReturn(expected);
+        when(decorated.execute(new SampleInput())).thenReturn(expected);
 
         // When
-        final Result<TestProjection> actual = guardQuery.execute("input");
+        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
 
         // Then
         assertAll(
                 () -> Assertions.assertSame(expected, actual),
-                () -> verify(decorated).execute("input"),
+                () -> verify(decorated).execute(new SampleInput()),
                 () -> verifyNoInteractions(
                         executionContextProvider,
                         backendUserVisibilityRolesProvider,
@@ -78,10 +78,10 @@ class GuardQueryTest {
         when(decorated.audiences()).thenReturn(List.of(Audience.ROLE_RESTRICTED));
         when(executionContextProvider.provide()).thenReturn(context);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
-        when(decorated.execute("input")).thenReturn(expected);
+        when(decorated.execute(new SampleInput())).thenReturn(expected);
 
         // When
-        final Result<TestProjection> actual = guardQuery.execute("input");
+        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
 
         // Then
         assertAll(
@@ -104,7 +104,7 @@ class GuardQueryTest {
         // When
         final QueryException exception = Assertions.assertThrows(
                 QueryException.class,
-                () -> guardQuery.execute("input")
+                () -> guardQuery.execute(new SampleInput())
         );
 
         // Then
@@ -124,12 +124,12 @@ class GuardQueryTest {
         final ExecutionContext context = new ExecutionContext(BOB, Set.of());
 
         when(decorated.audiences()).thenReturn(List.of(Audience.IN_EXECUTED_BY));
-        when(decorated.execute("input")).thenReturn(expected);
+        when(decorated.execute(new SampleInput())).thenReturn(expected);
         when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of(BOB));
         when(executionContextProvider.provide()).thenReturn(context);
 
         // When
-        final Result<TestProjection> actual = guardQuery.execute("input");
+        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
 
         // Then
         assertAll(
@@ -147,14 +147,14 @@ class GuardQueryTest {
         final ExecutionContext context = new ExecutionContext(BOB, Set.of());
 
         when(decorated.audiences()).thenReturn(List.of(Audience.IN_EXECUTED_BY));
-        when(decorated.execute("input")).thenReturn(expected);
+        when(decorated.execute(new SampleInput())).thenReturn(expected);
         when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of());
         when(executionContextProvider.provide()).thenReturn(context);
 
         // When
         final QueryException exception = Assertions.assertThrows(
                 QueryException.class,
-                () -> guardQuery.execute("input")
+                () -> guardQuery.execute(new SampleInput())
         );
 
         // Then
@@ -178,10 +178,10 @@ class GuardQueryTest {
 
         when(executionContextProvider.provide()).thenReturn(context);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("SUPER_ADMIN"));
-        when(decorated.execute("input")).thenReturn(expected);
+        when(decorated.execute(new SampleInput())).thenReturn(expected);
 
         // When
-        final Result<TestProjection> actual = guardQuery.execute("input");
+        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
 
         // Then
         assertAll(
@@ -201,13 +201,13 @@ class GuardQueryTest {
 
         when(executionContextProvider.provide()).thenReturn(context);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
-        when(decorated.execute("input")).thenReturn(expected);
+        when(decorated.execute(new SampleInput())).thenReturn(expected);
         when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of());
 
         // When
         final QueryException exception = Assertions.assertThrows(
                 QueryException.class,
-                () -> guardQuery.execute("input")
+                () -> guardQuery.execute(new SampleInput())
         );
 
         // Then

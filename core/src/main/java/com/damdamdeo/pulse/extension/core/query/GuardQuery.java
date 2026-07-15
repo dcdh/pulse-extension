@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class GuardQuery<I, P extends Projection> implements Query<I, P> {
+public abstract class GuardQuery<I extends Input, P extends Projection> implements Query<I, P> {
 
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;

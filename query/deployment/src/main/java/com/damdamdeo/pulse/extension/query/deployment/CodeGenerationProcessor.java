@@ -12,15 +12,13 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.gizmo.*;
+import io.quarkus.gizmo.Type;
 import jakarta.annotation.Priority;
 import jakarta.decorator.Decorator;
 import jakarta.decorator.Delegate;
 import jakarta.enterprise.inject.Any;
 import jakarta.inject.Singleton;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.ParameterizedType;
+import org.jboss.jandex.*;
 
 import java.lang.reflect.Modifier;
 
@@ -32,12 +30,21 @@ public class CodeGenerationProcessor {
     void generateJdbcProjectionFromEventStore(final CombinedIndexBuildItem combinedIndexBuildItem,
                                               final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
                                               final OutputTargetBuildItem outputTargetBuildItem) {
+        final IndexView index = combinedIndexBuildItem.getIndex();
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementations(Projection.class)
-                .forEach(projectionClassInfo -> {
+        final DotName projectionFromEventStore = DotName.createSimple(ProjectionFromEventStore.class);
+        index.getKnownClasses().forEach(classInfo -> classInfo.fields()
+                .stream()
+                .map(FieldInfo::type)
+                .filter(type -> type.kind() == org.jboss.jandex.Type.Kind.PARAMETERIZED_TYPE)
+                .map(org.jboss.jandex.Type::asParameterizedType)
+                .filter(type -> type.name().equals(projectionFromEventStore))
+                .forEach(type -> {
                     try {
-                        final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
+                        final Class<?> inputClass = classLoader.loadClass(
+                                type.arguments().getFirst().name().toString());
+                        final Class<?> projectionClass = classLoader.loadClass(
+                                type.arguments().get(1).name().toString());
                         try (final ClassCreator beanClassCreator = ClassCreator.builder()
                                 .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
                                 .className(projectionClass.getName().replaceAll("\\$", "_") + "JdbcProjectionFromEventStoreGenerated")
@@ -45,6 +52,7 @@ public class CodeGenerationProcessor {
                                         .setSuperClass(
                                                 Type.parameterizedType(
                                                         Type.classType(JdbcProjectionFromEventStore.class),
+                                                        Type.classType(inputClass),
                                                         Type.classType(projectionClass))))
                                 .setFinal(true)
                                 .build()) {
@@ -62,7 +70,8 @@ public class CodeGenerationProcessor {
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     }
-                });
+                })
+        );
     }
 
     @BuildStep

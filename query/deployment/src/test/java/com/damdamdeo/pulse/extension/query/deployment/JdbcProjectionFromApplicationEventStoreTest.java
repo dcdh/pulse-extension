@@ -34,10 +34,10 @@ class JdbcProjectionFromApplicationEventStoreTest {
                     TodoProjection.class, TodoChecklistProjection.class))
             .withConfigurationResource("application.properties");
 
-    public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery {
+    public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery<SampleInput> {
 
         @Override
-        public String query(final Passphrase passphrase, final AggregateId aggregateId) {
+        public String query(final Passphrase passphrase, final AggregateId aggregateId, final SampleInput input) {
             // language=sql
             return """
                     WITH decrypted AS (
@@ -74,10 +74,10 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
     }
 
-    public static final class TodoProjectionMultipleResultAggregateQuery implements MultipleResultAggregateQuery {
+    public static final class TodoProjectionMultipleResultAggregateQuery implements MultipleResultAggregateQuery<SampleInput> {
 
         @Override
-        public String query(final Passphrase passphrase, final OwnedBy ownedBy) {
+        public String query(final Passphrase passphrase, final OwnedBy ownedBy, final SampleInput input) {
             // language=sql
             return """
                     WITH decrypted AS (
@@ -117,11 +117,11 @@ class JdbcProjectionFromApplicationEventStoreTest {
     }
 
     @Inject
-    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<SampleInput, TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     EventTestRepository eventTestRepository;
-// FCK prio 1
+
     @Test
     @Order(1)
     void shouldFindBy() {
@@ -184,7 +184,8 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
 
         // When
-        final Optional<Result<TodoProjection>> foundBy = todoProjectionProjectionFromEventStore.findBy(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), new TodoProjectionSingleResultAggregateQuery());
+        final Optional<Result<TodoProjection>> foundBy = todoProjectionProjectionFromEventStore.findBy(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                new SampleInput(), new TodoProjectionSingleResultAggregateQuery());
 
         // Then
         assertThat(foundBy).isEqualTo(Optional.of(
@@ -213,6 +214,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
         // When
         final Result<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(Todo.OWNED_BY_USER_1,
+                new SampleInput(),
                 new TodoProjectionMultipleResultAggregateQuery());
 
         // Then

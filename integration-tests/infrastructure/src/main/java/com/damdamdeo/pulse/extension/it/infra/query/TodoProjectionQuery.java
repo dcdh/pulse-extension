@@ -20,7 +20,7 @@ import java.util.Optional;
 public class TodoProjectionQuery implements Query<ListTodos, TodoProjection> {
 
     @Inject
-    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<ListTodos, TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     ConnectionIdentifierProvider connectionIdentifierProvider;
@@ -28,7 +28,7 @@ public class TodoProjectionQuery implements Query<ListTodos, TodoProjection> {
     @Inject
     ConnectionIdentifierRepository connectionIdentifierRepository;
 
-    private static final MultipleResultAggregateQuery multipleResultAggregateQuery = (passphrase, ownedBy) -> {
+    private static final MultipleResultAggregateQuery<ListTodos> multipleResultAggregateQuery = (passphrase, ownedBy, input) -> {
         Objects.requireNonNull(passphrase);
         Objects.requireNonNull(ownedBy);
         // language=sql
@@ -74,7 +74,7 @@ public class TodoProjectionQuery implements Query<ListTodos, TodoProjection> {
         try {
             Optional<Identifiable> identifiable = connectionIdentifierRepository.find(connectionIdentifierProvider.provide());
             Validate.validState(identifiable.isPresent());
-            return todoProjectionProjectionFromEventStore.findAll(OwnedBy.from(identifiable.get()), multipleResultAggregateQuery);
+            return todoProjectionProjectionFromEventStore.findAll(OwnedBy.from(identifiable.get()), input, multipleResultAggregateQuery);
         } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {
             throw new QueryException(exception);
         }

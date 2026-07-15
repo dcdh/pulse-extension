@@ -20,7 +20,7 @@ public class GuardQueryTest {
                     TodoProjection.class, TodoChecklistProjection.class))
             .withConfigurationResource("application.properties");
 
-    record ListTodos() {
+    record ListTodos() implements Input {
     }
 
     @ApplicationScoped
