@@ -8,19 +8,29 @@ import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
+import jakarta.transaction.TransactionManager;
+import org.assertj.core.api.AbstractThrowableAssert;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.postgresql.util.PSQLException;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -34,10 +44,10 @@ class JdbcProjectionFromApplicationEventStoreTest {
                     TodoProjection.class, TodoChecklistProjection.class))
             .withConfigurationResource("application.properties");
 
-    public static final class TodoProjectionSingleResultAggregateQuery implements SingleResultAggregateQuery<SampleInput> {
+    public static final class TodoProjectionSingleResultAggregateIdProjectionQuery implements SingleResultAggregateIdProjectionQuery {
 
         @Override
-        public String query(final Passphrase passphrase, final AggregateId aggregateId, final SampleInput input) {
+        public String query(final Passphrase passphrase, final AggregateId aggregateId) {
             // language=sql
             return """
                     WITH decrypted AS (
@@ -74,7 +84,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
     }
 
-    public static final class TodoProjectionMultipleResultAggregateQuery implements MultipleResultAggregateQuery<SampleInput> {
+    public static final class TodoProjectionMultipleResultProjectionQuery implements MultipleResultProjectionQuery<SampleInput> {
 
         @Override
         public String query(final Passphrase passphrase, final OwnedBy ownedBy, final SampleInput input) {
@@ -117,14 +127,20 @@ class JdbcProjectionFromApplicationEventStoreTest {
     }
 
     @Inject
-    ProjectionFromEventStore<SampleInput, TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     EventTestRepository eventTestRepository;
 
+    @Inject
+    TransactionManager transactionManager;
+
+    @Inject
+    DataSource dataSource;
+
     @Test
     @Order(1)
-    void shouldFindBy() {
+    void shouldFindOneByAggregateIdReturnFoundAggregate() {
         // Given
         {
             final Todo todo = new Todo(
@@ -184,11 +200,11 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
 
         // When
-        final Optional<Result<TodoProjection>> foundBy = todoProjectionProjectionFromEventStore.findBy(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                new SampleInput(), new TodoProjectionSingleResultAggregateQuery());
+        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
-        assertThat(foundBy).isEqualTo(Optional.of(
+        assertThat(foundOneByAggregateId).isEqualTo(Optional.of(
                 Result.of(
                         new TodoProjection(
                                 new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
@@ -209,13 +225,147 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
     @Test
     @Order(2)
-    void shouldListAll() {
+    void shouldFindByAggregateIdReturnEmptyWhenNotFound() {
         // Given
 
         // When
-        final Result<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAll(Todo.OWNED_BY_USER_1,
+        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_3, new TodoId(UserId.USER_3, TodoId.SEQUENCE_NUMBER_1),
+                new TodoProjectionSingleResultAggregateIdProjectionQuery());
+
+        // Then
+        assertThat(foundOneByAggregateId).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    @Order(3)
+    void shouldFindOneByAggregateIdRollbackTransactionOnPostgresSQLException() {
+        // Given
+        final List<Integer> status = new ArrayList<>();
+        final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
+
+        // When
+        assertThatThrownBy(() -> QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            expectedException.set(assertThatThrownBy(() ->
+                    QuarkusTransaction.joiningExisting().call(() -> {
+                        todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                new TodoProjectionSingleResultAggregateIdProjectionQuery());
+                        status.add(transactionManager.getStatus());
+
+                        try (final Connection c = dataSource.getConnection()) {
+                            c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
+                        } catch (SQLException e) {
+                            // do nothing
+                        }
+                        todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                new TodoProjectionSingleResultAggregateIdProjectionQuery());
+                        throw new IllegalStateException("Should not reach this point");
+                    })
+            ));
+            status.add(transactionManager.getStatus());
+            return null;
+        }));
+
+        // Then
+        // verify DB is empty (rollback happened)
+        assertAll(
+                () -> expectedException.get().isExactlyInstanceOf(ProjectionException.class)
+                        .cause()
+                        .isExactlyInstanceOf(PSQLException.class),
+                () -> assertThat(status).containsExactly(jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_MARKED_ROLLBACK));
+    }
+
+    @Test
+    @Order(4)
+    void shouldGetByAggregateIdReturnFoundAggregate() {
+        // Given
+
+        // When
+        final Result<TodoProjection> getOneByAggregateId = todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                new TodoProjectionSingleResultAggregateIdProjectionQuery());
+
+        // Then
+        assertThat(getOneByAggregateId).isEqualTo(Result.of(
+                new TodoProjection(
+                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        "IMPORTANT: pulse extension development",
+                        Status.IN_PROGRESS,
+                        true,
+                        List.of(
+                                new TodoChecklistProjection(
+                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                        "Implement Projection feature"
+                                )
+                        )
+                ),
+                Set.of(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)))
+        );
+    }
+
+    @Test
+    @Order(5)
+    void shouldGetByAggregateIdThrowProjectionExceptionWhenNotFound() {
+        // Given
+
+        // When && Then
+        assertThatThrownBy(() -> todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_3, new TodoId(UserId.USER_3, TodoId.SEQUENCE_NUMBER_1),
+                new TodoProjectionSingleResultAggregateIdProjectionQuery()))
+                .isExactlyInstanceOf(ProjectionException.class)
+                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_3)
+                .hasFieldOrPropertyWithValue("aggregateId", new TodoId(UserId.USER_3, TodoId.SEQUENCE_NUMBER_1))
+                .cause()
+                .isExactlyInstanceOf(UnknownProjectionException.class);
+    }
+
+    @Test
+    @Order(6)
+    void shouldGetOneByAggregateIdRollbackTransactionOnPostgresSQLException() {
+        // Given
+        final List<Integer> status = new ArrayList<>();
+        final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
+
+        // When
+        assertThatThrownBy(() -> QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            expectedException.set(assertThatThrownBy(() ->
+                    QuarkusTransaction.joiningExisting().call(() -> {
+                        todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                new TodoProjectionSingleResultAggregateIdProjectionQuery());
+                        status.add(transactionManager.getStatus());
+
+                        try (final Connection c = dataSource.getConnection()) {
+                            c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
+                        } catch (SQLException e) {
+                            // do nothing
+                        }
+                        todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                new TodoProjectionSingleResultAggregateIdProjectionQuery());
+                        throw new IllegalStateException("Should not reach this point");
+                    })
+            ));
+            status.add(transactionManager.getStatus());
+            return null;
+        }));
+
+        // Then
+        // verify DB is empty (rollback happened)
+        assertAll(
+                () -> expectedException.get().isExactlyInstanceOf(ProjectionException.class)
+                        .cause()
+                        .isExactlyInstanceOf(PSQLException.class),
+                () -> assertThat(status).containsExactly(jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_MARKED_ROLLBACK));
+    }
+
+    @Test
+    @Order(7)
+    void shouldFindAllBy() {
+        // Given
+
+        // When
+        final Result<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,
                 new SampleInput(),
-                new TodoProjectionMultipleResultAggregateQuery());
+                new TodoProjectionMultipleResultProjectionQuery());
 
         // Then
         assertAll(
@@ -265,5 +415,46 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         )
                 ))
         );
+    }
+
+    @Test
+    @Order(8)
+    void shouldFindAllByRollbackTransactionOnPostgresSQLException() {
+        // Given
+        final List<Integer> status = new ArrayList<>();
+        final AtomicReference<AbstractThrowableAssert<?, ?>> expectedException = new AtomicReference<>();
+
+        // When
+        assertThatThrownBy(() -> QuarkusTransaction.requiringNew().call(() -> {
+            status.add(transactionManager.getStatus());
+            expectedException.set(assertThatThrownBy(() ->
+                    QuarkusTransaction.joiningExisting().call(() -> {
+                        todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,
+                                new SampleInput(),
+                                new TodoProjectionMultipleResultProjectionQuery());
+                        status.add(transactionManager.getStatus());
+
+                        try (final Connection c = dataSource.getConnection()) {
+                            c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
+                        } catch (SQLException e) {
+                            // do nothing
+                        }
+                        todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,
+                                new SampleInput(),
+                                new TodoProjectionMultipleResultProjectionQuery());
+                        throw new IllegalStateException("Should not reach this point");
+                    })
+            ));
+            status.add(transactionManager.getStatus());
+            return null;
+        }));
+
+        // Then
+        // verify DB is empty (rollback happened)
+        assertAll(
+                () -> expectedException.get().isExactlyInstanceOf(ProjectionException.class)
+                        .cause()
+                        .isExactlyInstanceOf(PSQLException.class),
+                () -> assertThat(status).containsExactly(jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_MARKED_ROLLBACK));
     }
 }

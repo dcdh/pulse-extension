@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public abstract class JdbcProjectionFromEventStore<I extends Input, P extends Projection> implements ProjectionFromEventStore<I, P> {
+public abstract class JdbcProjectionFromEventStore<P extends Projection> implements ProjectionFromEventStore<P> {
 
     static final Logger LOGGER = Logger.getLogger(JdbcProjectionFromEventStore.class.getName());
 
@@ -35,13 +35,23 @@ public abstract class JdbcProjectionFromEventStore<I extends Input, P extends Pr
     ObjectMapper objectMapper;
 
     @Override
-    public Optional<Result<P>> findBy(final OwnedBy ownedBy, final AggregateId aggregateId, final I input, final SingleResultAggregateQuery<I> singleResultAggregateQuery) throws ProjectionException {
+    public Result<P> getOneByAggregateId(final OwnedBy ownedBy, final AggregateId aggregateId,
+                                         final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(aggregateId);
-        Objects.requireNonNull(input);
-        Objects.requireNonNull(singleResultAggregateQuery);
+        Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
+        return findOneByAggregateId(ownedBy, aggregateId, singleResultAggregateIdProjectionQuery)
+                .orElseThrow(() -> new ProjectionException(ownedBy, aggregateId, new UnknownProjectionException()));
+    }
+
+    @Override
+    public Optional<Result<P>> findOneByAggregateId(final OwnedBy ownedBy, final AggregateId aggregateId,
+                                                    final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+        Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         try {
-            final String query = singleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), aggregateId, input);
+            final String query = singleResultAggregateIdProjectionQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
             LOGGER.fine(query);
             final AggregateIdCollector collector = new AggregateIdCollector();
             final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
@@ -65,12 +75,12 @@ public abstract class JdbcProjectionFromEventStore<I extends Input, P extends Pr
     }
 
     @Override
-    public Result<P> findAll(final OwnedBy ownedBy, final I input, final MultipleResultAggregateQuery<I> multipleResultAggregateQuery) throws ProjectionException {
+    public <I extends Input> Result<P> findAllBy(final OwnedBy ownedBy, final I input, final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(input);
-        Objects.requireNonNull(multipleResultAggregateQuery);
+        Objects.requireNonNull(multipleResultProjectionQuery);
         try {
-            final String query = multipleResultAggregateQuery.query(passphraseProvider.provide(ownedBy), ownedBy, input);
+            final String query = multipleResultProjectionQuery.query(passphraseProvider.provide(ownedBy), ownedBy, input);
             LOGGER.fine(query);
             final AggregateIdCollector collector = new AggregateIdCollector();
             final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
