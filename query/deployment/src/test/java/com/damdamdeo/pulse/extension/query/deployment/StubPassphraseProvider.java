@@ -5,9 +5,13 @@ import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToBanPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 
 @ApplicationScoped
+@Priority(1)
+@Alternative
 public class StubPassphraseProvider implements PassphraseProvider {
 
     @Override

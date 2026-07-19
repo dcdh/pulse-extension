@@ -6,7 +6,9 @@ import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresSequenceGenerato
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.narayana.jta.QuarkusTransactionException;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.TransactionManager;
@@ -67,6 +69,8 @@ class JdbcPostgresSequenceGeneratorTest extends AbstractWriterTest {
     }
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     public static class StubApplicationNamingProvider implements ApplicationNamingProvider {
 
         private final static ApplicationNaming DEFAULT = new ApplicationNaming("TodoTaking");

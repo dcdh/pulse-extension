@@ -10,7 +10,9 @@ import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.damdamdeo.pulse.extension.writer.runtime.InstantProvider;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -48,6 +50,8 @@ class JdbcPostgresEventRepositoryTest {
     DataSource dataSource;
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubExecutedByEncoder implements ExecutedByEncoder {
 
         @Override
@@ -57,6 +61,8 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubInstantProvider implements InstantProvider {
 
         @Override
@@ -66,6 +72,8 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseProvider implements PassphraseProvider {
 
         @Override
@@ -80,6 +88,8 @@ class JdbcPostgresEventRepositoryTest {
     }
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override

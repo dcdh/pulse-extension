@@ -9,6 +9,9 @@ import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
 import io.quarkus.cache.CaffeineCache;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +28,9 @@ class DefaultPassphraseProviderTest {
             .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
             .withConfigurationResource("application.properties");
 
-    @Singleton
+    @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseGenerator implements PassphraseGenerator {
 
         @Override

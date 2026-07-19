@@ -21,3 +21,23 @@ CREATE EXTENSION
 An extension can be only loaded on only one schema ...
 
 To fix: load it inside public schema and reference function from schema public likes `public.pgp_sym_encrypt(...`
+
+== Testing
+
+=== Stub
+
+Stub is not a mock. A stub is a real implementation of an interface. It is used in test only to stub a dependency.
+
+Stub must define using these annotations
+
+[source,java]
+----
+    @ApplicationScoped
+    @Priority(1)
+    @Alternative
+----
+
+=== beans.xml
+
+- Only defined on a test framework module
+- Do not do @QuarkusTest

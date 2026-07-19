@@ -4,7 +4,6 @@ import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
-import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.vault.VaultKVSecretEngine;
 import io.quarkus.vault.client.VaultClientException;
@@ -17,7 +16,6 @@ import java.util.function.Function;
 
 @ApplicationScoped
 @Unremovable
-@DefaultBean
 public final class VaultPassphraseRepository implements PassphraseRepository {
 
     private static final String PASSPHRASE = "passphrase";

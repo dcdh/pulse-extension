@@ -1,15 +1,18 @@
-package com.damdamdeo.pulse.extension.writer.deployment;
+package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
-import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
+import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
-import com.damdamdeo.pulse.extension.core.query.SampleInput;
 import com.damdamdeo.pulse.extension.core.query.SingleResultAggregateIdProjectionQuery;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
+import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.context.api.ManagedExecutorConfig;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.HdrHistogram.Histogram;
 import org.apache.commons.lang3.time.StopWatch;
@@ -33,7 +36,7 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.LongStream;
 
-class PerformanceTest extends AbstractWriterTest {
+class PerformanceTest {
 
     private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
@@ -45,7 +48,7 @@ class PerformanceTest extends AbstractWriterTest {
             .overrideConfigKey("quarkus.log.category.\"com.damdamdeo.pulse.extension.writer.runtime.projection\".level", "INFO");
 
     @Inject
-    EventRepository<Todo, TodoId> todoEventRepository;
+    EventTestRepository eventTestRepository;
 
     @Inject
     ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
@@ -55,6 +58,22 @@ class PerformanceTest extends AbstractWriterTest {
 
     @Inject
     SequenceGenerator sequenceGenerator;
+
+    @ApplicationScoped
+    static class StubSequenceGenerator implements SequenceGenerator {
+
+        Long sequenceNumber = 0L;
+
+        @Override
+        public <A extends Identifiable> SequenceNumber nextFor(Class<A> identifiableClazz) throws SequenceGenerationException {
+            return SequenceNumber.fromNumber(sequenceNumber++);
+        }
+
+        @Override
+        public <A extends Identifiable> SequenceNumber nextFor(For<A> identifiable) throws SequenceGenerationException {
+            return SequenceNumber.fromNumber(sequenceNumber++);
+        }
+    }
 
     public static final class TodoProjectionSingleResultAggregateIdProjectionQuery implements SingleResultAggregateIdProjectionQuery {
 
@@ -136,16 +155,12 @@ class PerformanceTest extends AbstractWriterTest {
                 LOGGER.info("Current creation %d".formatted(i));
             }
             final TodoId givenTodoId = new TodoId(UserId.USER_1, sequenceGenerator.nextFor(TodoId.class));
-            final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
-                    new VersionizedEvent<>(new AggregateVersion(0),
-                            new ExecutedByEvent<>(new NewTodoCreated(LOREM_IPSUM), ExecutedBy.NotAvailable.INSTANCE)));
-            todoEventRepository.save(givenTodoEvents,
-                    new Todo(
-                            givenTodoId,
-                            LOREM_IPSUM,
-                            Status.IN_PROGRESS,
-                            false
-                    ), BOB);
+            final Todo todo = new Todo(
+                    givenTodoId,
+                    LOREM_IPSUM,
+                    Status.IN_PROGRESS,
+                    false);
+            eventTestRepository.insert(new NewTodoCreated(LOREM_IPSUM), todo, todo.ownedBy(), BOB);
         }
         watch.stop();
         LOGGER.info("30.000 of NewTodoCreated events created in %d ms".formatted(watch.getTime(TimeUnit.MILLISECONDS)));

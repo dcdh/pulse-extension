@@ -2,7 +2,6 @@ package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.encryption.PassphraseGenerator;
-import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -10,7 +9,6 @@ import java.security.SecureRandom;
 
 @ApplicationScoped
 @Unremovable
-@DefaultBean
 public final class DefaultPassphraseGenerator implements PassphraseGenerator {
 
     private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";

@@ -3,7 +3,9 @@ package com.damdamdeo.pulse.extension.common.runtime;
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +13,8 @@ import java.util.Optional;
 // remove in favor to com.damdamdeo.pulse.extension.encryption.storage.deployment.StubPassphraseRepository;
 @Deprecated(forRemoval = true)
 @ApplicationScoped
+@Priority(1)
+@Alternative
 public class StubPassphraseRepository implements PassphraseRepository {
 
     @Override

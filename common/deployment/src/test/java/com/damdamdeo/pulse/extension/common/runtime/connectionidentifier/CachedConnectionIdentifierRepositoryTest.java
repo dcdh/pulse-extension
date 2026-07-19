@@ -13,7 +13,9 @@ import io.quarkus.cache.CacheName;
 import io.quarkus.cache.CaffeineCache;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +40,8 @@ class CachedConnectionIdentifierRepositoryTest {
             ));
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     public static class StubConnectionIdentifierRepository implements ConnectionIdentifierRepository {
 
         private final Map<ConnectionIdentifier, Identifiable> inMemory = new ConcurrentHashMap<>();

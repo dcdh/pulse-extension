@@ -2,12 +2,16 @@ package com.damdamdeo.pulse.extension.encryption.storage.deployment;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import jakarta.inject.Singleton;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Singleton
+@ApplicationScoped
+@Priority(1)
+@Alternative
 public class StubPassphraseRepository implements PassphraseRepository {
 
     final List<String> called = new ArrayList<>();

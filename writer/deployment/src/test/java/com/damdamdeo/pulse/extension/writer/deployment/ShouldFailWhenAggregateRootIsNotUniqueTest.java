@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTest {
+class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -20,7 +20,7 @@ public class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTe
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()
                     .rootCause()
-                    .hasMessage("AggregateRoot 'Todo' declared more than once '2'")
+                    .hasMessage("AggregateRoot 'Todo' declared more than once '3'")
                     .hasNoSuppressedExceptions());
 
     @Test

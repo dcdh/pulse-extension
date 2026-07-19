@@ -6,7 +6,9 @@ import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -31,6 +33,8 @@ class QueryEventStoreTest {
     QueryEventStore<Todo, TodoId> queryEventStore;
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseProvider implements PassphraseProvider {
 
         @Override
@@ -45,6 +49,8 @@ class QueryEventStoreTest {
     }
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override

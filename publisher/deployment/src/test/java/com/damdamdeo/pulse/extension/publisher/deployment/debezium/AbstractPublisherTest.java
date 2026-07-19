@@ -2,7 +2,9 @@ package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +12,8 @@ import java.util.Optional;
 public abstract class AbstractPublisherTest {
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override

@@ -6,7 +6,9 @@ import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.EventStoreException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -39,6 +41,8 @@ class PostgresEncryptionTest {
     DataSource dataSource;
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override

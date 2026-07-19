@@ -2,14 +2,12 @@ package com.damdamdeo.pulse.extension.common.runtime;
 
 import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
-import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.inject.Singleton;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Singleton
 @Unremovable
-@DefaultBean
 public final class SmallryeConfigApplicationNamingProvider implements ApplicationNamingProvider {
 
     private final ApplicationNaming applicationNaming;

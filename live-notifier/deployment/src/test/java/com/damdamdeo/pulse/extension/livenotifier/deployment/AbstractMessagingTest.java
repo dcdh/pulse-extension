@@ -4,7 +4,9 @@ import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.livenotifier.TopicManager;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -20,6 +22,8 @@ public abstract class AbstractMessagingTest {
     }
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static public class StubPassphraseRepository implements PassphraseRepository {
 
         @Override

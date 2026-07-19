@@ -4,7 +4,9 @@ import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +14,8 @@ import java.util.Optional;
 public abstract class AbstractConsumerTest {
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseRepository implements PassphraseRepository {
 
         @Override

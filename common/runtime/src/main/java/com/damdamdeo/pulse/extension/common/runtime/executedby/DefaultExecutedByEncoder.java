@@ -7,7 +7,6 @@ import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseEx
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
-import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,7 +17,6 @@ import java.util.Objects;
 
 @ApplicationScoped
 @Unremovable
-@DefaultBean
 public class DefaultExecutedByEncoder implements ExecutedByEncoder {
 
     @Inject

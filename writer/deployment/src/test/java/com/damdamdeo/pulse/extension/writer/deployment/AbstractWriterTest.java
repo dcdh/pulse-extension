@@ -2,7 +2,9 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -14,6 +16,8 @@ import java.util.*;
 public abstract class AbstractWriterTest {
 
     @ApplicationScoped
+    @Priority(1)
+    @Alternative
     static class StubPassphraseRepository implements PassphraseRepository {
 
         private Map<OwnedBy, Passphrase> passphrases = new HashMap<>();
