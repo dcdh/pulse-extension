@@ -62,7 +62,7 @@ public abstract class AbstractWriterTest {
             while (rs.next()) {
                 aggregateRootIds.add(rs.getString("aggregate_root_id"));
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
         return aggregateRootIds;
@@ -82,7 +82,7 @@ public abstract class AbstractWriterTest {
                 aggregateRootIds.add(rs.getString("aggregate_root_id") + "|" + rs.getString("aggregate_root_type")
                         + "|" + rs.getString("event_type"));
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
         return aggregateRootIds;

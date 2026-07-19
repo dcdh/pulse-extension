@@ -61,7 +61,7 @@ class CommandHandlerTest extends AbstractWriterTest {
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
             return rs.getInt("count");
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }

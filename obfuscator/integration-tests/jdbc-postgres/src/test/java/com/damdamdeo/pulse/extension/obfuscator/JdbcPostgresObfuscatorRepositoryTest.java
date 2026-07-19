@@ -62,7 +62,7 @@ class JdbcPostgresObfuscatorRepositoryTest {
                 final String obfuscated = rs.getString("obfuscated");
                 storedObfuscated.add(original + "|" + obfuscated);
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
 

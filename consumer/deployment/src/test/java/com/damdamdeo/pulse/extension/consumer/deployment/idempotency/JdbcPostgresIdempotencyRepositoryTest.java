@@ -69,7 +69,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                 String table = rs.getString("table_name");
                 tables.add(schema + "." + table);
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
 

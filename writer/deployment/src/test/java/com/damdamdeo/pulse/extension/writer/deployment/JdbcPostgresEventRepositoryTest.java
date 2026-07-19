@@ -178,7 +178,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tAggregateRootResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
                         () -> assertThat(tAggregateRootResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()));
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -265,7 +265,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tAggregateRootResultSet.getString(
                                 "belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()));
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -574,7 +574,7 @@ class JdbcPostgresEventRepositoryTest {
                 tEventResultSet.next();
                 assertThat(tEventResultSet.getString("executed_by")).isEqualTo("A");
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -599,7 +599,7 @@ class JdbcPostgresEventRepositoryTest {
                 tEventResultSet.next();
                 assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob");
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -624,7 +624,7 @@ class JdbcPostgresEventRepositoryTest {
                 tEventResultSet.next();
                 assertThat(tEventResultSet.getString("executed_by")).isEqualTo("SA:service-account-quarkus-app");
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -649,7 +649,7 @@ class JdbcPostgresEventRepositoryTest {
                 tEventResultSet.next();
                 assertThat(tEventResultSet.getString("executed_by")).isEqualTo("NA");
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }

@@ -253,7 +253,7 @@ class JdbcPostgresSequenceGeneratorTest extends AbstractWriterTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         jdbcPostgresSequenceGenerator.nextFor(new For<>(TodoChecklistId.class, TodoChecklist.BELONGS_TO_USER_1_TODO_1));

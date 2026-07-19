@@ -254,7 +254,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
@@ -336,7 +336,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
@@ -436,7 +436,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,

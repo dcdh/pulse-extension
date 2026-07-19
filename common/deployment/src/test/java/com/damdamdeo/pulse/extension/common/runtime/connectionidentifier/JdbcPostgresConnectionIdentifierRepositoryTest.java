@@ -112,7 +112,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
             databaseConnectionIdentifiers.add(new DatabaseConnectionIdentifier(rs.getString("connection_identifier_hash"), rs.getString("identifiable_id")));
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
         assertThat(databaseConnectionIdentifiers).containsExactly(
@@ -165,7 +165,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, givenUserAggregateId);
@@ -231,7 +231,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
@@ -260,7 +260,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
             return rs.getInt("count");
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }

@@ -115,7 +115,7 @@ class JdbcPostgresPassphraseRepositoryTest {
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
             passphrases.add(new PassphraseRecord(rs.getString("owned_by_hashed"), rs.getString("passphrase")));
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
         assertAll(
@@ -171,7 +171,7 @@ class JdbcPostgresPassphraseRepositoryTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_2, PassphraseSample.PASSPHRASE_1);
@@ -309,7 +309,7 @@ class JdbcPostgresPassphraseRepositoryTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
@@ -382,7 +382,7 @@ class JdbcPostgresPassphraseRepositoryTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         jdbcPostgresPassphraseRepository.get(Todo.OWNED_BY_USER_1);
@@ -451,7 +451,7 @@ class JdbcPostgresPassphraseRepositoryTest {
 
                         try (final Connection c = dataSource.getConnection()) {
                             c.createStatement().execute("SELECT pg_terminate_backend(pg_backend_pid())");
-                        } catch (SQLException e) {
+                        } catch (final SQLException e) {
                             // do nothing
                         }
                         jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_5));
@@ -483,7 +483,7 @@ class JdbcPostgresPassphraseRepositoryTest {
              final ResultSet rs = ps.executeQuery()) {
             rs.next();
             return rs.getInt("count");
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
     }

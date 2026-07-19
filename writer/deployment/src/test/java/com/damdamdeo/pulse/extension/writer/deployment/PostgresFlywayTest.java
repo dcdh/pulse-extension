@@ -74,7 +74,7 @@ class PostgresFlywayTest extends AbstractWriterTest {
                 String table = rs.getString("table_name");
                 tables.add(schema + "." + table);
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
 
@@ -114,8 +114,7 @@ class PostgresFlywayTest extends AbstractWriterTest {
                     found = true;
                 }
             }
-
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
 
