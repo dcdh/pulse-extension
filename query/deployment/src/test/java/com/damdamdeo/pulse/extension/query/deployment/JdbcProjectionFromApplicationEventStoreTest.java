@@ -7,9 +7,14 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.query.runtime.ownedby.OwnedByProvider;
+import com.damdamdeo.pulse.extension.query.runtime.ownedby.UnableToProvideOwnedByException;
 import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import jakarta.transaction.TransactionManager;
 import org.assertj.core.api.AbstractThrowableAssert;
@@ -23,10 +28,7 @@ import org.postgresql.util.PSQLException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,6 +140,18 @@ class JdbcProjectionFromApplicationEventStoreTest {
     @Inject
     DataSource dataSource;
 
+    @Priority(1)
+    @Dependent
+    @Alternative
+    public static class StubOwnedByProvider implements OwnedByProvider {
+
+        @Override
+        public OwnedBy getByAggregateId(final AggregateId aggregateId) throws UnableToProvideOwnedByException {
+            Objects.requireNonNull(aggregateId);
+            return OwnedBy.from(((TodoId) aggregateId).userId());
+        }
+    }
+
     @Test
     @Order(1)
     void shouldFindOneByAggregateIdReturnFoundAggregate() {
@@ -200,7 +214,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
 
         // When
-        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_1_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
@@ -229,7 +243,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_3, new TodoId(UserId.USER_3, TodoId.SEQUENCE_NUMBER_1),
+        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_3_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
@@ -248,7 +262,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
             status.add(transactionManager.getStatus());
             expectedException.set(assertThatThrownBy(() ->
                     QuarkusTransaction.joiningExisting().call(() -> {
-                        todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_1_TODO_1,
                                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
                         status.add(transactionManager.getStatus());
 
@@ -257,7 +271,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         } catch (final SQLException e) {
                             // do nothing
                         }
-                        todoProjectionProjectionFromEventStore.findOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_1_TODO_1,
                                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
                         throw new IllegalStateException("Should not reach this point");
                     })
@@ -281,7 +295,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Result<TodoProjection> getOneByAggregateId = todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+        final Result<TodoProjection> getOneByAggregateId = todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_1_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
@@ -309,10 +323,9 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When && Then
-        assertThatThrownBy(() -> todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_3, new TodoId(UserId.USER_3, TodoId.SEQUENCE_NUMBER_1),
+        assertThatThrownBy(() -> todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_3_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery()))
                 .isExactlyInstanceOf(ProjectionException.class)
-                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_3)
                 .hasFieldOrPropertyWithValue("aggregateId", new TodoId(UserId.USER_3, TodoId.SEQUENCE_NUMBER_1))
                 .cause()
                 .isExactlyInstanceOf(UnknownProjectionException.class);
@@ -330,7 +343,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
             status.add(transactionManager.getStatus());
             expectedException.set(assertThatThrownBy(() ->
                     QuarkusTransaction.joiningExisting().call(() -> {
-                        todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_1_TODO_1,
                                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
                         status.add(transactionManager.getStatus());
 
@@ -339,7 +352,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                         } catch (final SQLException e) {
                             // do nothing
                         }
-                        todoProjectionProjectionFromEventStore.getOneByAggregateId(Todo.OWNED_BY_USER_1, new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_1_TODO_1,
                                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
                         throw new IllegalStateException("Should not reach this point");
                     })

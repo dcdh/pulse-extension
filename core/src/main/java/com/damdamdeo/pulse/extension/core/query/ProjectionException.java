@@ -11,9 +11,9 @@ public final class ProjectionException extends RuntimeException {
     private final OwnedBy ownedBy;
     private final AggregateId aggregateId;
 
-    public ProjectionException(final OwnedBy ownedBy, final AggregateId aggregateId, final Throwable cause) {
+    public ProjectionException(final AggregateId aggregateId, final Throwable cause) {
         super(cause);
-        this.ownedBy = Objects.requireNonNull(ownedBy);
+        this.ownedBy = null;
         this.aggregateId = Objects.requireNonNull(aggregateId);
     }
 

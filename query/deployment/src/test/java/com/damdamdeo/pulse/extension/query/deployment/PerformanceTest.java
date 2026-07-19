@@ -135,7 +135,7 @@ class PerformanceTest {
             try {
                 final Instant start = Instant.now();
                 final SequenceNumber sequenceNumber = sequenceGenerator.nextFor(TodoId.class);
-                todoProjectionProjectionFromEventStore.findOneByAggregateId(OwnedBy.from(new TodoId(UserId.USER_1, sequenceNumber)), new TodoId(UserId.USER_1, sequenceNumber), new TodoProjectionSingleResultAggregateIdProjectionQuery());
+                todoProjectionProjectionFromEventStore.findOneByAggregateId(new TodoId(UserId.USER_1, sequenceNumber), new TodoProjectionSingleResultAggregateIdProjectionQuery());
                 return Duration.between(start, Instant.now()).toMillis();
             } catch (SequenceGenerationException e) {
                 throw new RuntimeException(e);

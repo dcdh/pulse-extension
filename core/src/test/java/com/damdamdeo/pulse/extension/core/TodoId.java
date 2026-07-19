@@ -23,6 +23,7 @@ public record TodoId(UserId userId, SequenceNumber sequence) implements Aggregat
 
     public static final TodoId USER_1_TODO_1 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_1);
     public static final TodoId USER_1_TODO_2 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_2);
+    public static final TodoId USER_3_TODO_1 = new TodoId(UserId.USER_3, SEQUENCE_NUMBER_1);
     public static final TodoId USER_1_TODO_6 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_6);
     public static final TodoId USER_1_TODO_7 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_7);
     public static final TodoId USER_2_TODO_1 = new TodoId(UserId.USER_2, SEQUENCE_NUMBER_1);

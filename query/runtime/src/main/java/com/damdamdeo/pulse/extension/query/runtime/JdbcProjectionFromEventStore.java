@@ -5,6 +5,8 @@ import com.damdamdeo.pulse.extension.core.encryption.PassphraseProvider;
 import com.damdamdeo.pulse.extension.core.encryption.UnableToProvidePassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.query.runtime.ownedby.OwnedByProvider;
+import com.damdamdeo.pulse.extension.query.runtime.ownedby.UnableToProvideOwnedByException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import jakarta.inject.Inject;
@@ -34,23 +36,23 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    OwnedByProvider ownedByProvider;
+
     @Override
-    public Result<P> getOneByAggregateId(final OwnedBy ownedBy, final AggregateId aggregateId,
-                                         final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
-        Objects.requireNonNull(ownedBy);
+    public Result<P> getOneByAggregateId(final AggregateId aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
-        return findOneByAggregateId(ownedBy, aggregateId, singleResultAggregateIdProjectionQuery)
-                .orElseThrow(() -> new ProjectionException(ownedBy, aggregateId, new UnknownProjectionException()));
+        return findOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery)
+                .orElseThrow(() -> new ProjectionException(aggregateId, new UnknownProjectionException()));
     }
 
     @Override
-    public Optional<Result<P>> findOneByAggregateId(final OwnedBy ownedBy, final AggregateId aggregateId,
-                                                    final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
-        Objects.requireNonNull(ownedBy);
+    public Optional<Result<P>> findOneByAggregateId(final AggregateId aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         try {
+            final OwnedBy ownedBy = ownedByProvider.getByAggregateId(aggregateId);
             final String query = singleResultAggregateIdProjectionQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
             LOGGER.fine(query);
             final AggregateIdCollector collector = new AggregateIdCollector();
@@ -67,10 +69,10 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
                     return Optional.empty();
                 }
             } catch (final IOException | SQLException e) {
-                throw new ProjectionException(ownedBy, aggregateId, e);
+                throw new ProjectionException(aggregateId, e);
             }
-        } catch (UnableToProvidePassphraseException e) {
-            throw new ProjectionException(ownedBy, aggregateId, e);
+        } catch (UnableToProvidePassphraseException | UnableToProvideOwnedByException e) {
+            throw new ProjectionException(aggregateId, e);
         }
     }
 
