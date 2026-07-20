@@ -10,6 +10,7 @@ public record TodoChecklistId(TodoId todoId, SequenceNumber sequence) implements
     public static final SequenceNumber SEQUENCE_NUMBER_4 = SequenceNumber.fromNumber(4L);
 
     public static final TodoChecklistId USER_1_TODO_1_1 = new TodoChecklistId(TodoId.USER_1_TODO_1, SEQUENCE_NUMBER_1);
+    public static final TodoChecklistId USER_1_TODO_2_1 = new TodoChecklistId(TodoId.USER_1_TODO_2, SEQUENCE_NUMBER_1);
 
     public TodoChecklistId {
         Objects.requireNonNull(todoId);

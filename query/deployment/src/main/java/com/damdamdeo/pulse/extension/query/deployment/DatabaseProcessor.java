@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.compose.runtime.datasource.PostgresUtils;
 import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
@@ -192,7 +193,7 @@ public class DatabaseProcessor {
                             aggregates.getBytes(StandardCharsets.UTF_8), "sql")));
         }
         // language=sql
-        final String query = """
+        final String aggregateExecutedByQuery = """
                 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
                 CREATE SCHEMA IF NOT EXISTS %1$s;
                 CREATE TABLE IF NOT EXISTS %1$s.aggregate_executed_by (
@@ -237,7 +238,53 @@ public class DatabaseProcessor {
         additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
                 new ComposeServiceBuildItem.Volume("./%s_query.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_query.sql".formatted(schemaName),
-                        query.getBytes(StandardCharsets.UTF_8), "sql")));
+                        aggregateExecutedByQuery.getBytes(StandardCharsets.UTF_8), "sql")));
+        if (capabilities.isPresent(Capability.CACHE)) {
+            // language=sql
+            final String eventCounterQuery = """
+                    CREATE TABLE IF NOT EXISTS %1$s.event_counter (
+                        counter_type character varying(50) NOT NULL,
+                        counter_id character varying(255) NOT NULL,
+                        event_count bigint NOT NULL DEFAULT 0,
+                        CONSTRAINT event_counter_pkey PRIMARY KEY (counter_type, counter_id)
+                    );
+                    
+                    CREATE OR REPLACE FUNCTION %1$s.update_event_counter()
+                    RETURNS trigger
+                    LANGUAGE plpgsql
+                    AS $_$
+                    BEGIN
+                    
+                        -- AggregateId
+                        INSERT INTO %1$s.event_counter(counter_type, counter_id, event_count)
+                        VALUES ('AGGREGATE_ID', NEW.aggregate_root_id, 1)
+                        ON CONFLICT (counter_type, counter_id)
+                        DO UPDATE
+                           SET event_count = event_counter.event_count + 1;
+                    
+                        -- OwnedBy
+                        INSERT INTO %1$s.event_counter(counter_type, counter_id, event_count)
+                        VALUES ('OWNED_BY', NEW.owned_by, 1)
+                        ON CONFLICT (counter_type, counter_id)
+                        DO UPDATE
+                           SET event_count = event_counter.event_count + 1;
+                    
+                        RETURN NEW;
+                    END;
+                    $_$;
+                    
+                    DROP TRIGGER IF EXISTS trg_update_event_counter ON %1$s.event;
+                    
+                    CREATE TRIGGER trg_update_event_counter
+                    AFTER INSERT ON %1$s.event
+                    FOR EACH ROW
+                    EXECUTE FUNCTION %1$s.update_event_counter();
+                    """.formatted(schemaName);
+            additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
+                    new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
+                    new ComposeServiceBuildItem.Volume("./%s_query_event_counter.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_query_event_counter.sql".formatted(schemaName),
+                            eventCounterQuery.getBytes(StandardCharsets.UTF_8), "sql")));
+        }
     }
 
     public static boolean shouldGenerate(final Capabilities capabilities) {

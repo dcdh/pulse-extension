@@ -2,9 +2,11 @@
 
 == Nice to have
 
-1. split common module into separate sub modules
-2. tests sharing
-3. pulse-cache
-  - caffeine
-  - redis
-  - use a pulse-cache capability to activate or not decorators
+0. quarkus-jdbc-postgresql : do not include inside dependency, check presence using dependency check, remove Provider<DataSource>, include beans only if dependency is present, do a documentation about it.
+1. pulse-cache
+- caffeine
+- redis (valkey)
+- test-framework: create a Stub
+- cache should not fail: use a degraded mode by doing the call and add a log.
+2. split common module into separate sub modules
+3. tests sharing

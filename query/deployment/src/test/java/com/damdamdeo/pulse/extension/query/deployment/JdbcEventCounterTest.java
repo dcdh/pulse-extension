@@ -6,15 +6,12 @@ import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.TodoChecklistProjection;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
-import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
-import com.damdamdeo.pulse.extension.query.runtime.JdbcPostgresExecutedByResolver;
+import com.damdamdeo.pulse.extension.query.runtime.EventCounterException;
+import com.damdamdeo.pulse.extension.query.runtime.JdbcEventCounter;
 import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
@@ -24,13 +21,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class JdbcPostgresExecutedByResolverTest {
+class JdbcEventCounterTest {
 
+    // TODO should mutualise
     private static ExecutedBy BOB = new ExecutedBy.ServiceAccount("bob");
     private static ExecutedBy ALICE = new ExecutedBy.ServiceAccount("alice");
 
@@ -41,17 +38,16 @@ public class JdbcPostgresExecutedByResolverTest {
             .withConfigurationResource("application.properties");
 
     @Inject
-    DataSource dataSource;
-
-    @Inject
-    JdbcPostgresExecutedByResolver jdbcPostgresExecutedByResolver;
-
-    @Inject
     EventTestRepository eventTestRepository;
 
+    @Inject
+    JdbcEventCounter jdbcEventCounter;
+
+    @Inject
+    DataSource dataSource;
+
     @Test
-    @Order(1)
-    void shouldStoreInDatabase() {
+    void shouldTriggerUpdateCounters() throws EventCounterException {
         // Given
         {
             final Todo todo = new Todo(
@@ -97,49 +93,42 @@ public class JdbcPostgresExecutedByResolverTest {
                     todoChecklist.ownedBy(),
                     BOB);
         }
-        {
-            final Todo todo = new Todo(
-                    TodoId.USER_2_TODO_1,
-                    "Bob vacancies",
-                    Status.IN_PROGRESS,
-                    false);
-            eventTestRepository.insert(
-                    new NewTodoCreated("Bob vacancies"),
-                    todo,
-                    todo.ownedBy(),
-                    BOB);
-        }
+        final Todo todo = new Todo(
+                TodoId.USER_2_TODO_1,
+                "Bob vacancies",
+                Status.IN_PROGRESS,
+                false);
+        eventTestRepository.insert(
+                new NewTodoCreated("Bob vacancies"),
+                todo,
+                todo.ownedBy(),
+                BOB);
 
         // When
-        final List<String> stored = new ArrayList<>();
+        final Integer byAggregateId = jdbcEventCounter.byAggregateId(TodoId.USER_1_TODO_2);
+        final Integer byOwnedBy = jdbcEventCounter.byOwnedBy(todo.ownedBy());
+
+        final List<String> counts = new ArrayList<>();
         try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement ps = connection.prepareStatement("SELECT aggregate_root_id, executed_by, owned_by FROM aggregate_executed_by");
+             final PreparedStatement ps = connection.prepareStatement("SELECT counter_type, counter_id, event_count FROM event_counter");
              final ResultSet resultSet = ps.executeQuery()) {
             while (resultSet.next()) {
-                stored.add(resultSet.getString("aggregate_root_id") + "|" + resultSet.getString("executed_by") + "|" + resultSet.getString("owned_by"));
+                counts.add(resultSet.getString("counter_type") + "|" + resultSet.getString("counter_id") + "|" + resultSet.getInt("event_count"));
             }
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
 
-        // Then
-        assertThat(stored).containsExactly("U000001-T000001|SA:bob|U000001",
-                "U000001-T000001-CL000001|SA:alice|U000001",
-                "U000001-T000002|SA:bob|U000001",
-                "U000001-T000002-CL000001|SA:bob|U000001",
-                "U000002-T000001|SA:bob|U000002");
-    }
-
-    @Test
-    @Order(2)
-    void shouldResolve() throws UnableToResolveException {
-        // Given
-
-        // When
-        final Set<ExecutedBy> resolved = jdbcPostgresExecutedByResolver.resolve(Set.of(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)));
-
-        // Then
-        assertThat(resolved).containsExactly(BOB, ALICE);
+        assertAll(
+                () -> assertThat(byAggregateId).isEqualTo(1),
+                () -> assertThat(byOwnedBy).isEqualTo(1),
+                () -> assertThat(counts).containsExactly("AGGREGATE_ID|U000001-T000001|1",
+                        "AGGREGATE_ID|U000001-T000001-CL000001|1",
+                        "AGGREGATE_ID|U000001-T000002|1",
+                        "AGGREGATE_ID|U000001-T000002-CL000001|1",
+                        "OWNED_BY|U000001|4",
+                        "AGGREGATE_ID|U000002-T000001|1",
+                        "OWNED_BY|U000002|1")
+        );
     }
 }

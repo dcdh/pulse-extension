@@ -1,0 +1,43 @@
+= Architecture Decision Record
+
+== Caching
+
+**JdbcPostgresExecutedByResolver** is intensive because a select request will be made in Postgresql and for each executed by returned, a decoding will be done using the **encryption-storage**
+
+To avoid a lot of processing during the application lifecycle, a caching mechanism should be added.
+
+The difficulty is about caching invalidation. Invalidation must occur when a new event is added to an aggregate because another executedBy can be involved.
+
+Multiple ways to do it.
+
+|===
+|Solution |Pros |Cons
+
+|Firing a CDI event when a new event is added inside the eventstore
+|Easy to implement
+|Not possible when the query is on a standalone application without the writing part. Storing an event should be as fast as possible without introducing another infrastructure (internal cache, Redis cache) in its same transaction.
+
+|Debezium
+|Decouple the writing with event consumption. Quarkus offers a standalone version without kafka.
+|Debezium may fail to work, thus caching may not be invalidated. Another infrastructure in the loop to manage.
+
+|Projection returns the aggregateId with the version
+|Easy to implement. Le ExecutedByResolver doit prendre a **VersionizedAggregateIdObfuscatorSerializer** compound of AggregateId and Version. If the cache is not in sync during no request, it is not a problem because it will be refreshed at Projection query response.
+|The Projection Query must do the mapping.
+
+|===
+
+Accessing a cache (no matter the implementation) to retrieve a list or put a list of elements must be done in one query.
+
+The third solution **Projection returns the aggregateId with the version** will be implemented.
+The **AggregateIdDeserializer** is impacted to take into account **VersionizedAggregateIdObfuscatorSerializer** instead of **AggregateId**.
+The **obfuscator** will be impacted too. The Object **VersionizedAggregateIdObfuscatorSerializer** must return the UUID representation of AggregateId. The aggregate version is lost because it is unnecessary when calling rest api next.
+If the cache is down, it must not alter the user experience. It will be slower, but a response will be returned.
+
+Rule of thumb: always do a check before getting / update from cache to avoid slippage between data update and cache propagation.
+
+The check should use a dedicated table to avoid a lot of processing from the event store table.
+
+The check must be done on an id with a version or a count.
+
+Invalidation is hard (how to invalidate ?, transaction issue …). Let it remove automatically and update depending on id with a version or a count.
