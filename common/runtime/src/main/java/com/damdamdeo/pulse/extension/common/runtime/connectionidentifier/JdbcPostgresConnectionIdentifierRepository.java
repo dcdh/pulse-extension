@@ -8,7 +8,6 @@ import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 import jakarta.transaction.Transactional;
 
 import javax.sql.DataSource;
@@ -44,7 +43,7 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
                     """;
 
     @Inject
-    Provider<DataSource> dataSource;
+    DataSource dataSource;
 
     @Override
     @Transactional(value = Transactional.TxType.MANDATORY)
@@ -52,7 +51,7 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
             throws DuplicateConnectionIdentifierException, ConnectionIdentifierRepositoryException {
         Objects.requireNonNull(connectionIdentifier);
         Objects.requireNonNull(identifiable);
-        try (final Connection connection = dataSource.get().getConnection();
+        try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL)) {
             preparedStatement.setString(1, connectionIdentifier.id());
             preparedStatement.setString(2, identifiable.id());
@@ -70,7 +69,7 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
     @Override
     public Optional<Identifiable> find(final ConnectionIdentifier connectionIdentifier) throws ConnectionIdentifierRepositoryException {
         Objects.requireNonNull(connectionIdentifier);
-        try (final Connection connection = dataSource.get().getConnection();
+        try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_CONNECTION_IDENTIFIER_SQL)) {
             preparedStatement.setString(1, connectionIdentifier.id());
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
