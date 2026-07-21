@@ -16,11 +16,14 @@ import jakarta.inject.Inject;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
 @Unremovable
 @Priority(1)
 @Decorator
 public class CachedPassphraseProvider implements PassphraseProvider {
+
+    final Logger LOGGER = Logger.getLogger(CachedPassphraseProvider.class.getName());
 
     @Inject
     @Any
@@ -43,7 +46,8 @@ public class CachedPassphraseProvider implements PassphraseProvider {
             try {
                 return findFromCache.get().passphrase();
             } catch (final InterruptedException | ExecutionException exception) {
-                throw new UnableToProvidePassphraseException(exception);
+                LOGGER.warning("Unable to provide passphrase from cache - execute delegate " + exception.getMessage());
+                return delegate.provide(ownedBy);
             }
         }
     }

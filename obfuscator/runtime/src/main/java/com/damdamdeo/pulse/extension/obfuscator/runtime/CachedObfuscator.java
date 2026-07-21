@@ -17,11 +17,14 @@ import jakarta.inject.Inject;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
 @Unremovable
 @Priority(1)
 @Decorator
 public class CachedObfuscator implements Obfuscator {
+
+    final Logger LOGGER = Logger.getLogger(CachedObfuscator.class.getName());
 
     @Inject
     @Any
@@ -54,7 +57,8 @@ public class CachedObfuscator implements Obfuscator {
             try {
                 return deObfuscatedFromCache.get();
             } catch (final InterruptedException | ExecutionException exception) {
-                throw new UnableToDeObfuscateException(exception);
+                LOGGER.warning("Unable to deobfuscate from cache - execute delegate " + exception.getMessage());
+                return delegate.deObfuscate(obfuscated);
             }
         }
     }

@@ -19,11 +19,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
 @Unremovable
 @Priority(1)
 @Decorator
 public class CachedConnectionIdentifierRepository implements ConnectionIdentifierRepository {
+
+    final Logger LOGGER = Logger.getLogger(CachedConnectionIdentifierRepository.class.getName());
 
     @Inject
     @Any
@@ -61,7 +64,8 @@ public class CachedConnectionIdentifierRepository implements ConnectionIdentifie
             try {
                 return Optional.of(findFromCache.get());
             } catch (final InterruptedException | ExecutionException exception) {
-                throw new ConnectionIdentifierRepositoryException(exception);
+                LOGGER.warning("Unable to find connectionIdentifier from cache - execute delegate " + exception.getMessage());
+                return delegate.find(connectionIdentifier);
             }
         }
     }

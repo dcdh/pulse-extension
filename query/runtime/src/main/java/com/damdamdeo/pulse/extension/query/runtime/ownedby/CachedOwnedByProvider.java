@@ -15,11 +15,14 @@ import jakarta.inject.Inject;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
 @Unremovable
 @Priority(1)
 @Decorator
 public class CachedOwnedByProvider implements OwnedByProvider {
+
+    final Logger LOGGER = Logger.getLogger(CachedOwnedByProvider.class.getName());
 
     @Inject
     @Any
@@ -43,7 +46,8 @@ public class CachedOwnedByProvider implements OwnedByProvider {
             try {
                 return ownedByFromCache.get();
             } catch (final InterruptedException | ExecutionException exception) {
-                throw new UnableToProvideOwnedByException(exception);
+                LOGGER.warning("Unable to get owned by from aggregateId from cache - execute delegate " + exception.getMessage());
+                return delegate.getByAggregateId(aggregateId);
             }
         }
     }

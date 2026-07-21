@@ -18,11 +18,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
 @Unremovable
 @Priority(1)
 @Decorator
 public class CachedPassphraseRepository implements PassphraseRepository {
+
+    final Logger LOGGER = Logger.getLogger(CachedPassphraseRepository.class.getName());
 
     public static final String CACHE_NAME = "passphrase";
 
@@ -52,7 +55,8 @@ public class CachedPassphraseRepository implements PassphraseRepository {
             try {
                 return findFromCache.get().passphraseAsOptional();
             } catch (final InterruptedException | ExecutionException exception) {
-                throw new UnableToRetrievePassphraseException(exception);
+                LOGGER.warning("Unable to find by from cache - execute delegate " + exception.getMessage());
+                return delegate.findBy(ownedBy);
             }
         }
     }
@@ -70,7 +74,8 @@ public class CachedPassphraseRepository implements PassphraseRepository {
             try {
                 return findFromCache.get().passphrase();
             } catch (final InterruptedException | ExecutionException exception) {
-                throw new UnableToRetrievePassphraseException(exception);
+                LOGGER.warning("Unable to get from cache - execute delegate " + exception.getMessage());
+                return delegate.get(ownedBy);
             }
         }
     }
@@ -98,7 +103,8 @@ public class CachedPassphraseRepository implements PassphraseRepository {
             }
             return retrievedPassphrases;
         } catch (final InterruptedException | ExecutionException exception) {
-            throw new UnableToRetrievePassphraseException(exception);
+            LOGGER.warning("Unable to list from cache - execute delegate " + exception.getMessage());
+            return delegate.list(multiples);
         }
     }
 
