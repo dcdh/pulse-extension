@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.query.runtime.EventCounterException;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.OwnedByProvider;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.UnableToProvideOwnedByException;
 import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
@@ -285,6 +286,8 @@ class JdbcProjectionFromApplicationEventStoreTest {
         assertAll(
                 () -> expectedException.get().isExactlyInstanceOf(ProjectionException.class)
                         .cause()
+                        .isExactlyInstanceOf(EventCounterException.class)
+                        .cause()
                         .isExactlyInstanceOf(PSQLException.class),
                 () -> assertThat(status).containsExactly(jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_MARKED_ROLLBACK));
     }
@@ -365,6 +368,8 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // verify DB is empty (rollback happened)
         assertAll(
                 () -> expectedException.get().isExactlyInstanceOf(ProjectionException.class)
+                        .cause()
+                        .isExactlyInstanceOf(EventCounterException.class)
                         .cause()
                         .isExactlyInstanceOf(PSQLException.class),
                 () -> assertThat(status).containsExactly(jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_MARKED_ROLLBACK));
@@ -466,6 +471,8 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // verify DB is empty (rollback happened)
         assertAll(
                 () -> expectedException.get().isExactlyInstanceOf(ProjectionException.class)
+                        .cause()
+                        .isExactlyInstanceOf(EventCounterException.class)
                         .cause()
                         .isExactlyInstanceOf(PSQLException.class),
                 () -> assertThat(status).containsExactly(jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_ACTIVE, jakarta.transaction.Status.STATUS_MARKED_ROLLBACK));
