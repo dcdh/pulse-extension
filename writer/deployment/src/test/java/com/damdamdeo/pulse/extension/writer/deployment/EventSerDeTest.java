@@ -2,8 +2,6 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
-import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.TodoItem;
 import com.damdamdeo.pulse.extension.core.event.MultipleTodoItemsAdded;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -156,13 +154,13 @@ class EventSerDeTest extends AbstractWriterTest {
         // Given
         final MultipleTodoItemsAdded givenMultipleTodoItemsAdded = new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_1,
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_2,
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_3,
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_4,
                                 "Go see family")));
 
         // When
@@ -182,13 +180,13 @@ class EventSerDeTest extends AbstractWriterTest {
         // Then
         assertThat(multipleTodoItemsAdded).isEqualTo(new MultipleTodoItemsAdded(
                 List.of(
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_1,
                                 "IMPORTANT: pulse extension development"),
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_2,
                                 "Implement Projection feature"),
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_3),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_3,
                                 "Organization vacancies"),
-                        new TodoItem(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_4),
+                        new TodoItem(TodoChecklistId.USER_1_TODO_1_4,
                                 "Go see family"))));
     }
 

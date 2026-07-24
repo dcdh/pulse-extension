@@ -23,10 +23,20 @@ public record TodoId(UserId userId, SequenceNumber sequence) implements Aggregat
 
     public static final TodoId USER_1_TODO_1 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_1);
     public static final TodoId USER_1_TODO_2 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_2);
-    public static final TodoId USER_3_TODO_1 = new TodoId(UserId.USER_3, SEQUENCE_NUMBER_1);
+    public static final TodoId USER_1_TODO_3 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_3);
+    public static final TodoId USER_1_TODO_4 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_4);
+    public static final TodoId USER_1_TODO_5 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_5);
     public static final TodoId USER_1_TODO_6 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_6);
     public static final TodoId USER_1_TODO_7 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_7);
+    public static final TodoId USER_1_TODO_8 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_8);
+    public static final TodoId USER_1_TODO_9 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_9);
+    public static final TodoId USER_1_TODO_10 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_10);
+    public static final TodoId USER_1_TODO_11 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_11);
+    public static final TodoId USER_1_TODO_12 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_12);
+    public static final TodoId USER_1_TODO_13 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_13);
+    public static final TodoId USER_1_TODO_14 = new TodoId(UserId.USER_1, SEQUENCE_NUMBER_14);
     public static final TodoId USER_2_TODO_1 = new TodoId(UserId.USER_2, SEQUENCE_NUMBER_1);
+    public static final TodoId USER_3_TODO_1 = new TodoId(UserId.USER_3, SEQUENCE_NUMBER_1);
 
     public TodoId {
         Objects.requireNonNull(userId);

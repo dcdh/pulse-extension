@@ -136,8 +136,8 @@ public class JdbcPostgresExecutedByResolverTest {
         // Given
 
         // When
-        final Set<ExecutedBy> resolved = jdbcPostgresExecutedByResolver.resolve(Set.of(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)));
+        final Set<ExecutedBy> resolved = jdbcPostgresExecutedByResolver.resolve(Set.of(TodoId.USER_1_TODO_1,
+                TodoChecklistId.USER_1_TODO_1_1));
 
         // Then
         assertThat(resolved).containsExactly(BOB, ALICE);

@@ -43,7 +43,7 @@ class PurposeEventChannelConsumerTest {
                         Integer version) implements EventKey {
 
         public static TodoEventKey of() {
-            return new TodoEventKey(Todo.class.getSimpleName(), new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1).toString(), 1);
+            return new TodoEventKey(Todo.class.getSimpleName(), TodoId.USER_1_TODO_1.toString(), 1);
         }
 
         @Override

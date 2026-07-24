@@ -29,7 +29,7 @@ class AggregateIdGeneratorTest {
                 sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber));
 
         // Then
-        assertThat(generated).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1));
+        assertThat(generated).isEqualTo(TodoId.USER_1_TODO_1);
     }
 
     record CustomFailingTodoId() implements AggregateId {
@@ -60,10 +60,10 @@ class AggregateIdGeneratorTest {
 
         // When
         final TodoChecklistId generated = aggregateIdGenerator.generate(new For<>(TodoChecklistId.class, TodoChecklist.BELONGS_TO_USER_1_TODO_1),
-                sequenceNumber -> new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_10), sequenceNumber));
+                sequenceNumber -> new TodoChecklistId(TodoId.USER_1_TODO_10, sequenceNumber));
 
         // Then
-        assertThat(generated).isEqualTo(new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_10), TodoId.SEQUENCE_NUMBER_1));
+        assertThat(generated).isEqualTo(TodoChecklistId.USER_1_TODO_10_1);
     }
 
 }

@@ -3,7 +3,6 @@ package com.damdamdeo.pulse.extension.query.deployment;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -65,7 +64,7 @@ class JdbcPostgresOwnedByProviderTest {
         // Given
         {
             final Todo todo = new Todo(
-                    new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                    TodoId.USER_1_TODO_1,
                     "IMPORTANT: pulse extension development",
                     Status.IN_PROGRESS,
                     true);

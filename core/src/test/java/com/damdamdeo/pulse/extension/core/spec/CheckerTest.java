@@ -25,7 +25,7 @@ class CheckerTest {
     @Test
     void shouldNotFailWhenTodoIsImportantAndInProgress() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), "lorem", Status.IN_PROGRESS, true);
+        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, true);
 
         // When && Then
         assertAll(
@@ -36,7 +36,7 @@ class CheckerTest {
     @Test
     void shouldFailWhenTodoIsNotImportant() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), "lorem", Status.IN_PROGRESS, false);
+        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false);
 
         // When && Then
         assertAll(
@@ -50,7 +50,7 @@ class CheckerTest {
     @Test
     void shouldFailWhenTodoIsImportantAndNotInProgress() {
         // Given
-        final Todo givenTodo = new Todo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), "lorem", Status.DONE, true);
+        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.DONE, true);
 
         // When && Then
         assertAll(

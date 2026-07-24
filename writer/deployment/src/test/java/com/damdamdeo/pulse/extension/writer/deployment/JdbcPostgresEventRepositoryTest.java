@@ -129,7 +129,7 @@ class JdbcPostgresEventRepositoryTest {
         // When
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        TodoId.USER_1_TODO_1,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
@@ -191,7 +191,7 @@ class JdbcPostgresEventRepositoryTest {
                         new VersionizedEvent<>(new AggregateVersion(0),
                                 new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), BOB))),
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
+                        TodoId.USER_1_TODO_2,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
                         false
@@ -202,7 +202,7 @@ class JdbcPostgresEventRepositoryTest {
                         new VersionizedEvent<>(new AggregateVersion(1),
                                 new ExecutedByEvent<>(new TodoMarkedAsDone(), BOB))),
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
+                        TodoId.USER_1_TODO_2,
                         "lorem ipsum",
                         Status.DONE,
                         false
@@ -281,14 +281,14 @@ class JdbcPostgresEventRepositoryTest {
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_3),
+                        TodoId.USER_1_TODO_3,
                         "lorem ipsum",
                         Status.DONE,
                         false
                 ), ExecutedBy.NotAvailable.INSTANCE);
 
         // When
-        final List<ExecutedByEvent<TodoId>> events = todoEventRepository.loadOrderByVersionASC(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_3));
+        final List<ExecutedByEvent<TodoId>> events = todoEventRepository.loadOrderByVersionASC(TodoId.USER_1_TODO_3);
 
         // Then
         assertThat(events).containsExactly(
@@ -307,7 +307,7 @@ class JdbcPostgresEventRepositoryTest {
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_4),
+                        TodoId.USER_1_TODO_4,
                         "lorem ipsum",
                         Status.DONE,
                         false
@@ -315,7 +315,7 @@ class JdbcPostgresEventRepositoryTest {
 
         // When
         final List<ExecutedByEvent<TodoId>> events = todoEventRepository.loadOrderByVersionASC(
-                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_4), new AggregateVersion(1));
+                TodoId.USER_1_TODO_4, new AggregateVersion(1));
 
         // Then
         assertThat(events).containsExactly(
@@ -679,14 +679,14 @@ class JdbcPostgresEventRepositoryTest {
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_5),
+                        TodoId.USER_1_TODO_5,
                         "lorem ipsum",
                         Status.DONE,
                         false
                 ), ExecutedBy.NotAvailable.INSTANCE);
 
         // When
-        final Optional<AggregateVersion> version = todoEventRepository.findLastAggregateVersionById(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_5));
+        final Optional<AggregateVersion> version = todoEventRepository.findLastAggregateVersionById(TodoId.USER_1_TODO_5);
 
         // Then
         assertThat(version).hasValue(new AggregateVersion(1));
@@ -702,7 +702,7 @@ class JdbcPostgresEventRepositoryTest {
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_6),
+                        TodoId.USER_1_TODO_6,
                         "lorem ipsum",
                         Status.DONE,
                         false
@@ -710,7 +710,7 @@ class JdbcPostgresEventRepositoryTest {
 
         // When
         final List<EventMetadata> eventMetadataByIdOrderByVersionASC = todoEventRepository.findEventMetadataByIdOrderByVersionASC(
-                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_6));
+                TodoId.USER_1_TODO_6);
 
         // Then
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(
@@ -734,7 +734,7 @@ class JdbcPostgresEventRepositoryTest {
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_7),
+                        TodoId.USER_1_TODO_7,
                         "lorem ipsum",
                         Status.DONE,
                         false
@@ -742,7 +742,7 @@ class JdbcPostgresEventRepositoryTest {
 
         // When
         final List<EventMetadata> eventMetadataByIdOrderByVersionASC = todoEventRepository.findEventMetadataByIdAndEventsOrderByVersionASC(
-                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_7), List.of(TodoMarkedAsDone.class));
+                TodoId.USER_1_TODO_7, List.of(TodoMarkedAsDone.class));
 
         // Then
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(new EventMetadata(
@@ -756,7 +756,7 @@ class JdbcPostgresEventRepositoryTest {
         // Given
 
         // When
-        final boolean hasEventsFor = todoEventRepository.hasEventsFor(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_8));
+        final boolean hasEventsFor = todoEventRepository.hasEventsFor(TodoId.USER_1_TODO_8);
 
         // Then
         assertThat(hasEventsFor).isFalse();
@@ -772,14 +772,14 @@ class JdbcPostgresEventRepositoryTest {
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_9),
+                        TodoId.USER_1_TODO_9,
                         "lorem ipsum",
                         Status.DONE,
                         false
                 ), ExecutedBy.NotAvailable.INSTANCE);
 
         // When
-        final boolean hasEventsFor = todoEventRepository.hasEventsFor(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_9));
+        final boolean hasEventsFor = todoEventRepository.hasEventsFor(TodoId.USER_1_TODO_9);
 
         // Then
         assertThat(hasEventsFor).isTrue();

@@ -49,7 +49,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
 
         // Then
         assertAll(
-                () -> assertThat(loremIpsum).isEqualTo(new Todo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), "lorem ipsum", Status.IN_PROGRESS, false)),
+                () -> assertThat(loremIpsum).isEqualTo(new Todo(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false)),
                 () -> assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001")
         );
     }

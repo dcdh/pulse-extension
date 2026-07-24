@@ -159,7 +159,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
         {
             final Todo todo = new Todo(
-                    new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                    TodoId.USER_1_TODO_1,
                     "IMPORTANT: pulse extension development",
                     Status.IN_PROGRESS,
                     true);
@@ -171,7 +171,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
         {
             final TodoChecklist todoChecklist = new TodoChecklist(
-                    new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                    TodoChecklistId.USER_1_TODO_1_1,
                     "Implement Projection feature");
             eventTestRepository.insert(
                     new TodoItemAdded("Implement Projection feature"),
@@ -181,7 +181,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
         {
             final Todo todo = new Todo(
-                    new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
+                    TodoId.USER_1_TODO_2,
                     "Organization vacancies",
                     Status.IN_PROGRESS,
                     false);
@@ -193,7 +193,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
         {
             final TodoChecklist todoChecklist = new TodoChecklist(
-                    new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
+                    TodoChecklistId.USER_1_TODO_2_1,
                     "Go see family");
             eventTestRepository.insert(
                     new TodoItemAdded("Go see family"),
@@ -203,7 +203,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
         {
             final Todo todo = new Todo(
-                    new TodoId(UserId.USER_2, TodoId.SEQUENCE_NUMBER_1),
+                    TodoId.USER_2_TODO_1,
                     "Bob vacancies",
                     Status.IN_PROGRESS,
                     false);
@@ -222,19 +222,19 @@ class JdbcProjectionFromApplicationEventStoreTest {
         assertThat(foundOneByAggregateId).isEqualTo(Optional.of(
                 Result.of(
                         new TodoProjection(
-                                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                TodoId.USER_1_TODO_1,
                                 "IMPORTANT: pulse extension development",
                                 Status.IN_PROGRESS,
                                 true,
                                 List.of(
                                         new TodoChecklistProjection(
-                                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                                TodoChecklistId.USER_1_TODO_1_1,
                                                 "Implement Projection feature"
                                         )
                                 )
                         ),
-                        Set.of(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)))
+                        Set.of(TodoId.USER_1_TODO_1,
+                                TodoChecklistId.USER_1_TODO_1_1))
         ));
     }
 
@@ -304,19 +304,19 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Then
         assertThat(getOneByAggregateId).isEqualTo(Result.of(
                 new TodoProjection(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        TodoId.USER_1_TODO_1,
                         "IMPORTANT: pulse extension development",
                         Status.IN_PROGRESS,
                         true,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                        TodoChecklistId.USER_1_TODO_1_1,
                                         "Implement Projection feature"
                                 )
                         )
                 ),
-                Set.of(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1)))
+                Set.of(TodoId.USER_1_TODO_1,
+                        TodoChecklistId.USER_1_TODO_1_1))
         );
     }
 
@@ -329,7 +329,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         assertThatThrownBy(() -> todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_3_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery()))
                 .isExactlyInstanceOf(ProjectionException.class)
-                .hasFieldOrPropertyWithValue("aggregateId", new TodoId(UserId.USER_3, TodoId.SEQUENCE_NUMBER_1))
+                .hasFieldOrPropertyWithValue("aggregateId", TodoId.USER_3_TODO_1)
                 .cause()
                 .isExactlyInstanceOf(UnknownProjectionException.class);
     }
@@ -389,25 +389,25 @@ class JdbcProjectionFromApplicationEventStoreTest {
         assertAll(
                 () -> assertThat(todos.projections()).containsExactly(
                         new TodoProjection(
-                                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                                TodoId.USER_1_TODO_1,
                                 "IMPORTANT: pulse extension development",
                                 Status.IN_PROGRESS,
                                 true,
                                 List.of(
                                         new TodoChecklistProjection(
-                                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                                TodoChecklistId.USER_1_TODO_1_1,
                                                 "Implement Projection feature"
                                         )
                                 )
                         ),
                         new TodoProjection(
-                                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
+                                TodoId.USER_1_TODO_2,
                                 "Organization vacancies",
                                 Status.IN_PROGRESS,
                                 false,
                                 List.of(
                                         new TodoChecklistProjection(
-                                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                                TodoChecklistId.USER_1_TODO_2_1,
                                                 "Go see family"
                                         )
                                 )
@@ -415,19 +415,19 @@ class JdbcProjectionFromApplicationEventStoreTest {
                 ),
                 () -> assertThat(todos.count()).isEqualTo(2),
                 () -> assertThat(todos.aggregateIds()).containsExactlyInAnyOrder(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
-                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2),
-                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_2), TodoChecklistId.SEQUENCE_NUMBER_1)
+                        TodoId.USER_1_TODO_1,
+                        TodoChecklistId.USER_1_TODO_1_1,
+                        TodoId.USER_1_TODO_2,
+                        TodoChecklistId.USER_1_TODO_2_1
                 ),
                 () -> assertThat(todos.getFirst()).isEqualTo(new TodoProjection(
-                        new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                        TodoId.USER_1_TODO_1,
                         "IMPORTANT: pulse extension development",
                         Status.IN_PROGRESS,
                         true,
                         List.of(
                                 new TodoChecklistProjection(
-                                        new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
+                                        TodoChecklistId.USER_1_TODO_1_1,
                                         "Implement Projection feature"
                                 )
                         )

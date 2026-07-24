@@ -74,7 +74,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
         assertAll(
                 () -> assertThat(onStoredEventListeners.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
-                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)),
+                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(TodoId.USER_1_TODO_1),
                 () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))
         );
     }

@@ -3,7 +3,6 @@ package com.damdamdeo.pulse.extension.core.command;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 import java.util.Objects;
 import java.util.Optional;

@@ -41,7 +41,7 @@ class CommandHandlerTest extends AbstractWriterTest {
 
         // Then
         assertAll(
-                () -> assertThat(todoCreated.id()).isEqualTo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1)),
+                () -> assertThat(todoCreated.id()).isEqualTo(TodoId.USER_1_TODO_1),
                 () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE)

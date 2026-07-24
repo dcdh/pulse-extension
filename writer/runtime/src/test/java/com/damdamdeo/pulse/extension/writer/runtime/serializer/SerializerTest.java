@@ -213,7 +213,7 @@ class SerializerTest {
     @Test
     void shouldSerializeTodo() throws JsonProcessingException, JSONException {
         // Given
-        final Todo given = new Todo(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+        final Todo given = new Todo(TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,
                 false);
@@ -234,7 +234,7 @@ class SerializerTest {
 
         // Then
         assertThat(deserializedTodo).isEqualTo(new Todo(
-                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,
                 false
@@ -245,19 +245,15 @@ class SerializerTest {
     void shouldSerializeFullTodo() throws JsonProcessingException, JSONException {
         // Given
         final FullTodo given = new FullTodo(
-                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,
                 false,
                 List.of(
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
-                                "Implement Projection feature"
-                        ),
+                                TodoChecklistId.USER_1_TODO_1_1, "Implement Projection feature"),
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
-                                "Organization vacancies"
-                        )
+                                TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
                 )
         );
 
@@ -277,18 +273,15 @@ class SerializerTest {
 
         // Then
         assertThat(deserializedFullTodo).isEqualTo(new FullTodo(
-                new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1),
+                TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,
                 false,
                 List.of(
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_1),
-                                "Implement Projection feature"
-                        ),
+                                TodoChecklistId.USER_1_TODO_1_1, "Implement Projection feature"),
                         new TodoChecklist(
-                                new TodoChecklistId(new TodoId(UserId.USER_1, TodoId.SEQUENCE_NUMBER_1), TodoChecklistId.SEQUENCE_NUMBER_2),
-                                "Organization vacancies"
+                                TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies"
                         )
                 )
         ));
