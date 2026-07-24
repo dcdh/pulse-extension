@@ -163,7 +163,8 @@ class SerializerTest {
                        },
                        "description": "lorem ipsum",
                        "status": "DONE",
-                       "important": false
+                       "important": false,
+                       "nullableField": null
                     }
                     """;
 
