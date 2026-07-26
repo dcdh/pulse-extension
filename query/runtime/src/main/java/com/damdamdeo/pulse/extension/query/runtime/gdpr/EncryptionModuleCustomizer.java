@@ -8,9 +8,10 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import com.damdamdeo.pulse.extension.query.runtime.PulseQueryConfig;
-import com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.deserializer.EncryptableDeserializerModifier;
+import com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.deserializer.EncryptedAnnotationIntrospector;
 import com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.serializer.EncryptableSerializerModifier;
 import com.damdamdeo.pulse.extension.query.runtime.gdpr.hashable.HashableSerializerModifier;
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.quarkus.jackson.ObjectMapperCustomizer;
@@ -44,7 +45,6 @@ public class EncryptionModuleCustomizer implements ObjectMapperCustomizer {
         objectMapper.registerModule(hashableModule);
         final SimpleModule encryptableModule = new SimpleModule();
         encryptableModule.setSerializerModifier(new EncryptableSerializerModifier(pulseQueryConfig, encryptionService));
-        encryptableModule.setDeserializerModifier(new EncryptableDeserializerModifier(pulseQueryConfig, decryptionService));
         objectMapper.registerModule(encryptableModule);
         final SimpleModule module = new SimpleModule();
         module.addSerializer(SequenceNumber.class, new SequenceNumberSerializer());
@@ -52,5 +52,9 @@ public class EncryptionModuleCustomizer implements ObjectMapperCustomizer {
         module.addSerializer(OwnedBy.class, new OwnedBySerializer());
         module.addDeserializer(OwnedBy.class, new OwnedByDeserializer());
         objectMapper.registerModule(module);
+        objectMapper.setAnnotationIntrospector(AnnotationIntrospector.pair(
+                new EncryptedAnnotationIntrospector(pulseQueryConfig, decryptionService),
+                objectMapper.getDeserializationConfig().getAnnotationIntrospector()
+        ));
     }
 }

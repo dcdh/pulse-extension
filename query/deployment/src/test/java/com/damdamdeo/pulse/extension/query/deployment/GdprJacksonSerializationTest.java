@@ -4,8 +4,7 @@ import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.Encryptable;
-import com.damdamdeo.pulse.extension.query.runtime.gdpr.hashable.Hashable;
+import com.damdamdeo.pulse.extension.query.runtime.gdpr.Encrypted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
@@ -19,57 +18,45 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class GdprJacksonTest {
-    // FCK
+class GdprJacksonSerializationTest {
+
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(StubPassphraseProvider.class))
             .withConfigurationResource("application.properties");
 
-    record Username(String username) implements Hashable, Encryptable {
-
-        @Override
-        public String value() {
-            return username;
-        }
-    }
-
-    record Description(String description) implements Encryptable {
-
-        @Override
-        public String value() {
-            return description;
-        }
-    }
-
     record GdprTodo(TodoId todoId,
-                    Username username,
-                    Description description,
+                    @Encrypted(Encrypted.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
+                    String username,
+                    @Encrypted(Encrypted.Mode.ENCRYPT)
+                    String description,
                     Status status,
                     boolean important,
                     List<GdprChecklist> gdprChecklists,
                     OwnedBy ownedBy) {
 
         GdprTodo {
-//            Objects.requireNonNull(todoId);
-//            Objects.requireNonNull(username);
-//            Objects.requireNonNull(description);
-//            Objects.requireNonNull(status);
-//            Objects.requireNonNull(gdprChecklists);
-//            Objects.requireNonNull(ownedBy);
+            Objects.requireNonNull(todoId);
+            Objects.requireNonNull(username);
+            Objects.requireNonNull(description);
+            Objects.requireNonNull(status);
+            Objects.requireNonNull(gdprChecklists);
+            Objects.requireNonNull(ownedBy);
         }
     }
 
     record GdprChecklist(TodoChecklistId todoChecklistId,
-                         Description description) {
+                         @Encrypted(Encrypted.Mode.ENCRYPT)
+                         String description) {
 
         GdprChecklist {
-//            Objects.requireNonNull(todoChecklistId);
-//            Objects.requireNonNull(description);
+            Objects.requireNonNull(todoChecklistId);
+            Objects.requireNonNull(description);
         }
     }
 
@@ -125,15 +112,15 @@ class GdprJacksonTest {
         // Given
         final GdprTodo givenGdprTodo = new GdprTodo(
                 TodoId.USER_1_TODO_1,
-                new Username("bob@gmail.com"),
-                new Description("lorem ipsum"),
+                "bob@gmail.com",
+                "lorem ipsum",
                 Status.DONE,
                 false,
                 List.of(
                         new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_1, new Description("Implement Projection feature")),
+                                TodoChecklistId.USER_1_TODO_1_1, "Implement Projection feature"),
                         new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_2, new Description("Organization vacancies"))
+                                TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
                 ),
                 OwnedBy.from(TodoId.USER_1_TODO_1));
 
@@ -165,15 +152,15 @@ class GdprJacksonTest {
         // Then
         assertThat(gdprTodo).isEqualTo(new GdprTodo(
                 TodoId.USER_1_TODO_1,
-                new Username("bob@gmail.com"),
-                new Description("lorem ipsum"),
+                "bob@gmail.com",
+                "lorem ipsum",
                 Status.DONE,
                 false,
                 List.of(
                         new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_1, new Description("Implement Projection feature")),
+                                TodoChecklistId.USER_1_TODO_1_1, "Implement Projection feature"),
                         new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_2, new Description("Organization vacancies"))
+                                TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
                 ),
                 OwnedBy.from(TodoId.USER_1_TODO_1)));
     }

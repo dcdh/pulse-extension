@@ -18,10 +18,10 @@ public final class HashablePropertyWriter extends BeanPropertyWriter {
 
     @Override
     public void serializeAsField(final Object bean, final JsonGenerator gen, final SerializerProvider provider) throws Exception {
-        final Hashable hashable = (Hashable) get(bean);
+        final Object hashable = get(bean);
         if (hashable == null) {
             return;
         }
-        gen.writeStringField(getName() + "_hash", hasher.hash(hashable.value()));
+        gen.writeStringField(getName() + "_hash", hasher.hash(hashable.toString()));
     }
 }
