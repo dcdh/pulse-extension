@@ -37,20 +37,49 @@ public final class EncryptedAnnotationIntrospector extends JacksonAnnotationIntr
     @Override
     public Object findDeserializer(final Annotated annotated) {
         if (annotated.hasAnnotation(Encrypted.class)) {
-            return new StdDeserializer<String>(String.class) {
-                @Override
-                public String deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
-                    try {
-                        final MasterKey masterKey = new MasterKey(pulseQueryConfig.masterKey());
-                        final EncryptedPayload encryptedPayload = new EncryptedPayload(p.getBinaryValue());
-                        final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, masterKey.toPassphrase());
-                        return new String(decryptedPayload.payload());
-                    } catch (final DecryptionException e) {
-                        throw JsonMappingException.from(p, "Unable to decrypt", e);
+            if (annotated.getRawType() == String.class) {
+                return new StdDeserializer<String>(String.class) {
+                    @Override
+                    public String deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+                        return new String(decrypt(p));
                     }
-                }
-            };
+                };
+            } else if (annotated.getRawType() == Long.class) {
+                return new StdDeserializer<Long>(Long.class) {
+                    @Override
+                    public Long deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+                        return Long.valueOf(new String(decrypt(p)));
+                    }
+                };
+            } else if (annotated.getRawType() == Integer.class) {
+                return new StdDeserializer<Integer>(Integer.class) {
+                    @Override
+                    public Integer deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+                        return Integer.valueOf(new String(decrypt(p)));
+                    }
+                };
+            } else if (annotated.getRawType() == Double.class) {
+                return new StdDeserializer<Double>(Double.class) {
+                    @Override
+                    public Double deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+                        return Double.valueOf(new String(decrypt(p)));
+                    }
+                };
+            } else {
+                throw new UnsupportedOperationException("Unsupported type: " + annotated.getRawType());
+            }
         }
         return super.findDeserializer(annotated);
+    }
+
+    private byte[] decrypt(final JsonParser p) throws IOException {
+        try {
+            final MasterKey masterKey = new MasterKey(pulseQueryConfig.masterKey());
+            final EncryptedPayload encryptedPayload = new EncryptedPayload(p.getBinaryValue());
+            final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, masterKey.toPassphrase());
+            return decryptedPayload.payload();
+        } catch (final DecryptionException e) {
+            throw JsonMappingException.from(p, "Unable to decrypt", e);
+        }
     }
 }

@@ -17,6 +17,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -31,6 +33,8 @@ class GdprJacksonSerializationTest {
             .withConfigurationResource("application.properties");
 
     record GdprTodo(TodoId todoId,
+//                    @Encrypted(Encrypted.Mode.ENCRYPT)
+//                    LocalDateTime createdAt,
                     @Encrypted(Encrypted.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
                     String username,
                     @Encrypted(Encrypted.Mode.ENCRYPT)
@@ -38,7 +42,9 @@ class GdprJacksonSerializationTest {
                     Status status,
                     boolean important,
                     List<GdprChecklist> gdprChecklists,
-                    OwnedBy ownedBy) {
+                    OwnedBy ownedBy,
+                    @Encrypted(Encrypted.Mode.ENCRYPT)
+                    Long version) {
 
         GdprTodo {
             Objects.requireNonNull(todoId);
@@ -100,7 +106,8 @@ class GdprJacksonSerializationTest {
                   "description_encrypted": "wx4EBwMCOUj3mneinPBgtZxufJDOBb2NvUc4xP3XT63SSwFIJ8nsR/v5xQo3zIPxhKoXi7rlt2ffr2zM+4LRpdabHHOt1QQ7FKQ3faersByrB4xJJQnOUe7Yqsn0Z/VLdJ1r7N691PnLcH4ujQ=="
                 }
               ],
-              "ownedBy": "U000001-T000001"
+              "ownedBy": "U000001-T000001",
+              "version_encrypted": "wx4EBwMCNOHERVzXbTFg622rrLhcGHty5bBDSl1B04TSNgHwvh6AkkwBGjzjBO+CjWWyQn2HYfoylLLSB5b/6Q7DLouV0EJlICLfdUzljDCTT5P9CKT2fQ=="
             }
             """;
 
@@ -122,7 +129,8 @@ class GdprJacksonSerializationTest {
                         new GdprChecklist(
                                 TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
                 ),
-                OwnedBy.from(TodoId.USER_1_TODO_1));
+                OwnedBy.from(TodoId.USER_1_TODO_1),
+                2L);
 
         // When
         final String serialized = objectMapper.writeValueAsString(givenGdprTodo);
@@ -138,6 +146,8 @@ class GdprJacksonSerializationTest {
                         new Customization("description_encrypted",
                                 (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches()),
                         new Customization("gdprChecklists[*].description_encrypted",
+                                (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches()),
+                        new Customization("version_encrypted",
                                 (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches())
                 ));
     }
@@ -162,6 +172,7 @@ class GdprJacksonSerializationTest {
                         new GdprChecklist(
                                 TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
                 ),
-                OwnedBy.from(TodoId.USER_1_TODO_1)));
+                OwnedBy.from(TodoId.USER_1_TODO_1),
+                2L));
     }
 }
