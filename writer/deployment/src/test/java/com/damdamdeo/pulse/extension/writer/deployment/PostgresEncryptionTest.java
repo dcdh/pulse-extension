@@ -81,16 +81,16 @@ class PostgresEncryptionTest {
     // "\dt todo_taking.*" lister les tables dans le schema todo_taking
     // "\df todo_taking.*" lister les procedure stockée dans le schema todo_taking
     // "\dx" lister les extensions
-    // SELECT public.pgp_sym_encrypt('Hello world!','passphrase') AS encrypted;
+    // SELECT public.pgp_sym_encrypt('Hello world!','passphrase') AS searchByHash;
     @Test
     void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() throws DecryptionException {
         // Given
-        byte[] encrypted;
+        byte[] searchByHash;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement encryptedPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT public.pgp_sym_encrypt(?,?) AS encrypted
+                             SELECT public.pgp_sym_encrypt(?,?) AS searchByHash
                              """
              )) {
             connection.setAutoCommit(false);
@@ -98,21 +98,21 @@ class PostgresEncryptionTest {
             encryptedPreparedStatement.setString(2, new String(PassphraseSample.PASSPHRASE_1.passphrase()));
             try (final ResultSet encryptedResultSet = encryptedPreparedStatement.executeQuery()) {
                 encryptedResultSet.next();
-                encrypted = encryptedResultSet.getBytes(1);
+                searchByHash = encryptedResultSet.getBytes(1);
             }
         } catch (final SQLException e) {
             throw new EventStoreException(e);
         }
 
         // When
-        final DecryptedPayload decrypted = decryptionService.decrypt(new EncryptedPayload(encrypted), Todo.OWNED_BY_USER_1);
+        final DecryptedPayload decrypted = decryptionService.decrypt(new EncryptedPayload(searchByHash), Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
                 /*
 pgp_sym_encrypt() implements the OpenPGP specification (RFC 4880), which requires the addition of random values (called salt and initialization vector, or IV) to each encryption.
 These values ensure that:
-- two identical messages encrypted with the same key produce different results,
+- two identical messages searchByHash with the same key produce different results,
 - it is impossible to deduce the content or repetition of a message from the ciphertext,
 - and that the encryption remains semantically secure.
                  */
@@ -127,7 +127,7 @@ These values ensure that:
         final String givenToEncrypt = "Hello world!";
 
         // When
-        final EncryptedPayload encrypted = encryptionService.encrypt(givenToEncrypt.getBytes(StandardCharsets.UTF_8),
+        final EncryptedPayload searchByHash = encryptionService.encrypt(givenToEncrypt.getBytes(StandardCharsets.UTF_8),
                 PassphraseSample.PASSPHRASE_1);
 
         byte[] decrypted;
@@ -139,7 +139,7 @@ These values ensure that:
                              """
              )) {
             connection.setAutoCommit(false);
-            encryptedPreparedStatement.setBytes(1, encrypted.payload());
+            encryptedPreparedStatement.setBytes(1, searchByHash.payload());
             encryptedPreparedStatement.setString(2, new String(PassphraseSample.PASSPHRASE_1.passphrase()));
             try (final ResultSet decryptedResultSet = encryptedPreparedStatement.executeQuery()) {
                 decryptedResultSet.next();

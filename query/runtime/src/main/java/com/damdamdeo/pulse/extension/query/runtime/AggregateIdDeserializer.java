@@ -31,8 +31,8 @@ public final class AggregateIdDeserializer<T extends AggregateId> extends JsonDe
     }
 
     @Override
-    public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-        JavaType type = ctxt.getContextualType();
+    public JsonDeserializer<?> createContextual(final DeserializationContext ctxt, final BeanProperty property) throws JsonMappingException {
+        final JavaType type = ctxt.getContextualType();
         return new AggregateIdDeserializer<>(type);
     }
 }

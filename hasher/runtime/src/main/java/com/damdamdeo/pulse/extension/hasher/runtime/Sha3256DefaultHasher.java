@@ -15,8 +15,15 @@ import java.util.Objects;
 @DefaultBean
 public class Sha3256DefaultHasher implements Hasher {
 
+    @Override
     public <T extends Identifiable> Hash<T> hash(final T identifiable) {
         Objects.requireNonNull(identifiable);
-        return new Hash<>(new DigestUtils("SHA3-256").digestAsHex(identifiable.id()));
+        return new Hash<>(hash(identifiable.id()));
+    }
+
+    @Override
+    public String hash(final String value) {
+        Objects.requireNonNull(value);
+        return new DigestUtils("SHA3-256").digestAsHex(value);
     }
 }

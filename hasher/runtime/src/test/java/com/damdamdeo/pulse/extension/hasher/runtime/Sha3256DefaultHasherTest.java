@@ -19,6 +19,17 @@ class Sha3256DefaultHasherTest {
         // Given
 
         // When
+        final String hash = sha3256DefaultHasher.hash(GIVEN.id());
+
+        // Then
+        assertThat(hash).isEqualTo(GIVEN.expected().value());
+    }
+
+    @Test
+    void shouldHashFromIdentifiable() {
+        // Given
+
+        // When
         final Hash<CustomIdentifiable> hash = sha3256DefaultHasher.hash(GIVEN);
 
         // Then

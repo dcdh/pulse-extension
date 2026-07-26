@@ -11,6 +11,11 @@ import java.util.List;
 public interface PulseQueryConfig {
 
     /**
+     * masterKey to encode / decode encrypted property
+     */
+    String masterKey();
+
+    /**
      * backendUser
      *
      * @return backendUser

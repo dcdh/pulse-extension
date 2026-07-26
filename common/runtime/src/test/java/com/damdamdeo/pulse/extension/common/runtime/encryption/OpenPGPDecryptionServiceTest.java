@@ -32,7 +32,7 @@ class OpenPGPDecryptionServiceTest {
     }
 
     @Test
-    void shouldDecrypt() throws DecryptionException, UnableToProvidePassphraseException {
+    void shouldDecryptByOwnedBy() throws DecryptionException, UnableToProvidePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
@@ -46,7 +46,7 @@ class OpenPGPDecryptionServiceTest {
 
     // Meaning that the organization has been deleted from Vault ...
     @Test
-    void shouldThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToProvidePassphraseException {
+    void shouldDecryptByOwnedByThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToProvidePassphraseException {
         // Given
         final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
         doThrow(new UnableToProvidePassphraseException(new PassphraseBannedException()))
@@ -59,5 +59,17 @@ class OpenPGPDecryptionServiceTest {
                 .isExactlyInstanceOf(UnableToProvidePassphraseException.class)
                 .cause()
                 .isExactlyInstanceOf(PassphraseBannedException.class);
+    }
+
+    @Test
+    void shouldDecryptByPassphrase() throws DecryptionException {
+        // Given
+        final EncryptedPayload encrypted = encryptionService.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1);
+
+        // When
+        final DecryptedPayload decrypted = decryptionService.decrypt(encrypted, PassphraseSample.PASSPHRASE_1);
+
+        // Then
+        assertThat(decrypted).isEqualTo(new DecryptedPayload("Hello world!".getBytes(StandardCharsets.UTF_8)));
     }
 }

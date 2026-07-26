@@ -5,4 +5,6 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 public interface DecryptionService {
 
     DecryptedPayload decrypt(EncryptedPayload encrypted, OwnedBy ownedBy) throws DecryptionException;
+
+    DecryptedPayload decrypt(EncryptedPayload encrypted, Passphrase passphrase) throws DecryptionException;
 }
