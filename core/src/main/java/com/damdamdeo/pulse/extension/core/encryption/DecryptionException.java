@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core.encryption;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public final class DecryptionException extends Exception {
 
@@ -18,7 +19,17 @@ public final class DecryptionException extends Exception {
         this.ownedBy = Objects.requireNonNull(ownedBy);
     }
 
-    public OwnedBy ownedBy() {
-        return ownedBy;
+    public DecryptionException(final Throwable cause) {
+        super(cause);
+        ownedBy = null;
+    }
+
+    public DecryptionException(final String message) {
+        super(message);
+        ownedBy = null;
+    }
+
+    public Optional<OwnedBy> ownedBy() {
+        return Optional.ofNullable(ownedBy);
     }
 }

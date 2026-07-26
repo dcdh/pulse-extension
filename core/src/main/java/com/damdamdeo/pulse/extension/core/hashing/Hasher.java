@@ -5,4 +5,6 @@ import com.damdamdeo.pulse.extension.core.event.Identifiable;
 public interface Hasher {
 
     <T extends Identifiable> Hash<T> hash(T identifiable);
+
+    String hash(String value);
 }

@@ -34,10 +34,21 @@ public final class OpenPGPDecryptionService implements DecryptionService {
     }
 
     @Override
-    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy)
-            throws DecryptionException {
+    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy) throws DecryptionException {
         Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
+        try {
+            final Passphrase passphrase = passphraseProvider.provide(ownedBy);
+            return decrypt(encrypted, passphrase);
+        } catch (UnableToProvidePassphraseException exception) {
+            throw new DecryptionException(exception);
+        }
+    }
+
+    @Override
+    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final Passphrase passphrase) throws DecryptionException {
+        Objects.requireNonNull(encrypted);
+        Objects.requireNonNull(passphrase);
         try (final InputStream in = new ByteArrayInputStream(encrypted.payload())) {
             final PGPObjectFactory pgpF = new PGPObjectFactory(in, new JcaKeyFingerprintCalculator());
             final Object o = pgpF.nextObject();
@@ -48,7 +59,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                 final PBEDataDecryptorFactory decryptorFactory = new JcePBEDataDecryptorFactoryBuilder(
                         new JcaPGPDigestCalculatorProviderBuilder().build())
                         .setProvider("BC")
-                        .build(passphraseProvider.provide(ownedBy).passphrase());
+                        .build(passphrase.passphrase());
 
                 try (final InputStream clear = encData.getDataStream(decryptorFactory)) {
                     final PGPObjectFactory plainFact = new PGPObjectFactory(clear, new JcaKeyFingerprintCalculator());
@@ -57,13 +68,13 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                     if (message instanceof PGPLiteralData literalData) {
                         return new DecryptedPayload(literalData.getInputStream().readAllBytes());
                     } else {
-                        throw new DecryptionException(ownedBy, "Contenu PGP inattendu, pas de PGPLiteralData");
+                        throw new DecryptionException("Contenu PGP inattendu, pas de PGPLiteralData");
                     }
                 }
             }
-            throw new DecryptionException(ownedBy, "Invalid PGP structure");
-        } catch (final IOException | PGPException | UnableToProvidePassphraseException e) {
-            throw new DecryptionException(ownedBy, e);
+            throw new DecryptionException("Invalid PGP structure");
+        } catch (final IOException | PGPException e) {
+            throw new DecryptionException(e);
         }
     }
 }
