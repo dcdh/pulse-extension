@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.query.runtime.gdpr.hashable;
 
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
-import com.damdamdeo.pulse.extension.query.runtime.gdpr.Encrypted;
+import com.damdamdeo.pulse.extension.query.runtime.gdpr.Sensitive;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
@@ -27,8 +27,8 @@ public final class HashableSerializerModifier extends BeanSerializerModifier {
         final List<BeanPropertyWriter> result = new ArrayList<>();
         for (final BeanPropertyWriter writer : beanProperties) {
             final AnnotatedMember member = writer.getMember();
-            final Encrypted encrypted = member.getAnnotation(Encrypted.class);
-            if (encrypted != null && Encrypted.Mode.ENCRYPT_AND_SEARCH_BY_HASH.equals(encrypted.value())) {
+            final Sensitive sensitive = member.getAnnotation(Sensitive.class);
+            if (sensitive != null && Sensitive.Mode.ENCRYPT_AND_SEARCH_BY_HASH.equals(sensitive.value())) {
                 result.add(new HashablePropertyWriter(writer, hasher));
                 result.add(writer);
             } else {

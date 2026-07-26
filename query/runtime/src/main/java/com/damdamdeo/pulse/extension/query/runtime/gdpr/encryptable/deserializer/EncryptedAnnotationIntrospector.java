@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.deserialize
 
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.query.runtime.PulseQueryConfig;
-import com.damdamdeo.pulse.extension.query.runtime.gdpr.Encrypted;
+import com.damdamdeo.pulse.extension.query.runtime.gdpr.Sensitive;
 import com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.serializer.EncryptablePropertyWriter;
 import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.introspect.Annotated;
@@ -23,7 +23,7 @@ public final class EncryptedAnnotationIntrospector extends JacksonAnnotationIntr
 
     @Override
     public PropertyName findNameForDeserialization(final Annotated annotated) {
-        if (annotated.hasAnnotation(Encrypted.class)) {
+        if (annotated.hasAnnotation(Sensitive.class)) {
             return new PropertyName(annotated.getName() + EncryptablePropertyWriter.ENCRYPTED_FIELD_SUFFIX);
         }
         return super.findNameForDeserialization(annotated);
@@ -31,7 +31,7 @@ public final class EncryptedAnnotationIntrospector extends JacksonAnnotationIntr
 
     @Override
     public Object findDeserializer(final Annotated annotated) {
-        if (annotated.hasAnnotation(Encrypted.class)) {
+        if (annotated.hasAnnotation(Sensitive.class)) {
             return new EncryptedDeserializer(pulseQueryConfig, decryptionService);
         }
         return super.findDeserializer(annotated);

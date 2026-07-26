@@ -50,7 +50,7 @@ Sensitive data must be encrypted. To allow cross-search on multiple different qu
 
 When an aggregate is banned, deletion in Query side must be done.
 
-Add the ability to encrypt / decrypt using **@Encrypted** annotation on fields.
+Add the ability to encrypt / decrypt using **@Sensitive** annotation on fields.
 
 Custom serializer / deserializer must be taken into account. For example, **OwnedBy** is working just by adding **OwnedBySerializer** and **OwnedByDeserializer**.
 
@@ -59,7 +59,7 @@ Custom serializer / deserializer must be taken into account. For example, **Owne
 @Target({ElementType.FIELD, ElementType.RECORD_COMPONENT})
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotation
-public @interface Encrypted {
+public @interface Sensitive {
 
     Mode value();
 

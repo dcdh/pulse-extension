@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.RECORD_COMPONENT})
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotation
-public @interface Encrypted {
+public @interface Sensitive {
 
     Mode value();
 

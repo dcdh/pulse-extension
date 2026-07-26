@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.query.runtime.gdpr.Encrypted;
+import com.damdamdeo.pulse.extension.query.runtime.gdpr.Sensitive;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
@@ -32,18 +32,18 @@ class GdprJacksonSerializationTest {
             .withConfigurationResource("application.properties");
 
     record GdprTodo(TodoId todoId,
-                    @Encrypted(Encrypted.Mode.ENCRYPT)
+                    @Sensitive(Sensitive.Mode.ENCRYPT)
                     LocalDateTime createdAt,
-                    @Encrypted(Encrypted.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
+                    @Sensitive(Sensitive.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
                     String username,
-                    @Encrypted(Encrypted.Mode.ENCRYPT)
+                    @Sensitive(Sensitive.Mode.ENCRYPT)
                     String description,
                     Status status,
                     boolean important,
                     List<GdprChecklist> gdprChecklists,
-                    @Encrypted(Encrypted.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
+                    @Sensitive(Sensitive.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
                     OwnedBy ownedBy,
-                    @Encrypted(Encrypted.Mode.ENCRYPT)
+                    @Sensitive(Sensitive.Mode.ENCRYPT)
                     Long version) {
 
         GdprTodo {
@@ -57,7 +57,7 @@ class GdprJacksonSerializationTest {
     }
 
     record GdprChecklist(TodoChecklistId todoChecklistId,
-                         @Encrypted(Encrypted.Mode.ENCRYPT)
+                         @Sensitive(Sensitive.Mode.ENCRYPT)
                          String description) {
 
         GdprChecklist {

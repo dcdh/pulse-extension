@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.serializer;
 
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.query.runtime.PulseQueryConfig;
-import com.damdamdeo.pulse.extension.query.runtime.gdpr.Encrypted;
+import com.damdamdeo.pulse.extension.query.runtime.gdpr.Sensitive;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
@@ -31,8 +31,8 @@ public final class EncryptableSerializerModifier extends BeanSerializerModifier 
         final List<BeanPropertyWriter> result = new ArrayList<>();
         for (final BeanPropertyWriter writer : beanProperties) {
             final AnnotatedMember member = writer.getMember();
-            final Encrypted encrypted = member.getAnnotation(Encrypted.class);
-            if (encrypted != null) {
+            final Sensitive sensitive = member.getAnnotation(Sensitive.class);
+            if (sensitive != null) {
                 result.add(new EncryptablePropertyWriter(writer, pulseQueryConfig, encryptionService));
             } else {
                 result.add(writer);
