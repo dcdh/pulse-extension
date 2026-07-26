@@ -5,10 +5,13 @@ import com.damdamdeo.pulse.extension.core.encryption.MasterKey;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.query.runtime.PulseQueryConfig;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.fasterxml.jackson.databind.util.TokenBuffer;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.Objects;
 
 public final class EncryptablePropertyWriter extends BeanPropertyWriter {
@@ -32,8 +35,26 @@ public final class EncryptablePropertyWriter extends BeanPropertyWriter {
         if (encryptable == null) {
             return;
         }
+        final TokenBuffer buffer = new TokenBuffer(gen.getCodec(), false);
+        final JsonSerializer<Object> delegateSerializer = provider.findValueSerializer(encryptable.getClass(), this);
+        delegateSerializer.serialize(encryptable, buffer, provider);
+
+        final ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+        try (final JsonGenerator bufferGen = gen.getCodec().getFactory().createGenerator(bytesOut)) {
+            buffer.serialize(bufferGen);
+        }
+
+        byte[] jsonBytes = bytesOut.toByteArray();
+        // remove '"' at start and '"' at end of json if present. We do not want to encrypt them.
+        // Sample: a deserilization of a LocalDateTime having this String value '"2026-07-26T20:47:15"' will not work. It must be '2026-07-26T20:47:15'.
+        if (jsonBytes.length >= 2
+                && jsonBytes[0] == '"'
+                && jsonBytes[jsonBytes.length - 1] == '"') {
+            jsonBytes = Arrays.copyOfRange(jsonBytes, 1, jsonBytes.length - 1);
+        }
+
         final Passphrase passphrase = new MasterKey(pulseQueryConfig.masterKey()).toPassphrase();
-        byte[] payload = encryptionService.encrypt(encryptable.toString().getBytes(StandardCharsets.UTF_8), passphrase).payload();
+        final byte[] payload = encryptionService.encrypt(jsonBytes, passphrase).payload();
         gen.writeBinaryField(getName() + ENCRYPTED_FIELD_SUFFIX, payload);
     }
 }

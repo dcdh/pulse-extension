@@ -41,6 +41,7 @@ class GdprJacksonSerializationTest {
                     Status status,
                     boolean important,
                     List<GdprChecklist> gdprChecklists,
+                    @Encrypted(Encrypted.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
                     OwnedBy ownedBy,
                     @Encrypted(Encrypted.Mode.ENCRYPT)
                     Long version) {
@@ -74,10 +75,10 @@ class GdprJacksonSerializationTest {
                 },
                 "sequence": "000001"
               },
-              "createdAt_encrypted": "wx4EBwMCcAr+ao9gBDtgvHL/4P4KaNO2kHfMhBdmElfSSAHWI7vdicS4EH3bUXOum5lYHhWOHbI5SwhmaEFzTTYIu2PcLB92v/in5pNoI1gZTAl9P3sMgDbZR+ijSLeYKM2OPipYgXFAbw==",
-              "username_hash" : "2219fcb74e34d2f6fbedc545ac8ca4adcb908bb3a703aedc42af6c3f66510784",
-              "username_encrypted": "wx4EBwMCb0QgWRgJLiJgNrNoy4DIjg+rDS90DcNmgBLSQgEMp1rDBMJXtHZG1dYArv8secMSPeDtx3/MCpVaH0TCMaXDq+137aaE+p+EgZj6UUe6YjBtF+vkdCCzBCnmQ4R5ww==",
-              "description_encrypted": "wx4EBwMC5Xu0vPqXUM1gNBQHf8gQFXKgcWHh1fkT+HfSQAHQrCg7IKKlOY2tN7Rg9DLadbk9B8XrDwfhukR+cgHkJqOPp6jH3A7R6pQohlc3TdngBW/m0NeR8R/oZXBJTFY=",
+              "createdAt_encrypted": "wx4EBwMC1YRW/9fjArNgyZMJ0BFExu56idO34YL1GAnSSAEf3/iAa7kAfMXaPpLkfCtwxAAjZrhbVxpQh5NtG0WCdS3BFG/3MpcvGirRxTQ+oD637sxDBX3JKr9xGltPwWo2FpL5gcg0zA==",
+              "username_hash": "2219fcb74e34d2f6fbedc545ac8ca4adcb908bb3a703aedc42af6c3f66510784",
+              "username_encrypted": "wx4EBwMCdT9oHrynoeNgD2aq3kqS0B+gWS47pcRAV5fSQgGmqgMpbjyDhhz7pDZSaTjmlhNLZpN5y7ZuTbB/4NRn204atj9aLv9nVe9hGcG1sR/NJeCwawiXeHoWmDNO6v6LeA==",
+              "description_encrypted": "wx4EBwMC98RmEqVdnAdg78dAm73XkL+D7M3OonVgHT7SQAFlFC+MRMfd0H0GyvdJJqaAzqcl42LlfEl5GdOjvHVSHzjdDgcwVYMtWMNSgWA5mYhodqHh/tVDA07cuAsCd60=",
               "status": "DONE",
               "important": false,
               "gdprChecklists": [
@@ -91,7 +92,7 @@ class GdprJacksonSerializationTest {
                     },
                     "sequence": "000001"
                   },
-                  "description_encrypted": "wx4EBwMCzJdMVWZygCNgoRNE49nsbt5jZPOp0plK7R3SUQGHlXDTAZYNG4OGkTNaCxbtD+SGVfnol+xjpzsWQ6JJzWIisKMFmZvX1aeh7ZSeBR8Q2zbBBljjH6HYAfm0KcdXnilfooXquDHS1HN9wVNDPw=="
+                  "description_encrypted": "wx4EBwMChratjd+WfN5g0guOUWBMWu93Nq5ewMcDPIfSYwGDrF/kio33USyDc7H9+4aF5ys4l6eXIs8+/0QMB5f/VrWdb1szs4P5Dncozd/Asr6b5OawE4kNrvMybvmzI4N6sbb3Ro+UVIQM/wglZRhigJMbnHqi0R8du5lRHPk2wiXeCA=="
                 },
                 {
                   "todoChecklistId": {
@@ -103,11 +104,12 @@ class GdprJacksonSerializationTest {
                     },
                     "sequence": "000002"
                   },
-                  "description_encrypted": "wx4EBwMCOUj3mneinPBgtZxufJDOBb2NvUc4xP3XT63SSwFIJ8nsR/v5xQo3zIPxhKoXi7rlt2ffr2zM+4LRpdabHHOt1QQ7FKQ3faersByrB4xJJQnOUe7Yqsn0Z/VLdJ1r7N691PnLcH4ujQ=="
+                  "description_encrypted": "wx4EBwMCx4Q+1LexMXVgWs3xo3j9y6brPX9N6eZMu2zSSwGIVME0fAkLX382T4MpMsoLLHu4q8JILGmmBsVUFs9jMCSC8Tjp5MVpOSGgl2JO1/5BBlwMV3sRBCLP3ktrVzNDsC0lulHqPiiJ4w=="
                 }
               ],
-              "ownedBy": "U000001-T000001",
-              "version_encrypted": "wx4EBwMCNOHERVzXbTFg622rrLhcGHty5bBDSl1B04TSNgHwvh6AkkwBGjzjBO+CjWWyQn2HYfoylLLSB5b/6Q7DLouV0EJlICLfdUzljDCTT5P9CKT2fQ=="
+              "ownedBy_hash": "942802553d3572c00f8186bb7db4332e261b39e11e632faf79981730ded9e1cd",
+              "ownedBy_encrypted": "wx4EBwMC1PmO+MO/Zg5gZuqRdsq6I7NpQpvvKulA0R7SRAGRUVloOLFGoIQxSUkYMnxxagUa+kPFas5Ak63FbOLV0vSWil7HGbIQLodGF0k5USgCVET3o6x2BRLw+kV8x0h+JKrA",
+              "version_encrypted": "wx4EBwMCUNxSnFsm+1Bg3906Tp+A/kfTzN6IQheBc6/SNgHDpXhCAZtxF7IL5NUrOYmiTzz4HMh15NIzvLBW9ey+87sfY8hMvSD2OQcrrL1nS3XOePgo5w=="
             }
             """;
 
@@ -126,7 +128,7 @@ class GdprJacksonSerializationTest {
                 false,
                 List.of(
                         new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_1, "Implement Projection feature"),
+                                TodoChecklistId.USER_1_TODO_1_1, "Analyse features\nImplement Projection feature"),
                         new GdprChecklist(
                                 TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
                 ),
@@ -151,6 +153,8 @@ class GdprJacksonSerializationTest {
                         new Customization("gdprChecklists[*].description_encrypted",
                                 (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches()),
                         new Customization("version_encrypted",
+                                (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches()),
+                        new Customization("ownedBy_encrypted",
                                 (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches())
                 ));
     }
@@ -172,7 +176,8 @@ class GdprJacksonSerializationTest {
                 false,
                 List.of(
                         new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_1, "Implement Projection feature"),
+                                // json protect \n which is normal - json does not support multiline String
+                                TodoChecklistId.USER_1_TODO_1_1, "Analyse features\\nImplement Projection feature"),
                         new GdprChecklist(
                                 TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
                 ),
