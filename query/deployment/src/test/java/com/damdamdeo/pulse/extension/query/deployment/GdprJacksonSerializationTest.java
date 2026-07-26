@@ -17,7 +17,6 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.comparator.CustomComparator;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +32,8 @@ class GdprJacksonSerializationTest {
             .withConfigurationResource("application.properties");
 
     record GdprTodo(TodoId todoId,
-//                    @Encrypted(Encrypted.Mode.ENCRYPT)
-//                    LocalDateTime createdAt,
+                    @Encrypted(Encrypted.Mode.ENCRYPT)
+                    LocalDateTime createdAt,
                     @Encrypted(Encrypted.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
                     String username,
                     @Encrypted(Encrypted.Mode.ENCRYPT)
@@ -75,6 +74,7 @@ class GdprJacksonSerializationTest {
                 },
                 "sequence": "000001"
               },
+              "createdAt_encrypted": "wx4EBwMCcAr+ao9gBDtgvHL/4P4KaNO2kHfMhBdmElfSSAHWI7vdicS4EH3bUXOum5lYHhWOHbI5SwhmaEFzTTYIu2PcLB92v/in5pNoI1gZTAl9P3sMgDbZR+ijSLeYKM2OPipYgXFAbw==",
               "username_hash" : "2219fcb74e34d2f6fbedc545ac8ca4adcb908bb3a703aedc42af6c3f66510784",
               "username_encrypted": "wx4EBwMCb0QgWRgJLiJgNrNoy4DIjg+rDS90DcNmgBLSQgEMp1rDBMJXtHZG1dYArv8secMSPeDtx3/MCpVaH0TCMaXDq+137aaE+p+EgZj6UUe6YjBtF+vkdCCzBCnmQ4R5ww==",
               "description_encrypted": "wx4EBwMC5Xu0vPqXUM1gNBQHf8gQFXKgcWHh1fkT+HfSQAHQrCg7IKKlOY2tN7Rg9DLadbk9B8XrDwfhukR+cgHkJqOPp6jH3A7R6pQohlc3TdngBW/m0NeR8R/oZXBJTFY=",
@@ -119,6 +119,7 @@ class GdprJacksonSerializationTest {
         // Given
         final GdprTodo givenGdprTodo = new GdprTodo(
                 TodoId.USER_1_TODO_1,
+                LocalDateTime.of(2026, 7, 26, 20, 47, 15),
                 "bob@gmail.com",
                 "lorem ipsum",
                 Status.DONE,
@@ -141,6 +142,8 @@ class GdprJacksonSerializationTest {
         JSONAssert.assertEquals(SERIALIZED, serialized,
                 new CustomComparator(
                         JSONCompareMode.STRICT,
+                        new Customization("createdAt_encrypted",
+                                (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches()),
                         new Customization("username_encrypted",
                                 (expected, actual) -> encryptedPattern.matcher(actual.toString()).matches()),
                         new Customization("description_encrypted",
@@ -162,6 +165,7 @@ class GdprJacksonSerializationTest {
         // Then
         assertThat(gdprTodo).isEqualTo(new GdprTodo(
                 TodoId.USER_1_TODO_1,
+                LocalDateTime.of(2026, 7, 26, 20, 47, 15),
                 "bob@gmail.com",
                 "lorem ipsum",
                 Status.DONE,
