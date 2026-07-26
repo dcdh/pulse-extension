@@ -41,3 +41,53 @@ The check should use a dedicated table to avoid a lot of processing from the eve
 The check must be done on an id with a version or a count.
 
 Invalidation is hard (how to invalidate ?, transaction issue …). Let it remove automatically and update depending on id with a version or a count.
+
+== Query: Serialization / Deserialization Jackson
+
+=== Encryption and search (GDPR compliance)
+
+Sensitive data must be encrypted. To allow cross-search on multiple different query aggregates, encrypted data will be done using the same key for all aggregates, not the one associated with OwnedBy.
+
+When an aggregate is banned, deletion in Query side must be done.
+
+Add the ability to encrypt / decrypt using **@Encrypted** annotation on fields.
+
+Custom serializer / deserializer must be taken into account. For example, **OwnedBy** is working just by adding **OwnedBySerializer** and **OwnedByDeserializer**.
+
+[source,java]
+----
+@Target({ElementType.FIELD, ElementType.RECORD_COMPONENT})
+@Retention(RetentionPolicy.RUNTIME)
+@JacksonAnnotation
+public @interface Encrypted {
+
+    Mode value();
+
+    enum Mode {
+        ENCRYPT,
+        ENCRYPT_AND_SEARCH_BY_HASH
+    }
+}
+----
+
+The annotation has a mode having two values:
+
+- ENCRYPT
+- ENCRYPT_AND_SEARCH_BY_HASH
+
+Encryption will:
+
+. encrypt the value;
+. create a property in the JSON **name**_encrypted;
+. remove the **name** property.
+
+The encrypted value is un-deterministic.
+
+Search by hash:
+
+. hash the value;
+. create a property in the JSON **name**_hash.
+
+The hash value is deterministic.
+
+The hash is useful when a search on a full value field must be done (likes a username). Likes like in SQL are not supported. You would need to list all of them in an encrypted mapping table to determine all hashes from it using a filter.
