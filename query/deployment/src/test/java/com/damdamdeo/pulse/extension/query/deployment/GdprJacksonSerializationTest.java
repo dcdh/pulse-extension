@@ -116,27 +116,45 @@ class GdprJacksonSerializationTest {
     @Inject
     ObjectMapper objectMapper;
 
+    private static GdprTodo GIVEN_GDPR_TODO = new GdprTodo(
+            TodoId.USER_1_TODO_1,
+            LocalDateTime.of(2026, 7, 26, 20, 47, 15),
+            "bob@gmail.com",
+            "lorem ipsum",
+            Status.DONE,
+            false,
+            List.of(
+                    new GdprChecklist(
+                            TodoChecklistId.USER_1_TODO_1_1, "Analyse features\nImplement Projection feature"),
+                    new GdprChecklist(
+                            TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
+            ),
+            OwnedBy.from(TodoId.USER_1_TODO_1),
+            2L);
+
+    private static GdprTodo EXPECTED_GDPR_TODO = new GdprTodo(
+            TodoId.USER_1_TODO_1,
+            LocalDateTime.of(2026, 7, 26, 20, 47, 15),
+            "bob@gmail.com",
+            "lorem ipsum",
+            Status.DONE,
+            false,
+            List.of(
+                    new GdprChecklist(
+                            // json protect \n which is normal - json does not support multiline String
+                            TodoChecklistId.USER_1_TODO_1_1, "Analyse features\\nImplement Projection feature"),
+                    new GdprChecklist(
+                            TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
+            ),
+            OwnedBy.from(TodoId.USER_1_TODO_1),
+            2L);
+
     @Test
     void shouldSerialize() throws JsonProcessingException, JSONException {
         // Given
-        final GdprTodo givenGdprTodo = new GdprTodo(
-                TodoId.USER_1_TODO_1,
-                LocalDateTime.of(2026, 7, 26, 20, 47, 15),
-                "bob@gmail.com",
-                "lorem ipsum",
-                Status.DONE,
-                false,
-                List.of(
-                        new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_1, "Analyse features\nImplement Projection feature"),
-                        new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
-                ),
-                OwnedBy.from(TodoId.USER_1_TODO_1),
-                2L);
 
         // When
-        final String serialized = objectMapper.writeValueAsString(givenGdprTodo);
+        final String serialized = objectMapper.writeValueAsString(GIVEN_GDPR_TODO);
 
         // Then
         System.out.println(serialized);
@@ -167,21 +185,18 @@ class GdprJacksonSerializationTest {
         final GdprTodo gdprTodo = objectMapper.readValue(SERIALIZED, GdprTodo.class);
 
         // Then
-        assertThat(gdprTodo).isEqualTo(new GdprTodo(
-                TodoId.USER_1_TODO_1,
-                LocalDateTime.of(2026, 7, 26, 20, 47, 15),
-                "bob@gmail.com",
-                "lorem ipsum",
-                Status.DONE,
-                false,
-                List.of(
-                        new GdprChecklist(
-                                // json protect \n which is normal - json does not support multiline String
-                                TodoChecklistId.USER_1_TODO_1_1, "Analyse features\\nImplement Projection feature"),
-                        new GdprChecklist(
-                                TodoChecklistId.USER_1_TODO_1_2, "Organization vacancies")
-                ),
-                OwnedBy.from(TodoId.USER_1_TODO_1),
-                2L));
+        assertThat(gdprTodo).isEqualTo(EXPECTED_GDPR_TODO);
+    }
+
+    @Test
+    void shouldSerializeDeserialize() throws JsonProcessingException {
+        // Given
+
+        // When
+        final String serialized = objectMapper.writeValueAsString(GIVEN_GDPR_TODO);
+        final GdprTodo gdprTodo = objectMapper.readValue(serialized, GdprTodo.class);
+
+        // Then
+        assertThat(gdprTodo).isEqualTo(EXPECTED_GDPR_TODO);
     }
 }
