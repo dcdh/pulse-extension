@@ -14,10 +14,10 @@ import java.util.List;
 public class SmallryeConfigBackendUserVisibilityRolesProvider implements BackendUserVisibilityRolesProvider {
 
     @Inject
-    BackendUserVisibilityRolesConfig backendUserVisibilityRolesConfig;
+    PulseQueryConfig pulseQueryConfig;
 
     @Override
     public List<String> provide() {
-        return backendUserVisibilityRolesConfig.roles();
+        return pulseQueryConfig.backendUser().visibility().roles();
     }
 }
