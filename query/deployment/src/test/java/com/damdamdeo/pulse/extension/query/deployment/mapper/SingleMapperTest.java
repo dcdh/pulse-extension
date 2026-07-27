@@ -4,8 +4,7 @@ import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.query.runtime.AggregateIdDeserializer;
-import com.damdamdeo.pulse.extension.query.runtime.mapper.Mapper;
-import com.damdamdeo.pulse.extension.query.runtime.mapper.ResultMapper;
+import com.damdamdeo.pulse.extension.query.runtime.mapper.SingleMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -18,7 +17,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ResultMapperTest {
+class SingleMapperTest {
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -29,6 +28,36 @@ public class ResultMapperTest {
             Objects.requireNonNull(id);
             Objects.requireNonNull(description);
         }
+    }
+
+    @Test
+    void shouldDirectMapping() throws IOException {
+        // Given
+        final String givenTodo =
+                // language=json
+                """
+                        {
+                          "id": {
+                            "todoId": {
+                              "userId": {
+                                "sequence": "000001"
+                              },
+                              "sequence": "000001"
+                            },
+                            "sequence": "000001"
+                          },
+                          "description": "IMPORTANT: pulse extension development"
+                        }
+                        """;
+        final SingleMapper<TodoItem> direct = SingleMapper.single(new TypeReference<>() {
+        });
+
+        // When
+        final TodoItem todoItem = direct.map(givenTodo, objectMapper);
+
+        // Then
+        assertThat(todoItem).isEqualTo(new TodoItem(
+                TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"));
     }
 
     @Test
@@ -50,45 +79,11 @@ public class ResultMapperTest {
                           "description": "IMPORTANT: pulse extension development"
                         }
                         """;
-        final Mapper<Result<TodoItem>> resultMapper = ResultMapper.resultSingle(new TypeReference<>() {
+        final SingleMapper<Result<TodoItem>> resultSingleMapper = SingleMapper.resultSingle(new TypeReference<>() {
         });
 
         // When
-        final Result<TodoItem> result = resultMapper.map(givenTodo, objectMapper);
-
-        // Then
-        assertThat(result).isEqualTo(
-                new Result<>(List.of(new TodoItem(
-                        TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development")),
-                        Set.of(TodoChecklistId.USER_1_TODO_1_1)));
-    }
-
-    @Test
-    void shouldResultMultiple() throws IOException {
-        // Given
-        final String givenTodos =
-                // language=json
-                """
-                        [
-                          {
-                            "id": {
-                              "todoId": {
-                                "userId": {
-                                  "sequence": "000001"
-                                },
-                                "sequence": "000001"
-                              },
-                              "sequence": "000001"
-                            },
-                            "description": "IMPORTANT: pulse extension development"
-                          }
-                        ]
-                        """;
-        final Mapper<Result<TodoItem>> resultMapper = ResultMapper.resultMultiple(new TypeReference<>() {
-        });
-
-        // When
-        final Result<TodoItem> result = resultMapper.map(givenTodos, objectMapper);
+        final Result<TodoItem> result = resultSingleMapper.map(givenTodo, objectMapper);
 
         // Then
         assertThat(result).isEqualTo(

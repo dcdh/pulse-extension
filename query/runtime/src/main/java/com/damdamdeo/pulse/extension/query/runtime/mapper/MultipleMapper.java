@@ -12,28 +12,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-public interface ResultMapper<T> {
+public interface MultipleMapper<T> {
 
     T map(String json, ObjectMapper objectMapper) throws IOException;
 
-    static <T extends Projection> Mapper<Result<T>> resultSingle(final TypeReference<T> typeReference) {
+    static <T extends Projection> MultipleMapper<List<T>> multiple(final TypeReference<List<T>> typeReference) {
         Objects.requireNonNull(typeReference);
         return (json, objectMapper) -> {
             Objects.requireNonNull(json);
             Objects.requireNonNull(objectMapper);
-            final AggregateIdCollector collector = new AggregateIdCollector();
-            final JavaType javaType = objectMapper
-                    .getTypeFactory()
-                    .constructType(typeReference);
-            final ObjectReader reader = objectMapper
-                    .readerFor(javaType)
-                    .withAttribute(AggregateIdCollector.class, collector);
-            final T projection = reader.readValue(json);
-            return Result.of(projection, collector.aggregateId());
+            return objectMapper.readValue(json, typeReference);
         };
     }
 
-    static <T extends Projection> Mapper<Result<T>> resultMultiple(final TypeReference<List<T>> typeReference) {
+    static <T extends Projection> MultipleMapper<Result<T>> resultMultiple(final TypeReference<List<T>> typeReference) {
         Objects.requireNonNull(typeReference);
         return (json, objectMapper) -> {
             Objects.requireNonNull(json);

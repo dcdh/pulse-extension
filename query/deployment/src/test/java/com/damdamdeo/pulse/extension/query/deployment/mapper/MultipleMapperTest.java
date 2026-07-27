@@ -2,8 +2,9 @@ package com.damdamdeo.pulse.extension.query.deployment.mapper;
 
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.query.runtime.AggregateIdDeserializer;
-import com.damdamdeo.pulse.extension.query.runtime.mapper.Mapper;
+import com.damdamdeo.pulse.extension.query.runtime.mapper.MultipleMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -12,10 +13,11 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MapperTest {
+public class MultipleMapperTest {
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -26,36 +28,6 @@ class MapperTest {
             Objects.requireNonNull(id);
             Objects.requireNonNull(description);
         }
-    }
-
-    @Test
-    void shouldDirectMapping() throws IOException {
-        // Given
-        final String givenTodo =
-                // language=json
-                """
-                        {
-                          "id": {
-                            "todoId": {
-                              "userId": {
-                                "sequence": "000001"
-                              },
-                              "sequence": "000001"
-                            },
-                            "sequence": "000001"
-                          },
-                          "description": "IMPORTANT: pulse extension development"
-                        }
-                        """;
-        final Mapper<TodoItem> direct = Mapper.single(new TypeReference<>() {
-        });
-
-        // When
-        final TodoItem todoItem = direct.map(givenTodo, objectMapper);
-
-        // Then
-        assertThat(todoItem).isEqualTo(new TodoItem(
-                TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"));
     }
 
     @Test
@@ -79,7 +51,7 @@ class MapperTest {
                           }
                         ]
                         """;
-        final Mapper<List<TodoItem>> direct = Mapper.multiple(new TypeReference<>() {
+        final MultipleMapper<List<TodoItem>> direct = MultipleMapper.multiple(new TypeReference<>() {
         });
 
         // When
@@ -88,5 +60,39 @@ class MapperTest {
         // Then
         assertThat(todoItems).containsExactly(new TodoItem(
                 TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"));
+    }
+
+    @Test
+    void shouldResultMultiple() throws IOException {
+        // Given
+        final String givenTodos =
+                // language=json
+                """
+                        [
+                          {
+                            "id": {
+                              "todoId": {
+                                "userId": {
+                                  "sequence": "000001"
+                                },
+                                "sequence": "000001"
+                              },
+                              "sequence": "000001"
+                            },
+                            "description": "IMPORTANT: pulse extension development"
+                          }
+                        ]
+                        """;
+        final MultipleMapper<Result<TodoItem>> resultSingleMapper = MultipleMapper.resultMultiple(new TypeReference<>() {
+        });
+
+        // When
+        final Result<TodoItem> result = resultSingleMapper.map(givenTodos, objectMapper);
+
+        // Then
+        assertThat(result).isEqualTo(
+                new Result<>(List.of(new TodoItem(
+                        TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development")),
+                        Set.of(TodoChecklistId.USER_1_TODO_1_1)));
     }
 }
