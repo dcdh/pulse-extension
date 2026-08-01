@@ -59,9 +59,9 @@ public class EncryptedDeserializer extends JsonDeserializer<Object> implements C
     private byte[] decrypt(final JsonParser p) throws IOException {
         try {
             final MasterKey masterKey = new MasterKey(pulseQueryConfig.masterKey());
-            final EncryptedPayload encryptedPayload = new EncryptedPayload(p.getBinaryValue());
-            final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, masterKey.toPassphrase());
-            return decryptedPayload.payload();
+            final Encrypted<byte[]> encrypted = new Encrypted<>(p.getBinaryValue());
+            final Decrypted<byte[]> decrypted = decryptionService.decrypt(encrypted, masterKey.toPassphrase());
+            return decrypted.payload();
         } catch (final DecryptionException e) {
             throw JsonMappingException.from(p, "Unable to decrypt", e);
         }

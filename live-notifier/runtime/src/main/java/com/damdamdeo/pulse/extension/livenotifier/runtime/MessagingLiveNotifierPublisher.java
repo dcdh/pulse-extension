@@ -13,6 +13,8 @@ import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,11 +57,16 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
             final Optional<Passphrase> retrievedPassphrase = passphraseRepository.findBy(ownedBy);
             if (retrievedPassphrase.isPresent()) {
                 final byte[] jsonPayload = objectMapper.writeValueAsBytes(payload);
-                final EncryptedPayload encryptedPayload = encryptionService.encrypt(jsonPayload, retrievedPassphrase.get());
+                final Encrypted<byte[]> encrypted = encryptionService.encrypt(new ByteArrayInputStream(jsonPayload), retrievedPassphrase.get(),
+                        encryptedPayload -> {
+                            try (final InputStream payload1 = encryptedPayload.payload()) {
+                                return new Encrypted<>(payload1.readAllBytes());
+                            }
+                        });
 
                 final String contentType = CONTENT_TYPE_PREFIX + payload.getClass().getName() + CONTENT_TYPE_SUFFIX;
                 emitter.sendMessageAndAwait(
-                        Message.of(encryptedPayload.payload()).addMetadata(
+                        Message.of(encrypted.payload()).addMetadata(
                                 OutgoingKafkaRecordMetadata.<String>builder()
                                         .withHeaders(new RecordHeaders()
                                                 .add(EVENT_NAME, eventName.getBytes())

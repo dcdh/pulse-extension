@@ -7,7 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Purpose;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -24,7 +24,7 @@ public interface AsyncEventChannelMessageHandler<T> {
                        CurrentVersionInConsumption currentVersionInConsumption,
                        ZonedDateTime storedAt,
                        EventType eventType,
-                       EncryptedPayload encryptedPayload,
+                       Encrypted encrypted,
                        OwnedBy ownedBy,
                        BelongsTo belongsTo,
                        ExecutedBy executedBy,

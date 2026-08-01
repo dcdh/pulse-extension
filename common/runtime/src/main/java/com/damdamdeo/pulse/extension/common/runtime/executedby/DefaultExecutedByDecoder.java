@@ -1,9 +1,9 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
-import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Decrypted;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
@@ -29,7 +29,7 @@ public class DefaultExecutedByDecoder implements ExecutedByDecoder {
         Objects.requireNonNull(encoded);
         Objects.requireNonNull(encoded);
         try {
-            final DecryptedPayload decrypted = decryptionService.decrypt(new EncryptedPayload(Base64.decode(encoded)), ownedBy);
+            final Decrypted<byte[]> decrypted = decryptionService.decrypt(new Encrypted<>(Base64.decode(encoded)), ownedBy);
             return Optional.of(new String(decrypted.payload()));
         } catch (final DecryptionException decryptionException) {
             throw new UnableToDecodeException(decryptionException);

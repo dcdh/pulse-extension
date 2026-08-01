@@ -9,7 +9,7 @@ import com.damdamdeo.pulse.extension.core.ApplicationNaming;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.consumer.*;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.QuarkusUnitTest;
@@ -92,7 +92,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
                 AsyncAggregateRootConsumerChannel.Literal.of("statistics")).get();
 
         // When
-        final EncryptedPayload payload = producer.produceAggregateRoot(
+        final Encrypted payload = producer.produceAggregateRoot(
                 "statistics",
                 new FromApplication(new ApplicationNaming("TodoTaking")),
                 // language=json
@@ -137,7 +137,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
                 AsyncAggregateRootConsumerChannel.Literal.of("statistics")).get();
 
         // When
-        final EncryptedPayload payload = producer.produceAggregateRoot(
+        final Encrypted payload = producer.produceAggregateRoot(
                 "statistics",
                 new FromApplication(new ApplicationNaming("TodoTaking")),
                 // language=json

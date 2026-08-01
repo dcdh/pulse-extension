@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot;
 
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AggregateRootValue;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,8 +24,8 @@ public record JsonNodeAggregateRootValue(@JsonProperty("aggregate_root_payload")
     }
 
     @Override
-    public EncryptedPayload toEncryptedPayload() {
-        return new EncryptedPayload(payload);
+    public Encrypted<byte[]> toEncryptedPayload() {
+        return new Encrypted<>(payload);
     }
 
     @Override

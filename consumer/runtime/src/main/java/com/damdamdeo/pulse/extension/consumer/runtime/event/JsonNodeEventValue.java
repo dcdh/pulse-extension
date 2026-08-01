@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.runtime.event;
 
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.event.EventValue;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -43,8 +43,8 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") ZonedDateTime stored
     }
 
     @Override
-    public EncryptedPayload toEncryptedEventPayload() {
-        return new EncryptedPayload(payload);
+    public Encrypted<byte[]> toEncryptedEventPayload() {
+        return new Encrypted<>(payload);
     }
 
     @Override

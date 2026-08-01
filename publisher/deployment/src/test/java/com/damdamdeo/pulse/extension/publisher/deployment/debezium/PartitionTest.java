@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -128,13 +131,18 @@ class PartitionTest extends AbstractPublisherTest {
                 tEventPS.setString(5, "NewTodoCreated");
                 tEventPS.setBytes(6, openPGPEncryptionService.encrypt(
                         // language=json
-                        """
+                        new ByteArrayInputStream("""
                                 {
                                   "description": "lorem ipsum",
                                   "status": "DONE",
                                   "important": false
                                 }
-                                """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload());
+                                """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
+                        encryptedPayload -> {
+                            try (final InputStream payload = encryptedPayload.payload()) {
+                                return new Encrypted<>(payload.readAllBytes());
+                            }
+                        }).payload());
                 tEventPS.setString(7, Todo.OWNED_BY_USER_1.id());
                 tEventPS.setString(8, belongsTo.id());
                 tEventPS.setString(9, "EU:encodedbob");
@@ -145,14 +153,19 @@ class PartitionTest extends AbstractPublisherTest {
                 tAggregateRootPS.setLong(3, 1);
                 tAggregateRootPS.setBytes(4, openPGPEncryptionService.encrypt(
                         // language=json
-                        """
+                        new ByteArrayInputStream("""
                                 {
                                   "id": "U000001-T000001",
                                   "description": "lorem ipsum",
                                   "status": "DONE",
                                   "important": false
                                 }
-                                """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload());
+                                """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
+                        encryptedPayload -> {
+                            try (final InputStream payload = encryptedPayload.payload()) {
+                                return new Encrypted<>(payload.readAllBytes());
+                            }
+                        }).payload());
                 tAggregateRootPS.setString(5, Todo.OWNED_BY_USER_1.id());
                 tAggregateRootPS.setString(6, belongsTo.id());
                 tAggregateRootPS.executeUpdate();

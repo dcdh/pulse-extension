@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,8 +65,8 @@ class PurposeAggregateRootChannelConsumerTest {
         }
 
         @Override
-        public EncryptedPayload toEncryptedPayload() {
-            return new EncryptedPayload(payload);
+        public Encrypted<byte[]> toEncryptedPayload() {
+            return new Encrypted<>(payload);
         }
 
         @Override

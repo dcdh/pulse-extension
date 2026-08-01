@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.runtime;
 
 import com.damdamdeo.pulse.extension.core.consumer.DecryptedPayloadToPayloadMapper;
-import com.damdamdeo.pulse.extension.core.encryption.DecryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Decrypted;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.DefaultBean;
@@ -23,8 +23,8 @@ public final class JacksonDecryptedPayloadToPayloadMapper implements DecryptedPa
     }
 
     @Override
-    public JsonNode map(final DecryptedPayload decryptedPayload) throws IOException {
-        Objects.requireNonNull(decryptedPayload);
-        return objectMapper.readTree(decryptedPayload.payload());
+    public JsonNode map(final Decrypted<byte[]> decrypted) throws IOException {
+        Objects.requireNonNull(decrypted);
+        return objectMapper.readTree(decrypted.payload());
     }
 }

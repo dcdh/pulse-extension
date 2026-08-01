@@ -52,8 +52,8 @@ public class MessagingConsumer {
                             .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()),
                     executedByFactory, ownedBy);
             final String className = extractClassName(consumerRecord.headers());
-            final DecryptedPayload decryptedPayload = decryptionService.decrypt(new EncryptedPayload(consumerRecord.value()), ownedBy);
-            final Object payload = mapToObject(decryptedPayload.payload(), className);
+            final Decrypted<byte[]> decrypted = decryptionService.decrypt(new Encrypted<>(consumerRecord.value()), ownedBy);
+            final Object payload = mapToObject(decrypted.payload(), className);
             notifyEventProducer.fire(new NotifyEvent(eventName, payload, audience));
         } catch (final DecryptionException decryptionException) {
             LOGGER.fine("Fail to decrypt for %s %s - notification will not be sent".formatted(ownedBy.id(), decryptionException.getMessage()));

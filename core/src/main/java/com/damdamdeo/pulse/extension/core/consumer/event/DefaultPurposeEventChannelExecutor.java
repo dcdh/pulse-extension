@@ -82,22 +82,22 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
         for (AsyncEventChannelMessageHandler<T> asyncEventChannelMessageHandler : asyncEventChannelMessageHandlerProvider.provideForTarget(purpose)) {
             final ZonedDateTime storedAt = eventValue.toStoredAt();
             final EventType eventType = eventValue.toEventType();
-            final EncryptedPayload encryptedPayload = eventValue.toEncryptedEventPayload();
+            final Encrypted<byte[]> encrypted = eventValue.toEncryptedEventPayload();
             final OwnedBy ownedBy = eventValue.toOwnedBy();
             final BelongsTo belongsTo = eventValue.toBelongsTo();
             try {
                 final ExecutedBy executedBy = eventValue.toExecutedBy(executedByFactory);
                 DecryptablePayload<T> decryptableEventPayload;
                 try {
-                    final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
-                    final T decryptedEventPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
+                    final Decrypted<byte[]> decrypted = decryptionService.decrypt(encrypted, ownedBy);
+                    final T decryptedEventPayload = decryptedPayloadToPayloadMapper.map(decrypted);
                     decryptableEventPayload = DecryptablePayload.ofDecrypted(decryptedEventPayload);
                 } catch (final DecryptionException decryptionException) {
                     decryptableEventPayload = DecryptablePayload.ofUndecryptable();
                 }
                 final Supplier<AggregateRootLoaded<T>> aggregateRootSupplier = () -> aggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(fromApplication, aggregateRootType, aggregateId);
                 synchronized (this) {
-                    asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, storedAt, eventType, encryptedPayload, ownedBy,
+                    asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, storedAt, eventType, encrypted, ownedBy,
                             belongsTo, executedBy, decryptableEventPayload, aggregateRootSupplier);
                 }
             } catch (final UnableToDecodeException unableToDecodeException) {

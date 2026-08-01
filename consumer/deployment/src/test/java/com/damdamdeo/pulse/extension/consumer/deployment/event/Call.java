@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -24,7 +24,7 @@ public record Call(FromApplication fromApplication,
                    CurrentVersionInConsumption currentVersionInConsumption,
                    ZonedDateTime storedAt,
                    EventType eventType,
-                   EncryptedPayload encryptedPayload,
+                   Encrypted<byte[]> encrypted,
                    OwnedBy ownedBy,
                    BelongsTo belongsTo,
                    ExecutedBy executedBy,
@@ -39,7 +39,7 @@ public record Call(FromApplication fromApplication,
         Objects.requireNonNull(currentVersionInConsumption);
         Objects.requireNonNull(storedAt);
         Objects.requireNonNull(eventType);
-        Objects.requireNonNull(encryptedPayload);
+        Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(belongsTo);
         Objects.requireNonNull(executedBy);

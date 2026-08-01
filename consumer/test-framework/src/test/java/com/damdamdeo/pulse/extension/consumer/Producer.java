@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -23,6 +23,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,19 +48,24 @@ public class Producer {
     OpenPGPEncryptionService openPGPEncryptionService;
 
     // TODO support chaining events
-    public <A extends AggregateRoot<?>, B extends Event> Response produceEvent(final String target,
-                                                                               final FromApplication fromApplication,
-                                                                               final String aggregateRootPayload,
-                                                                               final String eventPayload,
-                                                                               final AggregateId aggregateId,
-                                                                               final OwnedBy ownedBy,
-                                                                               final ExecutedBy executedBy,
-                                                                               final BelongsTo belongsTo,
-                                                                               final Class<A> aggregateRootClass,
-                                                                               final Class<B> eventClass) throws UnableToEncodeException {
+    public <A extends AggregateRoot<?>, B extends Event<?>> Response produceEvent(final String target,
+                                                                                  final FromApplication fromApplication,
+                                                                                  final String aggregateRootPayload,
+                                                                                  final String eventPayload,
+                                                                                  final AggregateId aggregateId,
+                                                                                  final OwnedBy ownedBy,
+                                                                                  final ExecutedBy executedBy,
+                                                                                  final BelongsTo belongsTo,
+                                                                                  final Class<A> aggregateRootClass,
+                                                                                  final Class<B> eventClass) throws UnableToEncodeException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
-        final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
+        final Encrypted<byte[]> encryptedAggregate = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
+                PASSPHRASE, encryptedPayload -> {
+                    try (final InputStream payload = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload.readAllBytes());
+                    }
+                });
         // language=sql
         final String aggregateRootSql = """
                     INSERT INTO %s.aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
@@ -69,7 +76,7 @@ public class Producer {
             ps.setString(1, aggregateRootClass.getSimpleName());
             ps.setString(2, aggregateId.id());
             ps.setLong(3, 1);
-            ps.setBytes(4, encryptedAggregatePayload);
+            ps.setBytes(4, encryptedAggregate.payload());
             ps.setString(5, ownedBy.id());
             ps.setString(6, belongsTo.id());
             ps.executeUpdate();
@@ -77,7 +84,12 @@ public class Producer {
             throw new RuntimeException(sqlException);
         }
 
-        final byte[] encryptedPayload = openPGPEncryptionService.encrypt(eventPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
+        final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(new ByteArrayInputStream(eventPayload.getBytes(StandardCharsets.UTF_8)),
+                PASSPHRASE, encryptedPayload -> {
+                    try (final InputStream payload = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload.readAllBytes());
+                    }
+                });
 
         // When
         new ProducerBuilder<>(
@@ -91,25 +103,28 @@ public class Producer {
                         new JsonNodeEventValue(
                                 ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                                 eventClass.getSimpleName(),
-                                encryptedPayload,
+                                encrypted.payload(),
                                 ownedBy.id(),
                                 belongsTo.id(),
-                                executedBy.encode((value, ownedBy1) -> ("encoded" + value).getBytes(StandardCharsets.UTF_8), ownedBy))));
-        return new Response(
-                new EncryptedPayload(encryptedAggregatePayload),
-                new EncryptedPayload(encryptedPayload));
+                                executedBy.encode((value, ownedBy1) -> new Encrypted<>(("encoded" + value).getBytes(StandardCharsets.UTF_8)), ownedBy))));
+        return new Response(encryptedAggregate, encrypted);
     }
 
     // TODO support chaining events
-    public <A extends AggregateRoot<?>> EncryptedPayload produceAggregateRoot(final String target,
-                                                                              final FromApplication fromApplication,
-                                                                              final String aggregateRootPayload,
-                                                                              final AggregateId aggregateId,
-                                                                              final OwnedBy ownedBy,
-                                                                              final BelongsTo belongsTo,
-                                                                              final Class<A> aggregateRootClass) {
+    public <A extends AggregateRoot<?>> Encrypted<byte[]> produceAggregateRoot(final String target,
+                                                                               final FromApplication fromApplication,
+                                                                               final String aggregateRootPayload,
+                                                                               final AggregateId aggregateId,
+                                                                               final OwnedBy ownedBy,
+                                                                               final BelongsTo belongsTo,
+                                                                               final Class<A> aggregateRootClass) {
         // Given
-        final byte[] encryptedAggregatePayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
+        final Encrypted<byte[]> encryptedAggregate = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
+                PASSPHRASE, encryptedPayload -> {
+                    try (final InputStream payload = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload.readAllBytes());
+                    }
+                });
         // language=sql
         final String aggregateRootSql = """
                     INSERT INTO %s.aggregate_root (aggregate_root_type, aggregate_root_id, last_version, aggregate_root_payload, owned_by, belongs_to)
@@ -120,7 +135,7 @@ public class Producer {
             ps.setString(1, aggregateRootClass.getSimpleName());
             ps.setString(2, aggregateId.id());
             ps.setLong(3, 1);
-            ps.setBytes(4, encryptedAggregatePayload);
+            ps.setBytes(4, encryptedAggregate.payload());
             ps.setString(5, ownedBy.id());
             ps.setString(6, belongsTo.id());
             ps.executeUpdate();
@@ -129,7 +144,12 @@ public class Producer {
         }
 
         // When
-        final byte[] encryptedPayload = openPGPEncryptionService.encrypt(aggregateRootPayload.getBytes(StandardCharsets.UTF_8), PASSPHRASE).payload();
+        final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
+                PASSPHRASE, encryptedPayload -> {
+                    try (final InputStream payload = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload.readAllBytes());
+                    }
+                });
 
         new ProducerBuilder<>(
                 Map.of(
@@ -140,9 +160,9 @@ public class Producer {
                 .fromRecords(new ProducerRecord<>(CdcTopicNaming.from(fromApplication, Table.AGGREGATE_ROOT).name(),
                         new JsonNodeAggregateRootKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                         new JsonNodeAggregateRootValue(1L,
-                                encryptedPayload,
+                                encrypted.payload(),
                                 ownedBy.id(),
                                 belongsTo.id())));
-        return new EncryptedPayload(encryptedPayload);
+        return encrypted;
     }
 }

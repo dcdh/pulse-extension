@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.publisher.*;
 import com.damdamdeo.pulse.extension.publisher.Record;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -47,15 +50,20 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
     void shouldConsumeFromTEventKafkaTopic() {
         // Given
         final Timestamp givenStoredAt = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
-        final byte[] payload = openPGPEncryptionService.encrypt(
+        final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(
                 // language=json
-                """
+                new ByteArrayInputStream("""
                         {
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
                         }
-                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload();
+                        """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
+                encryptedPayload -> {
+                    try (final InputStream payload = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload.readAllBytes());
+                    }
+                });
         // language=sql
         final String sql = """
                 INSERT INTO event (aggregate_root_id, aggregate_root_type, version, stored_at, event_type, event_payload, owned_by, belongs_to, executed_by) 
@@ -68,7 +76,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
             eventPreparedStatement.setLong(3, 0);
             eventPreparedStatement.setObject(4, givenStoredAt);
             eventPreparedStatement.setString(5, "NewTodoCreated");
-            eventPreparedStatement.setBytes(6, payload);
+            eventPreparedStatement.setBytes(6, encrypted.payload());
             eventPreparedStatement.setString(7, OwnedBy.from(UserId.USER_1).id());
             eventPreparedStatement.setString(8, BelongsTo.from(TodoId.USER_1_TODO_1).id());
             eventPreparedStatement.setString(9, "EU:encodedbob");
@@ -115,22 +123,27 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
                         TodoId.USER_1_TODO_1.id(), 0)),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeEventValue(
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),// I do not understand the added part ...
-                        "NewTodoCreated", payload, OwnedBy.from(UserId.USER_1).id(), BelongsTo.from(TodoId.USER_1_TODO_1).id(), "EU:encodedbob")));
+                        "NewTodoCreated", encrypted.payload(), OwnedBy.from(UserId.USER_1).id(), BelongsTo.from(TodoId.USER_1_TODO_1).id(), "EU:encodedbob")));
     }
 
     @Test
     void shouldConsumeFromTAggregateRootKafkaTopic() {
         // Given
-        final byte[] payload = openPGPEncryptionService.encrypt(
+        final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(
                 // language=json
-                """
+                new ByteArrayInputStream("""
                         {
                           "id": "U000001-T000001",
                           "description": "lorem ipsum",
                           "status": "DONE",
                           "important": false
                         }
-                        """.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload();
+                        """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
+                encryptedPayload -> {
+                    try (final InputStream payload = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload.readAllBytes());
+                    }
+                });
         // language=sql
         final String sql = """
                     INSERT INTO aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
@@ -141,7 +154,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
             ps.setString(1, TodoId.USER_1_TODO_1.id());
             ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
-            ps.setBytes(4, payload);
+            ps.setBytes(4, encrypted.payload());
             ps.setString(5, OwnedBy.from(UserId.USER_1).id());
             ps.setString(6, BelongsTo.from(TodoId.USER_1_TODO_1).id());
             ps.executeUpdate();
@@ -186,7 +199,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
                 () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeAggregateRootKey("Todo",
                         TodoId.USER_1_TODO_1.id())),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeAggregateRootValue(1L,
-                        payload, OwnedBy.from(UserId.USER_1).id(), BelongsTo.from(TodoId.USER_1_TODO_1).id())));
+                        encrypted.payload(), OwnedBy.from(UserId.USER_1).id(), BelongsTo.from(TodoId.USER_1_TODO_1).id())));
     }
 
     private static List<String> getValuesByKey(final Headers headers, final String key) {

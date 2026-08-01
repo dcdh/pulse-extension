@@ -139,7 +139,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
                         final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
-                        final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
+                        final Decrypted<byte[]> decryptedEventPayload = decryptionService.decrypt(new Encrypted<>(resultSet.getBytes("event_payload")), ownedBy);
                         LOGGER.fine(new String(decryptedEventPayload.payload()));
                         final Event<K> event = (Event<K>)
                                 objectMapper.readValue(decryptedEventPayload.payload(),
@@ -175,7 +175,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
                     final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
-                    final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(resultSet.getBytes("event_payload")), ownedBy);
+                    final Decrypted<byte[]> decryptedEventPayload = decryptionService.decrypt(new Encrypted<>(resultSet.getBytes("event_payload")), ownedBy);
                     LOGGER.fine(new String(decryptedEventPayload.payload()));
                     final Event<K> event = (Event<K>)
                             objectMapper.readValue(decryptedEventPayload.payload(),
@@ -206,7 +206,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             try (final ResultSet aggregateRootStmtResultSet = aggregateRootStmt.executeQuery()) {
                 if (aggregateRootStmtResultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(aggregateRootStmtResultSet.getString("owned_by"));
-                    final DecryptedPayload decryptedEventPayload = decryptionService.decrypt(new EncryptedPayload(aggregateRootStmtResultSet.getBytes("aggregate_root_payload")), ownedBy);
+                    final Decrypted<byte[]> decryptedEventPayload = decryptionService.decrypt(new Encrypted<>(aggregateRootStmtResultSet.getBytes("aggregate_root_payload")), ownedBy);
                     LOGGER.fine(new String(decryptedEventPayload.payload()));
                     final A aggregateRoot = objectMapper.readValue(decryptedEventPayload.payload(), getAggregateClass());
                     return Optional.of(new VersionizedAggregateRoot<>(aggregateRoot,

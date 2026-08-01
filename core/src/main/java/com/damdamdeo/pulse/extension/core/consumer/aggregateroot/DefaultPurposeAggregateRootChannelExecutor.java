@@ -68,20 +68,20 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
         final AggregateRootType aggregateRootType = aggregateRootKey.toAggregateRootType();
         final AggregateId aggregateId = aggregateRootKey.toAggregateId();
         for (AsyncAggregateRootChannelMessageHandler<T> asyncEventChannelMessageHandler : asyncAggregateRootChannelMessageHandlerProvider.provideForTarget(purpose)) {
-            final EncryptedPayload encryptedPayload = aggregateRootValue.toEncryptedPayload();
+            final Encrypted<byte[]> encrypted = aggregateRootValue.toEncryptedPayload();
             final OwnedBy ownedBy = aggregateRootValue.toOwnedBy();
             final BelongsTo belongsTo = aggregateRootValue.toBelongsTo();
             try {
                 DecryptablePayload<T> decryptableEventPayload;
                 try {
-                    final DecryptedPayload decryptedPayload = decryptionService.decrypt(encryptedPayload, ownedBy);
-                    final T decryptedAggregateRootPayload = decryptedPayloadToPayloadMapper.map(decryptedPayload);
+                    final Decrypted<byte[]> decrypted = decryptionService.decrypt(encrypted, ownedBy);
+                    final T decryptedAggregateRootPayload = decryptedPayloadToPayloadMapper.map(decrypted);
                     decryptableEventPayload = DecryptablePayload.ofDecrypted(decryptedAggregateRootPayload);
                 } catch (final DecryptionException decryptionException) {
                     decryptableEventPayload = DecryptablePayload.ofUndecryptable();
                 }
                 synchronized (this) {
-                    asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, encryptedPayload, ownedBy,
+                    asyncEventChannelMessageHandler.handleMessage(fromApplication, purpose, aggregateRootType, aggregateId, currentVersionInConsumption, encrypted, ownedBy,
                             belongsTo, decryptableEventPayload);
                 }
             } catch (final IOException e) {

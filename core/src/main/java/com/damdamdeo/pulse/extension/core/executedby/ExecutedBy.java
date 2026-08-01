@@ -63,7 +63,7 @@ public sealed interface ExecutedBy
             if (!decoded) {
                 throw new IllegalStateException("Could not encode not decoded");
             }
-            return DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by, ownedBy));
+            return DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by, ownedBy).payload());
         }
 
         @Override

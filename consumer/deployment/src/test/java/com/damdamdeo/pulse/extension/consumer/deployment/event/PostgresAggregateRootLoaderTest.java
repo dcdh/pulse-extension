@@ -9,7 +9,7 @@ import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.consumer.event.UnknownAggregateRootException;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -76,7 +78,13 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
                   "important": false
                 }
                 """;
-        final byte[] encryptedPayload = openPGPEncryptionService.encrypt(payload.getBytes(StandardCharsets.UTF_8), PassphraseSample.PASSPHRASE_1).payload();
+        final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)),
+                PassphraseSample.PASSPHRASE_1,
+                encryptedPayload -> {
+                    try (final InputStream payload1 = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload1.readAllBytes());
+                    }
+                });
         // language=sql
         final String sql = """
                     INSERT INTO todo_taking.aggregate_root (aggregate_root_id, aggregate_root_type, last_version, aggregate_root_payload, owned_by, belongs_to)
@@ -87,7 +95,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
             ps.setString(1, TodoId.USER_1_TODO_1.id());
             ps.setString(2, Todo.class.getSimpleName());
             ps.setLong(3, 1);
-            ps.setBytes(4, encryptedPayload);
+            ps.setBytes(4, encrypted.payload());
             ps.setString(5, OwnedBy.from(UserId.USER_1).id());
             ps.setString(6, BelongsTo.from(UserId.USER_1).id());
             ps.executeUpdate();
@@ -113,7 +121,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
                         AggregateRootType.from(Todo.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                         new LastAggregateVersion(1),
-                        new EncryptedPayload(encryptedPayload),
+                        encrypted,
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
                         Todo.OWNED_BY_USER_1,
                         Todo.BELONGS_TO_USER_1));

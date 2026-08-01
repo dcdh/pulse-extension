@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.UnableToExecuteException;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.Optional;
@@ -87,8 +88,8 @@ class PurposeEventChannelConsumerTest {
         }
 
         @Override
-        public EncryptedPayload toEncryptedEventPayload() {
-            return new EncryptedPayload(eventPayload);
+        public Encrypted toEncryptedEventPayload() {
+            return new Encrypted(new ByteArrayInputStream(eventPayload));
         }
 
         @Override

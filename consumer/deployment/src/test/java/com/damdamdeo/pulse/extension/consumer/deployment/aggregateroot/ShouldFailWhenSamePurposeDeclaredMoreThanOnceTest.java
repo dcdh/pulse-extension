@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.AsyncAggregateRootChannelMessageHandler;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.test.QuarkusUnitTest;
@@ -53,7 +53,7 @@ class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumer
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
-                                  final EncryptedPayload encryptedPayload,
+                                  final Encrypted encrypted,
                                   final OwnedBy ownedBy,
                                   final BelongsTo belongsTo,
                                   final DecryptablePayload<JsonNode> decryptablePayload) {
@@ -73,7 +73,7 @@ class ShouldFailWhenSamePurposeDeclaredMoreThanOnceTest extends AbstractConsumer
                                   final AggregateRootType aggregateRootType,
                                   final AggregateId aggregateId,
                                   final CurrentVersionInConsumption currentVersionInConsumption,
-                                  final EncryptedPayload encryptedPayload,
+                                  final Encrypted encrypted,
                                   final OwnedBy ownedBy,
                                   final BelongsTo belongsTo,
                                   final DecryptablePayload<JsonNode> decryptablePayload) {

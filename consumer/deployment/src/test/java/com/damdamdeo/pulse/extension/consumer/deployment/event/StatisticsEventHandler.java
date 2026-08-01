@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Purpose;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandler;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -39,7 +39,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final CurrentVersionInConsumption currentVersionInConsumption,
                               final ZonedDateTime storedAt,
                               final EventType eventType,
-                              final EncryptedPayload encryptedPayload,
+                              final Encrypted encrypted,
                               final OwnedBy ownedBy,
                               final BelongsTo belongsTo,
                               final ExecutedBy executedBy,
@@ -47,7 +47,7 @@ public class StatisticsEventHandler implements AsyncEventChannelMessageHandler<J
                               final Supplier<AggregateRootLoaded<JsonNode>> aggregateRootLoadedSupplier) {
         this.call = new Call(fromApplication,
                 purpose, aggregateRootType, aggregateId, currentVersionInConsumption, storedAt, eventType,
-                encryptedPayload, ownedBy, belongsTo, executedBy, decryptableEventPayload,
+                encrypted, ownedBy, belongsTo, executedBy, decryptableEventPayload,
                 aggregateRootLoadedSupplier.get());
     }
 

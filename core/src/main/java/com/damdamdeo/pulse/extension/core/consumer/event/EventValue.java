@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.consumer.event;
 
 import com.damdamdeo.pulse.extension.core.BelongsTo;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -16,7 +16,7 @@ public interface EventValue {
 
     EventType toEventType();
 
-    EncryptedPayload toEncryptedEventPayload();
+    Encrypted<byte[]> toEncryptedEventPayload();
 
     OwnedBy toOwnedBy();
 

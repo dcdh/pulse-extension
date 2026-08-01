@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.query.runtime.gdpr.encryptable.serializer;
 
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.MasterKey;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
@@ -10,7 +11,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -54,7 +57,12 @@ public final class EncryptablePropertyWriter extends BeanPropertyWriter {
         }
 
         final Passphrase passphrase = new MasterKey(pulseQueryConfig.masterKey()).toPassphrase();
-        final byte[] payload = encryptionService.encrypt(jsonBytes, passphrase).payload();
-        gen.writeBinaryField(getName() + ENCRYPTED_FIELD_SUFFIX, payload);
+        final Encrypted<byte[]> encrypted = encryptionService.encrypt(new ByteArrayInputStream(jsonBytes), passphrase,
+                encryptedPayload -> {
+                    try (final InputStream payload1 = encryptedPayload.payload()) {
+                        return new Encrypted<>(payload1.readAllBytes());
+                    }
+                });
+        gen.writeBinaryField(getName() + ENCRYPTED_FIELD_SUFFIX, encrypted.payload());
     }
 }

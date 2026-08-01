@@ -1,27 +1,21 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
-import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
+import com.damdamdeo.pulse.extension.core.encryption.*;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.bouncycastle.bcpg.ArmoredOutputStream;
-import org.bouncycastle.bcpg.CompressionAlgorithmTags;
-import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBEKeyEncryptionMethodGenerator;
 import org.bouncycastle.openpgp.operator.jcajce.JcePGPDataEncryptorBuilder;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @ApplicationScoped
 @Unremovable
@@ -34,27 +28,61 @@ public final class OpenPGPEncryptionService implements EncryptionService {
 
     @Override
     // Comply with 'pgp_sym_encrypt' used in Postgres
-    public EncryptedPayload encrypt(final byte[] clearData, final Passphrase passphrase) throws EncryptionException {
+    public <T> Encrypted<T> encrypt(final InputStream clearData, final Passphrase passphrase,
+                                    final EncryptedInputStreamMapper<Encrypted<T>> mapper) throws EncryptionException {
         Objects.requireNonNull(clearData);
         Objects.requireNonNull(passphrase);
-        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            final PGPEncryptedDataGenerator encGen = new PGPEncryptedDataGenerator(
-                    new JcePGPDataEncryptorBuilder(PGPEncryptedData.AES_128)
-                            .setWithIntegrityPacket(true)
-                            .setSecureRandom(new SecureRandom())
-                            .setProvider("BC"));
-            encGen.addMethod(new JcePBEKeyEncryptionMethodGenerator(passphrase.passphrase()).setProvider("BC"));
+        Objects.requireNonNull(mapper);
+        try {
+            final PipedInputStream encryptedInput = new PipedInputStream(64 * 1024);
+            final PipedOutputStream encryptedOutput = new PipedOutputStream(encryptedInput);
+            final CompletableFuture<Void> future = new CompletableFuture<>();
+            Thread.startVirtualThread(() -> {
+                try (clearData; encryptedOutput) {
+                    encrypt(clearData, encryptedOutput, passphrase);
+                    future.complete(null);
+                } catch (final Exception e) {
+                    future.completeExceptionally(e);
+                }
+            });
+            final InputStream encrypted = new FutureAwareInputStream(encryptedInput, future);
+            return mapper.process(new Encrypted<>(encrypted));
+        } catch (final IOException e) {
+            throw new EncryptionException(e);
+        }
+    }
 
-            try (final OutputStream encOut = encGen.open(out, new byte[1 << 16])) {
-                final PGPLiteralDataGenerator lData = new PGPLiteralDataGenerator();
-                try (OutputStream literalOut = lData.open(encOut, PGPLiteralData.BINARY, "data", clearData.length, new Date())) {
-                    literalOut.write(clearData);
+    private void encrypt(final InputStream clearData, final OutputStream destination, final Passphrase passphrase)
+            throws IOException, PGPException {
+        final PGPEncryptedDataGenerator encGen =
+                new PGPEncryptedDataGenerator(
+                        new JcePGPDataEncryptorBuilder(PGPEncryptedData.AES_128)
+                                .setWithIntegrityPacket(true)
+                                .setSecureRandom(new SecureRandom())
+                                .setProvider("BC"));
+        encGen.addMethod(
+                new JcePBEKeyEncryptionMethodGenerator(passphrase.passphrase())
+                        .setProvider("BC"));
+        try {
+            try (final OutputStream encOut = encGen.open(destination, new byte[64 * 1024])) {
+                final PGPLiteralDataGenerator literalGenerator = new PGPLiteralDataGenerator();
+                try (OutputStream literalOut = literalGenerator.open(
+                        encOut,
+                        PGPLiteralData.BINARY,
+                        PGPLiteralData.CONSOLE,
+                        new Date(),
+                        new byte[64 * 1024])) {
+                    final byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = clearData.read(buffer)) >= 0) {
+                        literalOut.write(buffer, 0, read);
+                    }
+                } finally {
+                    literalGenerator.close();
                 }
             }
+        } finally {
             encGen.close();
-            return new EncryptedPayload(out.toByteArray());
-        } catch (final IOException | PGPException e) {
-            throw new EncryptionException(e);
         }
     }
 }

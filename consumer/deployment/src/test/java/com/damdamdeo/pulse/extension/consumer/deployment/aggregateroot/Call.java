@@ -7,7 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.CurrentVersionInConsumption;
 import com.damdamdeo.pulse.extension.core.consumer.DecryptablePayload;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Purpose;
-import com.damdamdeo.pulse.extension.core.encryption.EncryptedPayload;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -18,7 +18,7 @@ public record Call(FromApplication fromApplication,
                    AggregateRootType aggregateRootType,
                    AggregateId aggregateId,
                    CurrentVersionInConsumption currentVersionInConsumption,
-                   EncryptedPayload encryptedPayload,
+                   Encrypted encrypted,
                    OwnedBy ownedBy,
                    BelongsTo belongsTo,
                    DecryptablePayload<JsonNode> decryptableEventPayload) {
@@ -29,7 +29,7 @@ public record Call(FromApplication fromApplication,
         Objects.requireNonNull(aggregateRootType);
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(currentVersionInConsumption);
-        Objects.requireNonNull(encryptedPayload);
+        Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(belongsTo);
         Objects.requireNonNull(decryptableEventPayload);

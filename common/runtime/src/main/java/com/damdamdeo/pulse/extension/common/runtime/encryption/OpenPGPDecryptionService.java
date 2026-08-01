@@ -12,11 +12,11 @@ import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
 import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBEDataDecryptorFactoryBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.Security;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @ApplicationScoped
 @Unremovable
@@ -34,47 +34,112 @@ public final class OpenPGPDecryptionService implements DecryptionService {
     }
 
     @Override
-    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final OwnedBy ownedBy) throws DecryptionException {
+    public <T> Decrypted<T> decrypt(final Encrypted<InputStream> encrypted,
+                                    final OwnedBy ownedBy,
+                                    final DecryptedInputStreamMapper<Decrypted<T>> mapper) throws DecryptionException {
         Objects.requireNonNull(encrypted);
         Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(mapper);
         try {
             final Passphrase passphrase = passphraseProvider.provide(ownedBy);
-            return decrypt(encrypted, passphrase);
+            return decrypt(encrypted, passphrase, mapper);
         } catch (UnableToProvidePassphraseException exception) {
             throw new DecryptionException(exception);
         }
     }
 
     @Override
-    public DecryptedPayload decrypt(final EncryptedPayload encrypted, final Passphrase passphrase) throws DecryptionException {
+    public <T> Decrypted<T> decrypt(final Encrypted<InputStream> encrypted,
+                                    final Passphrase passphrase,
+                                    final DecryptedInputStreamMapper<Decrypted<T>> mapper) throws DecryptionException {
         Objects.requireNonNull(encrypted);
         Objects.requireNonNull(passphrase);
-        try (final InputStream in = new ByteArrayInputStream(encrypted.payload())) {
-            final PGPObjectFactory pgpF = new PGPObjectFactory(in, new JcaKeyFingerprintCalculator());
-            final Object o = pgpF.nextObject();
+        Objects.requireNonNull(mapper);
+        try {
+            final PipedInputStream clearInput = new PipedInputStream(64 * 1024);
+            final PipedOutputStream clearOutput = new PipedOutputStream(clearInput);
 
-            if (o instanceof PGPEncryptedDataList encList) {
-                final PGPPBEEncryptedData encData = (PGPPBEEncryptedData) encList.get(0);
+            final CompletableFuture<Void> future = new CompletableFuture<>();
+            Thread.startVirtualThread(() -> {
+                try (InputStream encryptedInput = encrypted.payload();
+                     clearOutput) {
+                    decrypt(encryptedInput, clearOutput, passphrase);
+                    future.complete(null);
+                } catch (final Exception e) {
+                    future.completeExceptionally(e);
+                }
+            });
+            final InputStream decrypted = new FutureAwareInputStream(clearInput, future);
+            return mapper.process(new Decrypted<>(decrypted));
+        } catch (final IOException e) {
+            throw new DecryptionException(e);
+        }
+    }
 
-                final PBEDataDecryptorFactory decryptorFactory = new JcePBEDataDecryptorFactoryBuilder(
+    @Override
+    public Decrypted<byte[]> decrypt(final Encrypted<byte[]> encrypted, final OwnedBy ownedBy) throws DecryptionException {
+        return decrypt(new Encrypted<>(new ByteArrayInputStream(encrypted.payload())), ownedBy, decrypted -> {
+            try (final InputStream payload = decrypted.payload()) {
+                return new Decrypted<>(payload.readAllBytes());
+            }
+        });
+    }
+
+    @Override
+    public Decrypted<byte[]> decrypt(final Encrypted<byte[]> encrypted, final Passphrase passphrase) throws DecryptionException {
+        return decrypt(new Encrypted<>(new ByteArrayInputStream(encrypted.payload())), passphrase, decrypted -> {
+            try (final InputStream payload = decrypted.payload()) {
+                return new Decrypted<>(payload.readAllBytes());
+            }
+        });
+    }
+
+    private void decrypt(final InputStream encrypted, final OutputStream clear, final Passphrase passphrase)
+            throws IOException, PGPException {
+        final PGPObjectFactory pgpFactory = new PGPObjectFactory(encrypted, new JcaKeyFingerprintCalculator());
+        Object object = pgpFactory.nextObject();
+
+        // Certains messages PGP commencent par un marqueur
+        if (object instanceof PGPMarker) {
+            object = pgpFactory.nextObject();
+        }
+
+        if (!(object instanceof PGPEncryptedDataList encryptedDataList)) {
+            throw new PGPException("Invalid PGP structure");
+        }
+
+        final PGPPBEEncryptedData encryptedData = (PGPPBEEncryptedData) encryptedDataList.get(0);
+        final PBEDataDecryptorFactory decryptorFactory =
+                new JcePBEDataDecryptorFactoryBuilder(
                         new JcaPGPDigestCalculatorProviderBuilder().build())
                         .setProvider("BC")
                         .build(passphrase.passphrase());
-
-                try (final InputStream clear = encData.getDataStream(decryptorFactory)) {
-                    final PGPObjectFactory plainFact = new PGPObjectFactory(clear, new JcaKeyFingerprintCalculator());
-                    final Object message = plainFact.nextObject();
-
-                    if (message instanceof PGPLiteralData literalData) {
-                        return new DecryptedPayload(literalData.getInputStream().readAllBytes());
-                    } else {
-                        throw new DecryptionException("Contenu PGP inattendu, pas de PGPLiteralData");
-                    }
+        try (final InputStream decryptedStream = encryptedData.getDataStream(decryptorFactory)) {
+            final PGPObjectFactory plainFactory =
+                    new PGPObjectFactory(decryptedStream, new JcaKeyFingerprintCalculator());
+            Object message = plainFactory.nextObject();
+            if (message instanceof PGPCompressedData compressedData) {
+                try (InputStream compressedStream = compressedData.getDataStream()) {
+                    message = new PGPObjectFactory(
+                            compressedStream,
+                            new JcaKeyFingerprintCalculator())
+                            .nextObject();
                 }
             }
-            throw new DecryptionException("Invalid PGP structure");
-        } catch (final IOException | PGPException e) {
-            throw new DecryptionException(e);
+            if (!(message instanceof PGPLiteralData literalData)) {
+                throw new PGPException("Unexpected PGP content: expected PGPLiteralData");
+            }
+            try (final InputStream literalIn = literalData.getInputStream()) {
+                final byte[] buffer = new byte[8192];
+                int read;
+                while ((read = literalIn.read(buffer)) != -1) {
+                    clear.write(buffer, 0, read);
+                }
+                clear.flush();
+            }
+        }
+        if (encryptedData.isIntegrityProtected() && !encryptedData.verify()) {
+            throw new PGPException("PGP integrity check failed");
         }
     }
 }

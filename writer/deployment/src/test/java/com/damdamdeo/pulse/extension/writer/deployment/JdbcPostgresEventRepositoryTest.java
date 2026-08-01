@@ -55,7 +55,7 @@ class JdbcPostgresEventRepositoryTest {
     static class StubExecutedByEncoder implements ExecutedByEncoder {
 
         @Override
-        public byte[] encode(String value, OwnedBy ownedBy) throws UnableToEncodeException {
+        public Encrypted<byte[]> encode(String value, OwnedBy ownedBy) throws UnableToEncodeException {
             return TestExecutedByEncoder.INSTANCE.encode(value, ownedBy);
         }
     }
