@@ -8,7 +8,6 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.ProjectionFromEventStore;
 import com.damdamdeo.pulse.extension.core.query.SingleResultAggregateIdProjectionQuery;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
-import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import io.smallrye.context.api.ManagedExecutorConfig;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,6 +42,7 @@ class PerformanceTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(EventTestRepository.class))
             .withConfigurationResource("application.properties")
             .overrideConfigKey("quarkus.log.category.\"com.damdamdeo.pulse.extension.writer.runtime.projection\".level", "INFO");
 

@@ -130,7 +130,7 @@ class PulseExtensionResourceTest {
                 .body("encrypted.payload", not(emptyOrNullString()))
                 // ownership
                 .body("ownedBy", equalTo("U000001"))
-                .body("belongsTo.id", equalTo("U000001"))
+                .body("belongsTo", equalTo("U000001"))
                 // executedBy
                 .body("executedBy", equalTo("EU:bob@mail.com"))
                 // decryptable event payload
@@ -148,7 +148,7 @@ class PulseExtensionResourceTest {
                         equalTo("000001"))
                 // aggregate ownership
                 .body("aggregateRootLoaded.ownedBy", equalTo("U000001"))
-                .body("aggregateRootLoaded.belongsTo.id", equalTo("U000001"));
+                .body("aggregateRootLoaded.belongsTo", equalTo("U000001"));
     }
 
     @Test

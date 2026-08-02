@@ -10,7 +10,6 @@ import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.query.runtime.EventCounterException;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.OwnedByProvider;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.UnableToProvideOwnedByException;
-import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.annotation.Priority;
@@ -44,7 +43,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(StubPassphraseProvider.class,
-                    TodoProjection.class, TodoChecklistProjection.class))
+                    TodoProjection.class, TodoChecklistProjection.class, EventTestRepository.class))
             .withConfigurationResource("application.properties");
 
     public static final class TodoProjectionSingleResultAggregateIdProjectionQuery implements SingleResultAggregateIdProjectionQuery {

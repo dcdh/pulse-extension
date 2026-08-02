@@ -1,0 +1,23 @@
+package com.damdamdeo.pulse.extension.common.runtime.serialization;
+
+import com.damdamdeo.pulse.extension.core.BelongsTo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+
+import java.io.IOException;
+import java.util.Objects;
+
+public final class BelongsToDeserializer extends StdDeserializer<BelongsTo> {
+
+    public BelongsToDeserializer() {
+        super(BelongsTo.class);
+    }
+
+    @Override
+    public BelongsTo deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+        Objects.requireNonNull(p);
+        Objects.requireNonNull(ctxt);
+        return new BelongsTo(p.getValueAsString());
+    }
+}

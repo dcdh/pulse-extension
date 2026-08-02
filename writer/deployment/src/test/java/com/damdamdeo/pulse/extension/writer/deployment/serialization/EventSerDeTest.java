@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.deployment;
+package com.damdamdeo.pulse.extension.writer.deployment.serialization;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.command.TodoItem;
 import com.damdamdeo.pulse.extension.core.event.MultipleTodoItemsAdded;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
+import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
@@ -27,6 +28,8 @@ class EventSerDeTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withEmptyApplication()
+            .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
     @Inject

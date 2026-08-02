@@ -88,12 +88,12 @@ class SerializerTest {
 
         @Override
         public BelongsTo belongsTo() {
-            throw new IllegalStateException("Should not be called");
+            return BelongsTo.himself(this);
         }
 
         @Override
         public OwnedBy ownedBy() {
-            throw new IllegalStateException("Should not be called");
+            return OwnedBy.himself(this);
         }
     }
 
@@ -164,7 +164,9 @@ class SerializerTest {
                        "description": "lorem ipsum",
                        "status": "DONE",
                        "important": false,
-                       "nullableField": null
+                       "nullableField": null,
+                       "ownedBy" : "U000001",
+                       "belongsTo" : "U000001"
                     }
                     """;
 
@@ -192,7 +194,9 @@ class SerializerTest {
                             },
                             "sequence": "000001"
                           },
-                          "description": "Implement Projection feature"
+                          "description": "Implement Projection feature",
+                          "belongsTo": "U000001-T000001",
+                          "ownedBy": "U000001"
                         },
                         {
                           "id": {
@@ -204,9 +208,13 @@ class SerializerTest {
                             },
                             "sequence": "000002"
                           },
-                          "description": "Organization vacancies"
+                          "description": "Organization vacancies",
+                          "belongsTo": "U000001-T000001",
+                          "ownedBy": "U000001"
                         }
-                      ]
+                      ],
+                      "belongsTo": "U000001-T000001",
+                      "ownedBy": "U000001-T000001"
                     }
                     """;
 

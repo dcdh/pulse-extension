@@ -8,7 +8,6 @@ import com.damdamdeo.pulse.extension.core.query.TodoChecklistProjection;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import com.damdamdeo.pulse.extension.query.runtime.JdbcPostgresExecutedByResolver;
-import com.damdamdeo.pulse.extension.writer.runtime.serializer.EventTestRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
@@ -37,7 +36,7 @@ public class JdbcPostgresExecutedByResolverTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(StubPassphraseProvider.class,
-                    TodoProjection.class, TodoChecklistProjection.class))
+                    TodoProjection.class, TodoChecklistProjection.class, EventTestRepository.class))
             .withConfigurationResource("application.properties");
 
     @Inject

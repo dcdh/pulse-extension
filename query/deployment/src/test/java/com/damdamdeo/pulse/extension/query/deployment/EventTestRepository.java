@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.writer.runtime.serializer;
+package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;

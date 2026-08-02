@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.query.runtime.gdpr;
+package com.damdamdeo.pulse.extension.common.runtime.serialization;
 
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.core.JsonGenerator;
