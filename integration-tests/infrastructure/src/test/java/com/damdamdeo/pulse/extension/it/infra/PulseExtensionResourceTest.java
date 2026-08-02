@@ -127,9 +127,9 @@ class PulseExtensionResourceTest {
                 // event
                 .body("eventType.type", equalTo("UserRegistered"))
                 // encrypted payload
-                .body("encryptedPayload.payload", not(emptyOrNullString()))
+                .body("encrypted.payload", not(emptyOrNullString()))
                 // ownership
-                .body("ownedBy.id", equalTo("U000001"))
+                .body("ownedBy", equalTo("U000001"))
                 .body("belongsTo.id", equalTo("U000001"))
                 // executedBy
                 .body("executedBy", equalTo("EU:bob@mail.com"))
@@ -147,7 +147,7 @@ class PulseExtensionResourceTest {
                 .body("aggregateRootLoaded.decryptableAggregateRootPayload.payload.id.sequence",
                         equalTo("000001"))
                 // aggregate ownership
-                .body("aggregateRootLoaded.ownedBy.id", equalTo("U000001"))
+                .body("aggregateRootLoaded.ownedBy", equalTo("U000001"))
                 .body("aggregateRootLoaded.belongsTo.id", equalTo("U000001"));
     }
 

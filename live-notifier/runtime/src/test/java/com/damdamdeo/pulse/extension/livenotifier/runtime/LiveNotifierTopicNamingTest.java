@@ -17,6 +17,6 @@ class LiveNotifierTopicNamingTest {
         final LiveNotifierTopicNaming liveNotifierTopicNaming = new LiveNotifierTopicNaming(givenFromApplication);
 
         // Then
-        assertThat(liveNotifierTopicNaming.name()).isEqualTo("pulse.live-notification.todo_taking");
+        assertThat(liveNotifierTopicNaming.name()).isEqualTo("pulse.live-notification.todo-taking");
     }
 }
