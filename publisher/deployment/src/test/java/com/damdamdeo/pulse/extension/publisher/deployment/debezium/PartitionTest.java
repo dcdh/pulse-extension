@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -171,8 +172,8 @@ class PartitionTest extends AbstractPublisherTest {
                 tAggregateRootPS.executeUpdate();
 
                 index++;
-            } catch (final SQLException e) {
-                throw new RuntimeException(e);
+            } catch (final EncryptionException | SQLException exception) {
+                throw new RuntimeException(exception);
             }
         }
 

@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerCh
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -88,7 +89,7 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldConsumeEvent() throws UnableToEncodeException {
+    void shouldConsumeEvent() throws UnableToEncodeException, EncryptionException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(
@@ -151,7 +152,7 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldConsumeEventWhenPassPhraseIsBan() throws UnableToEncodeException {
+    void shouldConsumeEventWhenPassPhraseIsBan() throws UnableToEncodeException, EncryptionException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsEventHandler statisticsEventHandler = statisticsEventHandlerInstance.select(

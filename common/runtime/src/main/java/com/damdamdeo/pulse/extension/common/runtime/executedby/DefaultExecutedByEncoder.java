@@ -36,8 +36,8 @@ public class DefaultExecutedByEncoder implements ExecutedByEncoder {
                     return new Encrypted<>(Base64.encode(payload.readAllBytes()));
                 }
             });
-        } catch (final UnableToProvidePassphraseException unableToProvidePassphraseException) {
-            throw new UnableToEncodeException(unableToProvidePassphraseException);
+        } catch (final UnableToProvidePassphraseException | EncryptionException exception) {
+            throw new UnableToEncodeException(exception);
         }
     }
 }

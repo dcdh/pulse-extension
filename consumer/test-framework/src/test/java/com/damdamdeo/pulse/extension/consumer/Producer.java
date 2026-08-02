@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.consumer.Table;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -57,7 +58,7 @@ public class Producer {
                                                                                   final ExecutedBy executedBy,
                                                                                   final BelongsTo belongsTo,
                                                                                   final Class<A> aggregateRootClass,
-                                                                                  final Class<B> eventClass) throws UnableToEncodeException {
+                                                                                  final Class<B> eventClass) throws UnableToEncodeException, EncryptionException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final Encrypted<byte[]> encryptedAggregate = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
@@ -117,7 +118,7 @@ public class Producer {
                                                                                final AggregateId aggregateId,
                                                                                final OwnedBy ownedBy,
                                                                                final BelongsTo belongsTo,
-                                                                               final Class<A> aggregateRootClass) {
+                                                                               final Class<A> aggregateRootClass) throws EncryptionException {
         // Given
         final Encrypted<byte[]> encryptedAggregate = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
                 PASSPHRASE, encryptedPayload -> {

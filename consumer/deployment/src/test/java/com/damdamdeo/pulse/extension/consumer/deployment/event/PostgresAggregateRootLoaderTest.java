@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoaded;
 import com.damdamdeo.pulse.extension.core.consumer.event.UnknownAggregateRootException;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -67,7 +68,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldReturnAggregate() {
+    void shouldReturnAggregate() throws EncryptionException {
         // Given
         // language=json
         final String payload = """

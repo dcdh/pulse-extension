@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.publisher.deployment.debezium;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.publisher.*;
 import com.damdamdeo.pulse.extension.publisher.Record;
@@ -47,7 +48,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
     OpenPGPEncryptionService openPGPEncryptionService;
 
     @Test
-    void shouldConsumeFromTEventKafkaTopic() {
+    void shouldConsumeFromTEventKafkaTopic() throws EncryptionException {
         // Given
         final Timestamp givenStoredAt = Timestamp.from(Instant.ofEpochMilli(1_000_000_000L));
         final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(
@@ -127,7 +128,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
     }
 
     @Test
-    void shouldConsumeFromTAggregateRootKafkaTopic() {
+    void shouldConsumeFromTAggregateRootKafkaTopic() throws EncryptionException {
         // Given
         final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(
                 // language=json

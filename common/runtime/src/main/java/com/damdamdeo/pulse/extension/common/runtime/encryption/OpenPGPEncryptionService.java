@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,7 +16,6 @@ import java.security.Security;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 @ApplicationScoped
 @Unremovable
@@ -24,6 +24,26 @@ public final class OpenPGPEncryptionService implements EncryptionService {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
+    }
+
+    private final PassphraseProvider passphraseProvider;
+
+    public OpenPGPEncryptionService(final PassphraseProvider passphraseProvider) {
+        this.passphraseProvider = Objects.requireNonNull(passphraseProvider);
+    }
+
+    @Override
+    public <T> Encrypted<T> encrypt(final InputStream clearData, final OwnedBy ownedBy,
+                                    final EncryptedInputStreamMapper<Encrypted<T>> mapper) throws EncryptionException {
+        Objects.requireNonNull(clearData);
+        Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(mapper);
+        try {
+            final Passphrase passphrase = passphraseProvider.provide(ownedBy);
+            return encrypt(clearData, passphrase, mapper);
+        } catch (final UnableToProvidePassphraseException exception) {
+            throw new EncryptionException(exception);
+        }
     }
 
     @Override

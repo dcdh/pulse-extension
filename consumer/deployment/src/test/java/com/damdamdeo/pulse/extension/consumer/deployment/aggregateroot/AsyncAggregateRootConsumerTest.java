@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
+import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.quarkus.test.QuarkusUnitTest;
@@ -85,7 +86,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldConsumeAggregateRoot() {
+    void shouldConsumeAggregateRoot() throws EncryptionException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsAggregateRootHandler statisticsAggregateRootHandler = statisticsAggregateRootHandlerInstance.select(
@@ -130,7 +131,7 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
     }
 
     @Test
-    void shouldConsumeAggregateRootWhenPassPhraseDoesNotExistsAnymore() {
+    void shouldConsumeAggregateRootWhenPassPhraseDoesNotExistsAnymore() throws EncryptionException {
         // from PostgresAggregateRootLoaderTest#shouldReturnAggregate
         // Given
         final StatisticsAggregateRootHandler statisticsAggregateRootHandler = statisticsAggregateRootHandlerInstance.select(

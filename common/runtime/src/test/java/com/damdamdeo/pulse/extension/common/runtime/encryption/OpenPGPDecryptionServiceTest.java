@@ -35,7 +35,7 @@ class OpenPGPDecryptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        encryptionService = new OpenPGPEncryptionService();
+        encryptionService = new OpenPGPEncryptionService(passphraseProvider);
         decryptionService = new OpenPGPDecryptionService(passphraseProvider);
     }
 
@@ -43,7 +43,7 @@ class OpenPGPDecryptionServiceTest {
     class ByteArray {
 
         @Test
-        void shouldDecryptByOwnedBy() throws DecryptionException, UnableToProvidePassphraseException {
+        void shouldDecryptByOwnedBy() throws DecryptionException, UnableToProvidePassphraseException, EncryptionException {
             // Given
             final Encrypted<byte[]> encrypted = encryptionService.encrypt(new ByteArrayInputStream("Hello world!".getBytes(StandardCharsets.UTF_8)),
                     PassphraseSample.PASSPHRASE_1,
@@ -63,7 +63,7 @@ class OpenPGPDecryptionServiceTest {
 
         // Meaning that the organization has been deleted from Vault ...
         @Test
-        void shouldDecryptByOwnedByThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToProvidePassphraseException {
+        void shouldDecryptByOwnedByThrowUnknownPassphraseExceptionWhenPassphraseIsNotFound() throws UnableToProvidePassphraseException, EncryptionException {
             // Given
             final Encrypted<byte[]> encrypted = encryptionService.encrypt(new ByteArrayInputStream("Hello world!".getBytes(StandardCharsets.UTF_8)),
                     PassphraseSample.PASSPHRASE_1,
@@ -85,7 +85,7 @@ class OpenPGPDecryptionServiceTest {
         }
 
         @Test
-        void shouldDecryptByPassphrase() throws DecryptionException {
+        void shouldDecryptByPassphrase() throws DecryptionException, EncryptionException {
             // Given
             final Encrypted<byte[]> encrypted = encryptionService.encrypt(new ByteArrayInputStream("Hello world!".getBytes(StandardCharsets.UTF_8)),
                     PassphraseSample.PASSPHRASE_1,

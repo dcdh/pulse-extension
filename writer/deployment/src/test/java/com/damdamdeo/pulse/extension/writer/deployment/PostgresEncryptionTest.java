@@ -124,7 +124,7 @@ These values ensure that:
     }
 
     @Test
-    void shouldDecryptEncryptedValueFromDecryptionServiceUsingPostgres() {
+    void shouldDecryptEncryptedValueFromDecryptionServiceUsingPostgres() throws EncryptionException {
         // Given
         final String givenToEncrypt = "Hello world!";
 
