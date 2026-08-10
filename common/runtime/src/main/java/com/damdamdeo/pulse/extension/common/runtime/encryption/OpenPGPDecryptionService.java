@@ -61,7 +61,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
 
             final CompletableFuture<Void> future = new CompletableFuture<>();
             Thread.startVirtualThread(() -> {
-                try (InputStream encryptedInput = encrypted.payload();
+                try (final InputStream encryptedInput = encrypted.payload();
                      clearOutput) {
                     decrypt(encryptedInput, clearOutput, passphrase);
                     future.complete(null);
@@ -119,7 +119,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
                     new PGPObjectFactory(decryptedStream, new JcaKeyFingerprintCalculator());
             Object message = plainFactory.nextObject();
             if (message instanceof PGPCompressedData compressedData) {
-                try (InputStream compressedStream = compressedData.getDataStream()) {
+                try (final InputStream compressedStream = compressedData.getDataStream()) {
                     message = new PGPObjectFactory(
                             compressedStream,
                             new JcaKeyFingerprintCalculator())

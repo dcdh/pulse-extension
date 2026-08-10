@@ -110,7 +110,7 @@ class GuardQueryTest {
         // Then
         assertAll(
                 () -> Assertions.assertInstanceOf(
-                        DisallowException.class,
+                        UnauthorizedException.class,
                         exception.getCause()
                 ),
                 () -> verify(decorated, never()).execute(any())
@@ -135,7 +135,7 @@ class GuardQueryTest {
         assertAll(
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(any()),
+                () -> verify(executedByResolver).resolve(anySet()),
                 () -> verify(executionContextProvider).provide()
         );
     }
@@ -160,11 +160,11 @@ class GuardQueryTest {
         // Then
         assertAll(
                 () -> Assertions.assertInstanceOf(
-                        DisallowException.class,
+                        UnauthorizedException.class,
                         exception.getCause()
                 ),
                 () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(any())
+                () -> verify(executedByResolver).resolve(anySet())
         );
     }
 
@@ -213,11 +213,11 @@ class GuardQueryTest {
         // Then
         assertAll(
                 () -> Assertions.assertInstanceOf(
-                        DisallowException.class,
+                        UnauthorizedException.class,
                         exception.getCause()
                 ),
                 () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(any())
+                () -> verify(executedByResolver).resolve(anySet())
         );
     }
 }

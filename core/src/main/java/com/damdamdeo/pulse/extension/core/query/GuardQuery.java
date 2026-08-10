@@ -62,7 +62,7 @@ public abstract class GuardQuery<I extends Input, P extends Projection> implemen
                 return result;
             }
         }
-        throw new QueryException(new DisallowException());
+        throw new QueryException(new UnauthorizedException());
     }
 
     @Override

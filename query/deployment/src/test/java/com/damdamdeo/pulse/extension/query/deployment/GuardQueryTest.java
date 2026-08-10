@@ -45,7 +45,7 @@ public class GuardQueryTest {
         assertThatThrownBy(() -> noAudienceQuery.execute(new ListTodos()))
                 .isExactlyInstanceOf(QueryException.class)
                 .cause()
-                .isExactlyInstanceOf(DisallowException.class);
+                .isExactlyInstanceOf(UnauthorizedException.class);
     }
 
 }

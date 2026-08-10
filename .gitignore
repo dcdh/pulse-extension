@@ -119,3 +119,5 @@
 /integration-tests/infrastructure/todo_taking_query.sql
 /query/deployment/todo_taking_query_event_counter.sql
 /integration-tests/infrastructure/todo_taking_query_event_counter.sql
+/integration-tests/infrastructure/pulse_query_file.sql
+/query/deployment/pulse_query_file.sql

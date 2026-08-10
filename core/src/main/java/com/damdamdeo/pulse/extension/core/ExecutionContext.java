@@ -2,6 +2,8 @@ package com.damdamdeo.pulse.extension.core;
 
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -15,5 +17,10 @@ public record ExecutionContext(ExecutedBy executedBy, Set<String> roles) {
     public boolean hasRole(final String role) {
         Objects.requireNonNull(role);
         return roles.contains(role);
+    }
+
+    public boolean hasAnyRole(final Collection<String> roles) {
+        Objects.requireNonNull(roles);
+        return this.roles.stream().anyMatch(roles::contains);
     }
 }

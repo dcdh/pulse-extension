@@ -21,7 +21,10 @@ import org.postgresql.util.PSQLException;
 
 import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -89,14 +92,6 @@ class JdbcPostgresPassphraseRepositoryTest {
 
     @Test
     @Order(2)
-    void shouldStoreThrowTransactionalExceptionWhenNotExecutedInTransaction() {
-        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1))
-                .isExactlyInstanceOf(TransactionalException.class)
-                .hasMessage("ARJUNA016110: Transaction is required for invocation");
-    }
-
-    @Test
-    @Order(3)
     void shouldStorePassphrase() {
         // Given
 
@@ -127,7 +122,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    @Order(4)
+    @Order(3)
     void shouldThrowPassphraseAlreadyExistsExceptionWhenPassphraseAlreadyExists() {
         // Given
         final List<Integer> status = new ArrayList<>();
@@ -151,7 +146,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    @Order(5)
+    @Order(4)
     void shouldRollbackTransactionWhenUnableToStorePassphraseExceptionIsThrown() {
         // Given
         final List<Integer> counts = new ArrayList<>();
@@ -196,7 +191,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     // update
 
     @Test
-    @Order(6)
+    @Order(5)
     void shouldUpdate() {
         // Given
 
@@ -209,7 +204,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    @Order(7)
+    @Order(6)
     void shouldFailToUpdateOwnedBy() {
         // Given
         final String value = hasher.hash(Todo.OWNED_BY_USER_2).value();
@@ -232,7 +227,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    @Order(8)
+    @Order(7)
     void shouldFailToUpdatePassphraseWithANewOne() {
         // Given
 
@@ -257,34 +252,25 @@ class JdbcPostgresPassphraseRepositoryTest {
     // findBy
 
     @Test
-    @Order(9)
-    void shouldFindByThrowTransactionalExceptionWhenNotExecutedInTransaction() {
-        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_1))
-                .isExactlyInstanceOf(TransactionalException.class)
-                .hasMessage("ARJUNA016110: Transaction is required for invocation");
-    }
-
-    @Test
-    @Order(10)
-    void shouldFindByReturnEmptyWhenPassphraseDoesNotExists() {
+    @Order(8)
+    void shouldFindByReturnEmptyWhenPassphraseDoesNotExists() throws UnableToRetrievePassphraseException {
         // Given
 
         // When
-        final Optional<Passphrase> passphrase = QuarkusTransaction.requiringNew()
-                .call(() -> jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_2));
+        final Optional<Passphrase> passphrase = jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_2);
 
         // Then
         assertThat(passphrase).isEmpty();
     }
 
     @Test
-    @Order(11)
-    void shouldFindByReturnStoredPassphrase() throws PassphraseAlreadyExistsException, UnableToStorePassphraseException {
+    @Order(9)
+    void shouldFindByReturnStoredPassphrase() throws UnableToRetrievePassphraseException {
         // Given
         QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_2, PassphraseSample.PASSPHRASE_1));
 
         // When
-        final Optional<Passphrase> passphrase = QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_2));
+        final Optional<Passphrase> passphrase = jdbcPostgresPassphraseRepository.findBy(Todo.OWNED_BY_USER_2);
 
         // Then
         assertAll(
@@ -293,7 +279,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    @Order(12)
+    @Order(10)
     void shouldRollbackTransactionWhenUnableToFindByPassphraseExceptionIsThrown() {
         // Given
         final List<Integer> status = new ArrayList<>();
@@ -331,33 +317,22 @@ class JdbcPostgresPassphraseRepositoryTest {
     // get
 
     @Test
-    @Order(13)
-    void shouldGetThrowTransactionalExceptionWhenNotExecutedInTransaction() {
-        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.get(Todo.OWNED_BY_USER_1))
-                .isExactlyInstanceOf(TransactionalException.class)
-                .hasMessage("ARJUNA016110: Transaction is required for invocation");
-    }
-
-    @Test
-    @Order(14)
+    @Order(11)
     void shouldGetThrowsUnknownPassphraseExceptionWhenPassphraseDoesNotExists() {
         // Given
 
         // When && Then
-        assertThatThrownBy(() -> QuarkusTransaction.requiringNew()
-                .call(() -> jdbcPostgresPassphraseRepository.get(Todo.OWNED_BY_USER_3)))
-                .isExactlyInstanceOf(QuarkusTransactionException.class)
-                .cause()
+        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.get(Todo.OWNED_BY_USER_3))
                 .isExactlyInstanceOf(UnknownPassphraseException.class);
     }
 
     @Test
-    @Order(15)
-    void shouldGetReturnStoredPassphrase() {
+    @Order(12)
+    void shouldGetReturnStoredPassphrase() throws UnknownPassphraseException, UnableToRetrievePassphraseException {
         // Given
 
         // When
-        final Passphrase passphrase = QuarkusTransaction.requiringNew().call(() -> jdbcPostgresPassphraseRepository.get(Todo.OWNED_BY_USER_2));
+        final Passphrase passphrase = jdbcPostgresPassphraseRepository.get(Todo.OWNED_BY_USER_2);
 
         // Then
         assertAll(
@@ -366,7 +341,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    @Order(16)
+    @Order(13)
     void shouldRollbackTransactionWhenUnableToGetPassphraseExceptionIsThrown() {
         // Given
         final List<Integer> status = new ArrayList<>();
@@ -404,16 +379,8 @@ class JdbcPostgresPassphraseRepositoryTest {
     // list
 
     @Test
-    @Order(17)
-    void shouldListThrowTransactionalExceptionWhenNotExecutedInTransaction() {
-        assertThatThrownBy(() -> jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_5)))
-                .isExactlyInstanceOf(TransactionalException.class)
-                .hasMessage("ARJUNA016110: Transaction is required for invocation");
-    }
-
-    @Test
-    @Order(18)
-    void shouldListPassphrase() {
+    @Order(14)
+    void shouldListPassphrase() throws UnableToRetrievePassphraseException {
         // Given
         QuarkusTransaction.requiringNew().call(() -> {
             jdbcPostgresPassphraseRepository.store(Todo.OWNED_BY_USER_5, PassphraseSample.PASSPHRASE_1);
@@ -422,7 +389,7 @@ class JdbcPostgresPassphraseRepositoryTest {
         });
 
         // When
-        final List<RetrievedPassphrase> retrieved = QuarkusTransaction.joiningExisting().call(() -> jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_5, Todo.OWNED_BY_USER_6, Todo.OWNED_BY_USER_7)));
+        final List<RetrievedPassphrase> retrieved = jdbcPostgresPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_5, Todo.OWNED_BY_USER_6, Todo.OWNED_BY_USER_7));
 
         // Then
         assertThat(retrieved).containsExactlyInAnyOrder(new RetrievedPassphrase(Todo.OWNED_BY_USER_5, PassphraseSample.PASSPHRASE_1),
@@ -431,7 +398,7 @@ class JdbcPostgresPassphraseRepositoryTest {
     }
 
     @Test
-    @Order(19)
+    @Order(15)
     void shouldRollbackTransactionWhenUnableToListPassphraseExceptionIsThrown() {
         // Given
         final List<Integer> counts = new ArrayList<>();

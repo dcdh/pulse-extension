@@ -86,7 +86,7 @@ public final class OpenPGPEncryptionService implements EncryptionService {
         try {
             try (final OutputStream encOut = encGen.open(destination, new byte[64 * 1024])) {
                 final PGPLiteralDataGenerator literalGenerator = new PGPLiteralDataGenerator();
-                try (OutputStream literalOut = literalGenerator.open(
+                try (final OutputStream literalOut = literalGenerator.open(
                         encOut,
                         PGPLiteralData.BINARY,
                         PGPLiteralData.CONSOLE,

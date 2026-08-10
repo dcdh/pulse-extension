@@ -17,7 +17,6 @@ import java.util.*;
 
 @ApplicationScoped
 @Unremovable
-@Transactional(value = TxType.MANDATORY)
 public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
 
     private static final String PASSPHRASE = "passphrase";
@@ -115,6 +114,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
+    @Transactional(value = TxType.REQUIRED)
     public Passphrase store(final OwnedBy ownedBy, final Passphrase passphrase) throws PassphraseAlreadyExistsException,
             UnableToStorePassphraseException {
         Objects.requireNonNull(ownedBy);
@@ -144,6 +144,7 @@ public class JdbcPostgresPassphraseRepository implements PassphraseRepository {
     }
 
     @Override
+    @Transactional(value = TxType.MANDATORY)
     public Passphrase update(final OwnedBy ownedBy, final Passphrase passphrase) throws UnableToStorePassphraseException, UnknownPassphraseException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(passphrase);

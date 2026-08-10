@@ -1,12 +1,27 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
+import com.damdamdeo.pulse.extension.core.query.GenericQuery;
+import com.damdamdeo.pulse.extension.core.query.file.DefaultUploadedAtProvider;
+import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultDownloadedAtProvider;
+import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultTokenGenerator;
+import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedAtProvider;
 import com.damdamdeo.pulse.extension.query.runtime.JdbcPostgresExecutedByResolver;
 import com.damdamdeo.pulse.extension.query.runtime.QueryExceptionMapper;
 import com.damdamdeo.pulse.extension.query.runtime.SmallryeConfigBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.query.runtime.file.FileEndpoint;
+import com.damdamdeo.pulse.extension.query.runtime.file.FileParamConverterProvider;
+import com.damdamdeo.pulse.extension.query.runtime.file.JdbcPostgresFileRepository;
+import com.damdamdeo.pulse.extension.query.runtime.file.TikaImageMetadataExtractor;
+import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.*;
+import com.damdamdeo.pulse.extension.query.runtime.file.traceability.*;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.JdbcPostgresOwnedByProvider;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+
+import java.util.List;
 
 public class BeansProcessor {
 
@@ -21,5 +36,102 @@ public class BeansProcessor {
     @BuildStep
     AdditionalIndexedClassesBuildItem additionalIndexedClasses() {
         return new AdditionalIndexedClassesBuildItem(QueryExceptionMapper.class.getName());
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDefaultUploadedAtProvider() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(DefaultUploadedAtProvider.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerFiligrane() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(
+                        JpegAwtImageContentTypeFiligraneApplier.class,
+                        JpgAwtImageContentTypeFiligraneApplier.class,
+                        PdfBoxContentTypeFiligraneApplier.class,
+                        PngAwtImageContentTypeFiligraneApplier.class,
+                        DefaultFiligraneApplier.class)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerJdbcPostgresFileRepository() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(JdbcPostgresFileRepository.class).build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerTikaImageMetadataExtractor() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(TikaImageMetadataExtractor.class).build();
+    }
+
+    @BuildStep
+    AdditionalIndexedClassesBuildItem registerFileDownloaderEndpoint() {
+        return new AdditionalIndexedClassesBuildItem(FileEndpoint.class.getName());
+    }
+
+    @BuildStep
+    AdditionalIndexedClassesBuildItem registerFileParamConverterProvider() {
+        return new AdditionalIndexedClassesBuildItem(FileParamConverterProvider.class.getName());
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDefaultTokenGenerator() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(DefaultTokenGenerator.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDownloadedAtProvider() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(DownloadedAtProvider.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDefaultTokenApplier() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(DefaultTokenApplier.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerJdbcPostgresTokenRepository() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(JdbcPostgresTokenRepository.class).build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerTokenAppliers() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(
+                        JpegContentTypeTokenApplier.class,
+                        PdfContentTypeTokenApplier.class,
+                        PngContentTypeTokenApplier.class)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDefaultDownloadedAtProvider() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(DefaultDownloadedAtProvider.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    List<AdditionalBeanBuildItem> registerGenericQuery(final CombinedIndexBuildItem combinedIndexBuildItem) {
+        return combinedIndexBuildItem.getIndex().getAllKnownImplementations(GenericQuery.class)
+                .stream()
+                .map(genericQuery -> AdditionalBeanBuildItem.builder()
+                        .addBeanClass(genericQuery.name().toString())
+                        .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                        .setUnremovable()
+                        .build())
+                .toList();
     }
 }

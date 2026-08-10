@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+    <parsers>
+        <parser class="org.apache.tika.parser.pdf.PDFParser">
+            <mime>application/pdf</mime>
+        </parser>
+        <parser class="org.apache.tika.parser.image.JpegParser">
+            <mime>image/jpeg</mime>
+            <mime>image/jpg</mime>
+        </parser>
+        <parser class="org.apache.tika.parser.image.ImageParser">
+            <mime>image/png</mime>
+        </parser>
+    </parsers>
+    <detectors>
+        <detector class="org.apache.tika.detect.DefaultDetector"/>
+    </detectors>
+</properties>

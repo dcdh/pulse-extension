@@ -5,6 +5,12 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 import java.util.Optional;
 
+/**
+ * Do not use, demo purpose only.
+ *
+ * @param <P>
+ */
+@Deprecated
 public interface ProjectionFromEventStore<P extends Projection> {
 
     Result<P> getOneByAggregateId(AggregateId aggregateId, SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException;

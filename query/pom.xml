@@ -11,6 +11,12 @@
     <packaging>pom</packaging>
     <name>Pulse Extension - Query Parent</name>
 
+    <properties>
+        <quarkus-tika.version>2.3.2</quarkus-tika.version>
+        <quarkus.package.type>native</quarkus.package.type>
+        <quarkus.native.add-all-charsets>true</quarkus.native.add-all-charsets>
+    </properties>
+
     <modules>
         <module>runtime</module>
         <module>deployment</module>

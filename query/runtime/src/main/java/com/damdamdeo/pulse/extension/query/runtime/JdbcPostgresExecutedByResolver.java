@@ -49,8 +49,27 @@ public final class JdbcPostgresExecutedByResolver implements ExecutedByResolver 
                 }
             }
             return setOfExecutedBy;
-        } catch (final UnableToDecodeException | SQLException e) {
-            throw new UnableToResolveException(e);
+        } catch (final UnableToDecodeException | SQLException exception) {
+            throw new UnableToResolveException(exception);
+        }
+    }
+
+    @Override
+    public Set<ExecutedBy> resolve(final OwnedBy ownedBy) throws UnableToResolveException {
+        Objects.requireNonNull(ownedBy);
+        final Set<ExecutedBy> setOfExecutedBy = new HashSet<>();
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement ps = connection.prepareStatement("SELECT executed_by FROM aggregate_executed_by WHERE owned_by = ?")) {
+            ps.setString(1, ownedBy.id());
+            try (final ResultSet resultSet = ps.executeQuery()) {
+                while (resultSet.next()) {
+                    final String executedBy = resultSet.getString("executed_by");
+                    setOfExecutedBy.add(executedByFactory.from(executedBy, ownedBy));
+                }
+            }
+            return setOfExecutedBy;
+        } catch (final UnableToDecodeException | SQLException exception) {
+            throw new UnableToResolveException(exception);
         }
     }
 }
