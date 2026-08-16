@@ -8,10 +8,14 @@ import com.damdamdeo.pulse.extension.core.query.file.FileInfo;
 import com.damdamdeo.pulse.extension.core.query.file.query.DownloadInput;
 import com.damdamdeo.pulse.extension.core.query.file.query.DownloadQuery;
 import com.damdamdeo.pulse.extension.core.query.file.query.GetFileInfoQuery;
+import io.quarkiverse.resteasy.problem.HttpProblem;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import java.io.InputStream;
 
@@ -24,6 +28,14 @@ public class FileEndpoint {
     @Inject
     GetFileInfoQuery getFileInfoQuery;
 
+    @APIResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content = @Content(
+                    mediaType = "application/problem+json",
+                    schema = @Schema(implementation = HttpProblem.class)
+            )
+    )
     @Path("{fileIdentifier}/download")
     @GET
     public Response download(@PathParam("fileIdentifier") final FileIdentifier fileIdentifier,
