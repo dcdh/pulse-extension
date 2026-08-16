@@ -48,7 +48,7 @@ class UploadQueryTest {
     void shouldUploadFile() throws Exception {
         // Given
         final InputFile inputFile = inputFile();
-        final FileInfo expected = fileInfo();
+        final FileIdentifier expected = inputFile.fileIdentifier();
         final FileMetadata metadata = fileMetadata();
         final UploadedAt uploadedAt = uploadedAt();
         final Encrypted<InputStream> encrypted = encrypted();
@@ -58,10 +58,9 @@ class UploadQueryTest {
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
-        when(fileRepository.store(any(FileInfo.class), eq(encrypted))).thenReturn(expected);
 
         // When
-        final FileInfo result = query.execute(inputFile);
+        final FileIdentifier result = query.execute(inputFile);
 
         // Then
         assertAll(
@@ -72,18 +71,17 @@ class UploadQueryTest {
                 () -> verify(uploadedAtProvider).provide(),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(fileRepository).store(
-                        argThat(info ->
-                                info.fileIdentifier().equals(inputFile.fileIdentifier())
-                                        && info.filename().equals(inputFile.filename())
-                                        && info.contentType().equals(inputFile.contentType())
-                                        && info.contentLength().equals(inputFile.contentLength())
-                                        && info.uploadedAt().equals(uploadedAt)
-                                        && info.uploadedBy().equals(
-                                        new UploadedBy(executionContext().executedBy()))
-                                        && info.ownedBy().equals(inputFile.ownedBy())
-                                        && info.fileMetadata().equals(metadata)
+                        new FileInfo(
+                                inputFile.fileIdentifier(),
+                                inputFile.filename(),
+                                inputFile.contentType(),
+                                inputFile.contentLength(),
+                                uploadedAt,
+                                new UploadedBy(executionContext().executedBy()),
+                                inputFile.ownedBy(),
+                                metadata
                         ),
-                        eq(encrypted)
+                        encrypted
                 )
         );
     }
@@ -198,7 +196,7 @@ class UploadQueryTest {
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
-        when(fileRepository.store(any(FileInfo.class), eq(encrypted))).thenThrow(exception);
+        doThrow(exception).when(fileRepository).store(any(FileInfo.class), eq(encrypted));
 
         // When / Then
         assertAll(
@@ -230,20 +228,6 @@ class UploadQueryTest {
         );
     }
 
-    private FileInfo fileInfo() {
-        final FileIdentifier identifier = new FileIdentifier("file-123");
-        return new FileInfo(
-                identifier,
-                new Filename("facture.jpg"),
-                ContentType.IMAGE_JPG,
-                new ContentLength(287759L),
-                uploadedAt(),
-                new UploadedBy(new ExecutedBy.EndUser("BOB", true)),
-                OwnedBy.from(identifier),
-                fileMetadata()
-        );
-    }
-
     private FileMetadata fileMetadata() {
         return new FileMetadata(
                 Map.of(
@@ -265,7 +249,7 @@ class UploadQueryTest {
 
     private ExecutionContext executionContext() {
         return new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                ExecutedBy.Anonymous.INSTANCE,
                 Set.of("backend-user")
         );
     }

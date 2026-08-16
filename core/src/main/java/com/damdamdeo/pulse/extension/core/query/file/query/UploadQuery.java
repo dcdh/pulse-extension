@@ -3,6 +3,8 @@ package com.damdamdeo.pulse.extension.core.query.file.query;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.GenericQuery;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
@@ -17,7 +19,7 @@ import java.util.Objects;
 
 // This must be call internally in reaction of an event representing a file.
 // The content and other information must be passed in Command.
-public final class UploadQuery implements GenericQuery<InputFile, FileInfo> {
+public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier> {
 
     private final FileRepository fileRepository;
     private final ExecutionContextProvider executionContextProvider;
@@ -38,7 +40,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileInfo> {
     }
 
     @Override
-    public FileInfo execute(final InputFile inputFile) throws QueryException {
+    public FileIdentifier execute(final InputFile inputFile) throws QueryException {
         Objects.requireNonNull(inputFile);
         try {
             inputFile.contentLength().checkValid();
@@ -54,18 +56,22 @@ public final class UploadQuery implements GenericQuery<InputFile, FileInfo> {
                 final FileMetadata extracted = imageMetadataExtractor.extract(
                         metadata,
                         inputFile.contentType());
+                final OwnedBy ownedBy = inputFile.ownedBy();
                 final Encrypted<InputStream> encrypted = encryptionService.encrypt(encryption, inputFile.ownedBy(), t -> t);
-                return fileRepository.store(
+                final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
+                final UploadedAt uploadedAt = uploadedAtProvider.provide();
+                fileRepository.store(
                         new FileInfo(
                                 inputFile.fileIdentifier(),
                                 inputFile.filename(),
                                 inputFile.contentType(),
                                 inputFile.contentLength(),
-                                uploadedAtProvider.provide(),
-                                new UploadedBy(executionContextProvider.provide().executedBy()),
-                                inputFile.ownedBy(),
+                                uploadedAt,
+                                new UploadedBy(executedBy),
+                                ownedBy,
                                 extracted
                         ), encrypted);
+                return inputFile.fileIdentifier();
             } finally {
                 Files.deleteIfExists(temp);
             }

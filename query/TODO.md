@@ -6,8 +6,9 @@
    - GetTraceByFileIdentifierQuery
    - e2e: upload, download, getFileInfo, getTraceByFileIdentifier
 2. add query log on GuardQuery
-   - share code with file traceability
+   - share code with file traceability ?
    - on each Projection Result retrieve the list of aggregateIds
-   - store executedBy, executedAt and an UUID identifier
+   - store executedBy, executedAt and a UUID identifier
    - only append
    - disallow update, delete
+   - study Apache AGE to add graph capability to postgresql - may not be useful
