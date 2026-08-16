@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.GenericQuery;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
+import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 
 import java.io.IOException;
@@ -75,10 +76,13 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
             } finally {
                 Files.deleteIfExists(temp);
             }
-        } catch (final FileAlreadyUploadedException | FileRepositoryException | IOException |
-                       EncryptionException | MaxFileSizeReachedException |
-                       ImageMetadataExtractorException exception) {
-            throw new QueryException(exception);
+        } catch (final FileAlreadyUploadedException exception) {
+            throw new QueryException(exception, QueryExceptionCode.CONFLICT);
+        } catch (final MaxFileSizeReachedException exception) {
+            throw new QueryException(exception, QueryExceptionCode.FAIL_FAST_CONDITION_NOT_MET);
+        } catch (final FileRepositoryException | EncryptionException | ImageMetadataExtractorException |
+                       IOException exception) {
+            throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }
 }

@@ -8,16 +8,20 @@ import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 @Provider
 @Priority(Priorities.USER)
-@APIResponse(responseCode = "409", description = "QueryException")
-public class QueryExceptionMapper extends ExceptionMapperBase<QueryException>
-        implements ExceptionMapper<QueryException> {
+public class QueryExceptionMapper extends ExceptionMapperBase<QueryException> implements ExceptionMapper<QueryException> {
 
     @Override
     protected HttpProblem toProblem(final QueryException exception) {
-        return HttpProblem.valueOf(Response.Status.CONFLICT);
+        final Response.Status status = switch (exception.queryExceptionCode()) {
+            case UNKNOWN -> Response.Status.NOT_FOUND;
+            case FORBIDDEN -> Response.Status.FORBIDDEN;
+            case CONFLICT -> Response.Status.CONFLICT;
+            case FAIL_FAST_CONDITION_NOT_MET -> Response.Status.BAD_REQUEST;
+            case INFRASTRUCTURE_FAILURE -> Response.Status.INTERNAL_SERVER_ERROR;
+        };
+        return HttpProblem.valueOf(status, exception.getMessage());
     }
 }

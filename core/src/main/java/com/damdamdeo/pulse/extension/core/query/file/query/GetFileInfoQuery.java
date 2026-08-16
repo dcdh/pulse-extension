@@ -2,10 +2,7 @@ package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.query.GenericQuery;
-import com.damdamdeo.pulse.extension.core.query.QueryException;
-import com.damdamdeo.pulse.extension.core.query.UnauthorizedException;
+import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.FileInfo;
 import com.damdamdeo.pulse.extension.core.query.file.FileRepository;
@@ -39,7 +36,7 @@ public final class GetFileInfoQuery implements GenericQuery<FileIdentifier, File
             }
             return fileRepository.getFileInfoByFileIdentifier(fileIdentifier);
         } catch (final FileRepositoryException exception) {
-            throw new QueryException(exception);
+            throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }
 }

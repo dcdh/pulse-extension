@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
+import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.query.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,6 +110,7 @@ class GetFileInfoQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(fileIdentifier))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseInstanceOf(UnauthorizedException.class),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
@@ -137,6 +139,7 @@ class GetFileInfoQueryTest {
         // When / Then
         assertThatThrownBy(() -> query.execute(fileIdentifier))
                 .isInstanceOf(QueryException.class)
+                .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                 .cause()
                 .isInstanceOf(FileRepositoryException.class)
                 .isSameAs(repositoryException);

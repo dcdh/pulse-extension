@@ -156,6 +156,7 @@ class DownloadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseInstanceOf(UnauthorizedException.class),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
                 () -> verify(executedByResolver).resolve(fileInfo.ownedBy()),
@@ -177,6 +178,7 @@ class DownloadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
@@ -200,6 +202,7 @@ class DownloadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
@@ -222,6 +225,7 @@ class DownloadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(executedByResolver).resolve(fileInfo.ownedBy()),
@@ -247,6 +251,7 @@ class DownloadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
@@ -275,6 +280,7 @@ class DownloadQueryTest {
         // When / Then
         assertThatThrownBy(() -> query.execute(input))
                 .isInstanceOf(QueryException.class)
+                .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                 .cause()
                 .isSameAs(exception);
     }

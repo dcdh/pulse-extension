@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
+import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.query.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.*;
@@ -109,6 +110,7 @@ class GetTraceByFileIdentifierQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(fileIdentifier))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseInstanceOf(UnauthorizedException.class),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
@@ -135,6 +137,7 @@ class GetTraceByFileIdentifierQueryTest {
         // When / Then
         assertThatThrownBy(() -> query.execute(GIVEN_FILE_IDENTIFIER))
                 .isInstanceOf(QueryException.class)
+                .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                 .cause()
                 .isInstanceOf(TokenRepositoryException.class)
                 .isSameAs(repositoryException);

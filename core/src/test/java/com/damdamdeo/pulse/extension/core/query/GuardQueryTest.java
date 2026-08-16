@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -101,18 +102,12 @@ class GuardQueryTest {
         when(executionContextProvider.provide()).thenReturn(context);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
 
-        // When
-        final QueryException exception = Assertions.assertThrows(
-                QueryException.class,
-                () -> guardQuery.execute(new SampleInput())
-        );
-
-        // Then
+        // When / Then
         assertAll(
-                () -> Assertions.assertInstanceOf(
-                        UnauthorizedException.class,
-                        exception.getCause()
-                ),
+                () -> assertThatThrownBy(() -> guardQuery.execute(new SampleInput()))
+                        .isExactlyInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
+                        .hasCauseExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated, never()).execute(any())
         );
     }
@@ -151,18 +146,12 @@ class GuardQueryTest {
         when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of());
         when(executionContextProvider.provide()).thenReturn(context);
 
-        // When
-        final QueryException exception = Assertions.assertThrows(
-                QueryException.class,
-                () -> guardQuery.execute(new SampleInput())
-        );
-
-        // Then
+        // When / Then
         assertAll(
-                () -> Assertions.assertInstanceOf(
-                        UnauthorizedException.class,
-                        exception.getCause()
-                ),
+                () -> assertThatThrownBy(() -> guardQuery.execute(new SampleInput()))
+                        .isExactlyInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
+                        .hasCauseExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).execute(any()),
                 () -> verify(executedByResolver).resolve(anySet())
         );
@@ -204,18 +193,12 @@ class GuardQueryTest {
         when(decorated.execute(new SampleInput())).thenReturn(expected);
         when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of());
 
-        // When
-        final QueryException exception = Assertions.assertThrows(
-                QueryException.class,
-                () -> guardQuery.execute(new SampleInput())
-        );
-
-        // Then
+        // When / Then
         assertAll(
-                () -> Assertions.assertInstanceOf(
-                        UnauthorizedException.class,
-                        exception.getCause()
-                ),
+                () -> assertThatThrownBy(() -> guardQuery.execute(new SampleInput()))
+                        .isExactlyInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
+                        .hasCauseExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).execute(any()),
                 () -> verify(executedByResolver).resolve(anySet())
         );

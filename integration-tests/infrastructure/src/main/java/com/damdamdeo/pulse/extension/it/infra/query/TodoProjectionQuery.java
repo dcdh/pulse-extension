@@ -76,7 +76,7 @@ public class TodoProjectionQuery implements Query<ListTodos, TodoProjection> {
             Validate.validState(identifiable.isPresent());
             return todoProjectionProjectionFromEventStore.findAllBy(OwnedBy.from(identifiable.get()), input, MULTIPLE_RESULT_PROJECTION_QUERY);
         } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {
-            throw new QueryException(exception);
+            throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }
 

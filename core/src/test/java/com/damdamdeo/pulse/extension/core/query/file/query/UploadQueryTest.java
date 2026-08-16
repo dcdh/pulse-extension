@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
+import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,6 +97,7 @@ class UploadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(inputFile))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.CONFLICT)
                         .hasCauseInstanceOf(FileAlreadyUploadedException.class),
                 () -> verify(fileRepository).exists(inputFile.fileIdentifier()),
                 () -> verifyNoInteractions(executionContextProvider, encryptionService, imageMetadataExtractor, uploadedAtProvider),
@@ -112,6 +114,7 @@ class UploadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(inputFile))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FAIL_FAST_CONDITION_NOT_MET)
                         .hasCauseInstanceOf(MaxFileSizeReachedException.class),
                 () -> verifyNoInteractions(fileRepository, executionContextProvider, encryptionService, imageMetadataExtractor, uploadedAtProvider)
         );
@@ -131,6 +134,7 @@ class UploadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(inputFile))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).exists(inputFile.fileIdentifier()),
@@ -155,6 +159,7 @@ class UploadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(inputFile))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(imageMetadataExtractor).extract(any(InputStream.class), eq(inputFile.contentType())),
@@ -175,6 +180,7 @@ class UploadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(inputFile))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).exists(inputFile.fileIdentifier()),
@@ -202,6 +208,7 @@ class UploadQueryTest {
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(inputFile))
                         .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).store(any(FileInfo.class), eq(encrypted))

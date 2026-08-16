@@ -2,10 +2,7 @@ package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.query.GenericQuery;
-import com.damdamdeo.pulse.extension.core.query.QueryException;
-import com.damdamdeo.pulse.extension.core.query.UnauthorizedException;
+import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.TokenRepository;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.TokenRepositoryException;
@@ -39,7 +36,7 @@ public final class GetTraceByFileIdentifierQuery implements GenericQuery<FileIde
             }
             return tokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(fileIdentifier);
         } catch (final TokenRepositoryException exception) {
-            throw new QueryException(exception);
+            throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }
 }

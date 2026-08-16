@@ -54,7 +54,7 @@ public abstract class GuardQuery<I extends Input, P extends Projection> implemen
                         }
                         yield null;
                     } catch (final UnableToResolveException e) {
-                        throw new QueryException(e);
+                        throw new QueryException(e, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
                     }
                 }
             };

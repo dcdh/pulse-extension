@@ -67,7 +67,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
             }
         } catch (final FileRepositoryException | UnableToResolveException | DecryptionException
                        | UnableToApplyFiligraneException exception) {
-            throw new QueryException(exception);
+            throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }
 }

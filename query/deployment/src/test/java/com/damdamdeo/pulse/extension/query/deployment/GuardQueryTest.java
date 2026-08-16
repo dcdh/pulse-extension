@@ -44,6 +44,7 @@ public class GuardQueryTest {
     void shouldFailWhenNoAudienceIsDefined() {
         assertThatThrownBy(() -> noAudienceQuery.execute(new ListTodos()))
                 .isExactlyInstanceOf(QueryException.class)
+                .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                 .cause()
                 .isExactlyInstanceOf(UnauthorizedException.class);
     }
