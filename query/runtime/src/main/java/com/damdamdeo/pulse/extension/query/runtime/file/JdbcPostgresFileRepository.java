@@ -85,7 +85,7 @@ public class JdbcPostgresFileRepository implements FileRepository {
             statement.setString(3, fileInfo.contentType().contentType());
             statement.setLong(4, fileInfo.contentLength().contentLength());
             statement.setTimestamp(5, Timestamp.from(fileInfo.uploadedAt().at().toInstant()));
-            statement.setString(6, fileInfo.uploadedBy().executedBy().encode(executedByEncoder, fileInfo.ownedBy()));
+            statement.setString(6, fileInfo.uploadedBy().executedBy().encode(executedByEncoder, fileInfo.ownedBy()).encoded());
             statement.setString(7, fileInfo.ownedBy().id());
             statement.setString(8, objectMapper.writeValueAsString(fileInfo.fileMetadata().metadata()));
             statement.setBinaryStream(

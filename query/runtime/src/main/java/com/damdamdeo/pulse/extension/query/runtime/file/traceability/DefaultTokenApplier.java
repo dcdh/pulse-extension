@@ -48,7 +48,7 @@ public class DefaultTokenApplier implements TokenApplier {
                     .orElseThrow(() -> new UnableToApplyTokenException(new UnsupportedContentTypeException()));
             final Token token = tokenGenerator.generate();
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final DownloadedBy downloadedBy = new DownloadedBy(executedBy.encode(executedByEncoder, ownedBy));
+            final DownloadedBy downloadedBy = new DownloadedBy(executedBy.encode(executedByEncoder, ownedBy).encoded());
             final DownloadedAt downloadedAt = downloadedAtProvider.provide();
             tokenRepository.store(new Traceability(token, fileContent.id(), downloadedBy, downloadedAt));
             return applier.apply(fileContent, token);

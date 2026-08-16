@@ -76,8 +76,8 @@ public sealed interface Audience
         public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             final StringJoiner joiner = new StringJoiner(ELIGIBLE_SEPARATOR);
             for (final ExecutedBy.EndUser endUser : eligibles) {
-                final String encode = endUser.encode(executedByEncoder, ownedBy);
-                joiner.add(encode);
+                final String encoded = endUser.encode(executedByEncoder, ownedBy).encoded();
+                joiner.add(encoded);
             }
             return DISCRIMINANT + SEPARATOR + joiner;
         }

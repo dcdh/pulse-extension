@@ -107,7 +107,7 @@ public class Producer {
                                 encrypted.payload(),
                                 ownedBy.id(),
                                 belongsTo.id(),
-                                executedBy.encode((value, ownedBy1) -> new Encrypted<>(("encoded" + value).getBytes(StandardCharsets.UTF_8)), ownedBy))));
+                                executedBy.encode((value, ownedBy1) -> new Encrypted<>(("encoded" + value).getBytes(StandardCharsets.UTF_8)), ownedBy).encoded())));
         return new Response(encryptedAggregate, encrypted);
     }
 

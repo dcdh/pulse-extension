@@ -10,7 +10,7 @@ public sealed interface ExecutedBy
 
     String SEPARATOR = ":";
 
-    String encode(ExecutedByEncoder executedByEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
+    ExecutedByEncoded encode(ExecutedByEncoder executedByEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
 
     String value();
 
@@ -28,8 +28,8 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) {
-            return DISCRIMINANT;
+        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) {
+            return new ExecutedByEncoded(DISCRIMINANT);
         }
 
         @Override
@@ -59,11 +59,11 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             if (!decoded) {
                 throw new IllegalStateException("Could not encode not decoded");
             }
-            return DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by, ownedBy).payload());
+            return new ExecutedByEncoded(DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by, ownedBy).payload()));
         }
 
         @Override
@@ -94,8 +94,8 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
-            return DISCRIMINANT + SEPARATOR + by;
+        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+            return new ExecutedByEncoded(DISCRIMINANT + SEPARATOR + by);
         }
 
         @Override
@@ -124,8 +124,8 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
-            return DISCRIMINANT;
+        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+            return new ExecutedByEncoded(DISCRIMINANT);
         }
 
         @Override

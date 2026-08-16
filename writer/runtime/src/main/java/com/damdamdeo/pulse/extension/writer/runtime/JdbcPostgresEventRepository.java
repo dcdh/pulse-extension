@@ -91,7 +91,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy).passphrase()));
                 eventPreparedStatement.setString(8, ownedBy.id());
                 eventPreparedStatement.setString(9, aggregateRoot.belongsTo().id());
-                eventPreparedStatement.setString(10, executedBy.encode(executedByEncoder, ownedBy));
+                eventPreparedStatement.setString(10, executedBy.encode(executedByEncoder, ownedBy).encoded());
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }

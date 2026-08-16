@@ -21,10 +21,10 @@ class ExecutedByTest {
             final ExecutedBy executedBy = new ExecutedBy.EndUser("alice", true);
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
-            assertThat(encoded).isEqualTo("EU:encodedalice");
+            assertThat(encoded).isEqualTo(new ExecutedByEncoded("EU:encodedalice"));
         }
 
         @Test
@@ -33,10 +33,10 @@ class ExecutedByTest {
             final ExecutedBy executedBy = new ExecutedBy.ServiceAccount("cron-job");
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
-            assertThat(encoded).isEqualTo("SA:cron-job");
+            assertThat(encoded).isEqualTo(new ExecutedByEncoded("SA:cron-job"));
         }
 
         @Test
@@ -45,10 +45,10 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
-            assertThat(encoded).isEqualTo("A");
+            assertThat(encoded).isEqualTo(new ExecutedByEncoded("A"));
         }
 
         @Test
@@ -57,10 +57,10 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.NotAvailable.INSTANCE;
 
             // When
-            final String encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
-            assertThat(encoded).isEqualTo("NA");
+            assertThat(encoded).isEqualTo(new ExecutedByEncoded("NA"));
         }
     }
 

@@ -803,7 +803,7 @@ class JdbcPostgresEventRepositoryTest {
             preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
             preparedStatement.setString(7, ownedBy.id());
             preparedStatement.setString(8, aggregateRootId);
-            preparedStatement.setString(9, executedBy.encode(TestExecutedByEncoder.INSTANCE, ownedBy));
+            preparedStatement.setString(9, executedBy.encode(TestExecutedByEncoder.INSTANCE, ownedBy).encoded());
             preparedStatement.executeUpdate();
         } catch (final UnableToEncodeException e) {
             throw new RuntimeException(e);
