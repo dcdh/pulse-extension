@@ -110,11 +110,11 @@ class CachedFileRepositoryTest {
         }
 
         @Override
-        public FileInfo store(final FileInfo fileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
+        public void store(final FileInfo fileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
             Objects.requireNonNull(fileInfo);
             Objects.requireNonNull(encrypted);
             fileRepositoryTestSpy.add(String.join("|", "store", fileInfo.fileIdentifier().id()));
-            return delegate.store(fileInfo, encrypted);
+            delegate.store(fileInfo, encrypted);
         }
 
         @Override

@@ -60,7 +60,7 @@ public class JdbcPostgresFileRepository implements FileRepository {
     }
 
     @Override
-    public FileInfo store(final FileInfo fileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
+    public void store(final FileInfo fileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
         Objects.requireNonNull(fileInfo);
         Objects.requireNonNull(encrypted);
         final String sql = """
@@ -96,7 +96,6 @@ public class JdbcPostgresFileRepository implements FileRepository {
             if (statement.executeUpdate() == 0) {
                 throw new FileAlreadyUploadedException();
             }
-            return fileInfo;
         } catch (final SQLException | IOException | UnableToEncodeException | FileAlreadyUploadedException exception) {
             throw new FileRepositoryException(exception);
         }

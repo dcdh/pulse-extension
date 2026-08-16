@@ -8,7 +8,7 @@ public interface FileRepository {
 
     boolean exists(FileIdentifier fileIdentifier) throws FileRepositoryException;
 
-    FileInfo store(FileInfo fileInfo, Encrypted<InputStream> encrypted) throws FileRepositoryException;
+    void store(FileInfo fileInfo, Encrypted<InputStream> encrypted) throws FileRepositoryException;
 
     FileInfo getFileInfoByFileIdentifier(FileIdentifier fileIdentifier) throws FileRepositoryException;
 
