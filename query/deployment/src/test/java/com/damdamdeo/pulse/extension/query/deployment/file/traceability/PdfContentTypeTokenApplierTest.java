@@ -38,7 +38,7 @@ class PdfContentTypeTokenApplierTest {
     void shouldApplyToken() {
         // Given
         try {
-            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.pdf");
+            final Resource resource = TestResourceProvider.getResourceFromStream("/facture.pdf");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, resource.contentLength(), resource.payload());
 
             // When

@@ -39,7 +39,7 @@ class PngAwtImageContentTypeFiligraneApplierTest {
     void shouldApplyFiligrane() {
         // Given
         try {
-            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.png");
+            final Resource resource = TestResourceProvider.getResourceFromStream("/facture.png");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, resource.contentLength(), resource.payload());
 
             // When

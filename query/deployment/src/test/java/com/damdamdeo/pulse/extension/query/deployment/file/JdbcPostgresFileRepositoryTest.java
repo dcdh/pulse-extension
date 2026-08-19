@@ -72,7 +72,7 @@ class JdbcPostgresFileRepositoryTest {
     void shouldStoreAndCheckExists() throws Exception {
         // Given
         final FileInfo fileInfo = fileInfo();
-        final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpg");
+        final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
 
         // When
         jdbcPostgresFileRepository.store(fileInfo, new Encrypted<>(resource.payload(), resource.size()));
@@ -138,7 +138,7 @@ class JdbcPostgresFileRepositoryTest {
     void shouldNotInsertSameFileTwice() throws Exception {
         // Given
         final FileInfo fileInfo = fileInfo();
-        final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpg");
+        final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
 
         // When && Then
         assertThatThrownBy(() -> jdbcPostgresFileRepository.store(fileInfo, new Encrypted<>(resource.payload(), resource.size())))

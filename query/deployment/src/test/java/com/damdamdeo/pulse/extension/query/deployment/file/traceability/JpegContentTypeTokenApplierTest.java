@@ -50,7 +50,7 @@ class JpegContentTypeTokenApplierTest {
     void shouldApplyToken(final String resourceName, final FileIdentifier fileIdentifier, final ContentType contentType) {
         // Given
         try {
-            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream(resourceName);
+            final Resource resource = TestResourceProvider.getResourceFromStream(resourceName);
             final FileContent fileContent = new FileContent(fileIdentifier, contentType, resource.contentLength(), resource.payload());
 
             // When

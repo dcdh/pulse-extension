@@ -140,7 +140,7 @@ class DefaultTokenApplierTest {
     void shouldApplyJpegToken() {
         // Given
         try {
-            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpeg");
+            final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpeg");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, resource.contentLength(), resource.payload());
 
             // When
@@ -163,7 +163,7 @@ class DefaultTokenApplierTest {
     void shouldApplyJpgToken() {
         // Given
         try {
-            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpg");
+            final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpg"), ContentType.IMAGE_JPG, resource.contentLength(), resource.payload());
 
             // When
@@ -186,7 +186,7 @@ class DefaultTokenApplierTest {
     void shouldApplyPdfToken() {
         // Given
         try {
-            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.pdf");
+            final Resource resource = TestResourceProvider.getResourceFromStream("/facture.pdf");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, resource.contentLength(), resource.payload());
 
             // When
@@ -209,7 +209,7 @@ class DefaultTokenApplierTest {
     void shouldApplyPngToken() {
         // Given
         try {
-            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.png");
+            final Resource resource = TestResourceProvider.getResourceFromStream("/facture.png");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, resource.contentLength(), resource.payload());
 
             // When

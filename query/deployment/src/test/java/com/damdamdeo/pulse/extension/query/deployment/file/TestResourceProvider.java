@@ -12,7 +12,7 @@ public final class TestResourceProvider {
     private TestResourceProvider() {
     }
 
-    public static Resource getResourceAsEncryptedStream(final String resourceName) {
+    public static Resource getResourceFromStream(final String resourceName) {
         Objects.requireNonNull(resourceName);
         Validate.validState(resourceName.startsWith("/"), "Resource name must start with /");
         final URL resource = Objects.requireNonNull(TestResourceProvider.class.getResource(resourceName));
