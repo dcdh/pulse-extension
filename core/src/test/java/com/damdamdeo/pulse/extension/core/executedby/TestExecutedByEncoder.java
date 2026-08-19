@@ -11,6 +11,6 @@ public class TestExecutedByEncoder implements ExecutedByEncoder {
 
     @Override
     public Encrypted<byte[]> encode(final String value, final OwnedBy ownedBy) throws UnableToEncodeException {
-        return new Encrypted<>(("encoded" + value).getBytes(StandardCharsets.UTF_8));
+        return Encrypted.of(("encoded" + value).getBytes(StandardCharsets.UTF_8));
     }
 }

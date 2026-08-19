@@ -57,7 +57,7 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
             final Encrypted<byte[]> encrypted = encryptionService.encrypt(new ByteArrayInputStream(jsonPayload), ownedBy,
                     encryptedPayload -> {
                         try (final InputStream payload1 = encryptedPayload.payload()) {
-                            return new Encrypted<>(payload1.readAllBytes());
+                            return Encrypted.of(payload1.readAllBytes());
                         }
                     });
 

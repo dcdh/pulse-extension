@@ -163,7 +163,7 @@ class CachedFileRepositoryTest {
         final FileInfo fileInfo = fileInfo();
 
         // When
-        fileRepository.store(fileInfo, new Encrypted<>(new ByteArrayInputStream("Encrypted !!!".getBytes(StandardCharsets.UTF_8))));
+        fileRepository.store(fileInfo, Encrypted.of(new ByteArrayInputStream("Encrypted !!!".getBytes(StandardCharsets.UTF_8))));
 
         // Then
         assertAll(

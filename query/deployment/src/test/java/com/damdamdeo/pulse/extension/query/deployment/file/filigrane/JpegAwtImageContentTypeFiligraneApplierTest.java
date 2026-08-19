@@ -1,7 +1,11 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.filigrane;
 
-import com.damdamdeo.pulse.extension.core.query.file.*;
+import com.damdamdeo.pulse.extension.core.query.file.ContentType;
+import com.damdamdeo.pulse.extension.core.query.file.FileContent;
+import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.filigrane.UnableToApplyFiligraneException;
+import com.damdamdeo.pulse.extension.query.deployment.file.Resource;
+import com.damdamdeo.pulse.extension.query.deployment.file.TestResourceProvider;
 import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.JpegAwtImageContentTypeFiligraneApplier;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -24,7 +28,8 @@ class JpegAwtImageContentTypeFiligraneApplierTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar.addAsResource("facture.jpeg"))
+            .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class)
+                    .addAsResource("facture.jpeg"))
             .withConfigurationResource("application.properties");
 
     @Inject
@@ -33,8 +38,9 @@ class JpegAwtImageContentTypeFiligraneApplierTest {
     @Test
     void shouldApplyFiligrane() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.jpeg")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpeg");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, resource.contentLength(), resource.payload());
 
             // When
             final FileContent loremIpsumDolorSitAmet = jpegAwtImageContentTypeFiligraneApplier.apply(fileContent, "Lorem ipsum dolor sit amet");

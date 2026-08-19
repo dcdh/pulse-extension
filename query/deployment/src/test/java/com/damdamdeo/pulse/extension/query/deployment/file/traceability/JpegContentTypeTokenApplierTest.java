@@ -1,11 +1,12 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.traceability;
 
-import com.damdamdeo.pulse.extension.core.query.file.ContentLength;
 import com.damdamdeo.pulse.extension.core.query.file.ContentType;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.Token;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.UnableToApplyTokenException;
+import com.damdamdeo.pulse.extension.query.deployment.file.Resource;
+import com.damdamdeo.pulse.extension.query.deployment.file.TestResourceProvider;
 import com.damdamdeo.pulse.extension.query.runtime.file.traceability.JpegContentTypeTokenApplier;
 import io.quarkus.test.QuarkusUnitTest;
 import io.quarkus.tika.TikaMetadata;
@@ -14,8 +15,6 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +24,9 @@ class JpegContentTypeTokenApplierTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar.addAsResource("facture.jpg")
+            .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class)
+                    .addClasses(TestResourceProvider.class, Resource.class)
+                    .addAsResource("facture.jpg")
                     .addAsResource("facture.jpeg"))
             .withConfigurationResource("application.properties");
 
@@ -48,8 +49,9 @@ class JpegContentTypeTokenApplierTest {
 
     void shouldApplyToken(final String resourceName, final FileIdentifier fileIdentifier, final ContentType contentType) {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream(resourceName)) {
-            final FileContent fileContent = new FileContent(fileIdentifier, contentType, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream(resourceName);
+            final FileContent fileContent = new FileContent(fileIdentifier, contentType, resource.contentLength(), resource.payload());
 
             // When
             final FileContent tokenized = jpegContentTypeTokenApplier.apply(fileContent, new Token(new UUID(0, 0)));
@@ -64,7 +66,7 @@ class JpegContentTypeTokenApplierTest {
                     () -> assertThat(parsed.getValues("Exif IFD0:Windows XP Comment"))
                             .containsExactly("00000000-0000-0000-0000-000000000000")
             );
-        } catch (final IOException | UnableToApplyTokenException exception) {
+        } catch (final UnableToApplyTokenException exception) {
             throw new RuntimeException(exception);
         }
     }

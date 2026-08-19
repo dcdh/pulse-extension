@@ -91,7 +91,7 @@ public class JdbcPostgresFileRepository implements FileRepository {
             statement.setBinaryStream(
                     9,
                     encrypted.payload(),
-                    fileInfo.contentLength().contentLength()
+                    encrypted.size()
             );
             if (statement.executeUpdate() == 0) {
                 throw new FileAlreadyUploadedException();

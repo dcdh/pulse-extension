@@ -1,11 +1,12 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.traceability;
 
 import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.query.file.ContentLength;
 import com.damdamdeo.pulse.extension.core.query.file.ContentType;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.*;
+import com.damdamdeo.pulse.extension.query.deployment.file.Resource;
+import com.damdamdeo.pulse.extension.query.deployment.file.TestResourceProvider;
 import com.damdamdeo.pulse.extension.query.runtime.file.traceability.ContentTypeTokenApplier;
 import com.damdamdeo.pulse.extension.query.runtime.file.traceability.DefaultTokenApplier;
 import io.quarkus.arc.Unremovable;
@@ -21,8 +22,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,7 +40,8 @@ class DefaultTokenApplierTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar.addAsResource("facture.jpeg")
+            .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class)
+                    .addAsResource("facture.jpeg")
                     .addAsResource("facture.jpg")
                     .addAsResource("facture.pdf")
                     .addAsResource("facture.png"))
@@ -139,8 +139,9 @@ class DefaultTokenApplierTest {
     @Order(1)
     void shouldApplyJpegToken() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.jpeg")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpeg");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultTokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
@@ -152,7 +153,7 @@ class DefaultTokenApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(tokenApplierTestSpy.getCalled()).containsExactly("apply|facture.jpeg|image/jpeg|00000000-0000-0000-0000-000000000000")
             );
-        } catch (final IOException | UnableToApplyTokenException exception) {
+        } catch (final UnableToApplyTokenException exception) {
             throw new RuntimeException(exception);
         }
     }
@@ -161,8 +162,9 @@ class DefaultTokenApplierTest {
     @Order(2)
     void shouldApplyJpgToken() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.jpg")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpg"), ContentType.IMAGE_JPG, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpg");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpg"), ContentType.IMAGE_JPG, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultTokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
@@ -174,7 +176,7 @@ class DefaultTokenApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(tokenApplierTestSpy.getCalled()).containsExactly("apply|facture.jpg|image/jpg|00000000-0000-0000-0000-000000000001")
             );
-        } catch (final IOException | UnableToApplyTokenException exception) {
+        } catch (final UnableToApplyTokenException exception) {
             throw new RuntimeException(exception);
         }
     }
@@ -183,8 +185,9 @@ class DefaultTokenApplierTest {
     @Order(3)
     void shouldApplyPdfToken() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.pdf")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.pdf");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultTokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
@@ -196,7 +199,7 @@ class DefaultTokenApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(tokenApplierTestSpy.getCalled()).containsExactly("apply|facture.pdf|application/pdf|00000000-0000-0000-0000-000000000002")
             );
-        } catch (final IOException | UnableToApplyTokenException exception) {
+        } catch (final UnableToApplyTokenException exception) {
             throw new RuntimeException(exception);
         }
     }
@@ -205,8 +208,9 @@ class DefaultTokenApplierTest {
     @Order(4)
     void shouldApplyPngToken() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.png")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.png");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultTokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
@@ -218,7 +222,7 @@ class DefaultTokenApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(tokenApplierTestSpy.getCalled()).containsExactly("apply|facture.png|image/png|00000000-0000-0000-0000-000000000003")
             );
-        } catch (final IOException | UnableToApplyTokenException exception) {
+        } catch (final UnableToApplyTokenException exception) {
             throw new RuntimeException(exception);
         }
     }

@@ -60,7 +60,7 @@ public final class EncryptablePropertyWriter extends BeanPropertyWriter {
         final Encrypted<byte[]> encrypted = encryptionService.encrypt(new ByteArrayInputStream(jsonBytes), passphrase,
                 encryptedPayload -> {
                     try (final InputStream payload1 = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload1.readAllBytes());
+                        return Encrypted.of(payload1.readAllBytes());
                     }
                 });
         gen.writeBinaryField(getName() + ENCRYPTED_FIELD_SUFFIX, encrypted.payload());

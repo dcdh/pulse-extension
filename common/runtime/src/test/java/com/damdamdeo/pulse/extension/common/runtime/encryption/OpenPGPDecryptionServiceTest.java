@@ -35,7 +35,7 @@ class OpenPGPDecryptionServiceTest {
 
     @BeforeEach
     void setUp() {
-        encryptionService = new OpenPGPEncryptionService(passphraseProvider);
+        encryptionService = new OpenPGPEncryptionService(passphraseProvider, new DefaultTemporaryPathProvider());
         decryptionService = new OpenPGPDecryptionService(passphraseProvider);
     }
 
@@ -49,7 +49,7 @@ class OpenPGPDecryptionServiceTest {
                     PassphraseSample.PASSPHRASE_1,
                     encryptedPayload -> {
                         try (final InputStream payload1 = encryptedPayload.payload()) {
-                            return new Encrypted<>(payload1.readAllBytes());
+                            return Encrypted.of(payload1.readAllBytes());
                         }
                     });
             doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
@@ -69,7 +69,7 @@ class OpenPGPDecryptionServiceTest {
                     PassphraseSample.PASSPHRASE_1,
                     encryptedPayload -> {
                         try (final InputStream payload1 = encryptedPayload.payload()) {
-                            return new Encrypted<>(payload1.readAllBytes());
+                            return Encrypted.of(payload1.readAllBytes());
                         }
                     });
             doThrow(new UnableToProvidePassphraseException(new PassphraseBannedException()))
@@ -91,7 +91,7 @@ class OpenPGPDecryptionServiceTest {
                     PassphraseSample.PASSPHRASE_1,
                     encryptedPayload -> {
                         try (final InputStream payload1 = encryptedPayload.payload()) {
-                            return new Encrypted<>(payload1.readAllBytes());
+                            return Encrypted.of(payload1.readAllBytes());
                         }
                     });
 

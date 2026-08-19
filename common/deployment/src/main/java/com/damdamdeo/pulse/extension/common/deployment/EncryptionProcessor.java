@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.common.deployment;
 
-import com.damdamdeo.pulse.extension.common.runtime.encryption.CachedPassphraseProvider;
-import com.damdamdeo.pulse.extension.common.runtime.encryption.DefaultPassphraseGenerator;
-import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPDecryptionService;
-import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryptionService;
+import com.damdamdeo.pulse.extension.common.runtime.encryption.*;
 import com.damdamdeo.pulse.extension.core.encryption.DefaultPassphraseProvider;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
@@ -22,7 +19,8 @@ public class EncryptionProcessor {
                         DefaultPassphraseGenerator.class,
                         DefaultPassphraseProvider.class,
                         OpenPGPDecryptionService.class,
-                        OpenPGPEncryptionService.class)
+                        OpenPGPEncryptionService.class,
+                        DefaultTemporaryPathProvider.class)
                 .setDefaultScope(DotNames.APPLICATION_SCOPED)
                 .setUnremovable()
                 .build();

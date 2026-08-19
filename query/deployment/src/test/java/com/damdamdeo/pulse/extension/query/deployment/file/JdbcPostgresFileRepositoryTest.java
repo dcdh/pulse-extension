@@ -37,7 +37,8 @@ class JdbcPostgresFileRepositoryTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar.addAsResource("facture.jpg"))
+            .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class)
+                    .addAsResource("facture.jpg"))
             .overrideConfigKey("quarkus.arc.exclude-types", CachedFileRepository.class.getName())
             .withConfigurationResource("application.properties");
 
@@ -71,12 +72,10 @@ class JdbcPostgresFileRepositoryTest {
     void shouldStoreAndCheckExists() throws Exception {
         // Given
         final FileInfo fileInfo = fileInfo();
+        final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpg");
 
         // When
-        try (final InputStream content = getClass().getResourceAsStream("/facture.jpg")) {
-            final Encrypted<InputStream> encrypted = new Encrypted<>(content);
-            jdbcPostgresFileRepository.store(fileInfo, encrypted);
-        }
+        jdbcPostgresFileRepository.store(fileInfo, new Encrypted<>(resource.payload(), resource.size()));
 
         // Then
         assertThat(jdbcPostgresFileRepository.exists(fileInfo.fileIdentifier())).isTrue();
@@ -139,14 +138,13 @@ class JdbcPostgresFileRepositoryTest {
     void shouldNotInsertSameFileTwice() throws Exception {
         // Given
         final FileInfo fileInfo = fileInfo();
+        final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpg");
 
         // When && Then
-        try (final InputStream content = getClass().getResourceAsStream("/facture.jpg")) {
-            assertThatThrownBy(() -> jdbcPostgresFileRepository.store(fileInfo, new Encrypted<>(content)))
-                    .isExactlyInstanceOf(FileRepositoryException.class)
-                    .cause()
-                    .isExactlyInstanceOf(FileAlreadyUploadedException.class);
-        }
+        assertThatThrownBy(() -> jdbcPostgresFileRepository.store(fileInfo, new Encrypted<>(resource.payload(), resource.size())))
+                .isExactlyInstanceOf(FileRepositoryException.class)
+                .cause()
+                .isExactlyInstanceOf(FileAlreadyUploadedException.class);
     }
 
     @Test

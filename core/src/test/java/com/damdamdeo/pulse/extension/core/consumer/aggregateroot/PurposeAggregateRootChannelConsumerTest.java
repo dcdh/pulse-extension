@@ -66,7 +66,7 @@ class PurposeAggregateRootChannelConsumerTest {
 
         @Override
         public Encrypted<byte[]> toEncryptedPayload() {
-            return new Encrypted<>(payload);
+            return Encrypted.of(payload);
         }
 
         @Override

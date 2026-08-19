@@ -1,9 +1,13 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.filigrane;
 
-import com.damdamdeo.pulse.extension.core.query.file.*;
+import com.damdamdeo.pulse.extension.core.query.file.ContentType;
+import com.damdamdeo.pulse.extension.core.query.file.FileContent;
+import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.filigrane.UnableToApplyFiligraneException;
-import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.DefaultFiligraneApplier;
+import com.damdamdeo.pulse.extension.query.deployment.file.Resource;
+import com.damdamdeo.pulse.extension.query.deployment.file.TestResourceProvider;
 import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.ContentTypeFiligraneApplier;
+import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.DefaultFiligraneApplier;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.annotation.Priority;
@@ -17,8 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +31,8 @@ class DefaultFiligraneApplierTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar.addAsResource("facture.jpeg")
+            .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class)
+                    .addAsResource("facture.jpeg")
                     .addAsResource("facture.jpg")
                     .addAsResource("facture.pdf")
                     .addAsResource("facture.png"))
@@ -98,8 +101,9 @@ class DefaultFiligraneApplierTest {
     @Test
     void shouldApplyJpegFiligrane() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.jpeg")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpeg");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultFiligraneApplier.apply(fileContent);
@@ -111,7 +115,7 @@ class DefaultFiligraneApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(filigraneTestSpy.getCalled()).containsExactly("apply|facture.jpeg|image/jpeg|lorem ipsum")
             );
-        } catch (final IOException | UnableToApplyFiligraneException exception) {
+        } catch (final UnableToApplyFiligraneException exception) {
             throw new RuntimeException(exception);
         }
     }
@@ -119,8 +123,9 @@ class DefaultFiligraneApplierTest {
     @Test
     void shouldApplyJpgFiligrane() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.jpg")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpg"), ContentType.IMAGE_JPG, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.jpg");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpg"), ContentType.IMAGE_JPG, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultFiligraneApplier.apply(fileContent);
@@ -132,7 +137,7 @@ class DefaultFiligraneApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(filigraneTestSpy.getCalled()).containsExactly("apply|facture.jpg|image/jpg|lorem ipsum")
             );
-        } catch (final IOException | UnableToApplyFiligraneException exception) {
+        } catch (final UnableToApplyFiligraneException exception) {
             throw new RuntimeException(exception);
         }
     }
@@ -140,8 +145,9 @@ class DefaultFiligraneApplierTest {
     @Test
     void shouldApplyPdfFiligrane() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.pdf")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.pdf");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultFiligraneApplier.apply(fileContent);
@@ -153,7 +159,7 @@ class DefaultFiligraneApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(filigraneTestSpy.getCalled()).containsExactly("apply|facture.pdf|application/pdf|lorem ipsum")
             );
-        } catch (final IOException | UnableToApplyFiligraneException exception) {
+        } catch (final UnableToApplyFiligraneException exception) {
             throw new RuntimeException(exception);
         }
     }
@@ -161,8 +167,9 @@ class DefaultFiligraneApplierTest {
     @Test
     void shouldApplyPngFiligrane() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.png")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.png");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, resource.contentLength(), resource.payload());
 
             // When
             final FileContent applied = defaultFiligraneApplier.apply(fileContent);
@@ -174,7 +181,7 @@ class DefaultFiligraneApplierTest {
                     () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
                     () -> assertThat(filigraneTestSpy.getCalled()).containsExactly("apply|facture.png|image/png|lorem ipsum")
             );
-        } catch (final IOException | UnableToApplyFiligraneException exception) {
+        } catch (final UnableToApplyFiligraneException exception) {
             throw new RuntimeException(exception);
         }
     }

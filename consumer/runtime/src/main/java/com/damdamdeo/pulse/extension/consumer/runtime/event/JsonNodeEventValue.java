@@ -44,7 +44,7 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") ZonedDateTime stored
 
     @Override
     public Encrypted<byte[]> toEncryptedEventPayload() {
-        return new Encrypted<>(payload);
+        return Encrypted.of(payload);
     }
 
     @Override

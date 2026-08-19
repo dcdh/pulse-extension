@@ -52,7 +52,7 @@ public class MessagingConsumer {
                             .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()),
                     executedByFactory, ownedBy);
             final String className = extractClassName(consumerRecord.headers());
-            final Decrypted<byte[]> decrypted = decryptionService.decrypt(new Encrypted<>(consumerRecord.value()), ownedBy);
+            final Decrypted<byte[]> decrypted = decryptionService.decrypt(Encrypted.of(consumerRecord.value()), ownedBy);
             final Object payload = mapToObject(decrypted.payload(), className);
             notifyEventProducer.fire(new NotifyEvent(eventName, payload, audience));
         } catch (final DecryptionException decryptionException) {

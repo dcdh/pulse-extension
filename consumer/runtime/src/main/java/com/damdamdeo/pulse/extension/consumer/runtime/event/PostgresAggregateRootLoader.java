@@ -64,7 +64,7 @@ public final class PostgresAggregateRootLoader implements AggregateRootLoader<Js
                 try (final ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         final LastAggregateVersion lastAggregateVersion = new LastAggregateVersion(rs.getInt("last_version"));
-                        final Encrypted<byte[]> encrypted = new Encrypted<>(rs.getBytes("aggregate_root_payload"));
+                        final Encrypted<byte[]> encrypted = Encrypted.of(rs.getBytes("aggregate_root_payload"));
                         final OwnedBy ownedBy = new OwnedBy(rs.getString("owned_by"));
                         DecryptablePayload<JsonNode> decryptablePayload;
                         try {

@@ -89,7 +89,7 @@ class PurposeEventChannelConsumerTest {
 
         @Override
         public Encrypted toEncryptedEventPayload() {
-            return new Encrypted(new ByteArrayInputStream(eventPayload));
+            return Encrypted.of(eventPayload);
         }
 
         @Override

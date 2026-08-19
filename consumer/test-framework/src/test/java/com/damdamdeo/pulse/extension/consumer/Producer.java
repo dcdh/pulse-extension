@@ -64,7 +64,7 @@ public class Producer {
         final Encrypted<byte[]> encryptedAggregate = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
                 PASSPHRASE, encryptedPayload -> {
                     try (final InputStream payload = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload.readAllBytes());
+                        return Encrypted.of(payload.readAllBytes());
                     }
                 });
         // language=sql
@@ -88,7 +88,7 @@ public class Producer {
         final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(new ByteArrayInputStream(eventPayload.getBytes(StandardCharsets.UTF_8)),
                 PASSPHRASE, encryptedPayload -> {
                     try (final InputStream payload = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload.readAllBytes());
+                        return Encrypted.of(payload.readAllBytes());
                     }
                 });
 
@@ -107,7 +107,7 @@ public class Producer {
                                 encrypted.payload(),
                                 ownedBy.id(),
                                 belongsTo.id(),
-                                executedBy.encode((value, ownedBy1) -> new Encrypted<>(("encoded" + value).getBytes(StandardCharsets.UTF_8)), ownedBy).encoded())));
+                                executedBy.encode((value, ownedBy1) -> Encrypted.of(("encoded" + value).getBytes(StandardCharsets.UTF_8)), ownedBy).encoded())));
         return new Response(encryptedAggregate, encrypted);
     }
 
@@ -123,7 +123,7 @@ public class Producer {
         final Encrypted<byte[]> encryptedAggregate = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
                 PASSPHRASE, encryptedPayload -> {
                     try (final InputStream payload = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload.readAllBytes());
+                        return Encrypted.of(payload.readAllBytes());
                     }
                 });
         // language=sql
@@ -148,7 +148,7 @@ public class Producer {
         final Encrypted<byte[]> encrypted = openPGPEncryptionService.encrypt(new ByteArrayInputStream(aggregateRootPayload.getBytes(StandardCharsets.UTF_8)),
                 PASSPHRASE, encryptedPayload -> {
                     try (final InputStream payload = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload.readAllBytes());
+                        return Encrypted.of(payload.readAllBytes());
                     }
                 });
 

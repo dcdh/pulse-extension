@@ -25,7 +25,7 @@ public record JsonNodeAggregateRootValue(@JsonProperty("aggregate_root_payload")
 
     @Override
     public Encrypted<byte[]> toEncryptedPayload() {
-        return new Encrypted<>(payload);
+        return Encrypted.of(payload);
     }
 
     @Override

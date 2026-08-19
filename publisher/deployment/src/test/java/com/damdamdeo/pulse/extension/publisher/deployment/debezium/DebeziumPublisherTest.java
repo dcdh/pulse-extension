@@ -62,7 +62,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
                         """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
                 encryptedPayload -> {
                     try (final InputStream payload = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload.readAllBytes());
+                        return Encrypted.of(payload.readAllBytes());
                     }
                 });
         // language=sql
@@ -142,7 +142,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
                         """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
                 encryptedPayload -> {
                     try (final InputStream payload = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload.readAllBytes());
+                        return Encrypted.of(payload.readAllBytes());
                     }
                 });
         // language=sql

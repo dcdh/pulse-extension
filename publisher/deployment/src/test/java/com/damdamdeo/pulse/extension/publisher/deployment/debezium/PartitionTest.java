@@ -141,7 +141,7 @@ class PartitionTest extends AbstractPublisherTest {
                                 """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
                         encryptedPayload -> {
                             try (final InputStream payload = encryptedPayload.payload()) {
-                                return new Encrypted<>(payload.readAllBytes());
+                                return Encrypted.of(payload.readAllBytes());
                             }
                         }).payload());
                 tEventPS.setString(7, Todo.OWNED_BY_USER_1.id());
@@ -164,7 +164,7 @@ class PartitionTest extends AbstractPublisherTest {
                                 """.getBytes(StandardCharsets.UTF_8)), PassphraseSample.PASSPHRASE_1,
                         encryptedPayload -> {
                             try (final InputStream payload = encryptedPayload.payload()) {
-                                return new Encrypted<>(payload.readAllBytes());
+                                return Encrypted.of(payload.readAllBytes());
                             }
                         }).payload());
                 tAggregateRootPS.setString(5, Todo.OWNED_BY_USER_1.id());

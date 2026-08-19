@@ -87,7 +87,7 @@ class PostgresEncryptionTest {
     @Test
     void shouldDecryptEncryptedValueFromPostgresUsingDecryptionService() throws DecryptionException {
         // Given
-        byte[] searchByHash;
+        final byte[] searchByHash;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement encryptedPreparedStatement = connection.prepareStatement(
                      // language=sql
@@ -107,7 +107,7 @@ class PostgresEncryptionTest {
         }
 
         // When
-        final Decrypted<byte[]> decrypted = decryptionService.decrypt(new Encrypted<>(searchByHash), Todo.OWNED_BY_USER_1);
+        final Decrypted<byte[]> decrypted = decryptionService.decrypt(Encrypted.of(searchByHash), Todo.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -119,7 +119,7 @@ These values ensure that:
 - and that the encryption remains semantically secure.
                  */
 //                () -> assertThat(encryptedAsString).isEqualTo("\\xc30d0407030231654111a015268367d23d01657e8a31b08aad73346bc8cf7061cab608eb7a880e80bc967292b8699345cc86f08a89a1afe228c97c21429f9b77517730b056c4669c9a4caeabb147"),
-                () -> assertThat(decrypted).isEqualTo(new Decrypted("Hello world!".getBytes(StandardCharsets.UTF_8)))
+                () -> assertThat(decrypted).isEqualTo(new Decrypted<>("Hello world!".getBytes(StandardCharsets.UTF_8)))
         );
     }
 
@@ -132,7 +132,7 @@ These values ensure that:
         final Encrypted<byte[]> searchByHash = encryptionService.encrypt(new ByteArrayInputStream(givenToEncrypt.getBytes(StandardCharsets.UTF_8)),
                 PassphraseSample.PASSPHRASE_1, encryptedPayload -> {
                     try (final InputStream payload = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload.readAllBytes());
+                        return Encrypted.of(payload.readAllBytes());
                     }
                 });
 

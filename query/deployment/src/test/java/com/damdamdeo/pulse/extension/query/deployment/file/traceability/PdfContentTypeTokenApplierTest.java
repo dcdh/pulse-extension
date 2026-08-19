@@ -1,11 +1,12 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.traceability;
 
-import com.damdamdeo.pulse.extension.core.query.file.ContentLength;
 import com.damdamdeo.pulse.extension.core.query.file.ContentType;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.Token;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.UnableToApplyTokenException;
+import com.damdamdeo.pulse.extension.query.deployment.file.Resource;
+import com.damdamdeo.pulse.extension.query.deployment.file.TestResourceProvider;
 import com.damdamdeo.pulse.extension.query.runtime.file.traceability.PdfContentTypeTokenApplier;
 import io.quarkus.test.QuarkusUnitTest;
 import io.quarkus.tika.TikaContent;
@@ -14,8 +15,6 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +24,8 @@ class PdfContentTypeTokenApplierTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot((jar) -> jar.addAsResource("facture.pdf"))
+            .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class)
+                    .addAsResource("facture.pdf"))
             .withConfigurationResource("application.properties");
 
     @Inject
@@ -37,8 +37,9 @@ class PdfContentTypeTokenApplierTest {
     @Test
     void shouldApplyToken() {
         // Given
-        try (final InputStream inputStream = this.getClass().getResourceAsStream("/facture.pdf")) {
-            final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, new ContentLength(1L), inputStream);
+        try {
+            final Resource resource = TestResourceProvider.getResourceAsEncryptedStream("/facture.pdf");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, resource.contentLength(), resource.payload());
 
             // When
             final FileContent tokenized = pdfContentTypeTokenApplier.apply(fileContent, new Token(new UUID(0, 0)));
@@ -53,7 +54,7 @@ class PdfContentTypeTokenApplierTest {
                     () -> assertThat(parsed.getMetadata().getValues("UserComment"))
                             .containsExactly("00000000-0000-0000-0000-000000000000")
             );
-        } catch (final IOException | UnableToApplyTokenException exception) {
+        } catch (final UnableToApplyTokenException exception) {
             throw new RuntimeException(exception);
         }
     }

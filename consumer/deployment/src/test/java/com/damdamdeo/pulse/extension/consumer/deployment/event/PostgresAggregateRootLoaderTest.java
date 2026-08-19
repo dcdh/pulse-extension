@@ -83,7 +83,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
                 PassphraseSample.PASSPHRASE_1,
                 encryptedPayload -> {
                     try (final InputStream payload1 = encryptedPayload.payload()) {
-                        return new Encrypted<>(payload1.readAllBytes());
+                        return Encrypted.of(payload1.readAllBytes());
                     }
                 });
         // language=sql

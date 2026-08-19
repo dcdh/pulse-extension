@@ -33,7 +33,7 @@ public class DefaultExecutedByEncoder implements ExecutedByEncoder {
             final InputStream clearData = new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
             return encryptionService.encrypt(clearData, passphrase, encryptedPayload -> {
                 try (final InputStream payload = encryptedPayload.payload()) {
-                    return new Encrypted<>(Base64.encode(payload.readAllBytes()));
+                    return Encrypted.of(Base64.encode(payload.readAllBytes()));
                 }
             });
         } catch (final UnableToProvidePassphraseException | EncryptionException exception) {

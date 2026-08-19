@@ -52,7 +52,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
                 throw new QueryException(new UnauthorizedException());
             }
             final FileContent fileContent = fileRepository.getFileContentByFileIdentifier(downloadInput.fileIdentifier());
-            final Decrypted<FileContent> decryptedFileContent = decryptionService.decrypt(new Encrypted<>(fileContent.content()), fileInfoByFileIdentifier.ownedBy(),
+            final Decrypted<FileContent> decryptedFileContent = decryptionService.decrypt(Encrypted.of(fileContent.content(), fileContent.contentLength().contentLength()), fileInfoByFileIdentifier.ownedBy(),
                     decrypted -> new Decrypted<>(
                             new FileContent(
                                     fileContent.id(),

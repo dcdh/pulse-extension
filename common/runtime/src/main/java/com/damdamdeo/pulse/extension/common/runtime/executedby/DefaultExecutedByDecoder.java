@@ -29,7 +29,7 @@ public class DefaultExecutedByDecoder implements ExecutedByDecoder {
         Objects.requireNonNull(encoded);
         Objects.requireNonNull(encoded);
         try {
-            final Decrypted<byte[]> decrypted = decryptionService.decrypt(new Encrypted<>(Base64.decode(encoded)), ownedBy);
+            final Decrypted<byte[]> decrypted = decryptionService.decrypt(Encrypted.of(Base64.decode(encoded)), ownedBy);
             return Optional.of(new String(decrypted.payload()));
         } catch (final DecryptionException decryptionException) {
             throw new UnableToDecodeException(decryptionException);

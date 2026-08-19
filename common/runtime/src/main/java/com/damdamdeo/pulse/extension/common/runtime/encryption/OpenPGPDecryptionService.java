@@ -16,7 +16,6 @@ import java.io.*;
 import java.security.Security;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 @ApplicationScoped
 @Unremovable
@@ -78,7 +77,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
 
     @Override
     public Decrypted<byte[]> decrypt(final Encrypted<byte[]> encrypted, final OwnedBy ownedBy) throws DecryptionException {
-        return decrypt(new Encrypted<>(new ByteArrayInputStream(encrypted.payload())), ownedBy, decrypted -> {
+        return decrypt(Encrypted.of(new ByteArrayInputStream(encrypted.payload())), ownedBy, decrypted -> {
             try (final InputStream payload = decrypted.payload()) {
                 return new Decrypted<>(payload.readAllBytes());
             }
@@ -87,7 +86,7 @@ public final class OpenPGPDecryptionService implements DecryptionService {
 
     @Override
     public Decrypted<byte[]> decrypt(final Encrypted<byte[]> encrypted, final Passphrase passphrase) throws DecryptionException {
-        return decrypt(new Encrypted<>(new ByteArrayInputStream(encrypted.payload())), passphrase, decrypted -> {
+        return decrypt(Encrypted.of(new ByteArrayInputStream(encrypted.payload())), passphrase, decrypted -> {
             try (final InputStream payload = decrypted.payload()) {
                 return new Decrypted<>(payload.readAllBytes());
             }

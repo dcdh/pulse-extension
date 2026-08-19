@@ -10,12 +10,15 @@ import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBEKeyEncryptionMethodGenerator;
 import org.bouncycastle.openpgp.operator.jcajce.JcePGPDataEncryptorBuilder;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 @ApplicationScoped
 @Unremovable
@@ -27,9 +30,12 @@ public final class OpenPGPEncryptionService implements EncryptionService {
     }
 
     private final PassphraseProvider passphraseProvider;
+    private final TemporaryPathProvider temporaryPathProvider;
 
-    public OpenPGPEncryptionService(final PassphraseProvider passphraseProvider) {
+    public OpenPGPEncryptionService(final PassphraseProvider passphraseProvider,
+                                    final TemporaryPathProvider temporaryPathProvider) {
         this.passphraseProvider = Objects.requireNonNull(passphraseProvider);
+        this.temporaryPathProvider = Objects.requireNonNull(temporaryPathProvider);
     }
 
     @Override
@@ -54,20 +60,21 @@ public final class OpenPGPEncryptionService implements EncryptionService {
         Objects.requireNonNull(passphrase);
         Objects.requireNonNull(mapper);
         try {
-            final PipedInputStream encryptedInput = new PipedInputStream(64 * 1024);
-            final PipedOutputStream encryptedOutput = new PipedOutputStream(encryptedInput);
-            final CompletableFuture<Void> future = new CompletableFuture<>();
-            Thread.startVirtualThread(() -> {
-                try (clearData; encryptedOutput) {
+            final Path tempFile = temporaryPathProvider.provide();
+            try {
+                try (clearData;
+                     final OutputStream encryptedOutput = Files.newOutputStream(tempFile)) {
                     encrypt(clearData, encryptedOutput, passphrase);
-                    future.complete(null);
-                } catch (final Exception e) {
-                    future.completeExceptionally(e);
                 }
-            });
-            final InputStream encrypted = new FutureAwareInputStream(encryptedInput, future);
-            return mapper.process(new Encrypted<>(encrypted));
-        } catch (final IOException e) {
+                final long size = Files.size(tempFile);
+                final InputStream encryptedInput = new DeleteOnCloseInputStream(
+                        Files.newInputStream(tempFile), tempFile);
+                return mapper.process(Encrypted.of(encryptedInput, size));
+            } catch (final Exception e) {
+                Files.deleteIfExists(tempFile);
+                throw e;
+            }
+        } catch (final Exception e) {
             throw new EncryptionException(e);
         }
     }
