@@ -16,6 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import org.apache.commons.lang3.Validate;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -309,6 +311,36 @@ class CachedFileRepositoryTest {
                         fileInfo.fileIdentifier().id() + "." + fileInfo.contentType().extension())))
                         .isFalse());
         assertThat(cache.asMap().isEmpty()).isTrue();
+    }
+
+    @Test
+    @Order(9)
+    void shouldReloadCacheWhenFileReferencedInCacheDoesNotExistsAnymore() throws FileRepositoryException, IOException {
+        // Given
+        final FileInfo fileInfo = fileInfo();
+        final FileContent fileContentByFileIdentifier = fileRepository.getFileContentByFileIdentifier(fileInfo.fileIdentifier());
+        final Path cachedFile = CachedFileRepository.DIRECTORY.resolve(
+                fileContentByFileIdentifier.id().id() + "." + fileContentByFileIdentifier.contentType().extension());
+        Validate.validState(Files.exists(cachedFile));
+        Files.delete(cachedFile);
+
+        // When
+        fileRepository.getFileContentByFileIdentifier(fileInfo.fileIdentifier());
+
+        // Then
+        final byte[] actualContent;
+        try (final InputStream content = fileContentByFileIdentifier.content()) {
+            actualContent = content.readAllBytes();
+        }
+        assertAll(
+                () -> assertThat(cache.asMap().keySet()).containsExactly(new FileIdentifier("file-123")),
+                () -> assertThat(fileContentByFileIdentifier.id()).isEqualTo(fileInfo.fileIdentifier()),
+                () -> assertThat(actualContent).containsExactly("Encrypted !!!".getBytes(StandardCharsets.UTF_8)),
+                () -> assertThat(fileRepositoryTestSpy.getCalled()).containsExactly("getFileInfoByFileIdentifier|file-123",
+                        "getFileContentByFileIdentifier|file-123",
+                        "getFileInfoByFileIdentifier|file-123",
+                        "getFileContentByFileIdentifier|file-123")
+        );
     }
 
     private List<String> fileIdentifiers() {

@@ -94,28 +94,29 @@ public class CachedFileRepository implements FileRepository {
             if (cache.getIfPresent(fileIdentifier) != null) {
                 final FileCache fileCache = cache.getIfPresent(fileIdentifier);
                 assert fileCache != null;
-                return new FileContent(
-                        fileCache.fileInfo().fileIdentifier(),
-                        fileCache.contentType(),
-                        fileCache.contentLength(),
-                        Files.newInputStream(fileCache.path()));
-            } else {
-                final FileInfo fileInfo = delegate.getFileInfoByFileIdentifier(fileIdentifier);
-                final Path path = DIRECTORY.resolve(fileIdentifier.id() + "." + fileInfo.contentType().extension());
-                Files.createFile(path);
-                final FileContent fileContentByFileIdentifier = delegate.getFileContentByFileIdentifier(fileIdentifier);
-                try (final InputStream in = fileContentByFileIdentifier.content()) {
-                    Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+                if (Files.exists(fileCache.path)) {
+                    return new FileContent(
+                            fileCache.fileInfo().fileIdentifier(),
+                            fileCache.contentType(),
+                            fileCache.contentLength(),
+                            Files.newInputStream(fileCache.path()));
                 }
-                final FileCache fileCache = new FileCache(fileInfo, fileContentByFileIdentifier.contentType(),
-                        fileContentByFileIdentifier.contentLength(), path);
-                cache.put(fileIdentifier, fileCache);
-                return new FileContent(
-                        fileContentByFileIdentifier.id(),
-                        fileContentByFileIdentifier.contentType(),
-                        fileContentByFileIdentifier.contentLength(),
-                        Files.newInputStream(path));
             }
+            final FileInfo fileInfo = delegate.getFileInfoByFileIdentifier(fileIdentifier);
+            final Path path = DIRECTORY.resolve(fileIdentifier.id() + "." + fileInfo.contentType().extension());
+            Files.createFile(path);
+            final FileContent fileContentByFileIdentifier = delegate.getFileContentByFileIdentifier(fileIdentifier);
+            try (final InputStream in = fileContentByFileIdentifier.content()) {
+                Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+            }
+            final FileCache fileCache = new FileCache(fileInfo, fileContentByFileIdentifier.contentType(),
+                    fileContentByFileIdentifier.contentLength(), path);
+            cache.put(fileIdentifier, fileCache);
+            return new FileContent(
+                    fileContentByFileIdentifier.id(),
+                    fileContentByFileIdentifier.contentType(),
+                    fileContentByFileIdentifier.contentLength(),
+                    Files.newInputStream(path));
         } catch (final IOException e) {
             LOGGER.warning("Unable to create temp file for file: " + fileIdentifier + " cause: " + e.getMessage());
             return delegate.getFileContentByFileIdentifier(fileIdentifier);
