@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.file.*;
+import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
 import com.damdamdeo.pulse.extension.query.runtime.file.CachedFileRepository;
 import com.damdamdeo.pulse.extension.query.runtime.file.FileCacheProducer;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -154,7 +155,8 @@ class CachedFileRepositoryTest {
                                 "author", List.of("BOB"),
                                 "tag", List.of("invoice")
                         )
-                )
+                ),
+                new CustomMetadata(Map.of("key", "value"))
         );
     }
 

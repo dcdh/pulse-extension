@@ -166,7 +166,8 @@ class GetFileInfoQueryTest {
                                 "author", List.of("BOB"),
                                 "tag", List.of("invoice")
                         )
-                )
+                ),
+                new CustomMetadata(Map.of("key", "value"))
         );
     }
 }

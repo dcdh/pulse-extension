@@ -13,7 +13,8 @@ public record InputFile(FileIdentifier fileIdentifier,
                         ContentLength contentLength,
                         InputStream content,
                         Filename filename,
-                        OwnedBy ownedBy) {
+                        OwnedBy ownedBy,
+                        CustomMetadata customMetadata) {
 
     public InputFile {
         Objects.requireNonNull(fileIdentifier);
@@ -21,6 +22,7 @@ public record InputFile(FileIdentifier fileIdentifier,
         Objects.requireNonNull(content);
         Objects.requireNonNull(filename);
         Objects.requireNonNull(ownedBy);
+        Objects.requireNonNull(customMetadata);
     }
 
     public ContentType contentType() {

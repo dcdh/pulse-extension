@@ -250,7 +250,8 @@ public class DatabaseProcessor {
                     uploaded_by     VARCHAR(1024) NOT NULL,
                     owned_by        VARCHAR(255) NOT NULL,
                     metadata        JSONB NOT NULL,
-                    content         BYTEA NOT NULL
+                    content         BYTEA NOT NULL,
+                    custom_metadata JSONB NOT NULL
                 );
                 
                 CREATE INDEX IF NOT EXISTS idx_file_owned_by ON pulse.file (owned_by);

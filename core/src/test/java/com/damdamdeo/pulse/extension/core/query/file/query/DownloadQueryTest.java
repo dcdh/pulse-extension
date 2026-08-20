@@ -316,7 +316,8 @@ class DownloadQueryTest {
                 uploadedAt(),
                 new UploadedBy(new ExecutedBy.EndUser("BOB", true)),
                 OwnedBy.from(identifier),
-                fileMetadata()
+                fileMetadata(),
+                new CustomMetadata(Map.of("key", "value"))
         );
     }
 

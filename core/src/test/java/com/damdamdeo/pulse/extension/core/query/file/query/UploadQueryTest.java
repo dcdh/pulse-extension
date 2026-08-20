@@ -80,7 +80,8 @@ class UploadQueryTest {
                                 uploadedAt,
                                 new UploadedBy(executionContext().executedBy()),
                                 inputFile.ownedBy(),
-                                metadata
+                                metadata,
+                                new CustomMetadata(Map.of("key", "value"))
                         ),
                         encrypted
                 )
@@ -218,10 +219,11 @@ class UploadQueryTest {
     private InputFile inputFile() {
         return new InputFile(
                 new FileIdentifier("file-123"),
-                new ContentLength(13L),
+                new ContentLength(12L),
                 new ByteArrayInputStream("file-content".getBytes()),
                 new Filename("facture.jpg"),
-                OwnedBy.from(new FileIdentifier("owner-123"))
+                OwnedBy.from(new FileIdentifier("owner-123")),
+                new CustomMetadata(Map.of("key", "value"))
         );
     }
 
@@ -231,7 +233,8 @@ class UploadQueryTest {
                 ContentLength.ofMegaBytes(6L),
                 new ByteArrayInputStream("file-content".getBytes()),
                 new Filename("facture.jpg"),
-                OwnedBy.from(new FileIdentifier("owner-123"))
+                OwnedBy.from(new FileIdentifier("owner-123")),
+                new CustomMetadata(Map.of("key", "value"))
         );
     }
 

@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.query.GenericQuery;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.query.file.*;
+import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +53,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
             try (final InputStream in = inputFile.content()) {
                 Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
             }
+            Validate.isTrue(inputFile.contentLength().contentLength().equals(Files.size(temp)));
             try (final InputStream metadata = Files.newInputStream(temp);
                  final InputStream encryption = Files.newInputStream(temp)) {
                 final FileMetadata extracted = imageMetadataExtractor.extract(
@@ -70,7 +72,8 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
                                 uploadedAt,
                                 new UploadedBy(executedBy),
                                 ownedBy,
-                                extracted
+                                extracted,
+                                inputFile.customMetadata()
                         ), encrypted);
                 return inputFile.fileIdentifier();
             } finally {

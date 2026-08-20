@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.file.*;
+import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
 import com.damdamdeo.pulse.extension.query.runtime.file.CachedFileRepository;
 import com.damdamdeo.pulse.extension.query.runtime.file.JdbcPostgresFileRepository;
 import io.quarkus.test.QuarkusUnitTest;
@@ -63,7 +64,8 @@ class JdbcPostgresFileRepositoryTest {
                                 "author", List.of("BOB"),
                                 "tag", List.of("invoice")
                         )
-                )
+                ),
+                new CustomMetadata(Map.of("key", "value"))
         );
     }
 
@@ -96,7 +98,8 @@ class JdbcPostgresFileRepositoryTest {
                 () -> assertThat(result.filename().filename()).isEqualTo("facture.jpg"),
                 () -> assertThat(result.contentType()).isEqualTo(ContentType.IMAGE_JPG),
                 () -> assertThat(result.ownedBy()).isEqualTo(new OwnedBy("file-123")),
-                () -> assertThat(result.fileMetadata().metadata().get("author")).containsExactly("BOB")
+                () -> assertThat(result.fileMetadata().metadata().get("author")).containsExactly("BOB"),
+                () -> assertThat(result.customMetadata().metadata()).isEqualTo(Map.of("key", "value"))
         );
     }
 

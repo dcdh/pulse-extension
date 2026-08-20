@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.damdamdeo.pulse.extension.core.query.file.*;
+import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.Unremovable;
@@ -28,6 +29,9 @@ import java.util.concurrent.CompletableFuture;
 public class JdbcPostgresFileRepository implements FileRepository {
 
     private static final TypeReference<Map<String, List<String>>> METADATA_TYPE = new TypeReference<>() {
+    };
+
+    private static final TypeReference<Map<String, String>> CUSTOM_METADATA_TYPE = new TypeReference<>() {
     };
 
     @Inject
@@ -73,9 +77,10 @@ public class JdbcPostgresFileRepository implements FileRepository {
                     uploaded_by,
                     owned_by,
                     metadata,
-                    content
+                    content,
+                    custom_metadata                    
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?, CAST(? AS jsonb))
                 ON CONFLICT (file_identifier) DO NOTHING;
                 """;
         try (final Connection connection = dataSource.getConnection();
@@ -93,6 +98,7 @@ public class JdbcPostgresFileRepository implements FileRepository {
                     encrypted.payload(),
                     encrypted.size()
             );
+            statement.setString(10, objectMapper.writeValueAsString(fileInfo.customMetadata().metadata()));
             if (statement.executeUpdate() == 0) {
                 throw new FileAlreadyUploadedException();
             }
@@ -112,7 +118,8 @@ public class JdbcPostgresFileRepository implements FileRepository {
                     uploaded_at,
                     uploaded_by,
                     owned_by,
-                    metadata
+                    metadata,
+                    custom_metadata
                 FROM pulse.file
                 WHERE file_identifier = ?
                 """;
@@ -141,6 +148,12 @@ public class JdbcPostgresFileRepository implements FileRepository {
                                 objectMapper.readValue(
                                         resultSet.getString("metadata"),
                                         METADATA_TYPE
+                                )
+                        ),
+                        new CustomMetadata(
+                                objectMapper.readValue(
+                                        resultSet.getString("custom_metadata"),
+                                        CUSTOM_METADATA_TYPE
                                 )
                         )
                 );
