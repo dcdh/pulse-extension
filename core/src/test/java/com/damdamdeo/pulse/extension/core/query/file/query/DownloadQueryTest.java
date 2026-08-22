@@ -61,7 +61,6 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
-        when(executedByResolver.resolve(fileInfo.ownedBy())).thenReturn(Set.of(new ExecutedBy.EndUser("BOB", true)));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(new Decrypted<>(decryptedContent));
         when(filigraneApplier.apply(decryptedContent)).thenReturn(filigranedContent);
@@ -75,10 +74,44 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
-                () -> verify(executedByResolver).resolve(fileInfo.ownedBy()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
                 () -> verify(filigraneApplier).apply(decryptedContent)
+        );
+    }
+
+    @Test
+    void shouldDownloadWithoutFiligraneWhenUserIsUploader() throws Exception {
+        // Given
+        final DownloadInput input = downloadInput();
+        final FileInfo fileInfo = fileInfo();
+        final FileContent fileContent = fileContent();
+        final FileContent decryptedContent = decryptedFileContent();
+
+        final ExecutionContext executionContext = new ExecutionContext(
+                new ExecutedBy.EndUser("BOB", true),
+                Set.of("user"));
+
+        when(executionContextProvider.provide()).thenReturn(executionContext);
+        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
+        when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
+        when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
+        when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()))
+                .thenReturn(new Decrypted<>(decryptedContent));
+
+        // When
+        final FileContent result = query.execute(input);
+
+        // Then
+        assertAll(
+                () -> assertThat(result).isEqualTo(decryptedContent),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
+                () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
+                () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
+                () -> verify(executedByResolver, never()).resolve(any(OwnedBy.class)),
+                () -> verify(filigraneApplier, never()).apply(any())
         );
     }
 
@@ -89,7 +122,7 @@ class DownloadQueryTest {
         final FileInfo fileInfo = fileInfo();
         final FileContent fileContent = fileContent();
         final FileContent decryptedContent = decryptedFileContent();
-        final ExecutedBy executedBy = new ExecutedBy.EndUser("BOB", true);
+        final ExecutedBy executedBy = new ExecutedBy.EndUser("ALICE", true);
         final ExecutionContext executionContext = new ExecutionContext(executedBy, Set.of("user"));
 
         when(executionContextProvider.provide()).thenReturn(executionContext);
@@ -105,6 +138,10 @@ class DownloadQueryTest {
         // Then
         assertAll(
                 () -> assertThat(result).isEqualTo(decryptedContent),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verify(executedByResolver).resolve(fileInfo.ownedBy()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
                 () -> verify(filigraneApplier, never()).apply(any())
         );
@@ -123,7 +160,6 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
-        when(executedByResolver.resolve(fileInfo.ownedBy())).thenReturn(Set.of(new ExecutedBy.EndUser("ALICE", true)));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(new Decrypted<>(decryptedContent));
         when(filigraneApplier.apply(decryptedContent)).thenReturn(filigranedContent);
@@ -134,12 +170,17 @@ class DownloadQueryTest {
         // Then
         assertAll(
                 () -> assertThat(result).isEqualTo(filigranedContent),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
+                () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
                 () -> verify(filigraneApplier).apply(decryptedContent)
         );
     }
 
     @Test
-    void shouldRejectWhenUserHasNoVisibilityRoleAndIsNotEligible() throws Exception {
+    void shouldRejectWhenUserHasNoVisibilityRoleAndIsNotUploaderNorEligible() throws Exception {
         // Given
         final DownloadInput input = downloadInput();
         final FileInfo fileInfo = fileInfo();
@@ -158,6 +199,8 @@ class DownloadQueryTest {
                         .isInstanceOf(QueryException.class)
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseInstanceOf(UnauthorizedException.class),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
                 () -> verify(executedByResolver).resolve(fileInfo.ownedBy()),
                 () -> verify(fileRepository, never()).getFileContentByFileIdentifier(any()),
@@ -170,8 +213,6 @@ class DownloadQueryTest {
         // Given
         final DownloadInput input = downloadInput();
         final FileRepositoryException exception = new FileRepositoryException(new IllegalStateException("Database unavailable"));
-        when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
-        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenThrow(exception);
 
         // When / Then
@@ -195,7 +236,6 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
-        when(executedByResolver.resolve(fileInfo.ownedBy())).thenReturn(Set.of());
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenThrow(exception);
 
         // When / Then
@@ -205,7 +245,10 @@ class DownloadQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
-                () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
                 () -> verifyNoInteractions(decryptionService, filigraneApplier)
         );
     }
@@ -216,7 +259,10 @@ class DownloadQueryTest {
         final DownloadInput input = downloadInput();
         final FileInfo fileInfo = fileInfo();
         final UnableToResolveException exception = new UnableToResolveException(new IllegalStateException("Unable to resolve executed by"));
-        when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
+        final ExecutionContext executionContext = new ExecutionContext(
+                new ExecutedBy.EndUser("ALICE", true),
+                Set.of("user"));
+        when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
         when(executedByResolver.resolve(fileInfo.ownedBy())).thenThrow(exception);
@@ -228,7 +274,10 @@ class DownloadQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
-                () -> verify(executedByResolver).resolve(fileInfo.ownedBy()),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verify(executedByResolver).resolve(any(OwnedBy.class)),
                 () -> verify(fileRepository, never()).getFileContentByFileIdentifier(any())
         );
     }
@@ -243,7 +292,6 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
-        when(executedByResolver.resolve(fileInfo.ownedBy())).thenReturn(Set.of());
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenThrow(exception);
 
@@ -254,7 +302,11 @@ class DownloadQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
-                () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
+                () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
                 () -> verifyNoInteractions(filigraneApplier)
         );
     }
@@ -271,18 +323,24 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
-        when(executedByResolver.resolve(fileInfo.ownedBy())).thenReturn(Set.of());
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(
                 new Decrypted<>(decryptedContent));
         when(filigraneApplier.apply(decryptedContent)).thenThrow(exception);
 
         // When / Then
-        assertThatThrownBy(() -> query.execute(input))
-                .isInstanceOf(QueryException.class)
-                .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
-                .cause()
-                .isSameAs(exception);
+        assertAll(
+                () -> assertThatThrownBy(() -> query.execute(input))
+                        .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .cause()
+                        .isSameAs(exception),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
+                () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any())
+        );
     }
 
     @Test

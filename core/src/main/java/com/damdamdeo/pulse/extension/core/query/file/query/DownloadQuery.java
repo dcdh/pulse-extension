@@ -5,7 +5,6 @@ import com.damdamdeo.pulse.extension.core.encryption.Decrypted;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.*;
@@ -14,7 +13,6 @@ import com.damdamdeo.pulse.extension.core.query.file.filigrane.UnableToApplyFili
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public final class DownloadQuery implements GenericQuery<DownloadInput, FileContent> {
 
@@ -46,9 +44,10 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
             final ExecutionContext provided = executionContextProvider.provide();
             final List<String> visibilityRoles = backendUserVisibilityRolesProvider.provide();
             final FileInfo fileInfoByFileIdentifier = fileRepository.getFileInfoByFileIdentifier(downloadInput.fileIdentifier());
-            final Set<ExecutedBy> executedByEligibles = executedByResolver.resolve(fileInfoByFileIdentifier.ownedBy());
-            if (!provided.hasAnyRole(visibilityRoles)
-                    && executedByEligibles.stream().noneMatch(executedByEligible -> provided.executedBy().equals(executedByEligible))) {
+            final boolean uploader = fileInfoByFileIdentifier.uploadedBy().executedBy().equals(provided.executedBy());
+            if (!uploader
+                    && !provided.hasAnyRole(visibilityRoles)
+                    && executedByResolver.resolve(fileInfoByFileIdentifier.ownedBy()).stream().noneMatch(executedByEligible -> provided.executedBy().equals(executedByEligible))) {
                 throw new QueryException(new UnauthorizedException());
             }
             final FileContent fileContent = fileRepository.getFileContentByFileIdentifier(downloadInput.fileIdentifier());
