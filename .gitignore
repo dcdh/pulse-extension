@@ -122,3 +122,6 @@
 /integration-tests/infrastructure/pulse_query_file.sql
 /query/deployment/pulse_query_file.sql
 /query/deployment/pulse_connection_identifier.sql
+/query/deployment/realm.json
+/query/deployment/src/test/resources/file-query-endpoint-generated-file.jpg
+/query/deployment/src/test/resources/lorem-ipsum.pdf

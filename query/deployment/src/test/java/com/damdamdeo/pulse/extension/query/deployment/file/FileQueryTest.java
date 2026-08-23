@@ -21,24 +21,20 @@ import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
-import org.apache.commons.lang3.Validate;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -51,7 +47,7 @@ class FileQueryTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class,
-                            StubUploadedAtProvider.class)
+                            StubUploadedAtProvider.class, FileQuery.class, TokenDownload.class)
                     .addAsResource("facture.jpg"))
             .withConfigurationResource("application.properties")
             .overrideRuntimeConfigKey("quarkus.cache.caffeine.\"file\".expire-after-write", "5s")
@@ -59,7 +55,7 @@ class FileQueryTest {
             .overrideRuntimeConfigKey("pulse.query.file.cleanup.every", "5s");
 
     @Inject
-    DataSource dataSource;
+    FileQuery fileQuery;
 
     @Inject
     UploadQuery uploadQuery;
@@ -123,44 +119,13 @@ class FileQueryTest {
         final FileContent executed = downloadQuery.execute(new DownloadInput(GIVEN_FILE_IDENTIFIER));
 
         // Then
-        final String token = retrieveLastToken().token();
+        final String token = fileQuery.retrieveLastToken(GIVEN_FILE_IDENTIFIER).token();
         final TikaMetadata parsed = tikaParser.getMetadata(executed.content(), "image/jpg");
 
         assertAll(
                 () -> assertThat(executed.id()).isEqualTo(GIVEN_FILE_IDENTIFIER),
                 () -> assertThat(parsed.getValues("Exif IFD0:Windows XP Comment")).containsExactly(token)
         );
-    }
-
-    record TokenDownload(String token, String fileIdentifier, String downloadedBy, String downloadedAt) {
-
-        TokenDownload {
-            Objects.requireNonNull(token);
-            Objects.requireNonNull(fileIdentifier);
-            Objects.requireNonNull(downloadedBy);
-            Objects.requireNonNull(downloadedAt);
-        }
-    }
-
-    private TokenDownload retrieveLastToken() {
-        final AtomicReference<TokenDownload> token = new AtomicReference<>();
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement statement = connection.prepareStatement("SELECT token, file_identifier, downloaded_by, downloaded_at FROM pulse.token_download WHERE file_identifier = ?")) {
-            statement.setString(1, GIVEN_FILE_IDENTIFIER.id());
-            try (final ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    token.set(
-                            new TokenDownload(resultSet.getString("token"),
-                                    resultSet.getString("file_identifier"),
-                                    resultSet.getString("downloaded_by"),
-                                    resultSet.getString("downloaded_at")));
-                }
-            }
-            Validate.validState(token.get() != null);
-            return token.get();
-        } catch (final SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -188,7 +153,7 @@ class FileQueryTest {
         final List<Traceability> executed = getTraceByFileIdentifierQuery.execute(GIVEN_FILE_IDENTIFIER);
 
         // Then
-        final TokenDownload token = retrieveLastToken();
+        final TokenDownload token = fileQuery.retrieveLastToken(GIVEN_FILE_IDENTIFIER);
         final DateTimeFormatter downloadedAtFormatter =
                 new DateTimeFormatterBuilder()
                         .appendPattern("yyyy-MM-dd HH:mm:ss")

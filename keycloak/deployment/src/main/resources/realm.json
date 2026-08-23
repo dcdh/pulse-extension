@@ -434,7 +434,8 @@
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
-        "user"
+        "user",
+        "ADMIN"
       ],
       "notBefore": 0,
       "groups": []

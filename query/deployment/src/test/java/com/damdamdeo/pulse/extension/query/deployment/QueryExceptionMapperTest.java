@@ -190,18 +190,64 @@ class QueryExceptionMapperTest {
                     "openapi": "3.1.0",
                     "components": {
                         "schemas": {
-                            "ContentDisposition": {
+                            "ContentType": {
                                 "type": "string",
                                 "enum": [
-                                    "INLINE",
-                                    "ATTACHMENT"
+                                    "APPLICATION_PDF",
+                                    "IMAGE_JPEG",
+                                    "IMAGE_JPG",
+                                    "IMAGE_PNG"
                                 ]
                             },
-                            "FileIdentifier": {
+                            "FileInfo": {
                                 "type": "object",
+                                "required": [
+                                    "fileIdentifier",
+                                    "filename",
+                                    "contentType",
+                                    "contentLength",
+                                    "updatedAt",
+                                    "uploadedBy",
+                                    "ownedBy",
+                                    "metadata"
+                                ],
                                 "properties": {
-                                    "id": {
+                                    "fileIdentifier": {
                                         "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    },
+                                    "contentType": {
+                                        "$ref": "#/components/schemas/ContentType"
+                                    },
+                                    "contentLength": {
+                                        "type": "integer",
+                                        "format": "int64"
+                                    },
+                                    "updatedAt": {
+                                        "type": "string"
+                                    },
+                                    "uploadedBy": {
+                                        "type": "string"
+                                    },
+                                    "ownedBy": {
+                                        "type": "string"
+                                    },
+                                    "fileMetadata": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "customMetadata": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        }
                                     }
                                 }
                             },
@@ -299,6 +345,29 @@ class QueryExceptionMapperTest {
                                             "$ref": "#/components/schemas/Violation"
                                         },
                                         "description": "List of validation constraint violations that occurred"
+                                    }
+                                }
+                            },
+                            "Traceability": {
+                                "type": "object",
+                                "required": [
+                                    "token",
+                                    "fileIdentifier",
+                                    "downloadedBy",
+                                    "downloadedAt"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string"
+                                    },
+                                    "fileIdentifier": {
+                                        "type": "string"
+                                    },
+                                    "downloadedBy": {
+                                        "type": "string"
+                                    },
+                                    "downloadedAt": {
+                                        "type": "string"
                                     }
                                 }
                             },
@@ -451,31 +520,66 @@ class QueryExceptionMapperTest {
                         },
                         "/file/{fileIdentifier}/download": {
                             "get": {
+                                "summary": "Download a file",
+                                "description": "Download a file identified by his identifier.",
                                 "parameters": [
                                     {
-                                        "name": "fileIdentifier",
-                                        "in": "path",
+                                        "description": "File identifier",
                                         "required": true,
                                         "schema": {
-                                            "$ref": "#/components/schemas/FileIdentifier"
-                                        }
+                                            "type": "string"
+                                        },
+                                        "name": "fileIdentifier",
+                                        "in": "path"
                                     },
                                     {
-                                        "name": "contentDisposition",
-                                        "in": "query",
+                                        "description": "Content disposition",
+                                        "required": false,
                                         "schema": {
-                                            "allOf": [
-                                                {
-                                                    "$ref": "#/components/schemas/ContentDisposition"
-                                                },
-                                                {
-                                                    "default": "INLINE"
-                                                }
-                                            ]
-                                        }
+                                            "type": "string",
+                                            "enum": [
+                                                "INLINE",
+                                                "ATTACHMENT"
+                                            ],
+                                            "default": "INLINE"
+                                        },
+                                        "name": "contentDisposition",
+                                        "in": "query"
                                     }
                                 ],
                                 "responses": {
+                                    "200": {
+                                        "description": "File downloaded successfully",
+                                        "headers": {
+                                            "Content-Disposition": {
+                                                "description": "Content disposition",
+                                                "schema": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "Content-Type": {
+                                                "description": "File MIME Type.",
+                                                "schema": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "Content-Length": {
+                                                "description": "File length.",
+                                                "schema": {
+                                                    "type": "integer",
+                                                    "format": "int64"
+                                                }
+                                            }
+                                        },
+                                        "content": {
+                                            "*/*": {
+                                                "schema": {
+                                                    "type": "string",
+                                                    "format": "binary"
+                                                }
+                                            }
+                                        }
+                                    },
                                     "500": {
                                         "description": "Internal Server Error",
                                         "content": {
@@ -487,7 +591,93 @@ class QueryExceptionMapperTest {
                                         }
                                     }
                                 },
-                                "summary": "Download",
+                                "tags": [
+                                    "File Endpoint"
+                                ]
+                            }
+                        },
+                        "/file/{fileIdentifier}/info": {
+                            "get": {
+                                "summary": "Get file info",
+                                "description": "Get file info by his identifier.",
+                                "parameters": [
+                                    {
+                                        "description": "File identifier",
+                                        "required": true,
+                                        "schema": {
+                                            "type": "string"
+                                        },
+                                        "name": "fileIdentifier",
+                                        "in": "path"
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "File information retrieved successfully",
+                                        "content": {
+                                            "application/json": {
+                                                "schema": {
+                                                    "$ref": "#/components/schemas/FileInfo"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "500": {
+                                        "description": "Internal Server Error",
+                                        "content": {
+                                            "application/problem+json": {
+                                                "schema": {
+                                                    "$ref": "#/components/schemas/HttpProblem"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "tags": [
+                                    "File Endpoint"
+                                ]
+                            }
+                        },
+                        "/file/{fileIdentifier}/traceByFileIdentifier": {
+                            "get": {
+                                "summary": "List of Traceability",
+                                "description": "Return list of Traceability by his identifier.",
+                                "parameters": [
+                                    {
+                                        "description": "File identifier",
+                                        "required": true,
+                                        "schema": {
+                                            "type": "string"
+                                        },
+                                        "name": "fileIdentifier",
+                                        "in": "path"
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "Traceability list retrieved successfully",
+                                        "content": {
+                                            "application/json": {
+                                                "schema": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/Traceability"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "500": {
+                                        "description": "Internal Server Error",
+                                        "content": {
+                                            "application/problem+json": {
+                                                "schema": {
+                                                    "$ref": "#/components/schemas/HttpProblem"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
                                 "tags": [
                                     "File Endpoint"
                                 ]

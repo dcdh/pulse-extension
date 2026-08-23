@@ -21,6 +21,7 @@ import com.damdamdeo.pulse.extension.query.runtime.file.traceability.*;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.JdbcPostgresOwnedByProvider;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -72,8 +73,13 @@ public class BeansProcessor {
     }
 
     @BuildStep
-    AdditionalIndexedClassesBuildItem registerFileDownloaderEndpoint() {
-        return new AdditionalIndexedClassesBuildItem(FileEndpoint.class.getName());
+    void registerFileDownloaderEndpoint(final BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItemBuildProducer,
+                                        final BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
+        additionalIndexedClassesBuildItemBuildProducer.produce(new AdditionalIndexedClassesBuildItem(FileEndpoint.class.getName()));
+        additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(FileEndpoint.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build());
     }
 
     @BuildStep
