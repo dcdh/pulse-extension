@@ -68,22 +68,22 @@ class DownloadQueryTest {
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
         final FileContent tokenizedFileContent = tokenizedFileContent();
-        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenReturn(tokenizedFileContent);
-        when(filigraneApplier.apply(tokenizedFileContent)).thenReturn(filigranedContent);
+        when(filigraneApplier.apply(decrypted.payload())).thenReturn(filigranedContent);
+        when(tokenApplier.apply(filigranedContent, fileInfo.ownedBy())).thenReturn(tokenizedFileContent);
 
         // When
         final FileContent result = query.execute(input);
 
         // Then
         assertAll(
-                () -> assertThat(result).isEqualTo(filigranedContent),
+                () -> assertThat(result).isEqualTo(tokenizedFileContent),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
-                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
-                () -> verify(filigraneApplier).apply(any())
+                () -> verify(filigraneApplier).apply(any()),
+                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class))
         );
     }
 
@@ -302,6 +302,7 @@ class DownloadQueryTest {
         final FileInfo fileInfo = fileInfo();
         final FileContent fileContent = fileContent();
         final FileContent decryptedContent = decryptedFileContent();
+        final FileContent filigranedContent = filigranedFileContent();
 
         final TokenApplierException exception = new TokenApplierException(new IllegalStateException("Unable to apply filigrane"));
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
@@ -310,7 +311,8 @@ class DownloadQueryTest {
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
-        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenThrow(exception);
+        when(filigraneApplier.apply(decrypted.payload())).thenReturn(filigranedContent);
+        when(tokenApplier.apply(filigranedContent, fileInfo.ownedBy())).thenThrow(exception);
 
         // When / Then
         assertAll(
@@ -325,7 +327,7 @@ class DownloadQueryTest {
                 () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
                 () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
-                () -> verify(filigraneApplier, never()).apply(any())
+                () -> verify(filigraneApplier).apply(any())
         );
     }
 
@@ -344,9 +346,7 @@ class DownloadQueryTest {
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
-        final FileContent tokenizedFileContent = tokenizedFileContent();
-        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenReturn(tokenizedFileContent);
-        when(filigraneApplier.apply(tokenizedFileContent)).thenThrow(exception);
+        when(filigraneApplier.apply(decrypted.payload())).thenThrow(exception);
 
         // When / Then
         assertAll(
@@ -360,8 +360,8 @@ class DownloadQueryTest {
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
-                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
-                () -> verify(filigraneApplier).apply(any())
+                () -> verify(filigraneApplier).apply(any()),
+                () -> verify(tokenApplier, never()).apply(any(), any(OwnedBy.class))
         );
     }
 

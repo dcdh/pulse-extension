@@ -2,6 +2,10 @@ package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.query.GenericQuery;
 import com.damdamdeo.pulse.extension.core.query.file.DefaultUploadedAtProvider;
+import com.damdamdeo.pulse.extension.core.query.file.query.DownloadQuery;
+import com.damdamdeo.pulse.extension.core.query.file.query.GetFileInfoQuery;
+import com.damdamdeo.pulse.extension.core.query.file.query.GetTraceByFileIdentifierQuery;
+import com.damdamdeo.pulse.extension.core.query.file.query.UploadQuery;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultDownloadedAtProvider;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultTokenGenerator;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedAtProvider;
@@ -118,6 +122,38 @@ public class BeansProcessor {
     @BuildStep
     AdditionalBeanBuildItem registerDefaultDownloadedAtProvider() {
         return AdditionalBeanBuildItem.builder().addBeanClasses(DefaultDownloadedAtProvider.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerUploadQuery() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(UploadQuery.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDownloadQuery() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(DownloadQuery.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerGetFileInfoQuery() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(GetFileInfoQuery.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerGetTraceByFileIdentifierQuery() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(GetTraceByFileIdentifierQuery.class)
                 .setUnremovable()
                 .setDefaultScope(DotNames.APPLICATION_SCOPED)
                 .build();

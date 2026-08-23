@@ -67,11 +67,11 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
                                     fileContent.contentLength(),
                                     decrypted.payload())
                     ));
-            final FileContent tokenizedFileContent = tokenApplier.apply(decryptedFileContent.payload(), fileInfo.ownedBy());
             if (provided.hasAnyRole(visibilityRoles)) {
-                return filigraneApplier.apply(tokenizedFileContent);
+                final FileContent filigranedFileContent = filigraneApplier.apply(decryptedFileContent.payload());
+                return tokenApplier.apply(filigranedFileContent, fileInfo.ownedBy());
             } else {
-                return tokenizedFileContent;
+                return tokenApplier.apply(decryptedFileContent.payload(), fileInfo.ownedBy());
             }
         } catch (final FileRepositoryException | UnableToResolveException | DecryptionException
                        | TokenApplierException | UnableToApplyFiligraneException exception) {
