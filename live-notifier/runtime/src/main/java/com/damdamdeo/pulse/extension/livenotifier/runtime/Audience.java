@@ -9,8 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-public sealed interface Audience
-        permits Audience.AllConnected, Audience.FromListOfEligibility {
+public sealed interface Audience permits Audience.AllConnected, Audience.FromListOfEligibility {
 
     String SEPARATOR = ":";
 

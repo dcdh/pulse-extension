@@ -77,7 +77,7 @@ class JdbcPostgresFileRepositoryTest {
         final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
 
         // When
-        jdbcPostgresFileRepository.store(fileInfo, new Encrypted<>(resource.payload(), resource.size()));
+        jdbcPostgresFileRepository.store(fileInfo, Encrypted.of(resource.payload(), resource.size()));
 
         // Then
         assertThat(jdbcPostgresFileRepository.exists(fileInfo.fileIdentifier())).isTrue();
@@ -144,7 +144,7 @@ class JdbcPostgresFileRepositoryTest {
         final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
 
         // When && Then
-        assertThatThrownBy(() -> jdbcPostgresFileRepository.store(fileInfo, new Encrypted<>(resource.payload(), resource.size())))
+        assertThatThrownBy(() -> jdbcPostgresFileRepository.store(fileInfo, Encrypted.of(resource.payload(), resource.size())))
                 .isExactlyInstanceOf(FileRepositoryException.class)
                 .cause()
                 .isExactlyInstanceOf(FileAlreadyUploadedException.class);
