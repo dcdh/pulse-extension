@@ -12,6 +12,8 @@ import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 import com.damdamdeo.pulse.extension.core.query.file.filigrane.FiligraneApplier;
 import com.damdamdeo.pulse.extension.core.query.file.filigrane.UnableToApplyFiligraneException;
+import com.damdamdeo.pulse.extension.core.query.file.traceability.TokenApplier;
+import com.damdamdeo.pulse.extension.core.query.file.traceability.TokenApplierException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,13 +41,14 @@ class DownloadQueryTest {
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider = mock(BackendUserVisibilityRolesProvider.class);
     private final DecryptionService decryptionService = mock(DecryptionService.class);
     private final FiligraneApplier filigraneApplier = mock(FiligraneApplier.class);
+    private final TokenApplier tokenApplier = mock(TokenApplier.class);
 
     private DownloadQuery query;
 
     @BeforeEach
     void setUp() {
         query = new DownloadQuery(fileRepository, executionContextProvider, executedByResolver,
-                backendUserVisibilityRolesProvider, decryptionService, filigraneApplier);
+                backendUserVisibilityRolesProvider, decryptionService, filigraneApplier, tokenApplier);
     }
 
     @Test
@@ -62,8 +65,11 @@ class DownloadQueryTest {
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
-        when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(new Decrypted<>(decryptedContent));
-        when(filigraneApplier.apply(decryptedContent)).thenReturn(filigranedContent);
+        final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
+        when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
+        final FileContent tokenizedFileContent = tokenizedFileContent();
+        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenReturn(tokenizedFileContent);
+        when(filigraneApplier.apply(tokenizedFileContent)).thenReturn(filigranedContent);
 
         // When
         final FileContent result = query.execute(input);
@@ -76,7 +82,8 @@ class DownloadQueryTest {
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
-                () -> verify(filigraneApplier).apply(decryptedContent)
+                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
+                () -> verify(filigraneApplier).apply(any())
         );
     }
 
@@ -98,19 +105,24 @@ class DownloadQueryTest {
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()))
                 .thenReturn(new Decrypted<>(decryptedContent));
+        final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
+        when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
+        final FileContent tokenizedFileContent = tokenizedFileContent();
+        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenReturn(tokenizedFileContent);
 
         // When
         final FileContent result = query.execute(input);
 
         // Then
         assertAll(
-                () -> assertThat(result).isEqualTo(decryptedContent),
+                () -> assertThat(result).isEqualTo(tokenizedFileContent),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
                 () -> verify(executedByResolver, never()).resolve(any(OwnedBy.class)),
+                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
                 () -> verify(filigraneApplier, never()).apply(any())
         );
     }
@@ -130,52 +142,24 @@ class DownloadQueryTest {
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
         when(executedByResolver.resolve(fileInfo.ownedBy())).thenReturn(Set.of(executedBy));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
-        when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(new Decrypted<>(decryptedContent));
+        final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
+        when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
+        final FileContent tokenizedFileContent = tokenizedFileContent();
+        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenReturn(tokenizedFileContent);
 
         // When
         final FileContent result = query.execute(input);
 
         // Then
         assertAll(
-                () -> assertThat(result).isEqualTo(decryptedContent),
+                () -> assertThat(result).isEqualTo(tokenizedFileContent),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
                 () -> verify(executedByResolver).resolve(fileInfo.ownedBy()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any()),
+                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
                 () -> verify(filigraneApplier, never()).apply(any())
-        );
-    }
-
-    @Test
-    void shouldDownloadWithoutFiligraneWhenExecutionContextHasVisibilityRoleAndEligibleUserIsDifferent() throws Exception {
-        // Given
-        final DownloadInput input = downloadInput();
-        final FileInfo fileInfo = fileInfo();
-        final FileContent fileContent = fileContent();
-        final FileContent decryptedContent = decryptedFileContent();
-        final FileContent filigranedContent = filigranedFileContent();
-
-        final ExecutionContext executionContext = backendUserExecutionContext();
-        when(executionContextProvider.provide()).thenReturn(executionContext);
-        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
-        when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
-        when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
-        when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(new Decrypted<>(decryptedContent));
-        when(filigraneApplier.apply(decryptedContent)).thenReturn(filigranedContent);
-
-        // When
-        final FileContent result = query.execute(input);
-
-        // Then
-        assertAll(
-                () -> assertThat(result).isEqualTo(filigranedContent),
-                () -> verify(executionContextProvider).provide(),
-                () -> verify(backendUserVisibilityRolesProvider).provide(),
-                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
-                () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
-                () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
-                () -> verify(filigraneApplier).apply(decryptedContent)
         );
     }
 
@@ -312,21 +296,21 @@ class DownloadQueryTest {
     }
 
     @Test
-    void shouldWrapUnableToApplyFiligraneException() throws Exception {
+    void shouldWrapTokenApplierException() throws Exception {
         // Given
         final DownloadInput input = downloadInput();
         final FileInfo fileInfo = fileInfo();
         final FileContent fileContent = fileContent();
         final FileContent decryptedContent = decryptedFileContent();
 
-        final UnableToApplyFiligraneException exception = new UnableToApplyFiligraneException(new IllegalStateException("Unable to apply filigrane"));
+        final TokenApplierException exception = new TokenApplierException(new IllegalStateException("Unable to apply filigrane"));
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
-        when(decryptionService.decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(
-                new Decrypted<>(decryptedContent));
-        when(filigraneApplier.apply(decryptedContent)).thenThrow(exception);
+        final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
+        when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
+        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenThrow(exception);
 
         // When / Then
         assertAll(
@@ -339,7 +323,45 @@ class DownloadQueryTest {
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
-                () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any())
+                () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
+                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
+                () -> verify(filigraneApplier, never()).apply(any())
+        );
+    }
+
+    @Test
+    void shouldWrapUnableToApplyFiligraneException() throws Exception {
+        // Given
+        final DownloadInput input = downloadInput();
+        final FileInfo fileInfo = fileInfo();
+        final FileContent fileContent = fileContent();
+        final FileContent decryptedContent = decryptedFileContent();
+
+        final UnableToApplyFiligraneException exception = new UnableToApplyFiligraneException(new IllegalStateException("Unable to apply filigrane"));
+        when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
+        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
+        when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(fileInfo);
+        when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
+        final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
+        when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(fileInfo.ownedBy()), any())).thenReturn(decrypted);
+        final FileContent tokenizedFileContent = tokenizedFileContent();
+        when(tokenApplier.apply(decrypted.payload(), fileInfo.ownedBy())).thenReturn(tokenizedFileContent);
+        when(filigraneApplier.apply(tokenizedFileContent)).thenThrow(exception);
+
+        // When / Then
+        assertAll(
+                () -> assertThatThrownBy(() -> query.execute(input))
+                        .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .cause()
+                        .isSameAs(exception),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
+                () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
+                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
+                () -> verify(filigraneApplier).apply(any())
         );
     }
 
@@ -394,6 +416,15 @@ class DownloadQueryTest {
                 ContentType.IMAGE_JPG,
                 new ContentLength(287759L),
                 new ByteArrayInputStream("decrypted-content".getBytes())
+        );
+    }
+
+    private FileContent tokenizedFileContent() {
+        return new FileContent(
+                new FileIdentifier("file-123"),
+                ContentType.IMAGE_JPG,
+                new ContentLength(287759L),
+                new ByteArrayInputStream("tokenized-decrypted-content".getBytes())
         );
     }
 

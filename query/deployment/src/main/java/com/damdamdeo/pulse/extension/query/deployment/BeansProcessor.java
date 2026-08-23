@@ -94,8 +94,8 @@ public class BeansProcessor {
     }
 
     @BuildStep
-    AdditionalBeanBuildItem registerDefaultTokenApplier() {
-        return AdditionalBeanBuildItem.builder().addBeanClasses(DefaultTokenApplier.class)
+    AdditionalBeanBuildItem registerTokenApplier() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(TokenApplierProducer.class)
                 .setUnremovable()
                 .setDefaultScope(DotNames.APPLICATION_SCOPED)
                 .build();

@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.query.runtime.file.traceability;
 import com.damdamdeo.pulse.extension.core.query.file.ContentLength;
 import com.damdamdeo.pulse.extension.core.query.file.ContentType;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
+import com.damdamdeo.pulse.extension.core.query.file.traceability.ContentTypeTokenApplier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.Token;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.UnableToApplyTokenException;
 import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.DeletingFileInputStream;

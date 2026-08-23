@@ -1,9 +1,55 @@
 package com.damdamdeo.pulse.extension.core.query.file.traceability;
 
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
+import com.damdamdeo.pulse.extension.core.query.file.UnsupportedContentTypeException;
 
-public interface TokenApplier {
+import java.util.List;
+import java.util.Objects;
 
-    FileContent apply(FileContent fileContent, OwnedBy ownedBy) throws UnableToApplyTokenException;
+public final class TokenApplier {
+
+    private final TokenGenerator tokenGenerator;
+    private final TokenRepository tokenRepository;
+    private final ExecutionContextProvider executionContextProvider;
+    private final DownloadedAtProvider downloadedAtProvider;
+    private final ExecutedByEncoder executedByEncoder;
+    private final List<ContentTypeTokenApplier> contentTypeTokenAppliers;
+
+    public TokenApplier(final TokenGenerator tokenGenerator,
+                        final TokenRepository tokenRepository,
+                        final ExecutionContextProvider executionContextProvider,
+                        final DownloadedAtProvider downloadedAtProvider,
+                        final ExecutedByEncoder executedByEncoder,
+                        final List<ContentTypeTokenApplier> contentTypeTokenAppliers) {
+        this.tokenGenerator = Objects.requireNonNull(tokenGenerator);
+        this.tokenRepository = Objects.requireNonNull(tokenRepository);
+        this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
+        this.downloadedAtProvider = Objects.requireNonNull(downloadedAtProvider);
+        this.executedByEncoder = Objects.requireNonNull(executedByEncoder);
+        this.contentTypeTokenAppliers = Objects.requireNonNull(contentTypeTokenAppliers);
+    }
+
+    public FileContent apply(final FileContent fileContent, final OwnedBy ownedBy) throws TokenApplierException {
+        Objects.requireNonNull(fileContent);
+        Objects.requireNonNull(ownedBy);
+        try {
+            final ContentTypeTokenApplier applier = contentTypeTokenAppliers.stream()
+                    .filter(contentTypeTokenApplier -> contentTypeTokenApplier.contentTypes().contains(fileContent.contentType()))
+                    .findFirst()
+                    .orElseThrow(() -> new UnableToApplyTokenException(new UnsupportedContentTypeException()));
+            final Token token = tokenGenerator.generate();
+            final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
+            final DownloadedBy downloadedBy = new DownloadedBy(executedBy.encode(executedByEncoder, ownedBy).encoded());
+            final DownloadedAt downloadedAt = downloadedAtProvider.provide();
+            tokenRepository.store(new Traceability(token, fileContent.id(), downloadedBy, downloadedAt));
+            return applier.apply(fileContent, token);
+        } catch (final TokenRepositoryException | UnableToEncodeException | UnableToApplyTokenException exception) {
+            throw new TokenApplierException(exception);
+        }
+    }
 }
