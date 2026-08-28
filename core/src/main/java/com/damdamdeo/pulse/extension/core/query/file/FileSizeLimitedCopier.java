@@ -12,6 +12,7 @@ import java.util.Objects;
 
 public final class FileSizeLimitedCopier {
 
+    // TODO copy should return the size of the copied file
     public void copy(final InputStream input, final Path destination, final Long maxSize) throws UnableToCopyException {
         Objects.requireNonNull(input);
         Objects.requireNonNull(destination);

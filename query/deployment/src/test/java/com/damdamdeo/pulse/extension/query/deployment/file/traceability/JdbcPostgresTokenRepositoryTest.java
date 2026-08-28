@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.traceability;
 
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.*;
 import com.damdamdeo.pulse.extension.query.runtime.file.traceability.JdbcPostgresTokenRepository;
@@ -43,48 +45,48 @@ class JdbcPostgresTokenRepositoryTest {
     @Order(1)
     void shouldStoreTraceability() throws TokenRepositoryException {
         // Given
-        final Traceability givenTraceability = new Traceability(
+        final EncryptedTraceability givenEncryptedTraceability = new EncryptedTraceability(
                 new Token(new UUID(0, 0)),
                 new FileIdentifier("facture.jpeg"),
-                new DownloadedBy("NA"),
+                new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                 new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                         LocalTime.of(13, 46, 40), ZoneOffset.UTC))
         );
 
         // When
-        jdbcPostgresTokenRepository.store(givenTraceability);
+        jdbcPostgresTokenRepository.store(givenEncryptedTraceability);
 
         // TODO checker contenu via la datasource
         // Then
         final List<String> expected = new ArrayList<>();
         try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement statement = connection.prepareStatement("SELECT token, file_identifier, downloaded_by, downloaded_at FROM pulse.token_download ORDER BY downloaded_at ASC")) {
+             final PreparedStatement statement = connection.prepareStatement("SELECT token, file_identifier, downloaded_by, downloaded_at, owned_by FROM pulse.token_download ORDER BY downloaded_at ASC")) {
             try (final ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    expected.add(resultSet.getString("token") + "|" + resultSet.getString("file_identifier") + "|" + resultSet.getString("downloaded_by") + "|" + resultSet.getObject("downloaded_at", OffsetDateTime.class));
+                    expected.add(resultSet.getString("token") + "|" + resultSet.getString("file_identifier") + "|" + resultSet.getString("downloaded_by") + "|" + resultSet.getString("owned_by") + "|" + resultSet.getObject("downloaded_at", OffsetDateTime.class));
                 }
             }
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
 
-        assertThat(expected).containsExactly("00000000-0000-0000-0000-000000000000|facture.jpeg|NA|1970-01-12T13:46:40Z");
+        assertThat(expected).containsExactly("00000000-0000-0000-0000-000000000000|facture.jpeg|NA|file-123|1970-01-12T13:46:40Z");
     }
 
     @Test
     @Order(2)
     void shouldFailToStoreOnSameToken() {
         // Given
-        final Traceability givenTraceability = new Traceability(
+        final EncryptedTraceability givenEncryptedTraceability = new EncryptedTraceability(
                 new Token(new UUID(0, 0)),
                 new FileIdentifier("facture01.jpeg"),
-                new DownloadedBy("NA"),
+                new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                 new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                         LocalTime.of(13, 46, 40), ZoneOffset.UTC))
         );
 
         // When && Then
-        assertThatThrownBy(() -> jdbcPostgresTokenRepository.store(givenTraceability))
+        assertThatThrownBy(() -> jdbcPostgresTokenRepository.store(givenEncryptedTraceability))
                 .isExactlyInstanceOf(TokenRepositoryException.class)
                 .cause()
                 .isExactlyInstanceOf(TokenAlreadyExistsException.class);
@@ -126,30 +128,30 @@ class JdbcPostgresTokenRepositoryTest {
     @Order(5)
     void shouldListByFileIdentifierOrderByDownloadedAtAsc() throws TokenRepositoryException {
         // Given
-        final List<Traceability> givenListOfTraceability = List.of(
-                new Traceability(
+        final List<EncryptedTraceability> givenListOfEncryptedTraceability = List.of(
+                new EncryptedTraceability(
                         new Token(new UUID(0, 10)),
                         new FileIdentifier("facture01.jpeg"),
-                        new DownloadedBy("NA"),
+                        new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                                 LocalTime.of(13, 46, 40), ZoneOffset.UTC))
                 ),
-                new Traceability(
+                new EncryptedTraceability(
                         new Token(new UUID(0, 11)),
                         new FileIdentifier("facture01.jpeg"),
-                        new DownloadedBy("NA"),
+                        new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                                 LocalTime.of(13, 47, 40), ZoneOffset.UTC))
                 ),
-                new Traceability(
+                new EncryptedTraceability(
                         new Token(new UUID(0, 12)),
                         new FileIdentifier("facture01.jpeg"),
-                        new DownloadedBy("NA"),
+                        new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                                 LocalTime.of(13, 48, 40), ZoneOffset.UTC))
                 )
         );
-        givenListOfTraceability.forEach(givenTraceability -> {
+        givenListOfEncryptedTraceability.forEach(givenTraceability -> {
             try {
                 jdbcPostgresTokenRepository.store(givenTraceability);
             } catch (final TokenRepositoryException exception) {
@@ -158,27 +160,27 @@ class JdbcPostgresTokenRepositoryTest {
         });
 
         // When
-        final List<Traceability> listOfTraceability = jdbcPostgresTokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(new FileIdentifier("facture01.jpeg"));
+        final List<EncryptedTraceability> listOfEncryptedTraceability = jdbcPostgresTokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(new FileIdentifier("facture01.jpeg"));
 
         // Then
-        assertThat(listOfTraceability).containsExactly(new Traceability(
+        assertThat(listOfEncryptedTraceability).containsExactly(new EncryptedTraceability(
                         new Token(new UUID(0, 10)),
                         new FileIdentifier("facture01.jpeg"),
-                        new DownloadedBy("NA"),
+                        new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                                 LocalTime.of(13, 46, 40), ZoneOffset.UTC))
                 ),
-                new Traceability(
+                new EncryptedTraceability(
                         new Token(new UUID(0, 11)),
                         new FileIdentifier("facture01.jpeg"),
-                        new DownloadedBy("NA"),
+                        new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                                 LocalTime.of(13, 47, 40), ZoneOffset.UTC))
                 ),
-                new Traceability(
+                new EncryptedTraceability(
                         new Token(new UUID(0, 12)),
                         new FileIdentifier("facture01.jpeg"),
-                        new DownloadedBy("NA"),
+                        new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
                                 LocalTime.of(13, 48, 40), ZoneOffset.UTC))
                 ));

@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query.file;
 
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
 
 import java.util.Objects;
 

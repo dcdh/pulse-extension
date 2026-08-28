@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.query.runtime.file.traceability;
 
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.*;
 import io.quarkus.arc.Unremovable;
@@ -22,21 +24,21 @@ public class JdbcPostgresTokenRepository implements TokenRepository {
     DataSource dataSource;
 
     @Override
-    public void store(final Traceability traceability) throws TokenRepositoryException {
-        Objects.requireNonNull(traceability);
+    public void store(final EncryptedTraceability encryptedTraceability) throws TokenRepositoryException {
+        Objects.requireNonNull(encryptedTraceability);
         // language=sql
         final String sql = """
-                INSERT INTO pulse.token_download (token, file_identifier, downloaded_by, downloaded_at)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO pulse.token_download (token, file_identifier, downloaded_by, downloaded_at, owned_by)
+                VALUES (?, ?, ?, ?, ?)
                 ON CONFLICT (token) DO NOTHING;
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setObject(1, traceability.token().value());
-            statement.setObject(2, traceability.fileIdentifier().id());
-            statement.setString(3, traceability.downloadedBy().by());
-            statement.setObject(4, traceability.downloadedAt().at().toOffsetDateTime());
-
+            statement.setObject(1, encryptedTraceability.token().value());
+            statement.setObject(2, encryptedTraceability.fileIdentifier().id());
+            statement.setString(3, encryptedTraceability.encryptedDownloadedBy().executedByEncoded().encoded());
+            statement.setObject(4, encryptedTraceability.downloadedAt().at().toOffsetDateTime());
+            statement.setObject(5, encryptedTraceability.encryptedDownloadedBy().ownedBy().id());
             final int updated = statement.executeUpdate();
             if (updated != 1) {
                 throw new TokenRepositoryException(new TokenAlreadyExistsException());
@@ -47,7 +49,7 @@ public class JdbcPostgresTokenRepository implements TokenRepository {
     }
 
     @Override
-    public List<Traceability> listByFileIdentifierOrderByDownloadedAtAsc(final FileIdentifier fileIdentifier)
+    public List<EncryptedTraceability> listByFileIdentifierOrderByDownloadedAtAsc(final FileIdentifier fileIdentifier)
             throws TokenRepositoryException {
         Objects.requireNonNull(fileIdentifier);
         // language=sql
@@ -56,29 +58,31 @@ public class JdbcPostgresTokenRepository implements TokenRepository {
                     token,
                     file_identifier,
                     downloaded_by,
-                    downloaded_at
+                    downloaded_at,
+                    owned_by
                 FROM pulse.token_download
                 WHERE file_identifier = ?
                 ORDER BY downloaded_at ASC
                 """;
-        final List<Traceability> traceabilities = new ArrayList<>();
+        final List<EncryptedTraceability> encryptedTraceabilityData = new ArrayList<>();
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, fileIdentifier.id());
             try (final ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    traceabilities.add(
-                            new Traceability(
+                    encryptedTraceabilityData.add(
+                            new EncryptedTraceability(
                                     new Token(resultSet.getObject("token", UUID.class)),
                                     new FileIdentifier(resultSet.getString("file_identifier")),
-                                    new DownloadedBy(resultSet.getString("downloaded_by")),
+                                    new EncryptedDownloadedBy(new ExecutedByEncoded(resultSet.getString("downloaded_by")),
+                                            new OwnedBy(resultSet.getString("owned_by"))),
                                     new DownloadedAt(resultSet.getObject("downloaded_at", OffsetDateTime.class)
                                             .toZonedDateTime())
                             )
                     );
                 }
             }
-            return Collections.unmodifiableList(traceabilities);
+            return Collections.unmodifiableList(encryptedTraceabilityData);
         } catch (final SQLException exception) {
             throw new TokenRepositoryException(exception);
         }

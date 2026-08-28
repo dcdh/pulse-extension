@@ -5,10 +5,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
-import com.damdamdeo.pulse.extension.core.query.file.FileContent;
-import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
-import com.damdamdeo.pulse.extension.core.query.file.FileInfo;
-import com.damdamdeo.pulse.extension.core.query.file.Filename;
+import com.damdamdeo.pulse.extension.core.query.file.*;
 import com.damdamdeo.pulse.extension.core.query.file.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedAt;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedBy;
@@ -164,7 +161,7 @@ class FileQueryTest {
                 new Traceability(
                         new Token(UUID.fromString(token.token())),
                         GIVEN_FILE_IDENTIFIER,
-                        new DownloadedBy(token.downloadedBy()),
+                        new DownloadedBy(new ExecutedBy.EndUser("bob", true)),
                         new DownloadedAt(ZonedDateTime.parse(token.downloadedAt(), downloadedAtFormatter))
                 )
         );

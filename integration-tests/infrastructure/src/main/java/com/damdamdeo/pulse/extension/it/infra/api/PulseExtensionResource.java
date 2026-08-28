@@ -211,7 +211,7 @@ public class PulseExtensionResource {
         final Call call = statisticsEventHandlerInstance
                 .select(AsyncEventConsumerChannel.Literal.of("statistics")).get().getCall();
         return Optional.ofNullable(call)
-                .orElseThrow(() -> new NotFoundException("Call not executed yet"));
+                .orElseThrow(() -> new NotFoundException("Call not executedBy yet"));
     }
 
     @ServerExceptionMapper

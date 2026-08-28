@@ -44,9 +44,9 @@ public final class TokenApplier {
                     .orElseThrow(() -> new UnableToApplyTokenException(new UnsupportedContentTypeException()));
             final Token token = tokenGenerator.generate();
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final DownloadedBy downloadedBy = new DownloadedBy(executedBy.encode(executedByEncoder, ownedBy).encoded());
+            final EncryptedDownloadedBy encryptedDownloadedBy = new EncryptedDownloadedBy(executedBy.encode(executedByEncoder, ownedBy), ownedBy);
             final DownloadedAt downloadedAt = downloadedAtProvider.provide();
-            tokenRepository.store(new Traceability(token, fileContent.id(), downloadedBy, downloadedAt));
+            tokenRepository.store(new EncryptedTraceability(token, fileContent.id(), encryptedDownloadedBy, downloadedAt));
             return applier.apply(fileContent, token);
         } catch (final TokenRepositoryException | UnableToEncodeException | UnableToApplyTokenException exception) {
             throw new TokenApplierException(exception);

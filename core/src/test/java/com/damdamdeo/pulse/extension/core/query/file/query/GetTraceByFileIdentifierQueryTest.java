@@ -1,7 +1,10 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
@@ -33,17 +36,20 @@ class GetTraceByFileIdentifierQueryTest {
     private final ExecutionContextProvider executionContextProvider = mock(ExecutionContextProvider.class);
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider =
             mock(BackendUserVisibilityRolesProvider.class);
+    private final ExecutedByFactory executedByFactory = mock(ExecutedByFactory.class);
 
     private GetTraceByFileIdentifierQuery query;
 
     @BeforeEach
     void setUp() {
-        query = new GetTraceByFileIdentifierQuery(tokenRepository, executionContextProvider, backendUserVisibilityRolesProvider);
+        query = new GetTraceByFileIdentifierQuery(tokenRepository, executionContextProvider, backendUserVisibilityRolesProvider,
+                executedByFactory);
     }
 
     @Test
     void shouldGetTraceByFileIdentifierWhenUserHasVisibilityRole() throws Exception {
         // Given
+        final List<EncryptedTraceability> encryptedTraceability = encryptedTraceability();
         final List<Traceability> traceabilities = traceabilities();
 
         final ExecutionContext executionContext = new ExecutionContext(
@@ -53,7 +59,9 @@ class GetTraceByFileIdentifierQueryTest {
 
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
-        when(tokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)).thenReturn(traceabilities);
+        when(tokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)).thenReturn(encryptedTraceability);
+        when(executedByFactory.from("EU:bobEncoded", OwnedBy.from(GIVEN_FILE_IDENTIFIER)))
+                .thenReturn(new ExecutedBy.EndUser("BOB", true));
 
         // When
         final List<Traceability> result = query.execute(GIVEN_FILE_IDENTIFIER);
@@ -63,13 +71,15 @@ class GetTraceByFileIdentifierQueryTest {
                 () -> assertThat(result).isEqualTo(traceabilities),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
-                () -> verify(tokenRepository).listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)
+                () -> verify(tokenRepository).listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER),
+                () -> verify(executedByFactory).from(any(), any())
         );
     }
 
     @Test
     void shouldGetTraceByFileIdentifierWhenUserHasOneOfVisibilityRoles() throws Exception {
         // Given
+        final List<EncryptedTraceability> encryptedTraceability = encryptedTraceability();
         final List<Traceability> traceabilities = traceabilities();
 
         final ExecutionContext executionContext = new ExecutionContext(
@@ -80,7 +90,9 @@ class GetTraceByFileIdentifierQueryTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide())
                 .thenReturn(List.of("backend-user", "super-admin"));
-        when(tokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)).thenReturn(traceabilities);
+        when(tokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)).thenReturn(encryptedTraceability);
+        when(executedByFactory.from("EU:bobEncoded", OwnedBy.from(GIVEN_FILE_IDENTIFIER)))
+                .thenReturn(new ExecutedBy.EndUser("BOB", true));
 
         // When
         final List<Traceability> result = query.execute(GIVEN_FILE_IDENTIFIER);
@@ -88,7 +100,8 @@ class GetTraceByFileIdentifierQueryTest {
         // Then
         assertAll(
                 () -> assertThat(result).isEqualTo(traceabilities),
-                () -> verify(tokenRepository).listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)
+                () -> verify(tokenRepository).listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER),
+                () -> verify(executedByFactory).from(any(), any())
         );
     }
 
@@ -143,14 +156,27 @@ class GetTraceByFileIdentifierQueryTest {
                 .isSameAs(repositoryException);
     }
 
+    private List<EncryptedTraceability> encryptedTraceability() {
+        return List.of(
+                new EncryptedTraceability(new Token(new UUID(0, 0)),
+                        GIVEN_FILE_IDENTIFIER,
+                        new EncryptedDownloadedBy(new ExecutedByEncoded("EU:bobEncoded"), OwnedBy.from(GIVEN_FILE_IDENTIFIER)),
+                        new DownloadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5),
+                                LocalTime.of(23, 0, 31),
+                                ZoneOffset.UTC
+                        )))
+        );
+    }
+
     private List<Traceability> traceabilities() {
         return List.of(
                 new Traceability(new Token(new UUID(0, 0)),
-                        GIVEN_FILE_IDENTIFIER, new DownloadedBy("BOB"), new DownloadedAt(ZonedDateTime.of(
-                        LocalDate.of(2026, 8, 5),
-                        LocalTime.of(23, 0, 31),
-                        ZoneOffset.UTC
-                )))
+                        GIVEN_FILE_IDENTIFIER,
+                        new DownloadedBy(new ExecutedBy.EndUser("BOB", true)),
+                        new DownloadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5),
+                                LocalTime.of(23, 0, 31),
+                                ZoneOffset.UTC
+                        )))
         );
     }
 }

@@ -1,10 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.query.file.ContentLength;
-import com.damdamdeo.pulse.extension.core.query.file.ContentType;
-import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
-import com.damdamdeo.pulse.extension.core.query.file.Filename;
+import com.damdamdeo.pulse.extension.core.query.file.*;
 
 import java.io.InputStream;
 import java.util.Objects;

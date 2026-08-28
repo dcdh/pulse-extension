@@ -13,10 +13,7 @@ import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedAtPr
 import com.damdamdeo.pulse.extension.query.runtime.JdbcPostgresExecutedByResolver;
 import com.damdamdeo.pulse.extension.query.runtime.QueryExceptionMapper;
 import com.damdamdeo.pulse.extension.query.runtime.SmallryeConfigBackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.query.runtime.file.FileEndpoint;
-import com.damdamdeo.pulse.extension.query.runtime.file.FileParamConverterProvider;
-import com.damdamdeo.pulse.extension.query.runtime.file.JdbcPostgresFileRepository;
-import com.damdamdeo.pulse.extension.query.runtime.file.TikaImageMetadataExtractor;
+import com.damdamdeo.pulse.extension.query.runtime.file.*;
 import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.*;
 import com.damdamdeo.pulse.extension.query.runtime.file.traceability.*;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.JdbcPostgresOwnedByProvider;
@@ -184,5 +181,15 @@ public class BeansProcessor {
                         .setUnremovable()
                         .build())
                 .toList();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDefaultFileMetadataEncryption() {
+        return new AdditionalBeanBuildItem(DefaultFileMetadataEncryption.class);
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerDefaultCustomMetadataEncryption() {
+        return new AdditionalBeanBuildItem(DefaultCustomMetadataEncryption.class);
     }
 }

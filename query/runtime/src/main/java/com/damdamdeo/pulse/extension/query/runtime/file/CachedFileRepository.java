@@ -45,15 +45,15 @@ public class CachedFileRepository implements FileRepository {
 //    @Inject
 //    @CacheName(CACHE_NAME)
 //    Cache cache;
-//    Cache<FileIdentifier, FileCache> je dois creer un nouveau fileInfo qui pointe vers un fichier à créé et c'est cool ! Il faudra tester l'eviction en attendant 10 seconds par exemple
+//    Cache<FileIdentifier, FileCache> je dois creer un nouveau encryptedFileInfo qui pointe vers un fichier à créé et c'est cool ! Il faudra tester l'eviction en attendant 10 seconds par exemple
     @Inject
     @Named(FileCacheProducer.CACHE_NAME)
     Cache<FileIdentifier, FileCache> cache;
 
-    public record FileCache(FileInfo fileInfo, ContentType contentType, ContentLength contentLength, Path path) {
+    public record FileCache(EncryptedFileInfo encryptedFileInfo, ContentType contentType, ContentLength contentLength, Path path) {
 
         public FileCache {
-            Objects.requireNonNull(fileInfo);
+            Objects.requireNonNull(encryptedFileInfo);
             Objects.requireNonNull(contentType);
             Objects.requireNonNull(contentLength);
             Objects.requireNonNull(path);
@@ -71,17 +71,17 @@ public class CachedFileRepository implements FileRepository {
     }
 
     @Override
-    public void store(final FileInfo fileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
-        Objects.requireNonNull(fileInfo);
+    public void store(final EncryptedFileInfo encryptedFileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
+        Objects.requireNonNull(encryptedFileInfo);
         Objects.requireNonNull(encrypted);
-        delegate.store(fileInfo, encrypted);
+        delegate.store(encryptedFileInfo, encrypted);
     }
 
     @Override
-    public FileInfo getFileInfoByFileIdentifier(final FileIdentifier fileIdentifier) throws FileRepositoryException {
+    public EncryptedFileInfo getFileInfoByFileIdentifier(final FileIdentifier fileIdentifier) throws FileRepositoryException {
         Objects.requireNonNull(fileIdentifier);
         if (cache.getIfPresent(fileIdentifier) != null) {
-            return cache.getIfPresent(fileIdentifier).fileInfo();
+            return cache.getIfPresent(fileIdentifier).encryptedFileInfo();
         } else {
             return delegate.getFileInfoByFileIdentifier(fileIdentifier);
         }
@@ -96,20 +96,20 @@ public class CachedFileRepository implements FileRepository {
                 assert fileCache != null;
                 if (Files.exists(fileCache.path)) {
                     return new FileContent(
-                            fileCache.fileInfo().fileIdentifier(),
+                            fileCache.encryptedFileInfo().fileIdentifier(),
                             fileCache.contentType(),
                             fileCache.contentLength(),
                             Files.newInputStream(fileCache.path()));
                 }
             }
-            final FileInfo fileInfo = delegate.getFileInfoByFileIdentifier(fileIdentifier);
-            final Path path = DIRECTORY.resolve(fileIdentifier.id() + "." + fileInfo.contentType().extension());
+            final EncryptedFileInfo encryptedFileInfo = delegate.getFileInfoByFileIdentifier(fileIdentifier);
+            final Path path = DIRECTORY.resolve(fileIdentifier.id() + "." + encryptedFileInfo.contentType().extension());
             Files.createFile(path);
             final FileContent fileContentByFileIdentifier = delegate.getFileContentByFileIdentifier(fileIdentifier);
             try (final InputStream in = fileContentByFileIdentifier.content()) {
                 Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
             }
-            final FileCache fileCache = new FileCache(fileInfo, fileContentByFileIdentifier.contentType(),
+            final FileCache fileCache = new FileCache(encryptedFileInfo, fileContentByFileIdentifier.contentType(),
                     fileContentByFileIdentifier.contentLength(), path);
             cache.put(fileIdentifier, fileCache);
             return new FileContent(

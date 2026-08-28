@@ -3,10 +3,7 @@ package com.damdamdeo.pulse.extension.core.query.file.traceability;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
+import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 import org.junit.jupiter.api.Test;
 
@@ -63,10 +60,10 @@ class TokenApplierTest {
                 () -> verify(executedByEncoder).encode("ADMIN", ownedBy),
                 () -> verify(downloadedAtProvider).provide(),
                 () -> verify(tokenRepository).store(
-                        new Traceability(
+                        new EncryptedTraceability(
                                 token,
                                 fileContent.id(),
-                                new DownloadedBy("EU:ADMIN"),
+                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:ADMIN"), ownedBy),
                                 downloadedAt
                         )
                 ),
@@ -113,7 +110,7 @@ class TokenApplierTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(executedByEncoder.encode("ADMIN", ownedBy)).thenReturn(Encrypted.of("ADMIN".getBytes()));
         when(downloadedAtProvider.provide()).thenReturn(downloadedAt);
-        doThrow(cause).when(tokenRepository).store(any(Traceability.class));
+        doThrow(cause).when(tokenRepository).store(any(EncryptedTraceability.class));
 
         // When
         final TokenApplierException exception = assertThrows(TokenApplierException.class,
@@ -128,10 +125,10 @@ class TokenApplierTest {
                 () -> verify(executedByEncoder).encode("ADMIN", ownedBy),
                 () -> verify(downloadedAtProvider).provide(),
                 () -> verify(tokenRepository).store(
-                        new Traceability(
+                        new EncryptedTraceability(
                                 token,
                                 fileContent.id(),
-                                new DownloadedBy("EU:ADMIN"),
+                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:ADMIN"), ownedBy),
                                 downloadedAt
                         )
                 ),
@@ -200,10 +197,10 @@ class TokenApplierTest {
                 () -> verify(executedByEncoder).encode("ADMIN", ownedBy),
                 () -> verify(downloadedAtProvider).provide(),
                 () -> verify(tokenRepository).store(
-                        new Traceability(
+                        new EncryptedTraceability(
                                 token,
                                 fileContent.id(),
-                                new DownloadedBy("EU:ADMIN"),
+                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:ADMIN"), ownedBy),
                                 downloadedAt
                         )
                 ),

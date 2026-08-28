@@ -1,8 +1,11 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
@@ -31,19 +34,24 @@ class GetFileInfoQueryTest {
     private final ExecutionContextProvider executionContextProvider = mock(ExecutionContextProvider.class);
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider =
             mock(BackendUserVisibilityRolesProvider.class);
+    private final ExecutedByFactory executedByFactory = mock(ExecutedByFactory.class);
+    private final FileMetadataEncryption fileMetadataEncryption = mock(FileMetadataEncryption.class);
+    private final CustomMetadataEncryption customMetadataEncryption = mock(CustomMetadataEncryption.class);
 
     private GetFileInfoQuery query;
 
     @BeforeEach
     void setUp() {
-        query = new GetFileInfoQuery(fileRepository, executionContextProvider, backendUserVisibilityRolesProvider);
+        query = new GetFileInfoQuery(fileRepository, executionContextProvider, backendUserVisibilityRolesProvider,
+                executedByFactory, fileMetadataEncryption, customMetadataEncryption);
     }
 
     @Test
     void shouldGetFileInfoWhenUserHasVisibilityRole() throws Exception {
         // Given
         final FileInfo fileInfo = fileInfo();
-        final FileIdentifier fileIdentifier = fileInfo.fileIdentifier();
+        final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
+        final FileIdentifier fileIdentifier = encryptedFileInfo.fileIdentifier();
 
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.EndUser("BOB", true),
@@ -52,7 +60,11 @@ class GetFileInfoQueryTest {
 
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
-        when(fileRepository.getFileInfoByFileIdentifier(fileIdentifier)).thenReturn(fileInfo);
+        when(fileRepository.getFileInfoByFileIdentifier(fileIdentifier)).thenReturn(encryptedFileInfo);
+        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
+                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(fileMetadataEncryption.decrypt(encryptedFileInfo.encryptedFileMetadata())).thenReturn(fileInfo.fileMetadata());
+        when(customMetadataEncryption.decrypt(encryptedFileInfo.encryptedCustomMetadata())).thenReturn(fileInfo.customMetadata());
 
         // When
         final FileInfo result = query.execute(fileIdentifier);
@@ -62,7 +74,10 @@ class GetFileInfoQueryTest {
                 () -> assertThat(result).isEqualTo(fileInfo),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
-                () -> verify(fileRepository).getFileInfoByFileIdentifier(fileIdentifier)
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(fileIdentifier),
+                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(fileMetadataEncryption).decrypt(any()),
+                () -> verify(customMetadataEncryption).decrypt(any())
         );
     }
 
@@ -70,7 +85,8 @@ class GetFileInfoQueryTest {
     void shouldGetFileInfoWhenUserHasOneOfVisibilityRoles() throws Exception {
         // Given
         final FileInfo fileInfo = fileInfo();
-        final FileIdentifier fileIdentifier = fileInfo.fileIdentifier();
+        final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
+        final FileIdentifier fileIdentifier = encryptedFileInfo.fileIdentifier();
 
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.EndUser("BOB", true),
@@ -80,7 +96,11 @@ class GetFileInfoQueryTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide())
                 .thenReturn(List.of("backend-user", "super-admin"));
-        when(fileRepository.getFileInfoByFileIdentifier(fileIdentifier)).thenReturn(fileInfo);
+        when(fileRepository.getFileInfoByFileIdentifier(fileIdentifier)).thenReturn(encryptedFileInfo);
+        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
+                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(fileMetadataEncryption.decrypt(encryptedFileInfo.encryptedFileMetadata())).thenReturn(fileInfo.fileMetadata());
+        when(customMetadataEncryption.decrypt(encryptedFileInfo.encryptedCustomMetadata())).thenReturn(fileInfo.customMetadata());
 
         // When
         final FileInfo result = query.execute(fileIdentifier);
@@ -88,7 +108,12 @@ class GetFileInfoQueryTest {
         // Then
         assertAll(
                 () -> assertThat(result).isEqualTo(fileInfo),
-                () -> verify(fileRepository).getFileInfoByFileIdentifier(fileIdentifier)
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(fileIdentifier),
+                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(fileMetadataEncryption).decrypt(any()),
+                () -> verify(customMetadataEncryption).decrypt(any())
         );
     }
 
@@ -114,15 +139,16 @@ class GetFileInfoQueryTest {
                         .hasCauseInstanceOf(UnauthorizedException.class),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
-                () -> verifyNoInteractions(fileRepository)
+                () -> verifyNoInteractions(fileRepository, executedByFactory, fileMetadataEncryption,
+                        customMetadataEncryption)
         );
     }
 
     @Test
     void shouldWrapFileRepositoryException() throws Exception {
         // Given
-        final FileInfo fileInfo = fileInfo();
-        final FileIdentifier fileIdentifier = fileInfo.fileIdentifier();
+        final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
+        final FileIdentifier fileIdentifier = encryptedFileInfo.fileIdentifier();
         final FileRepositoryException repositoryException =
                 new FileRepositoryException(new IllegalStateException("Database unavailable"));
 
@@ -133,16 +159,21 @@ class GetFileInfoQueryTest {
 
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
-        when(fileRepository.getFileInfoByFileIdentifier(fileIdentifier))
-                .thenThrow(repositoryException);
+        when(fileRepository.getFileInfoByFileIdentifier(fileIdentifier)).thenThrow(repositoryException);
 
         // When / Then
-        assertThatThrownBy(() -> query.execute(fileIdentifier))
-                .isInstanceOf(QueryException.class)
-                .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
-                .cause()
-                .isInstanceOf(FileRepositoryException.class)
-                .isSameAs(repositoryException);
+        assertAll(
+                () -> assertThatThrownBy(() -> query.execute(fileIdentifier))
+                        .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .cause()
+                        .isInstanceOf(FileRepositoryException.class)
+                        .isSameAs(repositoryException),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
+                () -> verifyNoInteractions(executedByFactory, fileMetadataEncryption, customMetadataEncryption)
+        );
     }
 
     private FileInfo fileInfo() {
@@ -168,6 +199,27 @@ class GetFileInfoQueryTest {
                         )
                 ),
                 new CustomMetadata(Map.of("key", "value"))
+        );
+    }
+
+    private EncryptedFileInfo encryptedFileInfo() {
+        final FileIdentifier identifier = new FileIdentifier("file-123");
+        return new EncryptedFileInfo(
+                identifier,
+                new Filename("facture.jpg"),
+                ContentType.IMAGE_JPG,
+                new ContentLength(287759L),
+                new UploadedAt(
+                        ZonedDateTime.of(
+                                LocalDate.of(2026, 8, 5),
+                                LocalTime.of(23, 0, 31),
+                                ZoneOffset.UTC
+                        )
+                ),
+                new EncryptedUploadedBy(new ExecutedByEncoded("EU:bobEncoded"), OwnedBy.from(identifier)),
+                OwnedBy.from(identifier),
+                new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), OwnedBy.from(identifier)),
+                new EncryptedCustomMetadata(Encrypted.of("encryptedCustomMetadata".getBytes()), OwnedBy.from(identifier))
         );
     }
 }

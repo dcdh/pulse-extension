@@ -24,7 +24,7 @@ public final class FileValueObjectSerializer extends JsonSerializer<Object> {
             OwnedBy.class, value -> ((OwnedBy) value).id(),
             UploadedBy.class, value -> ((UploadedBy) value).executedBy().value(),
             Token.class, value -> ((Token) value).value().toString(),
-            DownloadedBy.class, value -> ((DownloadedBy) value).by(),
+            DownloadedBy.class, value -> ((DownloadedBy) value).executedBy().value(),
             DownloadedAt.class, value -> ((DownloadedAt) value).at().toString()
     );
 

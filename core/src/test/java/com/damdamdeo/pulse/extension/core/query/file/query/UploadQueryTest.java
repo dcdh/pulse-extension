@@ -6,6 +6,8 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
@@ -38,13 +40,16 @@ public class UploadQueryTest {
     private final ImageMetadataExtractor imageMetadataExtractor = mock(ImageMetadataExtractor.class);
     private final UploadedAtProvider uploadedAtProvider = mock(UploadedAtProvider.class);
     private final FileSizeLimitedCopier fileSizeLimitedCopier = spy(new FileSizeLimitedCopier());
+    private final ExecutedByEncoder executedByEncoder = mock(ExecutedByEncoder.class);
+    private final FileMetadataEncryption fileMetadataEncryption = mock(FileMetadataEncryption.class);
+    private final CustomMetadataEncryption customMetadataEncryption = mock(CustomMetadataEncryption.class);
 
     private UploadQuery query;
 
     @BeforeEach
     void setUp() {
         query = new UploadQuery(fileRepository, executionContextProvider, encryptionService, imageMetadataExtractor, uploadedAtProvider,
-                fileSizeLimitedCopier);
+                fileSizeLimitedCopier, executedByEncoder, fileMetadataEncryption, customMetadataEncryption);
     }
 
     @Test
@@ -52,15 +57,21 @@ public class UploadQueryTest {
         // Given
         final InputFile inputFile = inputFile();
         final FileIdentifier expected = inputFile.fileIdentifier();
-        final FileMetadata metadata = fileMetadata();
+        final FileMetadata fileMetadata = fileMetadata();
+        final CustomMetadata customMetadata = customMetadata();
         final UploadedAt uploadedAt = uploadedAt();
         final Encrypted<InputStream> encrypted = encrypted();
 
         when(fileRepository.exists(inputFile.fileIdentifier())).thenReturn(false);
-        when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(metadata);
+        when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
+        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+        when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
+                new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
+        when(customMetadataEncryption.encrypt(customMetadata, inputFile.ownedBy())).thenReturn(
+                new EncryptedCustomMetadata(Encrypted.of("encryptedCustomMetadata".getBytes()), inputFile.ownedBy()));
 
         // When
         final FileIdentifier result = query.execute(inputFile);
@@ -74,20 +85,23 @@ public class UploadQueryTest {
                 () -> verify(uploadedAtProvider).provide(),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(fileRepository).store(
-                        new FileInfo(
+                        new EncryptedFileInfo(
                                 inputFile.fileIdentifier(),
                                 inputFile.filename(),
                                 inputFile.contentType(),
                                 inputFile.contentLength(),
                                 uploadedAt,
-                                new UploadedBy(executionContext().executedBy()),
+                                new EncryptedUploadedBy(new ExecutedByEncoded("EU:bobEncoded"), inputFile.ownedBy()),
                                 inputFile.ownedBy(),
-                                metadata,
-                                new CustomMetadata(Map.of("key", "value"))
+                                new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()),
+                                new EncryptedCustomMetadata(Encrypted.of("encryptedCustomMetadata".getBytes()), inputFile.ownedBy())
                         ),
                         encrypted
                 ),
-                () -> verify(fileSizeLimitedCopier).copy(any(), any(), eq(ContentLength.MAX.contentLength()))
+                () -> verify(fileSizeLimitedCopier).copy(any(), any(), eq(ContentLength.MAX.contentLength())),
+                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(fileMetadataEncryption).encrypt(any(), any()),
+                () -> verify(customMetadataEncryption).encrypt(any(), any())
         );
     }
 
@@ -196,17 +210,23 @@ public class UploadQueryTest {
     void shouldWrapFileRepositoryExceptionWhenStoring() throws Exception {
         // Given
         final InputFile inputFile = inputFile();
-        final FileMetadata metadata = fileMetadata();
+        final FileMetadata fileMetadata = fileMetadata();
+        final CustomMetadata customMetadata = customMetadata();
         final UploadedAt uploadedAt = uploadedAt();
         final Encrypted<InputStream> encrypted = encrypted();
 
         final FileRepositoryException exception = new FileRepositoryException(new IllegalStateException("Database unavailable"));
         when(fileRepository.exists(inputFile.fileIdentifier())).thenReturn(false);
-        when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(metadata);
+        when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
-        doThrow(exception).when(fileRepository).store(any(FileInfo.class), eq(encrypted));
+        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+        when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
+                new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
+        when(customMetadataEncryption.encrypt(customMetadata, inputFile.ownedBy())).thenReturn(
+                new EncryptedCustomMetadata(Encrypted.of("encryptedCustomMetadata".getBytes()), inputFile.ownedBy()));
+        doThrow(exception).when(fileRepository).store(any(EncryptedFileInfo.class), eq(encrypted));
 
         // When / Then
         assertAll(
@@ -215,7 +235,76 @@ public class UploadQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
                         .cause()
                         .isSameAs(exception),
-                () -> verify(fileRepository).store(any(FileInfo.class), eq(encrypted))
+                () -> verify(fileRepository).store(any(EncryptedFileInfo.class), eq(encrypted)),
+                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(fileMetadataEncryption).encrypt(any(), any()),
+                () -> verify(customMetadataEncryption).encrypt(any(), any())
+        );
+    }
+
+    @Test
+    void shouldWrapMetadataEncryptionExceptionWhenEncryptingFileMetadata() throws Exception {
+        // Given
+        final InputFile inputFile = inputFile();
+        final FileMetadata fileMetadata = fileMetadata();
+        final UploadedAt uploadedAt = uploadedAt();
+        final Encrypted<InputStream> encrypted = encrypted();
+
+        final MetadataEncryptionException exception = new MetadataEncryptionException(new EncryptionException(new IllegalStateException("Encryption failed")));
+        when(fileRepository.exists(inputFile.fileIdentifier())).thenReturn(false);
+        when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
+        when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
+        when(executionContextProvider.provide()).thenReturn(executionContext());
+        when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
+        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+        doThrow(exception).when(fileMetadataEncryption).encrypt(fileMetadata, inputFile.ownedBy());
+
+        // When / Then
+        assertAll(
+                () -> assertThatThrownBy(() -> query.execute(inputFile))
+                        .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .cause()
+                        .isSameAs(exception),
+                () -> verify(fileRepository).exists(any()),
+                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(fileMetadataEncryption).encrypt(any(), any()),
+                () -> verifyNoInteractions(customMetadataEncryption)
+        );
+    }
+
+    @Test
+    void shouldWrapMetadataEncryptionExceptionWhenEncryptingCustomMetadata() throws Exception {
+        // Given
+        final InputFile inputFile = inputFile();
+        final FileMetadata fileMetadata = fileMetadata();
+        final CustomMetadata customMetadata = customMetadata();
+        final UploadedAt uploadedAt = uploadedAt();
+        final Encrypted<InputStream> encrypted = encrypted();
+
+        final MetadataEncryptionException exception = new MetadataEncryptionException(new EncryptionException(new IllegalStateException("Encryption failed")));
+        when(fileRepository.exists(inputFile.fileIdentifier())).thenReturn(false);
+        when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
+        when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
+        when(executionContextProvider.provide()).thenReturn(executionContext());
+        when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
+        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+
+        when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
+                new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
+        doThrow(exception).when(customMetadataEncryption).encrypt(customMetadata, inputFile.ownedBy());
+
+        // When / Then
+        assertAll(
+                () -> assertThatThrownBy(() -> query.execute(inputFile))
+                        .isInstanceOf(QueryException.class)
+                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .cause()
+                        .isSameAs(exception),
+                () -> verify(fileRepository).exists(any()),
+                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(fileMetadataEncryption).encrypt(any(), any()),
+                () -> verify(customMetadataEncryption).encrypt(any(), any())
         );
     }
 
@@ -250,6 +339,10 @@ public class UploadQueryTest {
         );
     }
 
+    private CustomMetadata customMetadata() {
+        return new CustomMetadata(Map.of("key", "value"));
+    }
+
     public static UploadedAt uploadedAt() {
         return new UploadedAt(
                 ZonedDateTime.of(
@@ -262,7 +355,7 @@ public class UploadQueryTest {
 
     private ExecutionContext executionContext() {
         return new ExecutionContext(
-                ExecutedBy.Anonymous.INSTANCE,
+                new ExecutedBy.EndUser("BOB", true),
                 Set.of("backend-user")
         );
     }

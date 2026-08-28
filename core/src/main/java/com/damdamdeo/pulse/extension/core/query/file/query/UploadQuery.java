@@ -4,8 +4,7 @@ import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.damdamdeo.pulse.extension.core.query.GenericQuery;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
@@ -31,19 +30,28 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
     private final ImageMetadataExtractor imageMetadataExtractor;
     private final UploadedAtProvider uploadedAtProvider;
     private final FileSizeLimitedCopier fileSizeLimitedCopier;
+    private final ExecutedByEncoder executedByEncoder;
+    private final FileMetadataEncryption fileMetadataEncryption;
+    private final CustomMetadataEncryption customMetadataEncryption;
 
     public UploadQuery(final FileRepository fileRepository,
                        final ExecutionContextProvider executionContextProvider,
                        final EncryptionService encryptionService,
                        final ImageMetadataExtractor imageMetadataExtractor,
                        final UploadedAtProvider uploadedAtProvider,
-                       final FileSizeLimitedCopier fileSizeLimitedCopier) {
+                       final FileSizeLimitedCopier fileSizeLimitedCopier,
+                       final ExecutedByEncoder executedByEncoder,
+                       final FileMetadataEncryption fileMetadataEncryption,
+                       final CustomMetadataEncryption customMetadataEncryption) {
         this.fileRepository = Objects.requireNonNull(fileRepository);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.encryptionService = Objects.requireNonNull(encryptionService);
         this.imageMetadataExtractor = Objects.requireNonNull(imageMetadataExtractor);
         this.uploadedAtProvider = Objects.requireNonNull(uploadedAtProvider);
         this.fileSizeLimitedCopier = Objects.requireNonNull(fileSizeLimitedCopier);
+        this.executedByEncoder = Objects.requireNonNull(executedByEncoder);
+        this.fileMetadataEncryption = Objects.requireNonNull(fileMetadataEncryption);
+        this.customMetadataEncryption = Objects.requireNonNull(customMetadataEncryption);
     }
 
     @Override
@@ -68,29 +76,30 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
                 final OwnedBy ownedBy = inputFile.ownedBy();
                 final Encrypted<InputStream> encrypted = encryptionService.encrypt(encryption, inputFile.ownedBy(), t -> t);
                 final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
+                final ExecutedByEncoded executedByEncodedUploadedBy = executedBy.encode(executedByEncoder, ownedBy);
                 final UploadedAt uploadedAt = uploadedAtProvider.provide();
                 fileRepository.store(
-                        new FileInfo(
+                        new EncryptedFileInfo(
                                 inputFile.fileIdentifier(),
                                 inputFile.filename(),
                                 inputFile.contentType(),
                                 contentLength,
                                 uploadedAt,
-                                new UploadedBy(executedBy),
+                                new EncryptedUploadedBy(executedByEncodedUploadedBy, ownedBy),
                                 ownedBy,
-                                extracted,
-                                inputFile.customMetadata()
+                                fileMetadataEncryption.encrypt(extracted, ownedBy),
+                                customMetadataEncryption.encrypt(inputFile.customMetadata(), ownedBy)
                         ), encrypted);
                 return inputFile.fileIdentifier();
             } finally {
                 Files.deleteIfExists(temp);
             }
-        } catch (final FileAlreadyUploadedException exception) {
+        } catch (final UnableToEncodeException | FileAlreadyUploadedException exception) {
             throw new QueryException(exception, QueryExceptionCode.CONFLICT);
         } catch (final MaxFileSizeReachedException exception) {
             throw new QueryException(exception, QueryExceptionCode.FAIL_FAST_CONDITION_NOT_MET);
-        } catch (final FileRepositoryException | EncryptionException | ImageMetadataExtractorException |
-                       UnableToCopyException | IOException exception) {
+        } catch (final FileRepositoryException | EncryptionException | ImageMetadataExtractorException
+                       | MetadataEncryptionException | UnableToCopyException | IOException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }

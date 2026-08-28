@@ -249,13 +249,12 @@ public class DatabaseProcessor {
                     uploaded_at     TIMESTAMPTZ NOT NULL,
                     uploaded_by     VARCHAR(1024) NOT NULL,
                     owned_by        VARCHAR(255) NOT NULL,
-                    metadata        JSONB NOT NULL,
+                    metadata        BYTEA NOT NULL,
                     content         BYTEA NOT NULL,
-                    custom_metadata JSONB NOT NULL
+                    custom_metadata BYTEA NOT NULL
                 );
                 
                 CREATE INDEX IF NOT EXISTS idx_file_owned_by ON pulse.file (owned_by);
-                CREATE INDEX IF NOT EXISTS idx_file_metadata ON pulse.file USING GIN (metadata);
                 
                 CREATE OR REPLACE FUNCTION pulse.prevent_file_delete()
                 RETURNS TRIGGER
@@ -275,7 +274,8 @@ public class DatabaseProcessor {
                     token UUID PRIMARY KEY,
                     file_identifier VARCHAR(255) NOT NULL,
                     downloaded_by VARCHAR(1024) NOT NULL,
-                    downloaded_at TIMESTAMPTZ NOT NULL
+                    downloaded_at TIMESTAMPTZ NOT NULL,
+                    owned_by VARCHAR(255) NOT NULL
                 );
                 
                 CREATE OR REPLACE FUNCTION pulse.prevent_token_delete()

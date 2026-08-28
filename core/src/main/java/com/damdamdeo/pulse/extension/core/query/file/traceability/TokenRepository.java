@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface TokenRepository {
 
-    void store(Traceability traceability) throws TokenRepositoryException;
+    void store(EncryptedTraceability encryptedTraceability) throws TokenRepositoryException;
 
-    List<Traceability> listByFileIdentifierOrderByDownloadedAtAsc(FileIdentifier fileIdentifier)
+    List<EncryptedTraceability> listByFileIdentifierOrderByDownloadedAtAsc(FileIdentifier fileIdentifier)
             throws TokenRepositoryException;
 }

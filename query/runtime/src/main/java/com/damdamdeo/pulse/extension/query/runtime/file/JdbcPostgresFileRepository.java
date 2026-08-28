@@ -3,11 +3,8 @@ package com.damdamdeo.pulse.extension.query.runtime.file;
 import com.damdamdeo.pulse.extension.common.runtime.encryption.FutureAwareInputStream;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.query.file.*;
-import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,8 +16,6 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.sql.*;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,23 +23,8 @@ import java.util.concurrent.CompletableFuture;
 @Unremovable
 public class JdbcPostgresFileRepository implements FileRepository {
 
-    private static final TypeReference<Map<String, List<String>>> METADATA_TYPE = new TypeReference<>() {
-    };
-
-    private static final TypeReference<Map<String, String>> CUSTOM_METADATA_TYPE = new TypeReference<>() {
-    };
-
     @Inject
     DataSource dataSource;
-
-    @Inject
-    ObjectMapper objectMapper;
-
-    @Inject
-    ExecutedByFactory executedByFactory;
-
-    @Inject
-    ExecutedByEncoder executedByEncoder;
 
     @Override
     public boolean exists(final FileIdentifier fileIdentifier) throws FileRepositoryException {
@@ -64,8 +44,8 @@ public class JdbcPostgresFileRepository implements FileRepository {
     }
 
     @Override
-    public void store(final FileInfo fileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
-        Objects.requireNonNull(fileInfo);
+    public void store(final EncryptedFileInfo encryptedFileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
+        Objects.requireNonNull(encryptedFileInfo);
         Objects.requireNonNull(encrypted);
         final String sql = """
                 INSERT INTO pulse.file (
@@ -80,35 +60,35 @@ public class JdbcPostgresFileRepository implements FileRepository {
                     content,
                     custom_metadata                    
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?, CAST(? AS jsonb))
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT (file_identifier) DO NOTHING;
                 """;
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, fileInfo.fileIdentifier().id());
-            statement.setString(2, fileInfo.filename().filename());
-            statement.setString(3, fileInfo.contentType().contentType());
-            statement.setLong(4, fileInfo.contentLength().contentLength());
-            statement.setTimestamp(5, Timestamp.from(fileInfo.uploadedAt().at().toInstant()));
-            statement.setString(6, fileInfo.uploadedBy().executedBy().encode(executedByEncoder, fileInfo.ownedBy()).encoded());
-            statement.setString(7, fileInfo.ownedBy().id());
-            statement.setString(8, objectMapper.writeValueAsString(fileInfo.fileMetadata().metadata()));
+            statement.setString(1, encryptedFileInfo.fileIdentifier().id());
+            statement.setString(2, encryptedFileInfo.filename().filename());
+            statement.setString(3, encryptedFileInfo.contentType().contentType());
+            statement.setLong(4, encryptedFileInfo.contentLength().contentLength());
+            statement.setTimestamp(5, Timestamp.from(encryptedFileInfo.uploadedAt().at().toInstant()));
+            statement.setString(6, encryptedFileInfo.encryptedUploadedBy().executedByEncoded().encoded());
+            statement.setString(7, encryptedFileInfo.ownedBy().id());
+            statement.setBytes(8, encryptedFileInfo.encryptedFileMetadata().encrypted().payload());
             statement.setBinaryStream(
                     9,
                     encrypted.payload(),
                     encrypted.size()
             );
-            statement.setString(10, objectMapper.writeValueAsString(fileInfo.customMetadata().metadata()));
+            statement.setBytes(10, encryptedFileInfo.encryptedCustomMetadata().encrypted().payload());
             if (statement.executeUpdate() == 0) {
                 throw new FileAlreadyUploadedException();
             }
-        } catch (final SQLException | IOException | UnableToEncodeException | FileAlreadyUploadedException exception) {
+        } catch (final SQLException | FileAlreadyUploadedException exception) {
             throw new FileRepositoryException(exception);
         }
     }
 
     @Override
-    public FileInfo getFileInfoByFileIdentifier(final FileIdentifier fileIdentifier) throws FileRepositoryException {
+    public EncryptedFileInfo getFileInfoByFileIdentifier(final FileIdentifier fileIdentifier) throws FileRepositoryException {
         Objects.requireNonNull(fileIdentifier);
         final String sql = """
                 SELECT
@@ -131,8 +111,7 @@ public class JdbcPostgresFileRepository implements FileRepository {
                     throw new FileNotFoundException();
                 }
                 final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("uploaded_by"), ownedBy);
-                return new FileInfo(
+                return new EncryptedFileInfo(
                         fileIdentifier,
                         new Filename(resultSet.getString("filename")),
                         ContentType.fromContentType(resultSet.getString("content_type")),
@@ -142,23 +121,13 @@ public class JdbcPostgresFileRepository implements FileRepository {
                                         .toInstant()
                                         .atZone(ZoneOffset.UTC)
                         ),
-                        new UploadedBy(executedBy),
+                        new EncryptedUploadedBy(new ExecutedByEncoded(resultSet.getString("uploaded_by")), ownedBy),
                         ownedBy,
-                        new FileMetadata(
-                                objectMapper.readValue(
-                                        resultSet.getString("metadata"),
-                                        METADATA_TYPE
-                                )
-                        ),
-                        new CustomMetadata(
-                                objectMapper.readValue(
-                                        resultSet.getString("custom_metadata"),
-                                        CUSTOM_METADATA_TYPE
-                                )
-                        )
+                        new EncryptedFileMetadata(Encrypted.of(resultSet.getBytes("metadata")), ownedBy),
+                        new EncryptedCustomMetadata(Encrypted.of(resultSet.getBytes("custom_metadata")), ownedBy)
                 );
             }
-        } catch (final SQLException | IOException | FileNotFoundException | UnableToDecodeException exception) {
+        } catch (final SQLException | FileNotFoundException exception) {
             throw new FileRepositoryException(exception);
         }
     }

@@ -2,9 +2,8 @@ package com.damdamdeo.pulse.extension.query.deployment.file;
 
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.query.file.*;
-import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
 import com.damdamdeo.pulse.extension.query.runtime.file.CachedFileRepository;
 import com.damdamdeo.pulse.extension.query.runtime.file.FileCacheProducer;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -38,7 +37,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,8 +48,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 // cf CachedPassphraseRepositoryTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CachedFileRepositoryTest {
-
-    public static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -113,15 +109,15 @@ class CachedFileRepositoryTest {
         }
 
         @Override
-        public void store(final FileInfo fileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
-            Objects.requireNonNull(fileInfo);
+        public void store(final EncryptedFileInfo encryptedFileInfo, final Encrypted<InputStream> encrypted) throws FileRepositoryException {
+            Objects.requireNonNull(encryptedFileInfo);
             Objects.requireNonNull(encrypted);
-            fileRepositoryTestSpy.add(String.join("|", "store", fileInfo.fileIdentifier().id()));
-            delegate.store(fileInfo, encrypted);
+            fileRepositoryTestSpy.add(String.join("|", "store", encryptedFileInfo.fileIdentifier().id()));
+            delegate.store(encryptedFileInfo, encrypted);
         }
 
         @Override
-        public FileInfo getFileInfoByFileIdentifier(final FileIdentifier fileIdentifier) throws FileRepositoryException {
+        public EncryptedFileInfo getFileInfoByFileIdentifier(final FileIdentifier fileIdentifier) throws FileRepositoryException {
             Objects.requireNonNull(fileIdentifier);
             fileRepositoryTestSpy.add(String.join("|", "getFileInfoByFileIdentifier", fileIdentifier.id()));
             return delegate.getFileInfoByFileIdentifier(fileIdentifier);
@@ -140,23 +136,18 @@ class CachedFileRepositoryTest {
         fileRepositoryTestSpy.reset();
     }
 
-    private FileInfo fileInfo() {
+    private EncryptedFileInfo encryptedFileInfo() {
         final FileIdentifier identifier = new FileIdentifier("file-123");
-        return new FileInfo(
+        return new EncryptedFileInfo(
                 identifier,
                 new Filename("facture.jpg"),
                 ContentType.IMAGE_JPG,
                 new ContentLength(13L),
                 new UploadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5), LocalTime.of(23, 0, 31), ZoneOffset.UTC)),
-                new UploadedBy(BOB),
+                new EncryptedUploadedBy(new ExecutedByEncoded("NA"), OwnedBy.from(identifier)),
                 OwnedBy.from(identifier),
-                new FileMetadata(
-                        Map.of(
-                                "author", List.of("BOB"),
-                                "tag", List.of("invoice")
-                        )
-                ),
-                new CustomMetadata(Map.of("key", "value"))
+                new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), OwnedBy.from(identifier)),
+                new EncryptedCustomMetadata(Encrypted.of("encryptedCustomMetadata".getBytes()), OwnedBy.from(identifier))
         );
     }
 
@@ -164,10 +155,10 @@ class CachedFileRepositoryTest {
     @Order(1)
     void shouldStoreMustNotBeCached() throws FileRepositoryException {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
-        fileRepository.store(fileInfo, Encrypted.of(new ByteArrayInputStream("Encrypted !!!".getBytes(StandardCharsets.UTF_8))));
+        fileRepository.store(givenEncryptedFileInfo, Encrypted.of(new ByteArrayInputStream("Encrypted !!!".getBytes(StandardCharsets.UTF_8))));
 
         // Then
         assertAll(
@@ -181,10 +172,10 @@ class CachedFileRepositoryTest {
     @Order(2)
     void shouldExistCallDelegateWhenNotInCache() throws FileRepositoryException {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
-        final boolean exists = fileRepository.exists(fileInfo.fileIdentifier());
+        final boolean exists = fileRepository.exists(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         assertAll(
@@ -198,15 +189,15 @@ class CachedFileRepositoryTest {
     @Order(3)
     void shouldGetFileInfoByFileIdentifierCallDelegateWhenNotInCache() throws FileRepositoryException {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
-        final FileInfo fileInfoByFileIdentifier = fileRepository.getFileInfoByFileIdentifier(fileInfo.fileIdentifier());
+        final EncryptedFileInfo fileInfoByFileIdentifier = fileRepository.getFileInfoByFileIdentifier(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         assertAll(
                 () -> assertThat(cache.asMap().isEmpty()).isTrue(),
-                () -> assertThat(fileInfoByFileIdentifier.fileIdentifier()).isEqualTo(fileInfo.fileIdentifier()),
+                () -> assertThat(fileInfoByFileIdentifier.fileIdentifier()).isEqualTo(givenEncryptedFileInfo.fileIdentifier()),
                 () -> assertThat(fileRepositoryTestSpy.getCalled()).containsExactly("getFileInfoByFileIdentifier|file-123")
         );
     }
@@ -215,10 +206,10 @@ class CachedFileRepositoryTest {
     @Order(4)
     void shouldGetFileContentByFileIdentifierCallDelegateWhenNotInCache() throws FileRepositoryException, IOException {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
-        final FileContent fileContentByFileIdentifier = fileRepository.getFileContentByFileIdentifier(fileInfo.fileIdentifier());
+        final FileContent fileContentByFileIdentifier = fileRepository.getFileContentByFileIdentifier(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         final byte[] actualContent;
@@ -227,7 +218,7 @@ class CachedFileRepositoryTest {
         }
         assertAll(
                 () -> assertThat(cache.asMap().keySet()).containsExactly(new FileIdentifier("file-123")),
-                () -> assertThat(fileContentByFileIdentifier.id()).isEqualTo(fileInfo.fileIdentifier()),
+                () -> assertThat(fileContentByFileIdentifier.id()).isEqualTo(givenEncryptedFileInfo.fileIdentifier()),
                 () -> assertThat(actualContent).containsExactly("Encrypted !!!".getBytes(StandardCharsets.UTF_8)),
                 () -> assertThat(fileRepositoryTestSpy.getCalled()).containsExactly("getFileInfoByFileIdentifier|file-123",
                         "getFileContentByFileIdentifier|file-123")
@@ -238,14 +229,14 @@ class CachedFileRepositoryTest {
     @Order(5)
     void shouldGetFileContentByFileIdentifierReturnFromCache() throws FileRepositoryException, IOException {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
         // Use a loop to ensure that content is reopened each time it is called!
         final AtomicReference<FileContent> fileContentByFileIdentifier = new AtomicReference<>();
         final AtomicReference<byte[]> contentByFileIdentifier = new AtomicReference<>();
         for (int i = 0; i < 3; i++) {
-            fileContentByFileIdentifier.set(fileRepository.getFileContentByFileIdentifier(fileInfo.fileIdentifier()));
+            fileContentByFileIdentifier.set(fileRepository.getFileContentByFileIdentifier(givenEncryptedFileInfo.fileIdentifier()));
 
             // Then
             try (final InputStream content = fileContentByFileIdentifier.get().content()) {
@@ -255,7 +246,7 @@ class CachedFileRepositoryTest {
         }
         assertAll(
                 () -> assertThat(cache.asMap().keySet()).containsExactly(new FileIdentifier("file-123")),
-                () -> assertThat(fileContentByFileIdentifier.get().id()).isEqualTo(fileInfo.fileIdentifier()),
+                () -> assertThat(fileContentByFileIdentifier.get().id()).isEqualTo(givenEncryptedFileInfo.fileIdentifier()),
                 () -> assertThat(contentByFileIdentifier.get()).containsExactly("Encrypted !!!".getBytes(StandardCharsets.UTF_8)),
                 () -> assertThat(fileRepositoryTestSpy.getCalled()).isEmpty()
         );
@@ -265,10 +256,10 @@ class CachedFileRepositoryTest {
     @Order(6)
     void shouldExistsReturnFromCache() throws FileRepositoryException {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
-        final boolean exists = fileRepository.exists(fileInfo.fileIdentifier());
+        final boolean exists = fileRepository.exists(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         assertAll(
@@ -282,15 +273,15 @@ class CachedFileRepositoryTest {
     @Order(7)
     void shouldGetFileInfoByFileIdentifierReturnFromCache() throws FileRepositoryException {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
-        final FileInfo fileInfoByFileIdentifier = fileRepository.getFileInfoByFileIdentifier(fileInfo.fileIdentifier());
+        final EncryptedFileInfo fileInfoByFileIdentifier = fileRepository.getFileInfoByFileIdentifier(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         assertAll(
                 () -> assertThat(cache.asMap().keySet()).containsExactly(new FileIdentifier("file-123")),
-                () -> assertThat(fileInfoByFileIdentifier.fileIdentifier()).isEqualTo(fileInfo.fileIdentifier()),
+                () -> assertThat(fileInfoByFileIdentifier.fileIdentifier()).isEqualTo(givenEncryptedFileInfo.fileIdentifier()),
                 () -> assertThat(fileRepositoryTestSpy.getCalled()).isEmpty()
         );
     }
@@ -299,18 +290,18 @@ class CachedFileRepositoryTest {
     @Order(8)
     void shouldRemoveFileAtCacheRemoval() {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When && Then
 //        await().atMost(30, TimeUnit.SECONDS)
 //                .untilAsserted(() -> assertAll(
-//                        () -> assertThat(Files.exists(CachedFileRepository.DIRECTORY.resolve(fileInfo.fileIdentifier().id())))
+//                        () -> assertThat(Files.exists(CachedFileRepository.DIRECTORY.resolve(encryptedFileInfo.fileIdentifier().id())))
 //                                .isFalse(),
 //                        () -> assertThat(cache.asMap().isEmpty()).isTrue()
 //                ));
         await().atMost(30, TimeUnit.SECONDS)
                 .untilAsserted(() -> assertThat(Files.exists(CachedFileRepository.DIRECTORY.resolve(
-                        fileInfo.fileIdentifier().id() + "." + fileInfo.contentType().extension())))
+                        givenEncryptedFileInfo.fileIdentifier().id() + "." + givenEncryptedFileInfo.contentType().extension())))
                         .isFalse());
         assertThat(cache.asMap().isEmpty()).isTrue();
     }
@@ -319,15 +310,15 @@ class CachedFileRepositoryTest {
     @Order(9)
     void shouldReloadCacheWhenFileReferencedInCacheDoesNotExistsAnymore() throws FileRepositoryException, IOException {
         // Given
-        final FileInfo fileInfo = fileInfo();
-        final FileContent fileContentByFileIdentifier = fileRepository.getFileContentByFileIdentifier(fileInfo.fileIdentifier());
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
+        final FileContent fileContentByFileIdentifier = fileRepository.getFileContentByFileIdentifier(givenEncryptedFileInfo.fileIdentifier());
         final Path cachedFile = CachedFileRepository.DIRECTORY.resolve(
                 fileContentByFileIdentifier.id().id() + "." + fileContentByFileIdentifier.contentType().extension());
         Validate.validState(Files.exists(cachedFile));
         Files.delete(cachedFile);
 
         // When
-        fileRepository.getFileContentByFileIdentifier(fileInfo.fileIdentifier());
+        fileRepository.getFileContentByFileIdentifier(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         final byte[] actualContent;
@@ -336,7 +327,7 @@ class CachedFileRepositoryTest {
         }
         assertAll(
                 () -> assertThat(cache.asMap().keySet()).containsExactly(new FileIdentifier("file-123")),
-                () -> assertThat(fileContentByFileIdentifier.id()).isEqualTo(fileInfo.fileIdentifier()),
+                () -> assertThat(fileContentByFileIdentifier.id()).isEqualTo(givenEncryptedFileInfo.fileIdentifier()),
                 () -> assertThat(actualContent).containsExactly("Encrypted !!!".getBytes(StandardCharsets.UTF_8)),
                 () -> assertThat(fileRepositoryTestSpy.getCalled()).containsExactly("getFileInfoByFileIdentifier|file-123",
                         "getFileContentByFileIdentifier|file-123",

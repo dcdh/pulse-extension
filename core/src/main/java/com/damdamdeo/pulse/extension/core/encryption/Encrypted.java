@@ -4,6 +4,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Objects;
 
 public interface Encrypted<T> {
@@ -20,6 +21,22 @@ public interface Encrypted<T> {
 
         public Long size() {
             return (long) payload.length;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ByteArrayEncrypted that)) {
+                return false;
+            }
+            return Arrays.equals(payload, that.payload);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(payload);
         }
     }
 

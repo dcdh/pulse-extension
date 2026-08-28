@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.Filename;
-import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
+import com.damdamdeo.pulse.extension.core.query.file.CustomMetadata;
 import com.damdamdeo.pulse.extension.core.query.file.query.InputFile;
 import com.damdamdeo.pulse.extension.core.query.file.query.UploadQuery;
 import io.quarkus.builder.Version;
@@ -214,8 +214,7 @@ public class FileQueryEndpointTest {
                 .body("size()", is(1))
                 .body("[0].token", is(token.token()))
                 .body("[0].fileIdentifier", is(GIVEN_FILE_IDENTIFIER.id()))
-                .body("[0].downloadedBy", startsWith("EU:"))
-                .body("[0].downloadedBy", is(token.downloadedBy()))
+                .body("[0].downloadedBy", is("EU:bob@mail.com"))
                 .body("[0].downloadedAt", is(OffsetDateTime.parse(token.downloadedAt(), POSTGRES_DATE_TIME)
                         .toInstant().toString()
                 ));

@@ -2,9 +2,8 @@ package com.damdamdeo.pulse.extension.query.deployment.file;
 
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.query.file.*;
-import com.damdamdeo.pulse.extension.core.query.file.query.CustomMetadata;
 import com.damdamdeo.pulse.extension.query.runtime.file.CachedFileRepository;
 import com.damdamdeo.pulse.extension.query.runtime.file.JdbcPostgresFileRepository;
 import io.quarkus.test.QuarkusUnitTest;
@@ -24,8 +23,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -33,8 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcPostgresFileRepositoryTest {
-
-    public static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -49,23 +44,18 @@ class JdbcPostgresFileRepositoryTest {
     @Inject
     JdbcPostgresFileRepository jdbcPostgresFileRepository;
 
-    private FileInfo fileInfo() {
+    private EncryptedFileInfo encryptedFileInfo() {
         final FileIdentifier identifier = new FileIdentifier("file-123");
-        return new FileInfo(
+        return new EncryptedFileInfo(
                 identifier,
                 new Filename("facture.jpg"),
                 ContentType.IMAGE_JPG,
                 new ContentLength(287759L),
                 new UploadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5), LocalTime.of(23, 0, 31), ZoneOffset.UTC)),
-                new UploadedBy(BOB),
+                new EncryptedUploadedBy(new ExecutedByEncoded("NA"), OwnedBy.from(identifier)),
                 OwnedBy.from(identifier),
-                new FileMetadata(
-                        Map.of(
-                                "author", List.of("BOB"),
-                                "tag", List.of("invoice")
-                        )
-                ),
-                new CustomMetadata(Map.of("key", "value"))
+                new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), OwnedBy.from(identifier)),
+                new EncryptedCustomMetadata(Encrypted.of("encryptedCustomMetadata".getBytes()), OwnedBy.from(identifier))
         );
     }
 
@@ -73,33 +63,33 @@ class JdbcPostgresFileRepositoryTest {
     @Order(1)
     void shouldStoreAndCheckExists() throws Exception {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
         final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
 
         // When
-        jdbcPostgresFileRepository.store(fileInfo, Encrypted.of(resource.payload(), resource.size()));
+        jdbcPostgresFileRepository.store(givenEncryptedFileInfo, Encrypted.of(resource.payload(), resource.size()));
 
         // Then
-        assertThat(jdbcPostgresFileRepository.exists(fileInfo.fileIdentifier())).isTrue();
+        assertThat(jdbcPostgresFileRepository.exists(givenEncryptedFileInfo.fileIdentifier())).isTrue();
     }
 
     @Test
     @Order(2)
     void shouldRetrieveFileInfo() throws Exception {
         // Given
-        final FileInfo given = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When
-        final FileInfo result = jdbcPostgresFileRepository.getFileInfoByFileIdentifier(given.fileIdentifier());
+        final EncryptedFileInfo result = jdbcPostgresFileRepository.getFileInfoByFileIdentifier(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         assertAll(
-                () -> assertThat(result.fileIdentifier()).isEqualTo(given.fileIdentifier()),
+                () -> assertThat(result.fileIdentifier()).isEqualTo(givenEncryptedFileInfo.fileIdentifier()),
                 () -> assertThat(result.filename().filename()).isEqualTo("facture.jpg"),
                 () -> assertThat(result.contentType()).isEqualTo(ContentType.IMAGE_JPG),
                 () -> assertThat(result.ownedBy()).isEqualTo(new OwnedBy("file-123")),
-                () -> assertThat(result.fileMetadata().metadata().get("author")).containsExactly("BOB"),
-                () -> assertThat(result.customMetadata().metadata()).isEqualTo(Map.of("key", "value"))
+                () -> assertThat(result.encryptedFileMetadata().encrypted().payload()).containsExactly("encryptedFileMetadata".getBytes()),
+                () -> assertThat(result.encryptedCustomMetadata().encrypted().payload()).containsExactly("encryptedCustomMetadata".getBytes())
         );
     }
 
@@ -107,7 +97,7 @@ class JdbcPostgresFileRepositoryTest {
     @Order(3)
     void shouldRetrieveFileContentAsStream() throws Exception {
         // Given
-        final FileInfo given = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
         final byte[] expected;
         try (final InputStream content = getClass().getResourceAsStream("/facture.jpg")) {
             assert content != null;
@@ -115,7 +105,7 @@ class JdbcPostgresFileRepositoryTest {
         }
 
         // When
-        final FileContent result = jdbcPostgresFileRepository.getFileContentByFileIdentifier(given.fileIdentifier());
+        final FileContent result = jdbcPostgresFileRepository.getFileContentByFileIdentifier(givenEncryptedFileInfo.fileIdentifier());
 
         // Then
         final byte[] received;
@@ -138,13 +128,13 @@ class JdbcPostgresFileRepositoryTest {
 
     @Test
     @Order(5)
-    void shouldNotInsertSameFileTwice() throws Exception {
+    void shouldNotInsertSameFileTwice() {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
         final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
 
         // When && Then
-        assertThatThrownBy(() -> jdbcPostgresFileRepository.store(fileInfo, Encrypted.of(resource.payload(), resource.size())))
+        assertThatThrownBy(() -> jdbcPostgresFileRepository.store(givenEncryptedFileInfo, Encrypted.of(resource.payload(), resource.size())))
                 .isExactlyInstanceOf(FileRepositoryException.class)
                 .cause()
                 .isExactlyInstanceOf(FileAlreadyUploadedException.class);
@@ -154,7 +144,7 @@ class JdbcPostgresFileRepositoryTest {
     @Order(6)
     void shouldPreventDeleteFile() {
         // Given
-        final FileInfo fileInfo = fileInfo();
+        final EncryptedFileInfo givenEncryptedFileInfo = encryptedFileInfo();
 
         // When && Then
         assertThatThrownBy(() -> {
@@ -165,7 +155,7 @@ class JdbcPostgresFileRepositoryTest {
                                          DELETE FROM pulse.file
                                          WHERE file_identifier = ?
                                          """)) {
-                statement.setString(1, fileInfo.fileIdentifier().id());
+                statement.setString(1, givenEncryptedFileInfo.fileIdentifier().id());
                 statement.executeUpdate();
             }
         }).isExactlyInstanceOf(PSQLException.class)

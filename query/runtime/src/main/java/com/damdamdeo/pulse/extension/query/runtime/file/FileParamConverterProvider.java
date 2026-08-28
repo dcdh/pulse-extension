@@ -27,7 +27,7 @@ public class FileParamConverterProvider implements ParamConverterProvider {
             Filename.class, Filename::new,
             UploadedAt.class, value -> new UploadedAt(ZonedDateTime.parse(value)), // TODO exception not a parseable ZonedDateTime
             Token.class, value -> new Token(UUID.fromString(value)), // TODO exception not an UUID
-            DownloadedBy.class, DownloadedBy::new,
+            // DownloadedBy.class, value -> new DownloadedBy(), TODO if needed - need processing
             DownloadedAt.class, value -> new DownloadedAt(ZonedDateTime.parse(value)) // TODO exception not a parseable ZonedDateTime
     );
 
@@ -39,7 +39,7 @@ public class FileParamConverterProvider implements ParamConverterProvider {
             UploadedAt.class, value -> ((UploadedAt) value).at().toString(),
             UploadedBy.class, value -> ((UploadedBy) value).executedBy().value(),
             Token.class, value -> ((Token) value).value().toString(),
-            DownloadedBy.class, value -> ((DownloadedBy) value).by(),
+            DownloadedBy.class, value -> ((DownloadedBy) value).executedBy().value(),
             DownloadedAt.class, value -> ((DownloadedAt) value).at().toString()
     );
 

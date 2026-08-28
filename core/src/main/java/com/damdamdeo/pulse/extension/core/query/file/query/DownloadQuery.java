@@ -5,10 +5,13 @@ import com.damdamdeo.pulse.extension.core.encryption.Decrypted;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.file.EncryptedFileInfo;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
-import com.damdamdeo.pulse.extension.core.query.file.FileInfo;
 import com.damdamdeo.pulse.extension.core.query.file.FileRepository;
 import com.damdamdeo.pulse.extension.core.query.file.FileRepositoryException;
 import com.damdamdeo.pulse.extension.core.query.file.filigrane.FiligraneApplier;
@@ -28,6 +31,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
     private final DecryptionService decryptionService;
     private final FiligraneApplier filigraneApplier;
     private final TokenApplier tokenApplier;
+    private final ExecutedByFactory executedByFactory;
 
     public DownloadQuery(final FileRepository fileRepository,
                          final ExecutionContextProvider executionContextProvider,
@@ -35,7 +39,8 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
                          final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider,
                          final DecryptionService decryptionService,
                          final FiligraneApplier filigraneApplier,
-                         final TokenApplier tokenApplier) {
+                         final TokenApplier tokenApplier,
+                         final ExecutedByFactory executedByFactory) {
         this.fileRepository = Objects.requireNonNull(fileRepository);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.executedByResolver = Objects.requireNonNull(executedByResolver);
@@ -43,6 +48,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
         this.decryptionService = Objects.requireNonNull(decryptionService);
         this.filigraneApplier = Objects.requireNonNull(filigraneApplier);
         this.tokenApplier = Objects.requireNonNull(tokenApplier);
+        this.executedByFactory = Objects.requireNonNull(executedByFactory);
     }
 
     @Override
@@ -51,15 +57,16 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
         try {
             final ExecutionContext provided = executionContextProvider.provide();
             final List<String> visibilityRoles = backendUserVisibilityRolesProvider.provide();
-            final FileInfo fileInfo = fileRepository.getFileInfoByFileIdentifier(downloadInput.fileIdentifier());
-            final boolean uploader = fileInfo.uploadedBy().executedBy().equals(provided.executedBy());
+            final EncryptedFileInfo encryptedFileInfo = fileRepository.getFileInfoByFileIdentifier(downloadInput.fileIdentifier());
+            final ExecutedBy executedByFromUploader = executedByFactory.from(encryptedFileInfo.encryptedUploadedBy().executedByEncoded().encoded(), encryptedFileInfo.encryptedUploadedBy().ownedBy());
+            final boolean uploader = executedByFromUploader.equals(provided.executedBy());
             if (!uploader
                     && !provided.hasAnyRole(visibilityRoles)
-                    && executedByResolver.resolve(fileInfo.ownedBy()).stream().noneMatch(executedByEligible -> provided.executedBy().equals(executedByEligible))) {
+                    && executedByResolver.resolve(encryptedFileInfo.ownedBy()).stream().noneMatch(executedByEligible -> provided.executedBy().equals(executedByEligible))) {
                 throw new QueryException(new UnauthorizedException());
             }
             final FileContent fileContent = fileRepository.getFileContentByFileIdentifier(downloadInput.fileIdentifier());
-            final Decrypted<FileContent> decryptedFileContent = decryptionService.decrypt(Encrypted.of(fileContent.content(), fileContent.contentLength().contentLength()), fileInfo.ownedBy(),
+            final Decrypted<FileContent> decryptedFileContent = decryptionService.decrypt(Encrypted.of(fileContent.content(), fileContent.contentLength().contentLength()), encryptedFileInfo.ownedBy(),
                     decrypted -> new Decrypted<>(
                             new FileContent(
                                     fileContent.id(),
@@ -69,12 +76,12 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
                     ));
             if (provided.hasAnyRole(visibilityRoles)) {
                 final FileContent filigranedFileContent = filigraneApplier.apply(decryptedFileContent.payload());
-                return tokenApplier.apply(filigranedFileContent, fileInfo.ownedBy());
+                return tokenApplier.apply(filigranedFileContent, encryptedFileInfo.ownedBy());
             } else {
-                return tokenApplier.apply(decryptedFileContent.payload(), fileInfo.ownedBy());
+                return tokenApplier.apply(decryptedFileContent.payload(), encryptedFileInfo.ownedBy());
             }
-        } catch (final FileRepositoryException | UnableToResolveException | DecryptionException
-                       | TokenApplierException | UnableToApplyFiligraneException exception) {
+        } catch (final FileRepositoryException | UnableToDecodeException | UnableToResolveException
+                       | DecryptionException | TokenApplierException | UnableToApplyFiligraneException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }
