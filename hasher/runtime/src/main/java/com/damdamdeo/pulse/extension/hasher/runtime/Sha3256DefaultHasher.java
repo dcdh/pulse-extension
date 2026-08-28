@@ -15,6 +15,12 @@ import java.util.Objects;
 @DefaultBean
 public class Sha3256DefaultHasher implements Hasher {
 
+    private final HasherConfig hasherConfig;
+
+    public Sha3256DefaultHasher(final HasherConfig hasherConfig) {
+        this.hasherConfig = Objects.requireNonNull(hasherConfig);
+    }
+
     @Override
     public <T extends Identifiable> Hash<T> hash(final T identifiable) {
         Objects.requireNonNull(identifiable);
@@ -24,6 +30,11 @@ public class Sha3256DefaultHasher implements Hasher {
     @Override
     public String hash(final String value) {
         Objects.requireNonNull(value);
+        return hasherConfig.pepper().map(pepper -> execute(value + ":" + pepper))
+                .orElseGet(() -> execute(value));
+    }
+
+    private String execute(final String value) {
         return new DigestUtils("SHA3-256").digestAsHex(value);
     }
 }

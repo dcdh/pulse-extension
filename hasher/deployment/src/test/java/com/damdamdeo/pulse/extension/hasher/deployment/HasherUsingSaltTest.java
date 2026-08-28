@@ -14,11 +14,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class HasherTest {
+class HasherUsingSaltTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
+            .overrideRuntimeConfigKey("pulse.hasher.pepper", "customPepper")
             .overrideConfigKey("quarkus.devservices.enabled", "false");
 
     @Inject
@@ -35,7 +36,7 @@ class HasherTest {
         // Then
         assertAll(
                 () -> assertThat(hasher.getClass().getName()).isEqualTo("com.damdamdeo.pulse.extension.hasher.runtime.Sha3256DefaultHasher_ClientProxy"),
-                () -> assertThat(hash).isEqualTo(given.expected())
+                () -> assertThat(hash).isEqualTo(given.expectedWithPepper())
         );
     }
 
@@ -50,6 +51,6 @@ class HasherTest {
             executed.add(hasher.hash(given));
         }
 
-        assertThat(executed).containsExactly(given.expected(), given.expected(), given.expected());
+        assertThat(executed).containsExactly(given.expectedWithPepper(), given.expectedWithPepper(), given.expectedWithPepper());
     }
 }
