@@ -6,7 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Objects;
 
-public sealed interface Encrypted<T> permits Encrypted.ByteArrayEncrypted, Encrypted.InputStreamEncrypted {
+public interface Encrypted<T> {
 
     T payload();
 
