@@ -37,12 +37,14 @@ public class UploadQueryTest {
     private final EncryptionService encryptionService = mock(EncryptionService.class);
     private final ImageMetadataExtractor imageMetadataExtractor = mock(ImageMetadataExtractor.class);
     private final UploadedAtProvider uploadedAtProvider = mock(UploadedAtProvider.class);
+    private final FileSizeLimitedCopier fileSizeLimitedCopier = spy(new FileSizeLimitedCopier());
 
     private UploadQuery query;
 
     @BeforeEach
     void setUp() {
-        query = new UploadQuery(fileRepository, executionContextProvider, encryptionService, imageMetadataExtractor, uploadedAtProvider);
+        query = new UploadQuery(fileRepository, executionContextProvider, encryptionService, imageMetadataExtractor, uploadedAtProvider,
+                fileSizeLimitedCopier);
     }
 
     @Test
@@ -84,7 +86,8 @@ public class UploadQueryTest {
                                 new CustomMetadata(Map.of("key", "value"))
                         ),
                         encrypted
-                )
+                ),
+                () -> verify(fileSizeLimitedCopier).copy(any(), any(), eq(ContentLength.MAX.contentLength()))
         );
     }
 

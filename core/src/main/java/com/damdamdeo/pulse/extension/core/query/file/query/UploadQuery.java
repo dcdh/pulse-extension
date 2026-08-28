@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
 // This must be call internally in reaction of an event representing a file.
@@ -31,17 +30,20 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
     private final EncryptionService encryptionService;
     private final ImageMetadataExtractor imageMetadataExtractor;
     private final UploadedAtProvider uploadedAtProvider;
+    private final FileSizeLimitedCopier fileSizeLimitedCopier;
 
     public UploadQuery(final FileRepository fileRepository,
                        final ExecutionContextProvider executionContextProvider,
                        final EncryptionService encryptionService,
                        final ImageMetadataExtractor imageMetadataExtractor,
-                       final UploadedAtProvider uploadedAtProvider) {
+                       final UploadedAtProvider uploadedAtProvider,
+                       final FileSizeLimitedCopier fileSizeLimitedCopier) {
         this.fileRepository = Objects.requireNonNull(fileRepository);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.encryptionService = Objects.requireNonNull(encryptionService);
         this.imageMetadataExtractor = Objects.requireNonNull(imageMetadataExtractor);
         this.uploadedAtProvider = Objects.requireNonNull(uploadedAtProvider);
+        this.fileSizeLimitedCopier = Objects.requireNonNull(fileSizeLimitedCopier);
     }
 
     @Override
@@ -53,9 +55,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
                 throw new FileAlreadyUploadedException();
             }
             final Path temp = Files.createTempFile("upload-", ".tmp");
-            try (final InputStream in = inputFile.content()) {
-                Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
-            }
+            fileSizeLimitedCopier.copy(inputFile.content(), temp, ContentLength.MAX.contentLength());
             if (!inputFile.contentLength().contentLength().equals(Files.size(temp))) {
                 LOGGER.warn("Tmp file size does not match uploaded file size, tmp file size will be used.");
             }
@@ -90,7 +90,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
         } catch (final MaxFileSizeReachedException exception) {
             throw new QueryException(exception, QueryExceptionCode.FAIL_FAST_CONDITION_NOT_MET);
         } catch (final FileRepositoryException | EncryptionException | ImageMetadataExtractorException |
-                       IOException exception) {
+                       UnableToCopyException | IOException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }

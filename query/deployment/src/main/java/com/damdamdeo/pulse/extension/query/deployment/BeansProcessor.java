@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.query.GenericQuery;
 import com.damdamdeo.pulse.extension.core.query.file.DefaultUploadedAtProvider;
+import com.damdamdeo.pulse.extension.core.query.file.FileSizeLimitedCopier;
 import com.damdamdeo.pulse.extension.core.query.file.query.DownloadQuery;
 import com.damdamdeo.pulse.extension.core.query.file.query.GetFileInfoQuery;
 import com.damdamdeo.pulse.extension.core.query.file.query.GetTraceByFileIdentifierQuery;
@@ -136,6 +137,14 @@ public class BeansProcessor {
     @BuildStep
     AdditionalBeanBuildItem registerUploadQuery() {
         return AdditionalBeanBuildItem.builder().addBeanClasses(UploadQuery.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerFileSizeLimitedCopier() {
+        return AdditionalBeanBuildItem.builder().addBeanClasses(FileSizeLimitedCopier.class)
                 .setUnremovable()
                 .setDefaultScope(DotNames.APPLICATION_SCOPED)
                 .build();
