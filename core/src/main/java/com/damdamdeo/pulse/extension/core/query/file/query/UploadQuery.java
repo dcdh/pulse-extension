@@ -10,7 +10,8 @@ import com.damdamdeo.pulse.extension.core.query.GenericQuery;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.query.file.*;
-import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +23,8 @@ import java.util.Objects;
 // This must be call internally in reaction of an event representing a file.
 // The content and other information must be passed in Command.
 public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier> {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(UploadQuery.class);
 
     private final FileRepository fileRepository;
     private final ExecutionContextProvider executionContextProvider;
@@ -53,7 +56,10 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
             try (final InputStream in = inputFile.content()) {
                 Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
             }
-            Validate.isTrue(inputFile.contentLength().contentLength().equals(Files.size(temp)));
+            if (!inputFile.contentLength().contentLength().equals(Files.size(temp))) {
+                LOGGER.warn("Tmp file size does not match uploaded file size, tmp file size will be used.");
+            }
+            final ContentLength contentLength = new ContentLength(Files.size(temp));
             try (final InputStream metadata = Files.newInputStream(temp);
                  final InputStream encryption = Files.newInputStream(temp)) {
                 final FileMetadata extracted = imageMetadataExtractor.extract(
@@ -68,7 +74,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
                                 inputFile.fileIdentifier(),
                                 inputFile.filename(),
                                 inputFile.contentType(),
-                                inputFile.contentLength(),
+                                contentLength,
                                 uploadedAt,
                                 new UploadedBy(executedBy),
                                 ownedBy,
