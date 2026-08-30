@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import java.util.Objects;
 
 public sealed interface ExecutedBy
-        permits ExecutedBy.Anonymous, ExecutedBy.EndUser, ExecutedBy.ServiceAccount, ExecutedBy.NotAvailable {
+        permits ExecutedBy.Anonymous, ExecutedBy.EndUser, ExecutedBy.ServiceAccount, ExecutedBy.NotAvailable, ExecutedBy.Banned {
 
     String SEPARATOR = ":";
 
@@ -130,6 +130,33 @@ public sealed interface ExecutedBy
         @Override
         public Username username() {
             throw new UnsupportedOperationException("Not available does not have a username");
+        }
+    }
+
+    final class Banned implements ExecutedBy {
+
+        public static final String DISCRIMINANT = "BANNED";
+
+        public static final Banned INSTANCE = new Banned();
+
+        @Override
+        public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+            throw new UnsupportedOperationException("Banned does not have an encoded value");
+        }
+
+        @Override
+        public ExecutedByHashed hash(final UsernameHasher usernameHasher) {
+            throw new UnsupportedOperationException("Banned does not have a hash");
+        }
+
+        @Override
+        public String value() {
+            return DISCRIMINANT;
+        }
+
+        @Override
+        public Username username() {
+            throw new UnsupportedOperationException("Banned does not have a username");
         }
     }
 }

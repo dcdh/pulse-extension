@@ -6,9 +6,8 @@ import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.EncryptedFileInfo;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
@@ -80,7 +79,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
             } else {
                 return tokenApplier.apply(decryptedFileContent.payload(), encryptedFileInfo.ownedBy());
             }
-        } catch (final FileRepositoryException | UnableToDecodeException | UnableToResolveException
+        } catch (final FileRepositoryException | UnableToResolveException
                        | DecryptionException | TokenApplierException | UnableToApplyFiligraneException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }

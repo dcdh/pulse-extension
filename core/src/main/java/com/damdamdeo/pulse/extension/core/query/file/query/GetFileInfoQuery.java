@@ -1,9 +1,8 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 
@@ -55,7 +54,7 @@ public final class GetFileInfoQuery implements GenericQuery<FileIdentifier, File
                     fileMetadataEncryption.decrypt(encryptedFileInfo.encryptedFileMetadata()),
                     customMetadataEncryption.decrypt(encryptedFileInfo.encryptedCustomMetadata())
             );
-        } catch (final FileRepositoryException | UnableToDecodeException | MetadataEncryptionException exception) {
+        } catch (final FileRepositoryException | MetadataEncryptionException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }

@@ -4,9 +4,8 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
-import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import io.quarkus.arc.DefaultBean;
@@ -50,7 +49,7 @@ public final class JdbcPostgresExecutedByResolver implements ExecutedByResolver 
                 }
             }
             return setOfExecutedBy;
-        } catch (final UnableToDecodeException | SQLException exception) {
+        } catch (final SQLException exception) {
             throw new UnableToResolveException(exception);
         }
     }
@@ -69,7 +68,7 @@ public final class JdbcPostgresExecutedByResolver implements ExecutedByResolver 
                 }
             }
             return setOfExecutedBy;
-        } catch (final UnableToDecodeException | SQLException exception) {
+        } catch (final SQLException exception) {
             throw new UnableToResolveException(exception);
         }
     }

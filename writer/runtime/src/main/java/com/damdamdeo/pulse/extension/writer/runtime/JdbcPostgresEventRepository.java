@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import org.apache.commons.lang3.Validate;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -54,6 +55,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
         Objects.requireNonNull(versionizedEvents);
         Objects.requireNonNull(aggregateRoot);
         Objects.requireNonNull(executedBy);
+        Validate.validState(!executedBy.value().equals(ExecutedBy.Banned.DISCRIMINANT));
         if (versionizedEvents.isEmpty()) {
             return;
         }
@@ -107,8 +109,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             aggregatePreparedStatement.setString(7, aggregateRoot.belongsTo().id());
             aggregatePreparedStatement.executeUpdate();
         } catch (final JsonProcessingException | SQLException | UnableToProvidePassphraseException |
-                       UnableToEncodeException e) {
-            throw new EventStoreException(e);
+                       UnableToEncodeException exception) {
+            throw new EventStoreException(exception);
         }
     }
 
@@ -146,13 +148,13 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                         eventClazzDiscovery.from(resultSet.getString("event_type")));
                         events.add(new ExecutedByEvent<>(event, executedBy));
                     }
-                } catch (ClassNotFoundException | IOException | UnableToDecodeException | DecryptionException e) {
-                    throw new EventStoreException(e);
+                } catch (final ClassNotFoundException | IOException | DecryptionException exception) {
+                    throw new EventStoreException(exception);
                 }
                 return events;
             }
-        } catch (final SQLException e) {
-            throw new EventStoreException(e);
+        } catch (final SQLException exception) {
+            throw new EventStoreException(exception);
         }
     }
 
@@ -182,12 +184,12 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                                     eventClazzDiscovery.from(resultSet.getString("event_type")));
                     events.add(new ExecutedByEvent<>(event, executedBy));
                 }
-            } catch (ClassNotFoundException | IOException | UnableToDecodeException | DecryptionException e) {
-                throw new EventStoreException(e);
+            } catch (ClassNotFoundException | IOException | DecryptionException exception) {
+                throw new EventStoreException(exception);
             }
             return events;
-        } catch (final SQLException e) {
-            throw new EventStoreException(e);
+        } catch (final SQLException exception) {
+            throw new EventStoreException(exception);
         }
     }
 
@@ -215,11 +217,11 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 } else {
                     return Optional.empty();
                 }
-            } catch (IOException | DecryptionException e) {
-                throw new EventStoreException(e);
+            } catch (IOException | DecryptionException exception) {
+                throw new EventStoreException(exception);
             }
-        } catch (final SQLException e) {
-            throw new EventStoreException(e);
+        } catch (final SQLException exception) {
+            throw new EventStoreException(exception);
         }
     }
 
@@ -242,8 +244,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                     return Optional.empty();
                 }
             }
-        } catch (final SQLException e) {
-            throw new EventStoreException(e);
+        } catch (final SQLException exception) {
+            throw new EventStoreException(exception);
         }
     }
 
@@ -276,8 +278,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 }
             }
             return eventsMetadata;
-        } catch (final SQLException | UnableToDecodeException e) {
-            throw new EventStoreException(e);
+        } catch (final SQLException exception) {
+            throw new EventStoreException(exception);
         }
     }
 
@@ -318,8 +320,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                     }
                 }
                 return eventsMetadata;
-            } catch (final SQLException | UnableToDecodeException e) {
-                throw new EventStoreException(e);
+            } catch (final SQLException exception) {
+                throw new EventStoreException(exception);
             }
         }
     }
@@ -342,8 +344,8 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 }
                 return false;
             }
-        } catch (final SQLException e) {
-            throw new EventStoreException(e);
+        } catch (final SQLException exception) {
+            throw new EventStoreException(exception);
         }
     }
 

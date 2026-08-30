@@ -10,7 +10,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,15 +41,17 @@ public class ExecutedByEncodedTest {
         Mockito.doThrow(new UnableToDecodeException(new RuntimeException())).when(usernameDecoder)
                 .decode(new UsernameEncoded("encodedalice"), Todo.OWNED_BY_USER_1);
 
-        // When / Then
-        assertThatThrownBy(() -> executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1))
-                .isExactlyInstanceOf(UnableToDecodeException.class)
-                .cause()
-                .isExactlyInstanceOf(RuntimeException.class);
+        // When
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+
+        // Then
+        assertAll(
+                () -> assertThat(executedBy).isInstanceOf(ExecutedBy.Banned.class),
+                () -> assertThat(executedBy.value()).isEqualTo("BANNED"));
     }
 
     @Test
-    void decodeServiceAccount() throws UnableToDecodeException {
+    void decodeServiceAccount() {
         // Given
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("SA:cron-job");
 
@@ -65,7 +66,7 @@ public class ExecutedByEncodedTest {
     }
 
     @Test
-    void decodeAnonymous() throws UnableToDecodeException {
+    void decodeAnonymous() {
         // Given
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("A");
 
@@ -79,7 +80,7 @@ public class ExecutedByEncodedTest {
     }
 
     @Test
-    void decodeNotAvailable() throws UnableToDecodeException {
+    void decodeNotAvailable() {
         // Given
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("NA");
 
@@ -92,4 +93,17 @@ public class ExecutedByEncodedTest {
                 () -> assertThat(executedBy.value()).isEqualTo("NA"));
     }
 
+    @Test
+    void decodeBanned() {
+        // Given
+        final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("BANNED");
+
+        // When
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+
+        // Then
+        assertAll(
+                () -> assertThat(executedBy).isSameAs(ExecutedBy.Banned.INSTANCE),
+                () -> assertThat(executedBy.value()).isEqualTo("BANNED"));
+    }
 }

@@ -1,9 +1,8 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.*;
@@ -50,7 +49,7 @@ public final class GetTraceByFileIdentifierQuery implements GenericQuery<FileIde
                 ));
             }
             return traceabilityData;
-        } catch (final UnableToDecodeException | TokenRepositoryException exception) {
+        } catch (final TokenRepositoryException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }

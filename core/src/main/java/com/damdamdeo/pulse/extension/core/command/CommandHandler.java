@@ -2,8 +2,10 @@ package com.damdamdeo.pulse.extension.core.command;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import org.apache.commons.lang3.Validate;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +41,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateExceptionSupplier);
         final ExecutionContext executionContext = executionContextProvider.provide();
+        Validate.validState(!executionContext.executedBy().value().equals(ExecutedBy.Banned.DISCRIMINANT));
         return commandHandlerRegistry.execute(id, () -> {
             if (eventRepository.hasEventsFor(id)) {
                 throw new BusinessException(duplicateAggregateExceptionSupplier.apply(id));
@@ -62,6 +65,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateExceptionSupplier);
         final ExecutionContext executionContext = executionContextProvider.provide();
+        Validate.validState(!executionContext.executedBy().value().equals(ExecutedBy.Banned.DISCRIMINANT));
         return transaction.joiningExisting(() -> {
             try {
                 final K id;
@@ -103,6 +107,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                       final Supplier<MissingAggregateException> missingAggregateExceptionSupplier) throws BusinessException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
+        Validate.validState(!executionContext.executedBy().value().equals(ExecutedBy.Banned.DISCRIMINANT));
         return commandHandlerRegistry.execute(command.id(), () -> transaction.joiningExisting(() -> {
             final List<ExecutedByEvent<K>> events = eventRepository.loadOrderByVersionASC(command.id());
             if (events.isEmpty() && missingAggregateExceptionSupplier != null) {
