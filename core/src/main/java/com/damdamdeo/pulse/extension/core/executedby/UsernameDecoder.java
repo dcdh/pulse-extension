@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
+// TODO use a cache mechanism - complexe must handle banned key
 @FunctionalInterface
 public interface UsernameDecoder {
 

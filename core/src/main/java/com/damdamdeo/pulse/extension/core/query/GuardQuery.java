@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class GuardQuery<I extends Input, P extends Projection> implements Query<I, P> {
-
+//FCK je dois injecter le tracer !
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;
     private final ExecutedByResolver executedByResolver;

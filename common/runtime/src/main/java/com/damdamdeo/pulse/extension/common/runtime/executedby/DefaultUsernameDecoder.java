@@ -17,6 +17,7 @@ import org.bouncycastle.util.encoders.Base64;
 
 import java.util.Objects;
 
+// TODO move in core
 @ApplicationScoped
 @Unremovable
 @DefaultBean
