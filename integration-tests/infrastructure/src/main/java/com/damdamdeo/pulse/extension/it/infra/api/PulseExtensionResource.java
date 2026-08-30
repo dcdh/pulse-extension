@@ -17,12 +17,12 @@
 package com.damdamdeo.pulse.extension.it.infra.api;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
-import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProviderException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserUseCase;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
@@ -190,7 +190,7 @@ public class PulseExtensionResource {
                     databaseConnectionIdentifiers,
                     aggregateRoots,
                     events, vaultKeys)).build();
-        } catch (final BusinessException exception) {
+        } catch (final UseCaseException exception) {
             return Response.serverError().entity(exception.getMessage()).build();
         }
     }

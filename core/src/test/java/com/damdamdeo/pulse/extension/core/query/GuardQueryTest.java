@@ -4,6 +4,8 @@ import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.traceability.From;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,15 +38,15 @@ class GuardQueryTest {
     @Mock
     Query<SampleInput, TestProjection> decorated;
 
+    @Mock
+    TraceAppender traceAppender;
+
     GuardQuery<SampleInput, TestProjection> guardQuery;
 
     @BeforeEach
     void setUp() {
-        guardQuery = new GuardQuery<>(
-                executionContextProvider,
-                backendUserVisibilityRolesProvider,
-                executedByResolver,
-                decorated) {
+        guardQuery = new GuardQuery<>(executionContextProvider, backendUserVisibilityRolesProvider, executedByResolver,
+                decorated, traceAppender) {
         };
     }
 
@@ -63,11 +65,9 @@ class GuardQueryTest {
         assertAll(
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(new SampleInput()),
-                () -> verifyNoInteractions(
-                        executionContextProvider,
-                        backendUserVisibilityRolesProvider,
-                        executedByResolver
-                )
+                () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
+                        executedByResolver),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -90,7 +90,8 @@ class GuardQueryTest {
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(any()),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(backendUserVisibilityRolesProvider).provide()
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -109,7 +110,8 @@ class GuardQueryTest {
                         .isExactlyInstanceOf(QueryException.class)
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseExactlyInstanceOf(UnauthorizedException.class),
-                () -> verify(decorated, never()).execute(any())
+                () -> verify(decorated, never()).execute(any()),
+                () -> verify(traceAppender, never()).append(any(), any())
         );
     }
 
@@ -132,7 +134,8 @@ class GuardQueryTest {
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(any()),
                 () -> verify(executedByResolver).resolve(anySet()),
-                () -> verify(executionContextProvider).provide()
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -154,7 +157,8 @@ class GuardQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(anySet())
+                () -> verify(executedByResolver).resolve(anySet()),
+                () -> verify(traceAppender, never()).append(any(), any())
         );
     }
 
@@ -162,12 +166,8 @@ class GuardQueryTest {
     void shouldReturnResultWhenFirstAudienceFailsAndSecondAudienceSucceeds() throws Exception {
         // Given
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-        final ExecutionContext context = new ExecutionContext(BOB, Set.of("ADMIN"));
 
         when(decorated.audiences()).thenReturn(List.of(Audience.ROLE_RESTRICTED, Audience.EVERYONE));
-
-        when(executionContextProvider.provide()).thenReturn(context);
-        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("SUPER_ADMIN"));
         when(decorated.execute(new SampleInput())).thenReturn(expected);
 
         // When
@@ -176,7 +176,8 @@ class GuardQueryTest {
         // Then
         assertAll(
                 () -> Assertions.assertSame(expected, actual),
-                () -> verify(decorated, times(1)).execute(any())
+                () -> verify(decorated, times(1)).execute(any()),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -201,7 +202,8 @@ class GuardQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(anySet())
+                () -> verify(executedByResolver).resolve(anySet()),
+                () -> verify(traceAppender, never()).append(any(), any())
         );
     }
 }

@@ -63,6 +63,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.damdamdeo.pulse</groupId>
+            <artifactId>quarkus-pulse-traceability-extension-deployment</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>

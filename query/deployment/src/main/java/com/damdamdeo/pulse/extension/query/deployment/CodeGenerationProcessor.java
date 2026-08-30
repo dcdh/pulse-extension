@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.query.runtime.JdbcProjectionFromEventStore;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -110,7 +111,8 @@ public class CodeGenerationProcessor {
                             ));
 
                             try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
-                                    ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class, ExecutedByResolver.class, Query.class)) {
+                                    ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class, ExecutedByResolver.class,
+                                    Query.class, TraceAppender.class)) {
                                 constructor
                                         .setSignature(SignatureBuilder.forMethod()
                                                 .addParameterType(Type.classType(ExecutionContextProvider.class))
@@ -120,17 +122,21 @@ public class CodeGenerationProcessor {
                                                         Type.classType(Query.class),
                                                         Type.classType(inputClass),
                                                         Type.classType(projectionClass)))
+                                                .addParameterType(Type.classType(TraceAppender.class))
                                                 .build());
                                 constructor.getParameterAnnotations(3).addAnnotation(Any.class);
                                 constructor.getParameterAnnotations(3).addAnnotation(Delegate.class);
                                 constructor.setModifiers(Modifier.PUBLIC);
                                 constructor.invokeSpecialMethod(
-                                        MethodDescriptor.ofConstructor(GuardQuery.class, ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class, ExecutedByResolver.class, Query.class),
+                                        MethodDescriptor.ofConstructor(GuardQuery.class,
+                                                ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class,
+                                                ExecutedByResolver.class, Query.class, TraceAppender.class),
                                         constructor.getThis(),
                                         constructor.getMethodParam(0),
                                         constructor.getMethodParam(1),
                                         constructor.getMethodParam(2),
-                                        constructor.getMethodParam(3)
+                                        constructor.getMethodParam(3),
+                                        constructor.getMethodParam(4)
                                 );
 
                                 constructor.returnValue(null);

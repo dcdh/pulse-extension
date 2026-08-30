@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.core.connecteduser.registration;
 
-import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.SequenceNumber;
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.UserId;
@@ -8,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ public class UserRegistrationDomainUseCase extends AbstractRegistrationDomainUse
     }
 
     @Override
-    protected void onUserNameRegistered(final User user, final RegisterUser registrationCommand) throws BusinessException {
+    protected void onUserNameRegistered(final User user, final RegisterUser registrationCommand) throws UseCaseException {
         Objects.requireNonNull(user);
         Objects.requireNonNull(registrationCommand);
     }

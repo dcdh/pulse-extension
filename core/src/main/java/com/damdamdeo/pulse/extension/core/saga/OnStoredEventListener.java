@@ -8,9 +8,9 @@ import java.util.Objects;
 
 public interface OnStoredEventListener<K extends AggregateId, E extends Event<K>> {
 
-    void on(K id, E event) throws BusinessException;
+    void on(K id, E event) throws OnStoredEventListenerException;
 
-    default void execute(K id, Event<K> event) throws BusinessException {
+    default void execute(K id, Event<K> event) throws OnStoredEventListenerException {
         Objects.requireNonNull(id);
         Objects.requireNonNull(event);
         if (eventType().isInstance(event)) {

@@ -1,8 +1,8 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.command.BusinessCallable;
+import com.damdamdeo.pulse.extension.core.command.CommandCallable;
+import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -21,31 +21,31 @@ class DefaultQuarkusTransactionTest extends AbstractWriterTest {
     DefaultQuarkusTransaction defaultQuarkusTransaction;
 
     @Test
-    void shouldRequiringNewThrowBusinessException() {
+    void shouldRequiringNewThrowCommandException() {
         // Given
-        BusinessCallable<AggregateRoot<?>> boom = () -> {
-            throw new BusinessException(
+        final CommandCallable<AggregateRoot<?>> boom = () -> {
+            throw new CommandException(
                     new IllegalStateException("BOOM"));
         };
 
         // When && Then
         assertThatThrownBy(() -> defaultQuarkusTransaction.requiringNew(boom))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(CommandException.class)
                 .hasRootCauseInstanceOf(IllegalStateException.class)
                 .hasRootCauseMessage("BOOM");
     }
 
     @Test
-    void shouldJoiningExistingThrowBusinessException() {
+    void shouldJoiningExistingThrowCommandException() {
         // Given
-        BusinessCallable<AggregateRoot<?>> boom = () -> {
-            throw new BusinessException(
+        CommandCallable<AggregateRoot<?>> boom = () -> {
+            throw new CommandException(
                     new IllegalStateException("BOOM"));
         };
 
         // When && Then
         assertThatThrownBy(() -> defaultQuarkusTransaction.joiningExisting(boom))
-                .isInstanceOf(BusinessException.class)
+                .isInstanceOf(CommandException.class)
                 .hasRootCauseInstanceOf(IllegalStateException.class)
                 .hasRootCauseMessage("BOOM");
     }

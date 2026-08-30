@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,9 @@ class TodoCommandHandlerTest {
     @Mock
     AggregateIdGenerator aggregateIdGenerator;
 
+    @Mock
+    TraceAppender traceAppender;
+
     List<OnStoredEventListener<TodoId, Event<TodoId>>> todoOnStoredEventListeners = new ArrayList<>();
 
     List<OnStoredEventListener<TodoChecklistId, Event<TodoChecklistId>>> todoChecklistOnStoredEventListeners = new ArrayList<>();
@@ -51,13 +55,13 @@ class TodoCommandHandlerTest {
     @BeforeEach
     void setUp() throws SequenceGenerationException {
         todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), todoEventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider, todoOnStoredEventListeners, aggregateIdGenerator);
+                notAvailableExecutedByProvider, todoOnStoredEventListeners, aggregateIdGenerator, traceAppender);
         todoChecklistCommandHandler = new TodoChecklistCommandHandler(new JvmCommandHandlerRegistry(), todoChecklistEventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider, todoChecklistOnStoredEventListeners, aggregateIdGenerator);
+                notAvailableExecutedByProvider, todoChecklistOnStoredEventListeners, aggregateIdGenerator, traceAppender);
     }
 
     @Test
-    void shouldCreateTodoUsingExecutedByProvider() throws BusinessException, SequenceGenerationException {
+    void shouldCreateTodoUsingExecutedByProvider() throws CommandException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
         doReturn(false).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
@@ -84,7 +88,7 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldCreateTodoChecklistUsingTodoOwning() throws SequenceGenerationException, BusinessException {
+    void shouldCreateTodoChecklistUsingTodoOwning() throws SequenceGenerationException, CommandException {
         // Given
         final Function<SequenceNumber, TodoChecklistId> creational = sequenceNumber -> new TodoChecklistId(TodoId.USER_1_TODO_1, sequenceNumber);
         final BelongsTo belongsTo = TodoChecklist.BELONGS_TO_USER_1_TODO_1;
@@ -112,7 +116,7 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldClassifieAsImportant() throws BusinessException, SequenceGenerationException {
+    void shouldClassifieAsImportant() throws CommandException, SequenceGenerationException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
         doReturn(false).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
@@ -142,7 +146,7 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldMarkTodoAsDone() throws BusinessException {
+    void shouldMarkTodoAsDone() throws CommandException {
         // Given
         final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
         doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
@@ -178,20 +182,23 @@ class TodoCommandHandlerTest {
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone))
-                .isInstanceOf(BusinessException.class)
-                .rootCause()
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("la todo U000001-T000001 doit être in progress");
+                .isExactlyInstanceOf(CommandException.class)
+                .cause()
+                .isExactlyInstanceOf(BusinessException.class)
+                .hasRootCauseInstanceOf(IllegalStateException.class)
+                .hasRootCauseMessage("la todo U000001-T000001 doit être in progress");
     }
 
     @Test
-    void shouldThrowBusinessException() {
+    void shouldThrowCommandException() {
         // Given
         final FailTodo failTodo = new FailTodo(TodoId.USER_1_TODO_1);
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(failTodo))
-                .isInstanceOf(BusinessException.class)
+                .isExactlyInstanceOf(CommandException.class)
+                .cause()
+                .isExactlyInstanceOf(BusinessException.class)
                 .hasRootCauseInstanceOf(IllegalStateException.class)
                 .hasRootCauseMessage("Fail !");
     }
@@ -246,21 +253,21 @@ class TodoCommandHandlerTest {
     }
 
     @Test
-    void shouldThrowBusinessExceptionHavingTodoMissingExceptionCauseWhenMissing() {
+    void shouldThrowCommandExceptionHavingTodoMissingExceptionCauseWhenMissing() {
         // Given
         final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
         doReturn(List.of()).when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
-                .isInstanceOf(BusinessException.class)
-                .rootCause()
-                .isInstanceOf(MissingAggregateException.class)
+                .isExactlyInstanceOf(CommandException.class)
+                .cause()
+                .isExactlyInstanceOf(UnknownTodoException.class)
                 .hasFieldOrPropertyWithValue("todoId", TodoId.USER_1_TODO_1);
     }
 
     @Test
-    void shouldThrowBusinessExceptionHavingDuplicateTodoExceptionWhenDuplicate() throws SequenceGenerationException {
+    void shouldThrowCommandExceptionHavingDuplicateTodoExceptionWhenDuplicate() throws SequenceGenerationException {
         // Given
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
         final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
@@ -268,9 +275,9 @@ class TodoCommandHandlerTest {
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new))
-                .isInstanceOf(BusinessException.class)
-                .rootCause()
-                .isInstanceOf(DuplicateTodoException.class)
+                .isExactlyInstanceOf(CommandException.class)
+                .cause()
+                .isExactlyInstanceOf(DuplicateTodoException.class)
                 .hasFieldOrPropertyWithValue("todoId", TodoId.USER_1_TODO_1);
     }
 

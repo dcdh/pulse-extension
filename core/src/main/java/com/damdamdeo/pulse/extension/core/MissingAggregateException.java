@@ -1,4 +1,4 @@
 package com.damdamdeo.pulse.extension.core;
 
-public abstract class MissingAggregateException extends RuntimeException {
+public abstract class MissingAggregateException extends Exception {
 }

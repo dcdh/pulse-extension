@@ -1,12 +1,15 @@
 package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.traceability.Traceable;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public record Result<P extends Projection>(List<P> projections, Set<AggregateId> aggregateIds) {
+public record Result<P extends Projection>(List<P> projections, Set<AggregateId> aggregateIds) implements Traceable {
 
     public Result {
         Objects.requireNonNull(projections);
@@ -29,6 +32,7 @@ public record Result<P extends Projection>(List<P> projections, Set<AggregateId>
         return projections.size();
     }
 
+    @Override
     public Set<AggregateId> aggregateIds() {
         return aggregateIds;
     }

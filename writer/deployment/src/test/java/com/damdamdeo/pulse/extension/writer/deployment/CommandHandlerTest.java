@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import io.quarkus.test.QuarkusUnitTest;
@@ -31,7 +32,7 @@ class CommandHandlerTest extends AbstractWriterTest {
     DataSource dataSource;
 
     @Test
-    void shouldExecuteCommand() throws BusinessException, SequenceGenerationException {
+    void shouldExecuteCommand() throws CommandException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 

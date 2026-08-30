@@ -1,12 +1,12 @@
 package com.damdamdeo.pulse.extension.core.connecteduser.update;
 
-import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.UserUpdateUsername;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
 import java.util.Objects;
 
@@ -19,7 +19,7 @@ public class UserUpdateUserNameUseCase extends AbstractUpdateUserNameUseCase<Use
     }
 
     @Override
-    protected void onUserNameUpdated(final User user, final UserUpdateUsername updateUserNameCommand) throws BusinessException {
+    protected void onUserNameUpdated(final User user, final UserUpdateUsername updateUserNameCommand) throws UseCaseException {
         Objects.requireNonNull(user);
         Objects.requireNonNull(updateUserNameCommand);
     }

@@ -24,8 +24,8 @@ class AggregateIdDecomposerTest {
         final Set<AggregateId> uncompounded = aggregateIdDecomposer.unCompound(givenAggregateIds);
 
         // Then
-        assertThat(uncompounded).containsExactlyInAnyOrder(new AnyAggregateId(TodoChecklistId.USER_1_TODO_1_1.id()),
-                new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
-                new AnyAggregateId(UserId.USER_1.id()));
+        assertThat(uncompounded).containsExactlyInAnyOrder(AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1),
+                AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                AnyAggregateId.from(UserId.USER_1));
     }
 }

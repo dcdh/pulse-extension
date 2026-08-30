@@ -17,7 +17,7 @@ class OpenapiValidationTest {
             .withConfigurationResource("application.properties");
 
     @Test
-    void shouldReturnExpectedExceptionOnOpenapi() throws JSONException {
+    void shouldReturnExpectedOpenapi() throws JSONException {
         final String actual = given()
                 .when()
                 .log().all()

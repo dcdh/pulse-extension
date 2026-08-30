@@ -11,6 +11,11 @@ public record ExecutedByHashed(String hashed) {
         Validate.validState(ExecutedBy.Anonymous.DISCRIMINANT.equals(hashed)
                 || hashed.startsWith(ExecutedBy.EndUser.DISCRIMINANT + ExecutedBy.EndUser.SEPARATOR)
                 || hashed.startsWith(ExecutedBy.ServiceAccount.DISCRIMINANT + ExecutedBy.ServiceAccount.SEPARATOR)
-                || ExecutedBy.NotAvailable.DISCRIMINANT.equals(hashed));
+                || ExecutedBy.NotAvailable.DISCRIMINANT.equals(hashed)
+                || ExecutedBy.Banned.DISCRIMINANT.equals(hashed));
+    }
+
+    public static ExecutedByHashed from(final String hashed) {
+        return new ExecutedByHashed(hashed);
     }
 }

@@ -74,10 +74,7 @@ public class BeansProcessor {
     void registerFileDownloaderEndpoint(final BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItemBuildProducer,
                                         final BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
         additionalIndexedClassesBuildItemBuildProducer.produce(new AdditionalIndexedClassesBuildItem(FileEndpoint.class.getName()));
-        additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(FileEndpoint.class)
-                .setUnremovable()
-                .setDefaultScope(DotNames.APPLICATION_SCOPED)
-                .build());
+        additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(FileEndpoint.class).build());
     }
 
     @BuildStep

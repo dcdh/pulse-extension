@@ -1,18 +1,17 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.command.UserUpdateUsername;
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.UserRegistrationDomainUseCase;
 import com.damdamdeo.pulse.extension.core.connecteduser.update.UserUpdateUserNameUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -33,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class UserRegistrationUpdateLifecycleCaseTest extends AbstractWriterTest {
+class UserRegistrationUpdateLifecycleCaseTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -59,7 +58,7 @@ public class UserRegistrationUpdateLifecycleCaseTest extends AbstractWriterTest 
         @POST
         @Path("register")
         @Produces(MediaType.APPLICATION_JSON)
-        public UserDTO register() throws BusinessException {
+        public UserDTO register() throws UseCaseException {
             final User registered = userRegistrationDomainUseCase.execute(new RegisterUser());
             return UserDTO.from(registered);
         }
@@ -67,7 +66,7 @@ public class UserRegistrationUpdateLifecycleCaseTest extends AbstractWriterTest 
         @POST
         @Path("update")
         @Produces(MediaType.APPLICATION_JSON)
-        public UserDTO update() throws BusinessException {
+        public UserDTO update() throws UseCaseException {
             final User updated = userUpdateUserNameUseCase.execute(new UserUpdateUsername(UserId.USER_1));
             return UserDTO.from(updated);
         }

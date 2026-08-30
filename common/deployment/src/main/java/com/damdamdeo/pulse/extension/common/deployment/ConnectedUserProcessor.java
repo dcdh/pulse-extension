@@ -2,8 +2,8 @@ package com.damdamdeo.pulse.extension.common.deployment;
 
 import com.damdamdeo.pulse.extension.common.runtime.connecteduser.ConnectedUserNotAvailableUserProvider;
 import com.damdamdeo.pulse.extension.common.runtime.connecteduser.QuarkusOidcConnectedUserProvider;
-import com.damdamdeo.pulse.extension.core.BusinessException;
 import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.processor.DotNames;
@@ -42,15 +42,15 @@ public class ConnectedUserProcessor {
     @BuildStep
     AnnotationsTransformerBuildItem addTransactionalToUseCases(final CombinedIndexBuildItem combinedIndexBuildItem) {
         final IndexView index = combinedIndexBuildItem.getIndex();
-        final AnnotationValue valueBusinessException = AnnotationValue.createClassValue("", Type.create(
-                DotName.createSimple(BusinessException.class),
+        final AnnotationValue valueUseCaseException = AnnotationValue.createClassValue("", Type.create(
+                DotName.createSimple(UseCaseException.class),
                 Type.Kind.CLASS
         ));
         // RuntimeException likes TechnicalException are always rolled back.
         // Not needed to add it to rollbackOn
         final AnnotationValue populatedRollbackOn = AnnotationValue.createArrayValue(
                 "rollbackOn",
-                new AnnotationValue[]{valueBusinessException});
+                new AnnotationValue[]{valueUseCaseException});
         final AnnotationInstance transactionalAnnotation = AnnotationInstance.create(
                 DotName.createSimple(Transactional.class),
                 null, // target

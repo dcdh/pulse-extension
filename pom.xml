@@ -23,6 +23,7 @@
         <module>hasher</module>
         <module>bom</module>
         <module>query</module>
+        <module>traceability</module>
         <module>integration-tests</module>
     </modules>
 

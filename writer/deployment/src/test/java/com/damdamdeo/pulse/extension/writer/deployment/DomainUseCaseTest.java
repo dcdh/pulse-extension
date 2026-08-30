@@ -1,9 +1,14 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.Status;
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.UserId;
+import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
@@ -34,14 +39,11 @@ class DomainUseCaseTest extends AbstractWriterTest {
     CreateTodoDomainUseCase createTodoUseCase;
 
     @Inject
-    BusinessExceptionTodoDomainUseCase businessExceptionTodoUseCase;
-
-    @Inject
-    TechnicalExceptionTodoDomainUseCase technicalExceptionTodoUseCase;
+    UseCaseExceptionTodoDomainUseCase useCaseExceptionTodoUseCase;
 
     @Order(1)
     @Test
-    void shouldCreateTodo() throws BusinessException {
+    void shouldCreateTodo() throws UseCaseException {
         // Given
 
         // When
@@ -56,27 +58,12 @@ class DomainUseCaseTest extends AbstractWriterTest {
 
     @Order(2)
     @Test
-    void shouldRollbackOnBusinessException() {
+    void shouldRollbackOnUseCaseException() {
         // Given
 
         // When
-        assertThatThrownBy(() -> businessExceptionTodoUseCase.execute(new CreateTodo("lorem ipsum")))
-                .isInstanceOf(BusinessException.class)
-                .hasRootCauseInstanceOf(RuntimeException.class)
-                .hasRootCauseMessage("Something wrong happened");
-
-        // Then
-        assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001");
-    }
-
-    @Order(3)
-    @Test
-    void shouldRollbackOnTechnicalException() {
-        // Given
-
-        // When
-        assertThatThrownBy(() -> technicalExceptionTodoUseCase.execute(new CreateTodo("lorem ipsum")))
-                .isInstanceOf(TechnicalException.class)
+        assertThatThrownBy(() -> useCaseExceptionTodoUseCase.execute(new CreateTodo("lorem ipsum")))
+                .isInstanceOf(UseCaseException.class)
                 .hasRootCauseInstanceOf(RuntimeException.class)
                 .hasRootCauseMessage("Something wrong happened");
 
@@ -90,36 +77,31 @@ class DomainUseCaseTest extends AbstractWriterTest {
         CommandHandler<Todo, TodoId> commandHandler;
 
         @Override
-        public Todo execute(final CreateTodo givenCreateTodo) throws BusinessException {
+        public Todo execute(final CreateTodo givenCreateTodo) throws UseCaseException {
             Objects.requireNonNull(givenCreateTodo);
-            return commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
-                    CommandHandlerTest.DuplicateTodoException::new);
+            try {
+                return commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
+                        CommandHandlerTest.DuplicateTodoException::new);
+            } catch (final CommandException exception) {
+                throw new IllegalStateException("should not be called");
+            }
         }
     }
 
-    static class BusinessExceptionTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
+    static class UseCaseExceptionTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
 
         @Inject
         CommandHandler<Todo, TodoId> commandHandler;
 
         @Override
-        public Todo execute(final CreateTodo givenCreateTodo) throws BusinessException {
-            commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
-                    CommandHandlerTest.DuplicateTodoException::new);
-            throw new BusinessException(new RuntimeException("Something wrong happened"));
-        }
-    }
-
-    static class TechnicalExceptionTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
-
-        @Inject
-        CommandHandler<Todo, TodoId> commandHandler;
-
-        @Override
-        public Todo execute(final CreateTodo givenCreateTodo) throws BusinessException {
-            commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
-                    CommandHandlerTest.DuplicateTodoException::new);
-            throw new TechnicalException(new RuntimeException("Something wrong happened"));
+        public Todo execute(final CreateTodo givenCreateTodo) throws UseCaseException {
+            try {
+                commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
+                        CommandHandlerTest.DuplicateTodoException::new);
+                throw new UseCaseException(new RuntimeException("Something wrong happened"));
+            } catch (final CommandException exception) {
+                throw new IllegalStateException("should not be called");
+            }
         }
     }
 }

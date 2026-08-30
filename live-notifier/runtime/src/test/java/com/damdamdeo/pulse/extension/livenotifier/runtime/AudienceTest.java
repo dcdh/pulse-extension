@@ -89,7 +89,7 @@ class AudienceTest {
         final Audience.FromListOfEligibility decodedTyped = (Audience.FromListOfEligibility) decoded;
 
         assertAll(
-                () -> assertThat(encoded).isEqualTo("FROM_LIST_OF_ELIGIBILITY:EU:encodedalice,EU:encodedbob"),
+                () -> assertThat(encoded).isEqualTo("FROM_LIST_OF_ELIGIBILITY:EU:aliceEncoded,EU:bobEncoded"),
                 () -> assertThat(decodedTyped.eligibles()).containsExactly(ALICE, BOB),
                 () -> assertThat(decodedTyped.eligible(ALICE)).isTrue(),
                 () -> assertThat(decodedTyped.eligible(BOB)).isTrue());
