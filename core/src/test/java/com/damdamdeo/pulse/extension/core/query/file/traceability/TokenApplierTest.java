@@ -1,7 +1,8 @@
 package com.damdamdeo.pulse.extension.core.query.file.traceability;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.damdamdeo.pulse.extension.core.query.file.*;
@@ -26,11 +27,11 @@ class TokenApplierTest {
     private final TokenRepository tokenRepository = mock(TokenRepository.class);
     private final ExecutionContextProvider executionContextProvider = mock(ExecutionContextProvider.class);
     private final DownloadedAtProvider downloadedAtProvider = mock(DownloadedAtProvider.class);
-    private final ExecutedByEncoder executedByEncoder = mock(ExecutedByEncoder.class);
+    private final UsernameEncoder usernameEncoder = mock(UsernameEncoder.class);
     private final ContentTypeTokenApplier contentTypeTokenApplier = mock(ContentTypeTokenApplier.class);
 
     private final TokenApplier tokenApplier = new TokenApplier(tokenGenerator, tokenRepository, executionContextProvider,
-            downloadedAtProvider, executedByEncoder, List.of(contentTypeTokenApplier));
+            downloadedAtProvider, usernameEncoder, List.of(contentTypeTokenApplier));
 
     @Test
     void shouldApplyToken() throws Exception {
@@ -44,7 +45,7 @@ class TokenApplierTest {
         when(contentTypeTokenApplier.contentTypes()).thenReturn(List.of(ContentType.IMAGE_JPG));
         when(tokenGenerator.generate()).thenReturn(token);
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
-        when(executedByEncoder.encode("ADMIN", ownedBy)).thenReturn(Encrypted.of("ADMIN".getBytes()));
+        when(usernameEncoder.encode(new Username("bob@mail.com"), ownedBy)).thenReturn(new UsernameEncoded("bobEncoded"));
         when(downloadedAtProvider.provide()).thenReturn(downloadedAt);
         when(contentTypeTokenApplier.apply(fileContent, token)).thenReturn(tokenizedFileContent);
 
@@ -57,19 +58,19 @@ class TokenApplierTest {
                 () -> verify(contentTypeTokenApplier).contentTypes(),
                 () -> verify(tokenGenerator).generate(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(executedByEncoder).encode("ADMIN", ownedBy),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verify(downloadedAtProvider).provide(),
                 () -> verify(tokenRepository).store(
                         new EncryptedTraceability(
                                 token,
                                 fileContent.id(),
-                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:ADMIN"), ownedBy),
+                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:bobEncoded"), ownedBy),
                                 downloadedAt
                         )
                 ),
                 () -> verify(contentTypeTokenApplier).apply(fileContent, token),
                 () -> verifyNoMoreInteractions(tokenGenerator, tokenRepository, executionContextProvider,
-                        downloadedAtProvider, executedByEncoder, contentTypeTokenApplier)
+                        downloadedAtProvider, usernameEncoder, contentTypeTokenApplier)
         );
     }
 
@@ -91,7 +92,7 @@ class TokenApplierTest {
                 () -> assertInstanceOf(UnsupportedContentTypeException.class, exception.getCause().getCause()),
                 () -> verify(contentTypeTokenApplier).contentTypes(),
                 () -> verifyNoInteractions(tokenGenerator, tokenRepository, executionContextProvider, downloadedAtProvider,
-                        executedByEncoder),
+                        usernameEncoder),
                 () -> verifyNoMoreInteractions(contentTypeTokenApplier)
         );
     }
@@ -108,7 +109,7 @@ class TokenApplierTest {
         when(contentTypeTokenApplier.contentTypes()).thenReturn(List.of(ContentType.IMAGE_JPG));
         when(tokenGenerator.generate()).thenReturn(token);
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
-        when(executedByEncoder.encode("ADMIN", ownedBy)).thenReturn(Encrypted.of("ADMIN".getBytes()));
+        when(usernameEncoder.encode(new Username("bob@mail.com"), ownedBy)).thenReturn(new UsernameEncoded("bobEncoded"));
         when(downloadedAtProvider.provide()).thenReturn(downloadedAt);
         doThrow(cause).when(tokenRepository).store(any(EncryptedTraceability.class));
 
@@ -122,18 +123,18 @@ class TokenApplierTest {
                 () -> verify(contentTypeTokenApplier).contentTypes(),
                 () -> verify(tokenGenerator).generate(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(executedByEncoder).encode("ADMIN", ownedBy),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verify(downloadedAtProvider).provide(),
                 () -> verify(tokenRepository).store(
                         new EncryptedTraceability(
                                 token,
                                 fileContent.id(),
-                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:ADMIN"), ownedBy),
+                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:bobEncoded"), ownedBy),
                                 downloadedAt
                         )
                 ),
                 () -> verifyNoMoreInteractions(contentTypeTokenApplier, tokenGenerator, tokenRepository, executionContextProvider,
-                        downloadedAtProvider, executedByEncoder)
+                        downloadedAtProvider, usernameEncoder)
         );
     }
 
@@ -148,7 +149,7 @@ class TokenApplierTest {
         when(contentTypeTokenApplier.contentTypes()).thenReturn(List.of(ContentType.IMAGE_JPG));
         when(tokenGenerator.generate()).thenReturn(token);
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
-        when(executedByEncoder.encode("ADMIN", ownedBy)).thenThrow(cause);
+        when(usernameEncoder.encode(new Username("bob@mail.com"), ownedBy)).thenThrow(cause);
 
         // When
         final TokenApplierException exception = assertThrows(TokenApplierException.class,
@@ -160,9 +161,9 @@ class TokenApplierTest {
                 () -> verify(contentTypeTokenApplier).contentTypes(),
                 () -> verify(tokenGenerator).generate(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(executedByEncoder).encode("ADMIN", ownedBy),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verifyNoInteractions(tokenRepository, downloadedAtProvider),
-                () -> verifyNoMoreInteractions(tokenGenerator, executionContextProvider, executedByEncoder,
+                () -> verifyNoMoreInteractions(tokenGenerator, executionContextProvider, usernameEncoder,
                         contentTypeTokenApplier)
         );
     }
@@ -180,7 +181,7 @@ class TokenApplierTest {
         when(contentTypeTokenApplier.contentTypes()).thenReturn(List.of(ContentType.IMAGE_JPG));
         when(tokenGenerator.generate()).thenReturn(token);
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
-        when(executedByEncoder.encode("ADMIN", ownedBy)).thenReturn(Encrypted.of("ADMIN".getBytes()));
+        when(usernameEncoder.encode(new Username("bob@mail.com"), ownedBy)).thenReturn(new UsernameEncoded("bobEncoded"));
         when(downloadedAtProvider.provide()).thenReturn(downloadedAt);
         when(contentTypeTokenApplier.apply(fileContent, token)).thenThrow(cause);
 
@@ -194,19 +195,19 @@ class TokenApplierTest {
                 () -> verify(contentTypeTokenApplier).contentTypes(),
                 () -> verify(tokenGenerator).generate(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(executedByEncoder).encode("ADMIN", ownedBy),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verify(downloadedAtProvider).provide(),
                 () -> verify(tokenRepository).store(
                         new EncryptedTraceability(
                                 token,
                                 fileContent.id(),
-                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:ADMIN"), ownedBy),
+                                new EncryptedDownloadedBy(new ExecutedByEncoded("EU:bobEncoded"), ownedBy),
                                 downloadedAt
                         )
                 ),
                 () -> verify(contentTypeTokenApplier).apply(fileContent, token),
                 () -> verifyNoMoreInteractions(tokenGenerator, tokenRepository, executionContextProvider, downloadedAtProvider,
-                        executedByEncoder, contentTypeTokenApplier)
+                        usernameEncoder, contentTypeTokenApplier)
         );
     }
 
@@ -244,7 +245,7 @@ class TokenApplierTest {
 
     private ExecutionContext backendUserExecutionContext() {
         return new ExecutionContext(
-                new ExecutedBy.EndUser("ADMIN", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("backend-user")
         );
     }

@@ -2,12 +2,14 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.Status;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
-import com.damdamdeo.pulse.extension.core.executedby.TestExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.TestUsernameEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
 import com.damdamdeo.pulse.extension.writer.runtime.InstantProvider;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.annotation.Priority;
@@ -37,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcPostgresEventRepositoryTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
+    private static ExecutedBy BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -52,11 +54,11 @@ class JdbcPostgresEventRepositoryTest {
     @ApplicationScoped
     @Priority(1)
     @Alternative
-    static class StubExecutedByEncoder implements ExecutedByEncoder {
+    static class StubUsernameEncoder implements UsernameEncoder {
 
         @Override
-        public Encrypted<byte[]> encode(String value, OwnedBy ownedBy) throws UnableToEncodeException {
-            return TestExecutedByEncoder.INSTANCE.encode(value, ownedBy);
+        public UsernameEncoded encode(final Username username, final OwnedBy ownedBy) throws UnableToEncodeException {
+            return TestUsernameEncoder.INSTANCE.encode(username, ownedBy);
         }
     }
 
@@ -166,7 +168,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"),
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded"),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 TodoId.USER_1_TODO_1.id()),
                         () -> assertThat(tAggregateRootResultSet.getString(
@@ -238,7 +240,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"));
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo(TodoId.USER_1_TODO_2.id()),
@@ -249,7 +251,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob"));
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
@@ -597,7 +599,7 @@ class JdbcPostgresEventRepositoryTest {
                              """)) {
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
-                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encodedbob");
+                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded");
             }
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -803,7 +805,7 @@ class JdbcPostgresEventRepositoryTest {
             preparedStatement.setBytes(6, encryptedEventPayload.getBytes(StandardCharsets.UTF_8));
             preparedStatement.setString(7, ownedBy.id());
             preparedStatement.setString(8, aggregateRootId);
-            preparedStatement.setString(9, executedBy.encode(TestExecutedByEncoder.INSTANCE, ownedBy).encoded());
+            preparedStatement.setString(9, executedBy.encode(TestUsernameEncoder.INSTANCE, ownedBy).encoded());
             preparedStatement.executeUpdate();
         } catch (final UnableToEncodeException e) {
             throw new RuntimeException(e);

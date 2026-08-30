@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment.file;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -77,7 +78,7 @@ class FileQueryTest {
         @Override
         public ExecutionContext provide() {
             return new ExecutionContext(
-                    new ExecutedBy.EndUser("bob", true),
+                    new ExecutedBy.EndUser(new Username("bob@mail.com")),
                     Set.of("user", "ADMIN"));
         }
     }
@@ -161,7 +162,7 @@ class FileQueryTest {
                 new Traceability(
                         new Token(UUID.fromString(token.token())),
                         GIVEN_FILE_IDENTIFIER,
-                        new DownloadedBy(new ExecutedBy.EndUser("bob", true)),
+                        new DownloadedBy(new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                         new DownloadedAt(ZonedDateTime.parse(token.downloadedAt(), downloadedAtFormatter))
                 )
         );

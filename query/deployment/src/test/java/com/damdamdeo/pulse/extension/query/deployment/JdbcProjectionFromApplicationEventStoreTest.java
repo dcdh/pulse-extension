@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -38,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcProjectionFromApplicationEventStoreTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
+    private static ExecutedBy BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

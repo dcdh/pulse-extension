@@ -17,11 +17,11 @@ public sealed interface Audience permits Audience.AllConnected, Audience.FromLis
 
     boolean eligible(ExecutedBy.EndUser executedBy);
 
-    String encode(ExecutedByEncoder executedByEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
+    String encode(UsernameEncoder usernameEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
 
-    static Audience decode(final String value, final ExecutedByFactory executedByFactory, final OwnedBy ownedBy) throws UnableToDecodeException {
+    static Audience decode(final String value, final UsernameDecoder usernameDecoder, final OwnedBy ownedBy) throws UnableToDecodeException {
         Objects.requireNonNull(value);
-        Objects.requireNonNull(executedByFactory);
+        Objects.requireNonNull(usernameDecoder);
         Objects.requireNonNull(ownedBy);
         if (value.startsWith(AllConnected.DISCRIMINANT)) {
             return AllConnected.INSTANCE;
@@ -29,11 +29,9 @@ public sealed interface Audience permits Audience.AllConnected, Audience.FromLis
             final List<ExecutedBy.EndUser> listOfEligibilityEndUser = new ArrayList<>();
             for (final String executedBy : value.substring((FromListOfEligibility.DISCRIMINANT + SEPARATOR).length())
                     .split(ELIGIBLE_SEPARATOR)) {
+                ExecutedByEncoded executedByEncoded = new ExecutedByEncoded(executedBy);
                 Validate.validState(executedBy.startsWith(ExecutedBy.EndUser.DISCRIMINANT + ExecutedBy.EndUser.SEPARATOR));
-                final ExecutedBy.EndUser apply = (ExecutedBy.EndUser) executedByFactory.from(executedBy, ownedBy);
-                if (apply.decoded()) {
-                    listOfEligibilityEndUser.add(apply);
-                }
+                listOfEligibilityEndUser.add((ExecutedBy.EndUser) executedByEncoded.to(usernameDecoder, ownedBy));
             }
             return new FromListOfEligibility(listOfEligibilityEndUser);
         }
@@ -54,7 +52,7 @@ public sealed interface Audience permits Audience.AllConnected, Audience.FromLis
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+        public String encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return DISCRIMINANT;
         }
     }
@@ -68,14 +66,15 @@ public sealed interface Audience permits Audience.AllConnected, Audience.FromLis
 
         @Override
         public boolean eligible(final ExecutedBy.EndUser executedBy) {
+            if (executedBy == null) return false;
             return eligibles.contains(executedBy);
         }
 
         @Override
-        public String encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+        public String encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             final StringJoiner joiner = new StringJoiner(ELIGIBLE_SEPARATOR);
             for (final ExecutedBy.EndUser endUser : eligibles) {
-                final String encoded = endUser.encode(executedByEncoder, ownedBy).encoded();
+                final String encoded = endUser.encode(usernameEncoder, ownedBy).encoded();
                 joiner.add(encoded);
             }
             return DISCRIMINANT + SEPARATOR + joiner;

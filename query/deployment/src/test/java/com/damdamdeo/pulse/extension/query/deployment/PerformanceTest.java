@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -36,7 +37,7 @@ import java.util.stream.LongStream;
 
 class PerformanceTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
+    private static ExecutedBy BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 
     static final Logger LOGGER = Logger.getLogger(PerformanceTest.class.getName());
 

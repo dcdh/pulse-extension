@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import io.quarkus.arc.Unremovable;
@@ -25,7 +26,8 @@ public class QuarkusOidcExecutionContextProvider implements ExecutionContextProv
         if (securityIdentity.isAnonymous()) {
             return new ExecutionContext(ExecutedBy.Anonymous.INSTANCE, roles);
         } else if (securityIdentity.getRoles().contains(USER_ROLE)) {
-            return new ExecutionContext(new ExecutedBy.EndUser(securityIdentity.getPrincipal().getName(), true), roles);
+            return new ExecutionContext(new ExecutedBy.EndUser(
+                    new Username(securityIdentity.getPrincipal().getName())), roles);
         } else {
             return new ExecutionContext(new ExecutedBy.ServiceAccount(securityIdentity.getPrincipal().getName()), roles);
         }

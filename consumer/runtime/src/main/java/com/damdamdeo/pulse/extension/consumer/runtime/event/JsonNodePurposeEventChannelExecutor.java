@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.consumer.event.AggregateRootLoader;
 import com.damdamdeo.pulse.extension.core.consumer.event.AsyncEventChannelMessageHandlerProvider;
 import com.damdamdeo.pulse.extension.core.consumer.event.DefaultPurposeEventChannelExecutor;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
@@ -22,8 +22,8 @@ public final class JsonNodePurposeEventChannelExecutor extends DefaultPurposeEve
                                                final AggregateRootLoader<JsonNode> aggregateRootLoader,
                                                final AsyncEventChannelMessageHandlerProvider<JsonNode> asyncEventChannelMessageHandlerProvider,
                                                final SequentialEventChecker sequentialEventChecker,
-                                               final ExecutedByFactory executedByFactory) {
+                                               final UsernameDecoder usernameDecoder) {
         super(decryptionService, decryptedPayloadToPayloadMapper, aggregateRootLoader, asyncEventChannelMessageHandlerProvider,
-                sequentialEventChecker, executedByFactory);
+                sequentialEventChecker, usernameDecoder);
     }
 }

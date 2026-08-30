@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer;
 
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.Audience;
 import com.damdamdeo.pulse.extension.livenotifier.runtime.MessagingLiveNotifierPublisher;
@@ -37,7 +37,7 @@ public class MessagingConsumer {
     DecryptionService decryptionService;
 
     @Inject
-    ExecutedByFactory executedByFactory;
+    UsernameDecoder usernameDecoder;
 
     @Transactional
     @Blocking
@@ -50,7 +50,7 @@ public class MessagingConsumer {
         try {
             final Audience audience = Audience.decode(new String(consumerRecord.headers()
                             .lastHeader(MessagingLiveNotifierPublisher.AUDIENCE).value()),
-                    executedByFactory, ownedBy);
+                    usernameDecoder, ownedBy);
             final String className = extractClassName(consumerRecord.headers());
             final Decrypted<byte[]> decrypted = decryptionService.decrypt(Encrypted.of(consumerRecord.value()), ownedBy);
             final Object payload = mapToObject(decrypted.payload(), className);

@@ -1,25 +1,23 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime.consumer.notifier;
 
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+
 import java.security.Principal;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class ConnectedClient implements Client {
 
-    private final String identifier;
+    private final Username identifier;
 
     public ConnectedClient(final Principal principal) {
         Objects.requireNonNull(principal);
-        this.identifier = Objects.requireNonNull(principal.getName());
+        this.identifier = new Username(Objects.requireNonNull(principal.getName()));
     }
 
     @Override
-    public String identifier() {
-        return identifier;
-    }
-
-    @Override
-    public boolean isUnknown() {
-        return false;
+    public Optional<Username> username() {
+        return Optional.of(identifier);
     }
 
     @Override

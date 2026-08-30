@@ -10,7 +10,8 @@ import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.Optional;
@@ -98,8 +98,8 @@ class PurposeEventChannelConsumerTest {
         }
 
         @Override
-        public ExecutedBy toExecutedBy(final ExecutedByFactory executedByFactory) throws UnableToDecodeException {
-            return executedByFactory.from(executedBy, new OwnedBy(ownedBy));
+        public ExecutedBy toExecutedBy(final UsernameDecoder usernameDecoder) throws UnableToDecodeException {
+            return new ExecutedByEncoded(executedBy).to(usernameDecoder, new OwnedBy(ownedBy));
         }
 
         @Override

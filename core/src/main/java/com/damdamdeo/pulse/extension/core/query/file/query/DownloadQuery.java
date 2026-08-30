@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.damdamdeo.pulse.extension.core.query.*;
@@ -31,7 +31,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
     private final DecryptionService decryptionService;
     private final FiligraneApplier filigraneApplier;
     private final TokenApplier tokenApplier;
-    private final ExecutedByFactory executedByFactory;
+    private final UsernameDecoder usernameDecoder;
 
     public DownloadQuery(final FileRepository fileRepository,
                          final ExecutionContextProvider executionContextProvider,
@@ -40,7 +40,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
                          final DecryptionService decryptionService,
                          final FiligraneApplier filigraneApplier,
                          final TokenApplier tokenApplier,
-                         final ExecutedByFactory executedByFactory) {
+                         final UsernameDecoder usernameDecoder) {
         this.fileRepository = Objects.requireNonNull(fileRepository);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.executedByResolver = Objects.requireNonNull(executedByResolver);
@@ -48,7 +48,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
         this.decryptionService = Objects.requireNonNull(decryptionService);
         this.filigraneApplier = Objects.requireNonNull(filigraneApplier);
         this.tokenApplier = Objects.requireNonNull(tokenApplier);
-        this.executedByFactory = Objects.requireNonNull(executedByFactory);
+        this.usernameDecoder = Objects.requireNonNull(usernameDecoder);
     }
 
     @Override
@@ -58,7 +58,7 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
             final ExecutionContext provided = executionContextProvider.provide();
             final List<String> visibilityRoles = backendUserVisibilityRolesProvider.provide();
             final EncryptedFileInfo encryptedFileInfo = fileRepository.getFileInfoByFileIdentifier(downloadInput.fileIdentifier());
-            final ExecutedBy executedByFromUploader = executedByFactory.from(encryptedFileInfo.encryptedUploadedBy().executedByEncoded().encoded(), encryptedFileInfo.encryptedUploadedBy().ownedBy());
+            final ExecutedBy executedByFromUploader = encryptedFileInfo.encryptedUploadedBy().executedByEncoded().to(usernameDecoder, encryptedFileInfo.encryptedUploadedBy().ownedBy());
             final boolean uploader = executedByFromUploader.equals(provided.executedBy());
             if (!uploader
                     && !provided.hasAnyRole(visibilityRoles)

@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.core.query.file.traceability;
 
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
@@ -17,20 +17,20 @@ public final class TokenApplier {
     private final TokenRepository tokenRepository;
     private final ExecutionContextProvider executionContextProvider;
     private final DownloadedAtProvider downloadedAtProvider;
-    private final ExecutedByEncoder executedByEncoder;
+    private final UsernameEncoder usernameEncoder;
     private final List<ContentTypeTokenApplier> contentTypeTokenAppliers;
 
     public TokenApplier(final TokenGenerator tokenGenerator,
                         final TokenRepository tokenRepository,
                         final ExecutionContextProvider executionContextProvider,
                         final DownloadedAtProvider downloadedAtProvider,
-                        final ExecutedByEncoder executedByEncoder,
+                        final UsernameEncoder usernameEncoder,
                         final List<ContentTypeTokenApplier> contentTypeTokenAppliers) {
         this.tokenGenerator = Objects.requireNonNull(tokenGenerator);
         this.tokenRepository = Objects.requireNonNull(tokenRepository);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.downloadedAtProvider = Objects.requireNonNull(downloadedAtProvider);
-        this.executedByEncoder = Objects.requireNonNull(executedByEncoder);
+        this.usernameEncoder = Objects.requireNonNull(usernameEncoder);
         this.contentTypeTokenAppliers = Objects.requireNonNull(contentTypeTokenAppliers);
     }
 
@@ -44,7 +44,7 @@ public final class TokenApplier {
                     .orElseThrow(() -> new UnableToApplyTokenException(new UnsupportedContentTypeException()));
             final Token token = tokenGenerator.generate();
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final EncryptedDownloadedBy encryptedDownloadedBy = new EncryptedDownloadedBy(executedBy.encode(executedByEncoder, ownedBy), ownedBy);
+            final EncryptedDownloadedBy encryptedDownloadedBy = new EncryptedDownloadedBy(executedBy.encode(usernameEncoder, ownedBy), ownedBy);
             final DownloadedAt downloadedAt = downloadedAtProvider.provide();
             tokenRepository.store(new EncryptedTraceability(token, fileContent.id(), encryptedDownloadedBy, downloadedAt));
             return applier.apply(fileContent, token);

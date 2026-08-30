@@ -63,7 +63,7 @@ class QuarkusOidcExecutionContextProviderTest {
                         .formParam("grant_type", "password")
                         .formParam("client_id", clientId)
                         .formParam("client_secret", secret)
-                        .formParam("username", "alice")
+                        .formParam("username", "alice@mail.com")
                         .formParam("password", "alice")
                         .when()
                         .log().all()
@@ -82,7 +82,7 @@ class QuarkusOidcExecutionContextProviderTest {
                 .get("/executedByProvider")
                 .then().log().all()
                 .statusCode(200)
-                .body("executedBy", is("EU:alice"))
+                .body("executedBy", is("EU:alice@mail.com"))
                 .body("roles", hasItems("admin", "user"));
     }
 

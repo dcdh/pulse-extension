@@ -1,10 +1,12 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
@@ -20,6 +22,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,14 +39,14 @@ class GetTraceByFileIdentifierQueryTest {
     private final ExecutionContextProvider executionContextProvider = mock(ExecutionContextProvider.class);
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider =
             mock(BackendUserVisibilityRolesProvider.class);
-    private final ExecutedByFactory executedByFactory = mock(ExecutedByFactory.class);
+    private final UsernameDecoder usernameDecoder = mock(UsernameDecoder.class);
 
     private GetTraceByFileIdentifierQuery query;
 
     @BeforeEach
     void setUp() {
         query = new GetTraceByFileIdentifierQuery(tokenRepository, executionContextProvider, backendUserVisibilityRolesProvider,
-                executedByFactory);
+                usernameDecoder);
     }
 
     @Test
@@ -53,15 +56,14 @@ class GetTraceByFileIdentifierQueryTest {
         final List<Traceability> traceabilities = traceabilities();
 
         final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("backend-user")
         );
 
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(tokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)).thenReturn(encryptedTraceability);
-        when(executedByFactory.from("EU:bobEncoded", OwnedBy.from(GIVEN_FILE_IDENTIFIER)))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), OwnedBy.from(GIVEN_FILE_IDENTIFIER))).thenReturn(new Username("bob@mail.com"));
 
         // When
         final List<Traceability> result = query.execute(GIVEN_FILE_IDENTIFIER);
@@ -72,7 +74,7 @@ class GetTraceByFileIdentifierQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(tokenRepository).listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER),
-                () -> verify(executedByFactory).from(any(), any())
+                () -> verify(usernameDecoder).decode(any(), any())
         );
     }
 
@@ -83,7 +85,7 @@ class GetTraceByFileIdentifierQueryTest {
         final List<Traceability> traceabilities = traceabilities();
 
         final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("user", "backend-user", "admin")
         );
 
@@ -91,8 +93,7 @@ class GetTraceByFileIdentifierQueryTest {
         when(backendUserVisibilityRolesProvider.provide())
                 .thenReturn(List.of("backend-user", "super-admin"));
         when(tokenRepository.listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER)).thenReturn(encryptedTraceability);
-        when(executedByFactory.from("EU:bobEncoded", OwnedBy.from(GIVEN_FILE_IDENTIFIER)))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), OwnedBy.from(GIVEN_FILE_IDENTIFIER))).thenReturn(new Username("bob@mail.com"));
 
         // When
         final List<Traceability> result = query.execute(GIVEN_FILE_IDENTIFIER);
@@ -101,7 +102,7 @@ class GetTraceByFileIdentifierQueryTest {
         assertAll(
                 () -> assertThat(result).isEqualTo(traceabilities),
                 () -> verify(tokenRepository).listByFileIdentifierOrderByDownloadedAtAsc(GIVEN_FILE_IDENTIFIER),
-                () -> verify(executedByFactory).from(any(), any())
+                () -> verify(usernameDecoder).decode(any(), any())
         );
     }
 
@@ -111,7 +112,7 @@ class GetTraceByFileIdentifierQueryTest {
         final FileIdentifier fileIdentifier = new FileIdentifier("file-123");
 
         final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("user")
         );
 
@@ -138,7 +139,7 @@ class GetTraceByFileIdentifierQueryTest {
                 new TokenRepositoryException(new IllegalStateException("Database unavailable"));
 
         final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("backend-user")
         );
 
@@ -172,7 +173,7 @@ class GetTraceByFileIdentifierQueryTest {
         return List.of(
                 new Traceability(new Token(new UUID(0, 0)),
                         GIVEN_FILE_IDENTIFIER,
-                        new DownloadedBy(new ExecutedBy.EndUser("BOB", true)),
+                        new DownloadedBy(new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5),
                                 LocalTime.of(23, 0, 31),
                                 ZoneOffset.UTC

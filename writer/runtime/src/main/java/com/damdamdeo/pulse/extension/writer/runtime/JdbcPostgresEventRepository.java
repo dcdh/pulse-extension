@@ -43,10 +43,10 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
     EventClazzDiscovery eventClazzDiscovery;
 
     @Inject
-    ExecutedByEncoder executedByEncoder;
+    UsernameEncoder usernameEncoder;
 
     @Inject
-    ExecutedByFactory executedByFactory;
+    UsernameDecoder usernameDecoder;
 
     @Override
     public void save(final List<VersionizedEvent<K>> versionizedEvents, final AggregateRoot<K> aggregateRoot, final ExecutedBy executedBy)
@@ -91,7 +91,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 eventPreparedStatement.setString(7, new String(passphraseProvider.provide(ownedBy).passphrase()));
                 eventPreparedStatement.setString(8, ownedBy.id());
                 eventPreparedStatement.setString(9, aggregateRoot.belongsTo().id());
-                eventPreparedStatement.setString(10, executedBy.encode(executedByEncoder, ownedBy).encoded());
+                eventPreparedStatement.setString(10, executedBy.encode(usernameEncoder, ownedBy).encoded());
                 eventPreparedStatement.addBatch();
                 lastVersion = versionizedEvent.version();
             }
@@ -138,7 +138,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 try (final ResultSet resultSet = loadStmt.executeQuery()) {
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                        final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
+                        final ExecutedBy executedBy = new ExecutedByEncoded(resultSet.getString("executed_by")).to(usernameDecoder, ownedBy);
                         final Decrypted<byte[]> decryptedEventPayload = decryptionService.decrypt(Encrypted.of(resultSet.getBytes("event_payload")), ownedBy);
                         LOGGER.fine(new String(decryptedEventPayload.payload()));
                         final Event<K> event = (Event<K>)
@@ -174,7 +174,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             try (final ResultSet resultSet = loadStmt.executeQuery()) {
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                    final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
+                    final ExecutedBy executedBy = new ExecutedByEncoded(resultSet.getString("executed_by")).to(usernameDecoder, ownedBy);
                     final Decrypted<byte[]> decryptedEventPayload = decryptionService.decrypt(Encrypted.of(resultSet.getBytes("event_payload")), ownedBy);
                     LOGGER.fine(new String(decryptedEventPayload.payload()));
                     final Event<K> event = (Event<K>)
@@ -263,7 +263,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
             try (final ResultSet resultSet = findStmt.executeQuery()) {
                 while (resultSet.next()) {
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                    final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
+                    final ExecutedBy executedBy = new ExecutedByEncoded(resultSet.getString("executed_by")).to(usernameDecoder, ownedBy);
                     eventsMetadata.add(new EventMetadata(
                             resultSet.getString("aggregate_root_type"),
                             resultSet.getString("event_type"),
@@ -305,7 +305,7 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                 try (final ResultSet resultSet = findStmt.executeQuery()) {
                     while (resultSet.next()) {
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
-                        final ExecutedBy executedBy = executedByFactory.from(resultSet.getString("executed_by"), ownedBy);
+                        final ExecutedBy executedBy = new ExecutedByEncoded(resultSet.getString("executed_by")).to(usernameDecoder, ownedBy);
                         eventsMetadata.add(new EventMetadata(
                                 resultSet.getString("aggregate_root_type"),
                                 resultSet.getString("event_type"),

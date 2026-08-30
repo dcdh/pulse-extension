@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.livenotifier.SseConsumer;
@@ -67,9 +68,9 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
         final CompletableFuture<List<String>> receivedEvents = sseConsumer.consume(accessToken, Duration.ofSeconds(10));
 
         // When
-        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob@mail.com", true)));
-        final Audience audienceDuke = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("duke", true)));
-        final Audience audienceAlice = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("alice", true)));
+        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser(new Username("bob@mail.com"))));
+        final Audience audienceDuke = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser(new Username("duke@mail.com"))));
+        final Audience audienceAlice = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), Todo.OWNED_BY_USER_1, audienceBob);
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum"), Todo.OWNED_BY_USER_2, audienceAlice);
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum"), Todo.OWNED_BY_USER_3, audienceDuke);

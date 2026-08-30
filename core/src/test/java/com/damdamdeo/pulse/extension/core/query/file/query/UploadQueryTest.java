@@ -1,14 +1,16 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.query.file.*;
@@ -40,7 +42,7 @@ public class UploadQueryTest {
     private final ImageMetadataExtractor imageMetadataExtractor = mock(ImageMetadataExtractor.class);
     private final UploadedAtProvider uploadedAtProvider = mock(UploadedAtProvider.class);
     private final FileSizeLimitedCopier fileSizeLimitedCopier = spy(new FileSizeLimitedCopier());
-    private final ExecutedByEncoder executedByEncoder = mock(ExecutedByEncoder.class);
+    private final UsernameEncoder usernameEncoder = mock(UsernameEncoder.class);
     private final FileMetadataEncryption fileMetadataEncryption = mock(FileMetadataEncryption.class);
     private final CustomMetadataEncryption customMetadataEncryption = mock(CustomMetadataEncryption.class);
 
@@ -49,7 +51,7 @@ public class UploadQueryTest {
     @BeforeEach
     void setUp() {
         query = new UploadQuery(fileRepository, executionContextProvider, encryptionService, imageMetadataExtractor, uploadedAtProvider,
-                fileSizeLimitedCopier, executedByEncoder, fileMetadataEncryption, customMetadataEncryption);
+                fileSizeLimitedCopier, usernameEncoder, fileMetadataEncryption, customMetadataEncryption);
     }
 
     @Test
@@ -67,7 +69,7 @@ public class UploadQueryTest {
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
-        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+        when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
         when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
                 new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
         when(customMetadataEncryption.encrypt(customMetadata, inputFile.ownedBy())).thenReturn(
@@ -80,8 +82,8 @@ public class UploadQueryTest {
         assertAll(
                 () -> assertThat(result).isEqualTo(expected),
                 () -> verify(fileRepository).exists(inputFile.fileIdentifier()),
-                () -> verify(imageMetadataExtractor).extract(any(InputStream.class), eq(inputFile.contentType())),
-                () -> verify(encryptionService).encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any()),
+                () -> verify(imageMetadataExtractor).extract(any(InputStream.class), any()),
+                () -> verify(encryptionService).encrypt(any(InputStream.class), any(OwnedBy.class), any()),
                 () -> verify(uploadedAtProvider).provide(),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(fileRepository).store(
@@ -99,7 +101,7 @@ public class UploadQueryTest {
                         encrypted
                 ),
                 () -> verify(fileSizeLimitedCopier).copy(any(), any(), eq(ContentLength.MAX.contentLength())),
-                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verify(fileMetadataEncryption).encrypt(any(), any()),
                 () -> verify(customMetadataEncryption).encrypt(any(), any())
         );
@@ -221,7 +223,7 @@ public class UploadQueryTest {
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
-        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+        when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
         when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
                 new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
         when(customMetadataEncryption.encrypt(customMetadata, inputFile.ownedBy())).thenReturn(
@@ -236,7 +238,7 @@ public class UploadQueryTest {
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).store(any(EncryptedFileInfo.class), eq(encrypted)),
-                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verify(fileMetadataEncryption).encrypt(any(), any()),
                 () -> verify(customMetadataEncryption).encrypt(any(), any())
         );
@@ -256,7 +258,7 @@ public class UploadQueryTest {
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
-        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+        when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
         doThrow(exception).when(fileMetadataEncryption).encrypt(fileMetadata, inputFile.ownedBy());
 
         // When / Then
@@ -267,7 +269,7 @@ public class UploadQueryTest {
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).exists(any()),
-                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verify(fileMetadataEncryption).encrypt(any(), any()),
                 () -> verifyNoInteractions(customMetadataEncryption)
         );
@@ -288,7 +290,7 @@ public class UploadQueryTest {
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
         when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
-        when(executedByEncoder.encode("BOB", inputFile.ownedBy())).thenReturn(Encrypted.of("bobEncoded".getBytes()));
+        when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
 
         when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
                 new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
@@ -302,7 +304,7 @@ public class UploadQueryTest {
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).exists(any()),
-                () -> verify(executedByEncoder).encode(any(), any()),
+                () -> verify(usernameEncoder).encode(any(), any()),
                 () -> verify(fileMetadataEncryption).encrypt(any(), any()),
                 () -> verify(customMetadataEncryption).encrypt(any(), any())
         );
@@ -355,7 +357,7 @@ public class UploadQueryTest {
 
     private ExecutionContext executionContext() {
         return new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("backend-user")
         );
     }

@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryption
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.consumer.CdcTopicNaming;
 import com.damdamdeo.pulse.extension.core.consumer.FromApplication;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
@@ -15,6 +16,7 @@ import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import io.smallrye.reactive.messaging.kafka.companion.ProducerBuilder;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -107,7 +109,7 @@ public class Producer {
                                 encrypted.payload(),
                                 ownedBy.id(),
                                 belongsTo.id(),
-                                executedBy.encode((value, ownedBy1) -> Encrypted.of(("encoded" + value).getBytes(StandardCharsets.UTF_8)), ownedBy).encoded())));
+                                executedBy.encode((UsernameEncoder) (username, ownedBy1) -> new UsernameEncoded("encoded" + username.username()), ownedBy).encoded())));// TestUsernameEncoder
         return new Response(encryptedAggregate, encrypted);
     }
 

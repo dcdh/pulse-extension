@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.query.runtime.file.traceability;
 
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.*;
 import io.quarkus.arc.All;
@@ -18,9 +18,9 @@ public class TokenApplierProducer {
                                      final TokenRepository tokenRepository,
                                      final ExecutionContextProvider executionContextProvider,
                                      final DownloadedAtProvider downloadedAtProvider,
-                                     final ExecutedByEncoder executedByEncoder,
+                                     final UsernameEncoder usernameEncoder,
                                      @All final List<ContentTypeTokenApplier> contentTypeTokenAppliers) {
         return new TokenApplier(tokenGenerator, tokenRepository, executionContextProvider, downloadedAtProvider,
-                executedByEncoder, contentTypeTokenAppliers);
+                usernameEncoder, contentTypeTokenAppliers);
     }
 }

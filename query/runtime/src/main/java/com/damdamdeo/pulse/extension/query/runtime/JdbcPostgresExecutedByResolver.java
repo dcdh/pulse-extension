@@ -4,7 +4,8 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
@@ -26,7 +27,7 @@ public final class JdbcPostgresExecutedByResolver implements ExecutedByResolver 
     DataSource dataSource;
 
     @Inject
-    ExecutedByFactory executedByFactory;
+    UsernameDecoder usernameDecoder;
 
     @Override
     public Set<ExecutedBy> resolve(final Set<AggregateId> aggregatesId) throws UnableToResolveException {
@@ -43,9 +44,9 @@ public final class JdbcPostgresExecutedByResolver implements ExecutedByResolver 
             ps.setArray(1, listOfAggregateIdArray);
             try (final ResultSet resultSet = ps.executeQuery()) {
                 while (resultSet.next()) {
-                    final String executedBy = resultSet.getString("executed_by");
-                    final String ownedBy = resultSet.getString("owned_by");
-                    setOfExecutedBy.add(executedByFactory.from(executedBy, new OwnedBy(ownedBy)));
+                    final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded(resultSet.getString("executed_by"));
+                    final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
+                    setOfExecutedBy.add(executedByEncoded.to(usernameDecoder, ownedBy));
                 }
             }
             return setOfExecutedBy;
@@ -63,8 +64,8 @@ public final class JdbcPostgresExecutedByResolver implements ExecutedByResolver 
             ps.setString(1, ownedBy.id());
             try (final ResultSet resultSet = ps.executeQuery()) {
                 while (resultSet.next()) {
-                    final String executedBy = resultSet.getString("executed_by");
-                    setOfExecutedBy.add(executedByFactory.from(executedBy, ownedBy));
+                    final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded(resultSet.getString("executed_by"));
+                    setOfExecutedBy.add(executedByEncoded.to(usernameDecoder, ownedBy));
                 }
             }
             return setOfExecutedBy;

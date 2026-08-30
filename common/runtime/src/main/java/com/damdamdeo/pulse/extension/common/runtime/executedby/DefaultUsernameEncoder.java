@@ -1,9 +1,11 @@
 package com.damdamdeo.pulse.extension.common.runtime.executedby;
 
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,7 +18,7 @@ import java.util.Objects;
 
 @ApplicationScoped
 @Unremovable
-public class DefaultExecutedByEncoder implements ExecutedByEncoder {
+public class DefaultUsernameEncoder implements UsernameEncoder {
 
     @Inject
     PassphraseProvider passphraseProvider;
@@ -25,17 +27,18 @@ public class DefaultExecutedByEncoder implements ExecutedByEncoder {
     EncryptionService encryptionService;
 
     @Override
-    public Encrypted<byte[]> encode(final String value, final OwnedBy ownedBy) throws UnableToEncodeException {
-        Objects.requireNonNull(value);
+    public UsernameEncoded encode(final Username username, final OwnedBy ownedBy) throws UnableToEncodeException {
+        Objects.requireNonNull(username);
         Objects.requireNonNull(ownedBy);
         try {
             final Passphrase passphrase = passphraseProvider.provide(ownedBy);
-            final InputStream clearData = new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
-            return encryptionService.encrypt(clearData, passphrase, encryptedPayload -> {
+            final InputStream clearData = new ByteArrayInputStream(username.username().getBytes(StandardCharsets.UTF_8));
+            final Encrypted<byte[]> encrypted = encryptionService.encrypt(clearData, passphrase, encryptedPayload -> {
                 try (final InputStream payload = encryptedPayload.payload()) {
                     return Encrypted.of(Base64.encode(payload.readAllBytes()));
                 }
             });
+            return new UsernameEncoded(new String(encrypted.payload()));
         } catch (final UnableToProvidePassphraseException | EncryptionException exception) {
             throw new UnableToEncodeException(exception);
         }

@@ -6,11 +6,14 @@ import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.aggregateroot.UnableToExecuteException;
 import com.damdamdeo.pulse.extension.core.consumer.checker.SequentialEventChecker;
-import com.damdamdeo.pulse.extension.core.encryption.*;
+import com.damdamdeo.pulse.extension.core.encryption.Decrypted;
+import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
+import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
+import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import org.apache.commons.lang3.Validate;
 
@@ -29,20 +32,20 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
     private final AggregateRootLoader<T> aggregateRootLoader;
     private final AsyncEventChannelMessageHandlerProvider<T> asyncEventChannelMessageHandlerProvider;
     private final SequentialEventChecker sequentialEventChecker;
-    private final ExecutedByFactory executedByFactory;
+    private final UsernameDecoder usernameDecoder;
 
     public DefaultPurposeEventChannelExecutor(final DecryptionService decryptionService,
                                               final DecryptedPayloadToPayloadMapper<T> decryptedPayloadToPayloadMapper,
                                               final AggregateRootLoader<T> aggregateRootLoader,
                                               final AsyncEventChannelMessageHandlerProvider<T> asyncEventChannelMessageHandlerProvider,
                                               final SequentialEventChecker sequentialEventChecker,
-                                              final ExecutedByFactory executedByFactory) {
+                                              final UsernameDecoder usernameDecoder) {
         this.decryptionService = Objects.requireNonNull(decryptionService);
         this.decryptedPayloadToPayloadMapper = Objects.requireNonNull(decryptedPayloadToPayloadMapper);
         this.aggregateRootLoader = Objects.requireNonNull(aggregateRootLoader);
         this.asyncEventChannelMessageHandlerProvider = Objects.requireNonNull(asyncEventChannelMessageHandlerProvider);
         this.sequentialEventChecker = Objects.requireNonNull(sequentialEventChecker);
-        this.executedByFactory = Objects.requireNonNull(executedByFactory);
+        this.usernameDecoder = Objects.requireNonNull(usernameDecoder);
     }
 
     @Override
@@ -86,7 +89,7 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
             final OwnedBy ownedBy = eventValue.toOwnedBy();
             final BelongsTo belongsTo = eventValue.toBelongsTo();
             try {
-                final ExecutedBy executedBy = eventValue.toExecutedBy(executedByFactory);
+                final ExecutedBy executedBy = eventValue.toExecutedBy(usernameDecoder);
                 DecryptablePayload<T> decryptableEventPayload;
                 try {
                     final Decrypted<byte[]> decrypted = decryptionService.decrypt(encrypted, ownedBy);

@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment;
 
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.livenotifier.Consumer;
@@ -39,7 +40,7 @@ class MessagingLiveNotifierPublisherTest extends AbstractMessagingTest {
     @Test
     void shouldConsumeEncryptedRecordFromLiveNotificationKafka() {
         // Given
-        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser("bob", true)));
+        final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser(new Username("bob@mail.com"))));
 
         // When
         messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("lorem ipsum"),

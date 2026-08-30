@@ -10,13 +10,11 @@ public sealed interface ExecutedBy
 
     String SEPARATOR = ":";
 
-    ExecutedByEncoded encode(ExecutedByEncoder executedByEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
+    ExecutedByEncoded encode(UsernameEncoder usernameEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
 
     String value();
 
     Username username();
-
-    boolean decoded();
 
     final class Anonymous implements ExecutedBy {
 
@@ -28,7 +26,7 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) {
+        public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) {
             return new ExecutedByEncoded(DISCRIMINANT);
         }
 
@@ -41,44 +39,23 @@ public sealed interface ExecutedBy
         public Username username() {
             throw new UnsupportedOperationException("Anonymous does not have a username");
         }
-
-        @Override
-        public boolean decoded() {
-            return true;
-        }
     }
 
-    record EndUser(String by, boolean decoded) implements ExecutedBy {
+    record EndUser(Username username) implements ExecutedBy {
         public static final String DISCRIMINANT = "EU";
 
         public EndUser {
-            Objects.requireNonNull(by);
-            if (by.isBlank()) {
-                throw new IllegalArgumentException("by must not be blank");
-            }
+            Objects.requireNonNull(username);
         }
 
         @Override
-        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
-            if (!decoded) {
-                throw new IllegalStateException("Could not encode not decoded");
-            }
-            return new ExecutedByEncoded(DISCRIMINANT + SEPARATOR + new String(executedByEncoder.encode(by, ownedBy).payload()));
+        public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+            return new ExecutedByEncoded(DISCRIMINANT + SEPARATOR + usernameEncoder.encode(username(), ownedBy).encoded());
         }
 
         @Override
         public String value() {
-            return DISCRIMINANT + SEPARATOR + by;
-        }
-
-        @Override
-        public Username username() {
-            return new Username(by);
-        }
-
-        @Override
-        public boolean decoded() {
-            return decoded;
+            return DISCRIMINANT + SEPARATOR + username.username();
         }
     }
 
@@ -94,7 +71,7 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+        public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return new ExecutedByEncoded(DISCRIMINANT + SEPARATOR + by);
         }
 
@@ -106,11 +83,6 @@ public sealed interface ExecutedBy
         @Override
         public Username username() {
             throw new UnsupportedOperationException("Service account does not have a username");
-        }
-
-        @Override
-        public boolean decoded() {
-            return true;
         }
     }
 
@@ -124,7 +96,7 @@ public sealed interface ExecutedBy
         }
 
         @Override
-        public ExecutedByEncoded encode(final ExecutedByEncoder executedByEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+        public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return new ExecutedByEncoded(DISCRIMINANT);
         }
 
@@ -136,11 +108,6 @@ public sealed interface ExecutedBy
         @Override
         public Username username() {
             throw new UnsupportedOperationException("Not available does not have a username");
-        }
-
-        @Override
-        public boolean decoded() {
-            return true;
         }
     }
 }

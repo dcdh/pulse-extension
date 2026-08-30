@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionService;
 import com.damdamdeo.pulse.extension.core.encryption.UnknownPassphraseException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoder;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +44,7 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
     EncryptionService encryptionService;
 
     @Inject
-    ExecutedByEncoder executedByEncoder;
+    UsernameEncoder usernameEncoder;
 
     @Override
     public void publish(final String eventName, final T payload, final OwnedBy ownedBy, final Audience audience) throws PublicationException {
@@ -69,7 +69,7 @@ public abstract class MessagingLiveNotifierPublisher<T> implements LiveNotifierP
                                             .add(EVENT_NAME, eventName.getBytes())
                                             .add(CONTENT_TYPE, contentType.getBytes(StandardCharsets.UTF_8))
                                             .add(OWNED_BY, ownedBy.id().getBytes(StandardCharsets.UTF_8))
-                                            .add(AUDIENCE, audience.encode(executedByEncoder, ownedBy).getBytes(StandardCharsets.UTF_8)))
+                                            .add(AUDIENCE, audience.encode(usernameEncoder, ownedBy).getBytes(StandardCharsets.UTF_8)))
                                     .build()));
         } catch (final EncryptionException exception) {
             if (exception.getCause() instanceof UnknownPassphraseException) {

@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.damdamdeo.pulse.extension.core.query.*;
@@ -17,16 +17,16 @@ public final class GetTraceByFileIdentifierQuery implements GenericQuery<FileIde
     private final TokenRepository tokenRepository;
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;
-    private final ExecutedByFactory executedByFactory;
+    private final UsernameDecoder usernameDecoder;
 
     public GetTraceByFileIdentifierQuery(final TokenRepository tokenRepository,
                                          final ExecutionContextProvider executionContextProvider,
                                          final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider,
-                                         final ExecutedByFactory executedByFactory) {
+                                         final UsernameDecoder usernameDecoder) {
         this.tokenRepository = Objects.requireNonNull(tokenRepository);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.backendUserVisibilityRolesProvider = Objects.requireNonNull(backendUserVisibilityRolesProvider);
-        this.executedByFactory = Objects.requireNonNull(executedByFactory);
+        this.usernameDecoder = Objects.requireNonNull(usernameDecoder);
     }
 
     @Override
@@ -44,9 +44,8 @@ public final class GetTraceByFileIdentifierQuery implements GenericQuery<FileIde
                 traceabilityData.add(new Traceability(
                         encryptedTraceability.token(),
                         encryptedTraceability.fileIdentifier(),
-                        new DownloadedBy(executedByFactory.from(
-                                encryptedTraceability.encryptedDownloadedBy().executedByEncoded().encoded(),
-                                encryptedTraceability.encryptedDownloadedBy().ownedBy())),
+                        new DownloadedBy(encryptedTraceability.encryptedDownloadedBy().executedByEncoded().to(
+                                usernameDecoder, encryptedTraceability.encryptedDownloadedBy().ownedBy())),
                         encryptedTraceability.downloadedAt()
                 ));
             }

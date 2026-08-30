@@ -30,7 +30,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
     private final ImageMetadataExtractor imageMetadataExtractor;
     private final UploadedAtProvider uploadedAtProvider;
     private final FileSizeLimitedCopier fileSizeLimitedCopier;
-    private final ExecutedByEncoder executedByEncoder;
+    private final UsernameEncoder usernameEncoder;
     private final FileMetadataEncryption fileMetadataEncryption;
     private final CustomMetadataEncryption customMetadataEncryption;
 
@@ -40,7 +40,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
                        final ImageMetadataExtractor imageMetadataExtractor,
                        final UploadedAtProvider uploadedAtProvider,
                        final FileSizeLimitedCopier fileSizeLimitedCopier,
-                       final ExecutedByEncoder executedByEncoder,
+                       final UsernameEncoder usernameEncoder,
                        final FileMetadataEncryption fileMetadataEncryption,
                        final CustomMetadataEncryption customMetadataEncryption) {
         this.fileRepository = Objects.requireNonNull(fileRepository);
@@ -49,7 +49,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
         this.imageMetadataExtractor = Objects.requireNonNull(imageMetadataExtractor);
         this.uploadedAtProvider = Objects.requireNonNull(uploadedAtProvider);
         this.fileSizeLimitedCopier = Objects.requireNonNull(fileSizeLimitedCopier);
-        this.executedByEncoder = Objects.requireNonNull(executedByEncoder);
+        this.usernameEncoder = Objects.requireNonNull(usernameEncoder);
         this.fileMetadataEncryption = Objects.requireNonNull(fileMetadataEncryption);
         this.customMetadataEncryption = Objects.requireNonNull(customMetadataEncryption);
     }
@@ -76,7 +76,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
                 final OwnedBy ownedBy = inputFile.ownedBy();
                 final Encrypted<InputStream> encrypted = encryptionService.encrypt(encryption, inputFile.ownedBy(), t -> t);
                 final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-                final ExecutedByEncoded executedByEncodedUploadedBy = executedBy.encode(executedByEncoder, ownedBy);
+                final ExecutedByEncoded executedByEncodedUploadedBy = executedBy.encode(usernameEncoder, ownedBy);
                 final UploadedAt uploadedAt = uploadedAtProvider.provide();
                 fileRepository.store(
                         new EncryptedFileInfo(

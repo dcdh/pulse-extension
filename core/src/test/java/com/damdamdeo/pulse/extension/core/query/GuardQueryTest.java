@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import org.junit.jupiter.api.Assertions;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class GuardQueryTest {
 
-    private static final ExecutedBy.EndUser BOB = new ExecutedBy.EndUser("bob", true);
+    private static final ExecutedBy.EndUser BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 
     @Mock
     ExecutionContextProvider executionContextProvider;

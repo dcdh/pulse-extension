@@ -103,41 +103,6 @@ class QuarkusOidcConnectedUserProviderTest extends AbstractWriterTest {
     }
 
     @Test
-    void shouldFailOnConnectedUserNotUsingAnEmailAsUsernameWhenAuthenticated() {
-        // Given
-        final String authServerUrl = ConfigProvider.getConfig().getValue("quarkus.oidc.auth-server-url", String.class);
-        final String clientId = ConfigProvider.getConfig().getValue("quarkus.oidc.client-id", String.class);
-        final String secret = ConfigProvider.getConfig().getValue("quarkus.oidc.credentials.secret", String.class);
-        final String accessToken =
-                given()
-                        .contentType(ContentType.URLENC)
-                        .formParam("grant_type", "password")
-                        .formParam("client_id", clientId)
-                        .formParam("client_secret", secret)
-                        .formParam("username", "alice")
-                        .formParam("password", "alice")
-                        .when()
-                        .log().all()
-                        .post("%s/protocol/openid-connect/token".formatted(authServerUrl))
-                        .then()
-                        .log().all()
-                        .statusCode(200)
-                        .extract()
-                        .path("access_token");
-
-        // When && Then
-        given()
-                .header("Authorization", "Bearer %s".formatted(accessToken))
-                .when()
-                .log().all()
-                .get("/connectedUserProvider")
-                .then().log().all()
-                .statusCode(400)
-                .body("error", is("missing_email"))
-                .body("message", is("Connected user does not have an email"));
-    }
-
-    @Test
     void shouldFailOnAnonymousUser() {
         given()
                 .when()

@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.Status;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -20,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class QueryEventStoreTest {
 
-    private static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
+    private static ExecutedBy BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

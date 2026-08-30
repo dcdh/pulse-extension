@@ -76,8 +76,8 @@ class GdprJacksonSerializationTest {
                 "sequence": "000001"
               },
               "createdAt_encrypted": "wx4EBwMC1YRW/9fjArNgyZMJ0BFExu56idO34YL1GAnSSAEf3/iAa7kAfMXaPpLkfCtwxAAjZrhbVxpQh5NtG0WCdS3BFG/3MpcvGirRxTQ+oD637sxDBX3JKr9xGltPwWo2FpL5gcg0zA==",
-              "username_hash": "2219fcb74e34d2f6fbedc545ac8ca4adcb908bb3a703aedc42af6c3f66510784",
-              "username_encrypted": "wx4EBwMCdT9oHrynoeNgD2aq3kqS0B+gWS47pcRAV5fSQgGmqgMpbjyDhhz7pDZSaTjmlhNLZpN5y7ZuTbB/4NRn204atj9aLv9nVe9hGcG1sR/NJeCwawiXeHoWmDNO6v6LeA==",
+              "username_hash": "d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976",
+              "username_encrypted": "wx4EBwMC5TmDlMBoLgVgAtRy/2+zzTSzMfrnbLq6ShbSRQE/atzmsLjqk7gYUlxGyKhtBcaTScvuyMkRV/UcdEXZ4OF6940K+y6yzf3YjKyQXCXkLaDn+xCQAZQtHxlIcdB/Cla6BQ==",
               "description_encrypted": "wx4EBwMC98RmEqVdnAdg78dAm73XkL+D7M3OonVgHT7SQAFlFC+MRMfd0H0GyvdJJqaAzqcl42LlfEl5GdOjvHVSHzjdDgcwVYMtWMNSgWA5mYhodqHh/tVDA07cuAsCd60=",
               "status": "DONE",
               "important": false,
@@ -119,7 +119,7 @@ class GdprJacksonSerializationTest {
     private static GdprTodo GIVEN_GDPR_TODO = new GdprTodo(
             TodoId.USER_1_TODO_1,
             LocalDateTime.of(2026, 7, 26, 20, 47, 15),
-            "bob@gmail.com",
+            "bob@mail.com",
             "lorem ipsum",
             Status.DONE,
             false,
@@ -135,7 +135,7 @@ class GdprJacksonSerializationTest {
     private static GdprTodo EXPECTED_GDPR_TODO = new GdprTodo(
             TodoId.USER_1_TODO_1,
             LocalDateTime.of(2026, 7, 26, 20, 47, 15),
-            "bob@gmail.com",
+            "bob@mail.com",
             "lorem ipsum",
             Status.DONE,
             false,

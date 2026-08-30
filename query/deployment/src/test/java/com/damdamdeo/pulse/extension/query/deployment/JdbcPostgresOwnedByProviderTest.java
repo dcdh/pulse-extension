@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.query.deployment;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcPostgresOwnedByProviderTest {
 
-    public static ExecutedBy BOB = new ExecutedBy.EndUser("bob", true);
+    public static ExecutedBy BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

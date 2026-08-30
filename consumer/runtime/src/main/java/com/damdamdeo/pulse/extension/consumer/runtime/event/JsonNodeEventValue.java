@@ -6,7 +6,8 @@ import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -53,8 +54,8 @@ public record JsonNodeEventValue(@JsonProperty("stored_at") ZonedDateTime stored
     }
 
     @Override
-    public ExecutedBy toExecutedBy(final ExecutedByFactory executedByFactory) throws UnableToDecodeException {
-        return executedByFactory.from(executedBy, new OwnedBy(ownedBy));
+    public ExecutedBy toExecutedBy(final UsernameDecoder usernameDecoder) throws UnableToDecodeException {
+        return new ExecutedByEncoded(executedBy).to(usernameDecoder, new OwnedBy(ownedBy));
     }
 
     @Override

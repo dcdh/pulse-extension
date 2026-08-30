@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.encryption.Decrypted;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.DecryptionService;
@@ -8,8 +10,8 @@ import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 import com.damdamdeo.pulse.extension.core.query.file.filigrane.FiligraneApplier;
@@ -43,14 +45,14 @@ class DownloadQueryTest {
     private final DecryptionService decryptionService = mock(DecryptionService.class);
     private final FiligraneApplier filigraneApplier = mock(FiligraneApplier.class);
     private final TokenApplier tokenApplier = mock(TokenApplier.class);
-    private final ExecutedByFactory executedByFactory = mock(ExecutedByFactory.class);
+    private final UsernameDecoder usernameDecoder = mock(UsernameDecoder.class);
 
     private DownloadQuery query;
 
     @BeforeEach
     void setUp() {
         query = new DownloadQuery(fileRepository, executionContextProvider, executedByResolver,
-                backendUserVisibilityRolesProvider, decryptionService, filigraneApplier, tokenApplier, executedByFactory);
+                backendUserVisibilityRolesProvider, decryptionService, filigraneApplier, tokenApplier, usernameDecoder);
     }
 
     @Test
@@ -66,8 +68,7 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any())).thenReturn(decrypted);
@@ -84,7 +85,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any()),
                 () -> verify(filigraneApplier).apply(any()),
@@ -101,14 +102,13 @@ class DownloadQueryTest {
         final FileContent decryptedContent = decryptedFileContent();
 
         final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("user"));
 
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         when(decryptionService.decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any()))
                 .thenReturn(new Decrypted<>(decryptedContent));
@@ -126,7 +126,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any()),
                 () -> verify(executedByResolver, never()).resolve(any(OwnedBy.class)),
@@ -142,14 +142,13 @@ class DownloadQueryTest {
         final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
         final FileContent fileContent = fileContent();
         final FileContent decryptedContent = decryptedFileContent();
-        final ExecutedBy executedBy = new ExecutedBy.EndUser("ALICE", true);
+        final ExecutedBy executedBy = new ExecutedBy.EndUser(new Username("alice@mail.com"));
         final ExecutionContext executionContext = new ExecutionContext(executedBy, Set.of("user"));
 
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(executedByResolver.resolve(encryptedFileInfo.ownedBy())).thenReturn(Set.of(executedBy));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
@@ -166,7 +165,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(executedByResolver).resolve(encryptedFileInfo.ownedBy()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any()),
                 () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
@@ -181,14 +180,13 @@ class DownloadQueryTest {
         final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
 
         final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.EndUser("ALICE", true),
+                new ExecutedBy.EndUser(new Username("alice@mail.com")),
                 Set.of("user"));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
-        when(executedByResolver.resolve(encryptedFileInfo.ownedBy())).thenReturn(Set.of(new ExecutedBy.EndUser("BOB", true)));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
+        when(executedByResolver.resolve(encryptedFileInfo.ownedBy())).thenReturn(Set.of(new ExecutedBy.EndUser(new Username("bob@mail.com"))));
 
         // When / Then
         assertAll(
@@ -199,7 +197,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(executedByResolver).resolve(encryptedFileInfo.ownedBy()),
                 () -> verify(fileRepository, never()).getFileContentByFileIdentifier(any()),
                 () -> verifyNoInteractions(decryptionService, filigraneApplier)
@@ -234,8 +232,7 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenThrow(exception);
 
         // When / Then
@@ -248,7 +245,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
                 () -> verifyNoInteractions(decryptionService, filigraneApplier)
         );
@@ -261,13 +258,12 @@ class DownloadQueryTest {
         final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
         final UnableToResolveException exception = new UnableToResolveException(new IllegalStateException("Unable to resolve executedBy by"));
         final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.EndUser("ALICE", true),
+                new ExecutedBy.EndUser(new Username("alice@mail.com")),
                 Set.of("user"));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(executedByResolver.resolve(encryptedFileInfo.ownedBy())).thenThrow(exception);
 
         // When / Then
@@ -280,7 +276,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(executedByResolver).resolve(any(OwnedBy.class)),
                 () -> verify(fileRepository, never()).getFileContentByFileIdentifier(any())
         );
@@ -296,8 +292,7 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         when(decryptionService.decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any())).thenThrow(exception);
 
@@ -311,7 +306,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
                 () -> verifyNoInteractions(filigraneApplier)
@@ -331,8 +326,7 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any())).thenReturn(decrypted);
@@ -349,7 +343,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
                 () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
@@ -369,8 +363,7 @@ class DownloadQueryTest {
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("backend-user"));
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
-        when(executedByFactory.from("EU:bobEncoded", encryptedFileInfo.ownedBy()))
-                .thenReturn(new ExecutedBy.EndUser("BOB", true));
+        when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any())).thenReturn(decrypted);
@@ -386,7 +379,7 @@ class DownloadQueryTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(any()),
-                () -> verify(executedByFactory).from(any(), any()),
+                () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(fileRepository).getFileContentByFileIdentifier(any()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), any(OwnedBy.class), any()),
                 () -> verify(filigraneApplier).apply(any()),
@@ -478,7 +471,7 @@ class DownloadQueryTest {
 
     private ExecutionContext backendUserExecutionContext() {
         return new ExecutionContext(
-                new ExecutedBy.EndUser("BOB", true),
+                new ExecutedBy.EndUser(new Username("bob@mail.com")),
                 Set.of("backend-user")
         );
     }

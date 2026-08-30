@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ExecutedByTest {
 
-    ExecutedByEncoder executedByEncoder = new TestExecutedByEncoder();
+    UsernameEncoder usernameEncoder = new TestUsernameEncoder();
 
     @Nested
     class Encode {
@@ -18,13 +18,13 @@ class ExecutedByTest {
         @Test
         void encodeEndUser() throws UnableToEncodeException {
             // Given
-            final ExecutedBy executedBy = new ExecutedBy.EndUser("alice", true);
+            final ExecutedBy executedBy = new ExecutedBy.EndUser(new Username("alice@mail.com"));
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
-            assertThat(encoded).isEqualTo(new ExecutedByEncoded("EU:encodedalice"));
+            assertThat(encoded).isEqualTo(new ExecutedByEncoded("EU:encoded"));
         }
 
         @Test
@@ -33,7 +33,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = new ExecutedBy.ServiceAccount("cron-job");
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("SA:cron-job"));
@@ -45,7 +45,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("A"));
@@ -57,7 +57,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.NotAvailable.INSTANCE;
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(executedByEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("NA"));
@@ -68,17 +68,9 @@ class ExecutedByTest {
     class EndUser {
 
         @Test
-        void endUserCannotBeBlank() {
-            // Given / When / Then
-            assertThatThrownBy(() -> new ExecutedBy.EndUser("", true))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("by must not be blank");
-        }
-
-        @Test
         void shouldReturnUsername() {
             // Given / When / Then
-            assertThat(new ExecutedBy.EndUser("bob@mail.com", true).username()).isEqualTo(new Username("bob@mail.com"));
+            assertThat(new ExecutedBy.EndUser(new Username("bob@mail.com")).username()).isEqualTo(new Username("bob@mail.com"));
         }
     }
 

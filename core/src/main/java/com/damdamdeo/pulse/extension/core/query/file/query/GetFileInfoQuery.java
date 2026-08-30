@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.file.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByFactory;
+import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToDecodeException;
 import com.damdamdeo.pulse.extension.core.query.*;
@@ -15,20 +15,20 @@ public final class GetFileInfoQuery implements GenericQuery<FileIdentifier, File
     private final FileRepository fileRepository;
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;
-    private final ExecutedByFactory executedByFactory;
+    private final UsernameDecoder usernameDecoder;
     private final FileMetadataEncryption fileMetadataEncryption;
     private final CustomMetadataEncryption customMetadataEncryption;
 
     public GetFileInfoQuery(final FileRepository fileRepository,
                             final ExecutionContextProvider executionContextProvider,
                             final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider,
-                            final ExecutedByFactory executedByFactory,
+                            final UsernameDecoder usernameDecoder,
                             final FileMetadataEncryption fileMetadataEncryption,
                             final CustomMetadataEncryption customMetadataEncryption) {
         this.fileRepository = Objects.requireNonNull(fileRepository);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.backendUserVisibilityRolesProvider = Objects.requireNonNull(backendUserVisibilityRolesProvider);
-        this.executedByFactory = Objects.requireNonNull(executedByFactory);
+        this.usernameDecoder = Objects.requireNonNull(usernameDecoder);
         this.fileMetadataEncryption = Objects.requireNonNull(fileMetadataEncryption);
         this.customMetadataEncryption = Objects.requireNonNull(customMetadataEncryption);
     }
@@ -49,7 +49,8 @@ public final class GetFileInfoQuery implements GenericQuery<FileIdentifier, File
                     encryptedFileInfo.contentType(),
                     encryptedFileInfo.contentLength(),
                     encryptedFileInfo.uploadedAt(),
-                    new UploadedBy(executedByFactory.from(encryptedFileInfo.encryptedUploadedBy().executedByEncoded().encoded(), encryptedFileInfo.ownedBy())),
+                    new UploadedBy(encryptedFileInfo.encryptedUploadedBy().executedByEncoded().to(
+                            usernameDecoder, encryptedFileInfo.ownedBy())),
                     encryptedFileInfo.ownedBy(),
                     fileMetadataEncryption.decrypt(encryptedFileInfo.encryptedFileMetadata()),
                     customMetadataEncryption.decrypt(encryptedFileInfo.encryptedCustomMetadata())
