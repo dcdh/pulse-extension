@@ -12,6 +12,8 @@ public sealed interface ExecutedBy
 
     ExecutedByEncoded encode(UsernameEncoder usernameEncoder, OwnedBy ownedBy) throws UnableToEncodeException;
 
+    ExecutedByHashed hash(UsernameHasher usernameHasher);
+
     String value();
 
     Username username();
@@ -28,6 +30,11 @@ public sealed interface ExecutedBy
         @Override
         public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) {
             return new ExecutedByEncoded(DISCRIMINANT);
+        }
+
+        @Override
+        public ExecutedByHashed hash(final UsernameHasher usernameHasher) {
+            return new ExecutedByHashed(DISCRIMINANT);
         }
 
         @Override
@@ -54,6 +61,11 @@ public sealed interface ExecutedBy
         }
 
         @Override
+        public ExecutedByHashed hash(final UsernameHasher usernameHasher) {
+            return new ExecutedByHashed(DISCRIMINANT + SEPARATOR + usernameHasher.hash(username()).hashed());
+        }
+
+        @Override
         public String value() {
             return DISCRIMINANT + SEPARATOR + username.username();
         }
@@ -73,6 +85,11 @@ public sealed interface ExecutedBy
         @Override
         public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return new ExecutedByEncoded(DISCRIMINANT + SEPARATOR + by);
+        }
+
+        @Override
+        public ExecutedByHashed hash(final UsernameHasher usernameHasher) {
+            return new ExecutedByHashed(DISCRIMINANT + SEPARATOR + by);
         }
 
         @Override
@@ -98,6 +115,11 @@ public sealed interface ExecutedBy
         @Override
         public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
             return new ExecutedByEncoded(DISCRIMINANT);
+        }
+
+        @Override
+        public ExecutedByHashed hash(final UsernameHasher usernameHasher) {
+            return new ExecutedByHashed(DISCRIMINANT);
         }
 
         @Override

@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.common.deployment;
 import com.damdamdeo.pulse.extension.common.runtime.executedby.DefaultUsernameDecoder;
 import com.damdamdeo.pulse.extension.common.runtime.executedby.DefaultUsernameEncoder;
 import com.damdamdeo.pulse.extension.common.runtime.executedby.QuarkusOidcExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.executedby.DefaultUsernameHasher;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
@@ -20,6 +21,11 @@ public class ExecutedByProcessor {
         final List<AdditionalBeanBuildItem> additionalBeanBuildItems = new ArrayList<>();
         additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder().addBeanClasses(DefaultUsernameDecoder.class).build());
         additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder().addBeanClasses(DefaultUsernameEncoder.class).build());
+        additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
+                .addBeanClass(DefaultUsernameHasher.class)
+                .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                .setUnremovable()
+                .build());
         if (capabilities.isPresent(Capability.OIDC)) {
             additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder().addBeanClasses(QuarkusOidcExecutionContextProvider.class).build());
         } else {

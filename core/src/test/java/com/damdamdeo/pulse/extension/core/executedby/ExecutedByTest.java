@@ -10,10 +10,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ExecutedByTest {
 
-    UsernameEncoder usernameEncoder = new TestUsernameEncoder();
-
     @Nested
     class Encode {
+
+        UsernameEncoder usernameEncoder = new TestUsernameEncoder();
 
         @Test
         void encodeEndUser() throws UnableToEncodeException {
@@ -61,6 +61,60 @@ class ExecutedByTest {
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("NA"));
+        }
+    }
+
+    @Nested
+    class Hash {
+
+        UsernameHasher usernameHasher = new TestUsernameHasher();
+
+        @Test
+        void hashEndUser() {
+            // Given
+            final ExecutedBy executedBy = new ExecutedBy.EndUser(new Username("alice@mail.com"));
+
+            // When
+            final ExecutedByHashed hashed = executedBy.hash(usernameHasher);
+
+            // Then
+            assertThat(hashed).isEqualTo(new ExecutedByHashed("EU:hashed-username"));
+        }
+
+        @Test
+        void hashServiceAccount() {
+            // Given
+            final ExecutedBy executedBy = new ExecutedBy.ServiceAccount("cron-job");
+
+            // When
+            final ExecutedByHashed hashed = executedBy.hash(usernameHasher);
+
+            // Then
+            assertThat(hashed).isEqualTo(new ExecutedByHashed("SA:cron-job"));
+        }
+
+        @Test
+        void hashAnonymous() {
+            // Given
+            final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
+
+            // When
+            final ExecutedByHashed hashed = executedBy.hash(usernameHasher);
+
+            // Then
+            assertThat(hashed).isEqualTo(new ExecutedByHashed("A"));
+        }
+
+        @Test
+        void hashNotAvailable() {
+            // Given
+            final ExecutedBy executedBy = ExecutedBy.NotAvailable.INSTANCE;
+
+            // When
+            final ExecutedByHashed hashed = executedBy.hash(usernameHasher);
+
+            // Then
+            assertThat(hashed).isEqualTo(new ExecutedByHashed("NA"));
         }
     }
 

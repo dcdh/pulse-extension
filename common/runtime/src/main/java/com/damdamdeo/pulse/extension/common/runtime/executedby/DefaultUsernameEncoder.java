@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+// TODO move in core
 @ApplicationScoped
 @Unremovable
 public class DefaultUsernameEncoder implements UsernameEncoder {
