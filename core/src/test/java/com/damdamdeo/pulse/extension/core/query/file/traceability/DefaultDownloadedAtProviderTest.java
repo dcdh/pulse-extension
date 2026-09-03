@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.query.file;
+package com.damdamdeo.pulse.extension.core.query.file.traceability;
 
 import org.junit.jupiter.api.Test;
 
@@ -6,9 +6,9 @@ import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DefaultUploadedAtProviderTest {
+class DefaultDownloadedAtProviderTest {
 
-    private final DefaultUploadedAtProvider provider = new DefaultUploadedAtProvider();
+    private final DefaultDownloadedAtProvider provider = new DefaultDownloadedAtProvider();
 
     @Test
     void shouldNowReturnCurrentDateTime() {
@@ -16,11 +16,11 @@ class DefaultUploadedAtProviderTest {
         final ZonedDateTime before = ZonedDateTime.now();
 
         // When
-        final UploadedAt uploadedAt = provider.now();
+        final DownloadedAt downloadedAt = provider.now();
 
         // Then
         final ZonedDateTime after = ZonedDateTime.now();
 
-        assertThat(uploadedAt.at()).isBetween(before, after);
+        assertThat(downloadedAt.at()).isBetween(before, after);
     }
 }

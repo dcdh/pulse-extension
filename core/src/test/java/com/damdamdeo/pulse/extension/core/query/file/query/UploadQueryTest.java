@@ -68,7 +68,7 @@ public class UploadQueryTest {
         when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
-        when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
+        when(uploadedAtProvider.now()).thenReturn(uploadedAt);
         when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
         when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
                 new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
@@ -84,7 +84,7 @@ public class UploadQueryTest {
                 () -> verify(fileRepository).exists(inputFile.fileIdentifier()),
                 () -> verify(imageMetadataExtractor).extract(any(InputStream.class), any()),
                 () -> verify(encryptionService).encrypt(any(InputStream.class), any(OwnedBy.class), any()),
-                () -> verify(uploadedAtProvider).provide(),
+                () -> verify(uploadedAtProvider).now(),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(fileRepository).store(
                         new EncryptedFileInfo(
@@ -222,7 +222,7 @@ public class UploadQueryTest {
         when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
-        when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
+        when(uploadedAtProvider.now()).thenReturn(uploadedAt);
         when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
         when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(
                 new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), inputFile.ownedBy()));
@@ -257,7 +257,7 @@ public class UploadQueryTest {
         when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
-        when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
+        when(uploadedAtProvider.now()).thenReturn(uploadedAt);
         when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
         doThrow(exception).when(fileMetadataEncryption).encrypt(fileMetadata, inputFile.ownedBy());
 
@@ -289,7 +289,7 @@ public class UploadQueryTest {
         when(imageMetadataExtractor.extract(any(InputStream.class), eq(inputFile.contentType()))).thenReturn(fileMetadata);
         when(encryptionService.<InputStream>encrypt(any(InputStream.class), eq(inputFile.ownedBy()), any())).thenReturn(encrypted);
         when(executionContextProvider.provide()).thenReturn(executionContext());
-        when(uploadedAtProvider.provide()).thenReturn(uploadedAt);
+        when(uploadedAtProvider.now()).thenReturn(uploadedAt);
         when(usernameEncoder.encode(new Username("bob@mail.com"), inputFile.ownedBy())).thenReturn(new UsernameEncoded("bobEncoded"));
 
         when(fileMetadataEncryption.encrypt(fileMetadata, inputFile.ownedBy())).thenReturn(

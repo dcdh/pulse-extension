@@ -13,7 +13,7 @@ import jakarta.enterprise.inject.Alternative;
 public class StubUploadedAtProvider implements UploadedAtProvider {
 
     @Override
-    public UploadedAt provide() {
+    public UploadedAt now() {
         return UploadQueryTest.uploadedAt();
     }
 }

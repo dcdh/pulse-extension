@@ -67,7 +67,7 @@ class DefaultTokenApplierTest {
         final AtomicInteger counter = new AtomicInteger(40);
 
         @Override
-        public DownloadedAt provide() {
+        public DownloadedAt now() {
             return new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, counter.getAndAdd(1)), ZoneOffset.UTC));
         }
     }

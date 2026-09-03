@@ -77,7 +77,7 @@ public final class UploadQuery implements GenericQuery<InputFile, FileIdentifier
                 final Encrypted<InputStream> encrypted = encryptionService.encrypt(encryption, inputFile.ownedBy(), t -> t);
                 final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
                 final ExecutedByEncoded executedByEncodedUploadedBy = executedBy.encode(usernameEncoder, ownedBy);
-                final UploadedAt uploadedAt = uploadedAtProvider.provide();
+                final UploadedAt uploadedAt = uploadedAtProvider.now();
                 fileRepository.store(
                         new EncryptedFileInfo(
                                 inputFile.fileIdentifier(),

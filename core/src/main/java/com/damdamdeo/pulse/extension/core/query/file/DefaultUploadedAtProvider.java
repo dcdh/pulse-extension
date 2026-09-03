@@ -5,7 +5,7 @@ import java.time.ZonedDateTime;
 public class DefaultUploadedAtProvider implements UploadedAtProvider {
 
     @Override
-    public UploadedAt provide() {
+    public UploadedAt now() {
         return new UploadedAt(ZonedDateTime.now());
     }
 }

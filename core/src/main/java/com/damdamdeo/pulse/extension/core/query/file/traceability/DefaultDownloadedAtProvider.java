@@ -5,7 +5,7 @@ import java.time.ZonedDateTime;
 public final class DefaultDownloadedAtProvider implements DownloadedAtProvider {
 
     @Override
-    public DownloadedAt provide() {
+    public DownloadedAt now() {
         return new DownloadedAt(ZonedDateTime.now());
     }
 }

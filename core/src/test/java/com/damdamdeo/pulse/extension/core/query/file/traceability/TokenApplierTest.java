@@ -46,7 +46,7 @@ class TokenApplierTest {
         when(tokenGenerator.generate()).thenReturn(token);
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(usernameEncoder.encode(new Username("bob@mail.com"), ownedBy)).thenReturn(new UsernameEncoded("bobEncoded"));
-        when(downloadedAtProvider.provide()).thenReturn(downloadedAt);
+        when(downloadedAtProvider.now()).thenReturn(downloadedAt);
         when(contentTypeTokenApplier.apply(fileContent, token)).thenReturn(tokenizedFileContent);
 
         // When
@@ -59,7 +59,7 @@ class TokenApplierTest {
                 () -> verify(tokenGenerator).generate(),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(usernameEncoder).encode(any(), any()),
-                () -> verify(downloadedAtProvider).provide(),
+                () -> verify(downloadedAtProvider).now(),
                 () -> verify(tokenRepository).store(
                         new EncryptedTraceability(
                                 token,
@@ -110,7 +110,7 @@ class TokenApplierTest {
         when(tokenGenerator.generate()).thenReturn(token);
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(usernameEncoder.encode(new Username("bob@mail.com"), ownedBy)).thenReturn(new UsernameEncoded("bobEncoded"));
-        when(downloadedAtProvider.provide()).thenReturn(downloadedAt);
+        when(downloadedAtProvider.now()).thenReturn(downloadedAt);
         doThrow(cause).when(tokenRepository).store(any(EncryptedTraceability.class));
 
         // When
@@ -124,7 +124,7 @@ class TokenApplierTest {
                 () -> verify(tokenGenerator).generate(),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(usernameEncoder).encode(any(), any()),
-                () -> verify(downloadedAtProvider).provide(),
+                () -> verify(downloadedAtProvider).now(),
                 () -> verify(tokenRepository).store(
                         new EncryptedTraceability(
                                 token,
@@ -182,7 +182,7 @@ class TokenApplierTest {
         when(tokenGenerator.generate()).thenReturn(token);
         when(executionContextProvider.provide()).thenReturn(backendUserExecutionContext());
         when(usernameEncoder.encode(new Username("bob@mail.com"), ownedBy)).thenReturn(new UsernameEncoded("bobEncoded"));
-        when(downloadedAtProvider.provide()).thenReturn(downloadedAt);
+        when(downloadedAtProvider.now()).thenReturn(downloadedAt);
         when(contentTypeTokenApplier.apply(fileContent, token)).thenThrow(cause);
 
         // When
@@ -196,7 +196,7 @@ class TokenApplierTest {
                 () -> verify(tokenGenerator).generate(),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(usernameEncoder).encode(any(), any()),
-                () -> verify(downloadedAtProvider).provide(),
+                () -> verify(downloadedAtProvider).now(),
                 () -> verify(tokenRepository).store(
                         new EncryptedTraceability(
                                 token,

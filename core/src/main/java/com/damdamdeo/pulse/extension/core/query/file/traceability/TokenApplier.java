@@ -45,7 +45,7 @@ public final class TokenApplier {
             final Token token = tokenGenerator.generate();
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
             final EncryptedDownloadedBy encryptedDownloadedBy = new EncryptedDownloadedBy(executedBy.encode(usernameEncoder, ownedBy), ownedBy);
-            final DownloadedAt downloadedAt = downloadedAtProvider.provide();
+            final DownloadedAt downloadedAt = downloadedAtProvider.now();
             tokenRepository.store(new EncryptedTraceability(token, fileContent.id(), encryptedDownloadedBy, downloadedAt));
             return applier.apply(fileContent, token);
         } catch (final TokenRepositoryException | UnableToEncodeException | UnableToApplyTokenException exception) {
