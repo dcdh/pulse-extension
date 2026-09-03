@@ -189,7 +189,7 @@ class GetFileInfoQueryTest {
                                 LocalDate.of(2026, 8, 5),
                                 LocalTime.of(23, 0, 31),
                                 ZoneOffset.UTC
-                        )
+                        ).toInstant()
                 ),
                 new UploadedBy(new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                 OwnedBy.from(identifier),
@@ -215,7 +215,7 @@ class GetFileInfoQueryTest {
                                 LocalDate.of(2026, 8, 5),
                                 LocalTime.of(23, 0, 31),
                                 ZoneOffset.UTC
-                        )
+                        ).toInstant()
                 ),
                 new EncryptedUploadedBy(new ExecutedByEncoded("EU:bobEncoded"), OwnedBy.from(identifier)),
                 OwnedBy.from(identifier),

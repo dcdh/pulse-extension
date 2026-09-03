@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.core.query.file;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,13 +13,13 @@ class DefaultUploadedAtProviderTest {
     @Test
     void shouldNowReturnCurrentDateTime() {
         // Given
-        final ZonedDateTime before = ZonedDateTime.now();
+        final Instant before = Instant.now();
 
         // When
         final UploadedAt uploadedAt = provider.now();
 
         // Then
-        final ZonedDateTime after = ZonedDateTime.now();
+        final Instant after = Instant.now();
 
         assertThat(uploadedAt.at()).isBetween(before, after);
     }

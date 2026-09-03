@@ -50,7 +50,7 @@ class JdbcPostgresTokenRepositoryTest {
                 new FileIdentifier("facture.jpeg"),
                 new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                 new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                        LocalTime.of(13, 46, 40), ZoneOffset.UTC))
+                        LocalTime.of(13, 46, 40), ZoneOffset.UTC).toInstant())
         );
 
         // When
@@ -82,7 +82,7 @@ class JdbcPostgresTokenRepositoryTest {
                 new FileIdentifier("facture01.jpeg"),
                 new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                 new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                        LocalTime.of(13, 46, 40), ZoneOffset.UTC))
+                        LocalTime.of(13, 46, 40), ZoneOffset.UTC).toInstant())
         );
 
         // When && Then
@@ -134,21 +134,21 @@ class JdbcPostgresTokenRepositoryTest {
                         new FileIdentifier("facture01.jpeg"),
                         new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                                LocalTime.of(13, 46, 40), ZoneOffset.UTC))
+                                LocalTime.of(13, 46, 40), ZoneOffset.UTC).toInstant())
                 ),
                 new EncryptedTraceability(
                         new Token(new UUID(0, 11)),
                         new FileIdentifier("facture01.jpeg"),
                         new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                                LocalTime.of(13, 47, 40), ZoneOffset.UTC))
+                                LocalTime.of(13, 47, 40), ZoneOffset.UTC).toInstant())
                 ),
                 new EncryptedTraceability(
                         new Token(new UUID(0, 12)),
                         new FileIdentifier("facture01.jpeg"),
                         new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                                LocalTime.of(13, 48, 40), ZoneOffset.UTC))
+                                LocalTime.of(13, 48, 40), ZoneOffset.UTC).toInstant())
                 )
         );
         givenListOfEncryptedTraceability.forEach(givenTraceability -> {
@@ -168,21 +168,21 @@ class JdbcPostgresTokenRepositoryTest {
                         new FileIdentifier("facture01.jpeg"),
                         new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                                LocalTime.of(13, 46, 40), ZoneOffset.UTC))
+                                LocalTime.of(13, 46, 40), ZoneOffset.UTC).toInstant())
                 ),
                 new EncryptedTraceability(
                         new Token(new UUID(0, 11)),
                         new FileIdentifier("facture01.jpeg"),
                         new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                                LocalTime.of(13, 47, 40), ZoneOffset.UTC))
+                                LocalTime.of(13, 47, 40), ZoneOffset.UTC).toInstant())
                 ),
                 new EncryptedTraceability(
                         new Token(new UUID(0, 12)),
                         new FileIdentifier("facture01.jpeg"),
                         new EncryptedDownloadedBy(new ExecutedByEncoded("NA"), new OwnedBy("file-123")),
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12),
-                                LocalTime.of(13, 48, 40), ZoneOffset.UTC))
+                                LocalTime.of(13, 48, 40), ZoneOffset.UTC).toInstant())
                 ));
     }
 }

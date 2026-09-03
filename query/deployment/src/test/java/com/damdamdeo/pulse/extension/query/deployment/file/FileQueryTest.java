@@ -202,7 +202,7 @@ class FileQueryTest {
                         new Token(UUID.fromString(token.token())),
                         GIVEN_FILE_IDENTIFIER,
                         new DownloadedBy(new ExecutedBy.EndUser(new Username("bob@mail.com"))),
-                        new DownloadedAt(ZonedDateTime.parse(token.downloadedAt(), downloadedAtFormatter))
+                        new DownloadedAt(ZonedDateTime.parse(token.downloadedAt(), downloadedAtFormatter).toInstant())
                 )
         );
     }

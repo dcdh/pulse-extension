@@ -165,7 +165,7 @@ class GetTraceByFileIdentifierQueryTest {
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5),
                                 LocalTime.of(23, 0, 31),
                                 ZoneOffset.UTC
-                        )))
+                        ).toInstant()))
         );
     }
 
@@ -177,7 +177,7 @@ class GetTraceByFileIdentifierQueryTest {
                         new DownloadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5),
                                 LocalTime.of(23, 0, 31),
                                 ZoneOffset.UTC
-                        )))
+                        ).toInstant()))
         );
     }
 }

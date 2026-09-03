@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @ApplicationScoped
@@ -35,10 +36,10 @@ public class JdbcPostgresTokenRepository implements TokenRepository {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setObject(1, encryptedTraceability.token().value());
-            statement.setObject(2, encryptedTraceability.fileIdentifier().id());
+            statement.setString(2, encryptedTraceability.fileIdentifier().id());
             statement.setString(3, encryptedTraceability.encryptedDownloadedBy().executedByEncoded().encoded());
-            statement.setObject(4, encryptedTraceability.downloadedAt().at().toOffsetDateTime());
-            statement.setObject(5, encryptedTraceability.encryptedDownloadedBy().ownedBy().id());
+            statement.setObject(4, encryptedTraceability.downloadedAt().at().atOffset(ZoneOffset.UTC));
+            statement.setString(5, encryptedTraceability.encryptedDownloadedBy().ownedBy().id());
             final int updated = statement.executeUpdate();
             if (updated != 1) {
                 throw new TokenRepositoryException(new TokenAlreadyExistsException());
@@ -77,7 +78,7 @@ public class JdbcPostgresTokenRepository implements TokenRepository {
                                     new EncryptedDownloadedBy(new ExecutedByEncoded(resultSet.getString("downloaded_by")),
                                             new OwnedBy(resultSet.getString("owned_by"))),
                                     new DownloadedAt(resultSet.getObject("downloaded_at", OffsetDateTime.class)
-                                            .toZonedDateTime())
+                                            .toInstant())
                             )
                     );
                 }

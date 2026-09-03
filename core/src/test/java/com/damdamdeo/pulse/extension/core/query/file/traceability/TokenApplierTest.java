@@ -221,7 +221,7 @@ class TokenApplierTest {
                         LocalDate.of(2026, 8, 23),
                         LocalTime.of(13, 0, 0),
                         ZoneOffset.UTC
-                )
+                ).toInstant()
         );
     }
 

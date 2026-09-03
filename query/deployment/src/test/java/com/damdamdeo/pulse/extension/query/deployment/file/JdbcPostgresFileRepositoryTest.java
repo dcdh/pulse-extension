@@ -51,7 +51,7 @@ class JdbcPostgresFileRepositoryTest {
                 new Filename("facture.jpg"),
                 ContentType.IMAGE_JPG,
                 new ContentLength(287759L),
-                new UploadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5), LocalTime.of(23, 0, 31), ZoneOffset.UTC)),
+                new UploadedAt(ZonedDateTime.of(LocalDate.of(2026, 8, 5), LocalTime.of(23, 0, 31), ZoneOffset.UTC).toInstant()),
                 new EncryptedUploadedBy(new ExecutedByEncoded("NA"), OwnedBy.from(identifier)),
                 OwnedBy.from(identifier),
                 new EncryptedFileMetadata(Encrypted.of("encryptedFileMetadata".getBytes()), OwnedBy.from(identifier)),

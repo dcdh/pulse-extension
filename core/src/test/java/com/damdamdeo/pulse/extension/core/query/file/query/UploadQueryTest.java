@@ -351,7 +351,7 @@ public class UploadQueryTest {
                         LocalDate.of(2026, 8, 5),
                         LocalTime.of(23, 0, 31),
                         ZoneOffset.UTC
-                )
+                ).toInstant()
         );
     }
 

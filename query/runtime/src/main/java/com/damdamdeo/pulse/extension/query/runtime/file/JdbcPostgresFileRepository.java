@@ -14,7 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +73,7 @@ public class JdbcPostgresFileRepository implements FileRepository {
             statement.setString(2, encryptedFileInfo.filename().filename());
             statement.setString(3, encryptedFileInfo.contentType().contentType());
             statement.setLong(4, encryptedFileInfo.contentLength().contentLength());
-            statement.setTimestamp(5, Timestamp.from(encryptedFileInfo.uploadedAt().at().toInstant()));
+            statement.setObject(5, encryptedFileInfo.uploadedAt().at().atOffset(ZoneOffset.UTC));
             statement.setString(6, encryptedFileInfo.encryptedUploadedBy().executedByEncoded().encoded());
             statement.setString(7, encryptedFileInfo.ownedBy().id());
             statement.setBytes(8, encryptedFileInfo.encryptedFileMetadata().encrypted().payload());
@@ -116,11 +120,7 @@ public class JdbcPostgresFileRepository implements FileRepository {
                         new Filename(resultSet.getString("filename")),
                         ContentType.fromContentType(resultSet.getString("content_type")),
                         new ContentLength(resultSet.getLong("content_length")),
-                        new UploadedAt(
-                                resultSet.getTimestamp("uploaded_at")
-                                        .toInstant()
-                                        .atZone(ZoneOffset.UTC)
-                        ),
+                        new UploadedAt(resultSet.getObject("uploaded_at", OffsetDateTime.class).toInstant()),
                         new EncryptedUploadedBy(new ExecutedByEncoded(resultSet.getString("uploaded_by")), ownedBy),
                         ownedBy,
                         new EncryptedFileMetadata(Encrypted.of(resultSet.getBytes("metadata")), ownedBy),

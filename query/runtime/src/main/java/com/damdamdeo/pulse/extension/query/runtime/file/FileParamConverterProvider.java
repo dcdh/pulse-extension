@@ -11,7 +11,7 @@ import jakarta.ws.rs.ext.Provider;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -25,10 +25,10 @@ public class FileParamConverterProvider implements ParamConverterProvider {
             OwnedBy.class, OwnedBy::new,
             ContentLength.class, value -> new ContentLength(Long.parseLong(value)), // TODO exception not a Long
             Filename.class, Filename::new,
-            UploadedAt.class, value -> new UploadedAt(ZonedDateTime.parse(value)), // TODO exception not a parseable ZonedDateTime
+            UploadedAt.class, value -> new UploadedAt(Instant.parse(value)), // TODO exception not a parseable ZonedDateTime
             Token.class, value -> new Token(UUID.fromString(value)), // TODO exception not an UUID
             // DownloadedBy.class, value -> new DownloadedBy(), TODO if needed - need processing
-            DownloadedAt.class, value -> new DownloadedAt(ZonedDateTime.parse(value)) // TODO exception not a parseable ZonedDateTime
+            DownloadedAt.class, value -> new DownloadedAt(Instant.parse(value)) // TODO exception not a parseable ZonedDateTime
     );
 
     private static final Map<Class<?>, Function<Object, String>> SERIALIZERS = Map.of(
