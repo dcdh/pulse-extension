@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameHasher;
@@ -37,12 +37,12 @@ public final class DefaultTraceAppender implements TraceAppender {
         Objects.requireNonNull(traceable);
         Objects.requireNonNull(from);
         try {
-            if (traceable.anyAggregateIds().isEmpty()) {
+            if (traceable.aggregateIds().isEmpty()) {
                 return;
             }
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(traceable.anyAggregateIds().size());
-            for (final AnyAggregateId aggregateId : traceable.anyAggregateIds()) {
+            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(traceable.aggregateIds().size());
+            for (final AggregateId aggregateId : traceable.aggregateIds()) {
                 EncodedTraceAggregateId encodedTraceAggregateId = new EncodedTraceAggregateId(aggregateId,
                         executedBy.hash(usernameHasher),
                         executedByEncodedProvider.provide(aggregateId, executedBy));

@@ -90,9 +90,9 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(detailedInvolved.traceId()).isSameAs(traceId),
                 () -> assertThat(detailedInvolved.from()).isSameAs(from),
                 () -> assertThat(detailedInvolved.executedAt()).isSameAs(executedAt),
-                () -> assertThat(detailedInvolved.encodedInvolved().aggregateId()).isSameAs(aggregateId),
-                () -> assertThat(detailedInvolved.encodedInvolved().executedByHashed()).isSameAs(executedByHashed),
-                () -> assertThat(detailedInvolved.encodedInvolved().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
+                () -> assertThat(detailedInvolved.involved().aggregateId()).isSameAs(aggregateId),
+                () -> assertThat(detailedInvolved.involved().executedByHashed()).isSameAs(executedByHashed),
+                () -> assertThat(detailedInvolved.involved().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, pagination),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
@@ -125,9 +125,9 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(detailedInvolved.traceId()).isSameAs(traceId),
                 () -> assertThat(detailedInvolved.from()).isSameAs(from),
                 () -> assertThat(detailedInvolved.executedAt()).isSameAs(executedAt),
-                () -> assertThat(detailedInvolved.encodedInvolved().aggregateId()).isSameAs(aggregateId),
-                () -> assertThat(detailedInvolved.encodedInvolved().executedByHashed()).isSameAs(executedByHashed),
-                () -> assertThat(detailedInvolved.encodedInvolved().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
+                () -> assertThat(detailedInvolved.involved().aggregateId()).isSameAs(aggregateId),
+                () -> assertThat(detailedInvolved.involved().executedByHashed()).isSameAs(executedByHashed),
+                () -> assertThat(detailedInvolved.involved().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(executedByHashed, pagination),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
@@ -173,7 +173,7 @@ class DefaultDetailedInvolvedFinderTest {
 
         // then
         assertAll(
-                () -> assertThat(result.content().getFirst().encodedInvolved().executedBy()).isSameAs(ExecutedBy.Anonymous.INSTANCE),
+                () -> assertThat(result.content().getFirst().involved().executedBy()).isSameAs(ExecutedBy.Anonymous.INSTANCE),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
     }
@@ -197,7 +197,7 @@ class DefaultDetailedInvolvedFinderTest {
 
         // then
         assertAll(
-                () -> assertThat(result.content().getFirst().encodedInvolved().executedBy()).isSameAs(ExecutedBy.NotAvailable.INSTANCE),
+                () -> assertThat(result.content().getFirst().involved().executedBy()).isSameAs(ExecutedBy.NotAvailable.INSTANCE),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
     }
@@ -222,7 +222,7 @@ class DefaultDetailedInvolvedFinderTest {
 
         // then
         assertAll(
-                () -> assertThat(result.content().getFirst().encodedInvolved().executedBy()).isEqualTo(
+                () -> assertThat(result.content().getFirst().involved().executedBy()).isEqualTo(
                         new ExecutedBy.ServiceAccount(serviceAccount)),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
@@ -247,7 +247,7 @@ class DefaultDetailedInvolvedFinderTest {
 
         // then
         assertAll(
-                () -> assertThat(result.content().getFirst().encodedInvolved().executedBy()).isSameAs(ExecutedBy.Banned.INSTANCE),
+                () -> assertThat(result.content().getFirst().involved().executedBy()).isSameAs(ExecutedBy.Banned.INSTANCE),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
     }
@@ -275,7 +275,7 @@ class DefaultDetailedInvolvedFinderTest {
 
         // then
         assertAll(
-                () -> assertThat(result.content().getFirst().encodedInvolved().executedBy()).isSameAs(ExecutedBy.Banned.INSTANCE),
+                () -> assertThat(result.content().getFirst().involved().executedBy()).isSameAs(ExecutedBy.Banned.INSTANCE),
                 () -> assertThat(result.content().getFirst().traceId()).isSameAs(traceId),
                 () -> assertThat(result.content().getFirst().from()).isSameAs(from),
                 () -> assertThat(result.content().getFirst().executedAt()).isSameAs(executedAt),
@@ -426,15 +426,15 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(firstResult.traceId()).isSameAs(traceId),
                 () -> assertThat(firstResult.from()).isSameAs(from),
                 () -> assertThat(firstResult.executedAt()).isSameAs(executedAt),
-                () -> assertThat(firstResult.encodedInvolved().aggregateId()).isSameAs(aggregateId),
-                () -> assertThat(firstResult.encodedInvolved().executedByHashed()).isSameAs(firstHash),
-                () -> assertThat(firstResult.encodedInvolved().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
+                () -> assertThat(firstResult.involved().aggregateId()).isSameAs(aggregateId),
+                () -> assertThat(firstResult.involved().executedByHashed()).isSameAs(firstHash),
+                () -> assertThat(firstResult.involved().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> assertThat(secondResult.traceId()).isSameAs(secondTraceId),
                 () -> assertThat(secondResult.from()).isSameAs(secondFrom),
                 () -> assertThat(secondResult.executedAt()).isSameAs(secondExecutedAt),
-                () -> assertThat(secondResult.encodedInvolved().aggregateId()).isSameAs(secondAggregateId),
-                () -> assertThat(secondResult.encodedInvolved().executedByHashed()).isSameAs(secondHash),
-                () -> assertThat(secondResult.encodedInvolved().executedBy()).isEqualTo(new ExecutedBy.ServiceAccount("second"))
+                () -> assertThat(secondResult.involved().aggregateId()).isSameAs(secondAggregateId),
+                () -> assertThat(secondResult.involved().executedByHashed()).isSameAs(secondHash),
+                () -> assertThat(secondResult.involved().executedBy()).isEqualTo(new ExecutedBy.ServiceAccount("second"))
         );
     }
 

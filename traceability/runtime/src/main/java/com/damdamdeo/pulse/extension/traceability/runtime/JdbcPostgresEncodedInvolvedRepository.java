@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -27,17 +28,17 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
     }
 
     @Override
-    public Page<EncodedInvolved> findBy(final AnyAggregateId aggregateId, final Pagination pagination) throws TraceRepositoryException {
+    public Page<EncodedInvolved> findBy(final AggregateId aggregateId, final Pagination pagination) throws TraceRepositoryException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(pagination);
         try (final Connection connection = dataSource.getConnection();
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(*) AS count FROM pulse.traceability_aggregate WHERE aggregate_root_id = ? AND aggregate_root_type = ?
+                     SELECT COUNT(*) AS count FROM pulse.traceability_aggregate WHERE aggregate_root_id = ?
                      """);
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
-                     SELECT executed_by_hashed, executed_by_encoded FROM pulse.traceability_aggregate WHERE aggregate_root_id = ? AND aggregate_root_type = ? LIMIT ? OFFSET ?
+                     SELECT executed_by_hashed, executed_by_encoded FROM pulse.traceability_aggregate WHERE aggregate_root_id = ? LIMIT ? OFFSET ?
                      """)) {
             if (pagination.loadAll()) {
                 selectPreparedStatement.setString(1, aggregateId.id());
@@ -96,8 +97,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                new AnyAggregateId(select.getString("aggregate_root_type"),
-                                        select.getString("aggregate_root_id")),
+                                new AnyAggregateId(select.getString("aggregate_root_id")),
                                 executedByHashed,
                                 new ExecutedByEncoded(select.getString("executed_by_encoded"))));
                     }
@@ -115,8 +115,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     final List<EncodedInvolved> content = new ArrayList<>(pagination.size());
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                new AnyAggregateId(select.getString("aggregate_root_type"),
-                                        select.getString("aggregate_root_id")),
+                                new AnyAggregateId(select.getString("aggregate_root_id")),
                                 executedByHashed,
                                 new ExecutedByEncoded(select.getString("executed_by_encoded"))));
                     }

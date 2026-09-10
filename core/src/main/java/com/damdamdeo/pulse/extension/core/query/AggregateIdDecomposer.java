@@ -3,15 +3,13 @@ package com.damdamdeo.pulse.extension.core.query;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AggregateIdDecomposer {
 
-    public Set<AnyAggregateId> unCompound(final Set<AggregateId> aggregateIds) {
+    public Set<AggregateId> unCompound(final Set<AggregateId> aggregateIds) {
+        Objects.requireNonNull(aggregateIds);
         return aggregateIds.stream()
                 .flatMap(aggregateId -> {
                     final String[] split = aggregateId.id().split(AggregateId.SEPARATOR);

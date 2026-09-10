@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.traceability.runtime;
+package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
 import com.damdamdeo.pulse.extension.core.traceability.Pagination;
 import jakarta.ws.rs.QueryParam;

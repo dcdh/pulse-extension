@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
@@ -28,7 +28,7 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
     }
 
     @Override
-    public Page<Involved> findBy(final AnyAggregateId aggregateId, final Pagination pagination) throws FinderException {
+    public Page<Involved> findBy(final AggregateId aggregateId, final Pagination pagination) throws FinderException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(pagination);
         return findBy(() -> encodedInvolvedRepository.findBy(aggregateId, pagination));

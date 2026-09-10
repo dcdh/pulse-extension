@@ -13,6 +13,8 @@ import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedBy;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.Token;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.Traceability;
 import io.quarkiverse.resteasy.problem.HttpProblem;
+import io.quarkus.arc.Unremovable;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -32,6 +34,8 @@ import java.util.Map;
 import java.util.Objects;
 
 @Path("file")
+@ApplicationScoped
+@Unremovable
 public class FileEndpoint {
 
     @Inject

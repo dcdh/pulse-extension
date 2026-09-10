@@ -14,4 +14,8 @@ public record ExecutedByHashed(String hashed) {
                 || ExecutedBy.NotAvailable.DISCRIMINANT.equals(hashed)
                 || ExecutedBy.Banned.DISCRIMINANT.equals(hashed));
     }
+
+    public static ExecutedByHashed from(final String hashed) {
+        return new ExecutedByHashed(hashed);
+    }
 }

@@ -1,12 +1,16 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
 import com.damdamdeo.pulse.extension.core.traceability.*;
-import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresExecutedByEncodedRepository;
-import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedTraceRecorderRepository;
-import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
-import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresOwnedByProvider;
+import com.damdamdeo.pulse.extension.traceability.runtime.*;
+import com.damdamdeo.pulse.extension.traceability.runtime.api.FinderExceptionMapper;
+import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityFinderDetailedInvolvedEndpoint;
+import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityFinderInvolvedEndpoint;
+import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityParamConverterProvider;
+import com.damdamdeo.pulse.extension.traceability.runtime.api.deserializer.TraceabilityObjectMapperProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 
 public class BeansProcessor {
 
@@ -93,6 +97,48 @@ public class BeansProcessor {
         return builder.build();
     }
 
-//    FCK faire la creation des tables en fonction du  context ! puis faire dodo !!!
-//    ha merde j'ai l'api rest à faire aussi !!!
+    @BuildStep
+    AdditionalIndexedClassesBuildItem registerFileParamConverterProvider() {
+        return new AdditionalIndexedClassesBuildItem(TraceabilityParamConverterProvider.class.getName());
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerTraceabilityObjectMapperProducer(final TraceabilityConfiguration traceabilityConfiguration) {
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED)
+                || traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
+            builder.addBeanClass(TraceabilityObjectMapperProducer.class);
+        }
+        return builder.build();
+    }
+
+    @BuildStep
+    void registerTraceabilityFinderInvolvedEndpoint(final TraceabilityConfiguration traceabilityConfiguration,
+                                                    final BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItemBuildProducer,
+                                                    final BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
+        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED)
+                || traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
+            additionalIndexedClassesBuildItemBuildProducer.produce(new AdditionalIndexedClassesBuildItem(
+                    TraceabilityFinderInvolvedEndpoint.class.getName()));
+            additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(
+                    TraceabilityFinderInvolvedEndpoint.class).build());
+        }
+    }
+
+    @BuildStep
+    void registerTraceabilityFinderDetailedInvolvedEndpoint(final TraceabilityConfiguration traceabilityConfiguration,
+                                                            final BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItemBuildProducer,
+                                                            final BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
+        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
+            additionalIndexedClassesBuildItemBuildProducer.produce(new AdditionalIndexedClassesBuildItem(
+                    TraceabilityFinderDetailedInvolvedEndpoint.class.getName()));
+            additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(
+                    TraceabilityFinderDetailedInvolvedEndpoint.class).build());
+        }
+    }
+
+    @BuildStep
+    AdditionalIndexedClassesBuildItem registerFinderExceptionMapper() {
+        return new AdditionalIndexedClassesBuildItem(FinderExceptionMapper.class.getName());
+    }
 }

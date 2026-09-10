@@ -11,9 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -58,7 +59,10 @@ class DefaultTraceAppenderTest {
         final Traceable traceable = new Traceable() {
             @Override
             public Set<AggregateId> aggregateIds() {
-                return Set.of(firstAggregateId, secondAggregateId);
+                final LinkedHashSet<AggregateId> aggregateIds = new LinkedHashSet<>();
+                aggregateIds.add(firstAggregateId);
+                aggregateIds.add(secondAggregateId);
+                return aggregateIds;
             }
         };
         final From from = new From("TestService");
@@ -85,12 +89,9 @@ class DefaultTraceAppenderTest {
                 () -> assertSame(traceId, traceRecorder.traceId()),
                 () -> assertSame(executedAt, traceRecorder.executedAt()),
                 () -> assertSame(from, traceRecorder.from()),
-                () -> assertEquals(
-                        List.of(
-                                new EncodedTraceAggregateId(firstAggregateId, new ExecutedByHashed("A"), firstExecutedByEncoded),
-                                new EncodedTraceAggregateId(secondAggregateId, new ExecutedByHashed("A"), secondExecutedByEncoded)),
-                        traceRecorder.encodedTraceAggregateIds()
-                ),
+                () -> assertThat(traceRecorder.encodedTraceAggregateIds()).containsExactly(
+                        new EncodedTraceAggregateId(firstAggregateId, new ExecutedByHashed("A"), firstExecutedByEncoded),
+                        new EncodedTraceAggregateId(secondAggregateId, new ExecutedByHashed("A"), secondExecutedByEncoded)),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
@@ -125,10 +126,12 @@ class DefaultTraceAppenderTest {
             }
         };
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
+        final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("SA:encoded-1");
         final TraceIdGeneratorException cause = new TraceIdGeneratorException(new RuntimeException("Unable to store trace"));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(executedBy);
         when(traceIdGenerator.generate()).thenThrow(cause);
+        when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
 
         // When
         final TraceAppenderException exception = assertThrows(
@@ -141,7 +144,8 @@ class DefaultTraceAppenderTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
-                () -> verifyNoInteractions(executedAtProvider, usernameHasher, executedByEncodedProvider, traceRecorderRepository)
+                () -> verify(executedByEncodedProvider).provide(any(), any()),
+                () -> verifyNoInteractions(executedAtProvider, usernameHasher, traceRecorderRepository)
         );
     }
 

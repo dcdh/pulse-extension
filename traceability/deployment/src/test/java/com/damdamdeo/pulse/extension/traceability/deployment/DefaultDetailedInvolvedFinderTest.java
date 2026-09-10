@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.traceability.deployment;
 
 import org.junit.jupiter.api.Test;
 
-public class FullDetailEndpointTest {
+public class DefaultDetailedInvolvedFinderTest {
 
     @Test
     void should() {

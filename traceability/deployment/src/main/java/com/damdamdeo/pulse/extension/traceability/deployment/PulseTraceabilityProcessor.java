@@ -32,15 +32,6 @@ public class PulseTraceabilityProcessor {
                     """
                             CREATE SCHEMA IF NOT EXISTS %1$s;
                             
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_reference (
-                              id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-                              aggregate_root_type character varying(255) NOT NULL,
-                              aggregate_root_id character varying(255) NOT NULL,
-                              CONSTRAINT traceability_aggregate_reference_pkey PRIMARY KEY (id),
-                              CONSTRAINT traceability_aggregate_reference_unique
-                                UNIQUE (aggregate_root_type, aggregate_root_id)
-                            );
-                            
                             CREATE TABLE IF NOT EXISTS %1$s.executed_by_encoded (
                               id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                               executed_by_hashed character varying(255) NOT NULL,
@@ -51,13 +42,10 @@ public class PulseTraceabilityProcessor {
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
-                              traceability_aggregate_reference_id bigint NOT NULL,
+                              aggregate_root_id character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
                               CONSTRAINT traceability_aggregate_pkey
-                                PRIMARY KEY (traceability_aggregate_reference_id, executed_by_encoded_id),
-                              CONSTRAINT traceability_aggregate_aggregate_root_fkey
-                                FOREIGN KEY (traceability_aggregate_reference_id)
-                                REFERENCES %1$s.traceability_aggregate_reference (id),
+                                PRIMARY KEY (aggregate_root_id, executed_by_encoded_id),
                               CONSTRAINT traceability_aggregate_executed_by_encoded_fkey
                                 FOREIGN KEY (executed_by_encoded_id)
                                 REFERENCES %1$s.executed_by_encoded (id)
@@ -74,15 +62,6 @@ public class PulseTraceabilityProcessor {
                               CONSTRAINT aggregate_root_pkey PRIMARY KEY (trace_id)
                             );
                             
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_reference (
-                              id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-                              aggregate_root_type character varying(255) NOT NULL,
-                              aggregate_root_id character varying(255) NOT NULL,
-                              CONSTRAINT traceability_aggregate_reference_pkey PRIMARY KEY (id),
-                              CONSTRAINT traceability_aggregate_reference_unique
-                                UNIQUE (aggregate_root_type, aggregate_root_id)
-                            );
-                            
                             CREATE TABLE IF NOT EXISTS %1$s.executed_by_encoded (
                               id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                               executed_by_hashed character varying(255) NOT NULL,
@@ -94,20 +73,17 @@ public class PulseTraceabilityProcessor {
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
                               trace_id bigint not null,
-                              traceability_aggregate_reference_id bigint NOT NULL,
+                              aggregate_root_id character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
                               CONSTRAINT traceability_aggregate_pkey
-                                PRIMARY KEY (traceability_aggregate_reference_id, executed_by_encoded_id),
+                                PRIMARY KEY (aggregate_root_id, executed_by_encoded_id),
                               CONSTRAINT traceability_details_fkey
                                 FOREIGN KEY (trace_id)
                                 REFERENCES %1$s.traceability_details (trace_id),
-                              CONSTRAINT traceability_aggregate_aggregate_root_fkey
-                                FOREIGN KEY (traceability_aggregate_reference_id)
-                                REFERENCES %1$s.traceability_aggregate_reference (id),
                               CONSTRAINT traceability_aggregate_executed_by_encoded_fkey
                                 FOREIGN KEY (executed_by_encoded_id)
                                 REFERENCES %1$s.executed_by_encoded (id)
-                            );                            
+                            );
                             """.formatted(schemaName);
         };
         if (tablesDefinition != null) {

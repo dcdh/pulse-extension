@@ -65,7 +65,7 @@ public abstract class GuardQuery<I extends Input, P extends Projection> implemen
                     try {
                         Objects.requireNonNull(executionContext);
                         final Result<P> executed = decorated.execute(input);
-                        final Set<AnyAggregateId> uncompounded = aggregateIdDecomposer.unCompound(executed.aggregateIds());
+                        final Set<AggregateId> uncompounded = aggregateIdDecomposer.unCompound(executed.aggregateIds());
                         final Set<ExecutedBy> executedByEligibles = executedByResolver.resolve(uncompounded);
                         if (executedByEligibles.contains(executionContext.executedBy())) {
                             yield executed;

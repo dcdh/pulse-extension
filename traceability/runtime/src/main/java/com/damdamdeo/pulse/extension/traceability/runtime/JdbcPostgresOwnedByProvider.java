@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProvider;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProviderException;
@@ -19,7 +19,7 @@ public class JdbcPostgresOwnedByProvider implements OwnedByProvider {
 
     // language=sql
     public static final String PROVIDE_SQL = """
-            SELECT e.owned_by AS owned_by FROM event e WHERE e.aggregate_root_id = ? AND e.aggregate_root_type = ? LIMIT 1
+            SELECT e.owned_by AS owned_by FROM event e WHERE e.aggregate_root_id = ? LIMIT 1
             """;
 
     private final DataSource dataSource;
@@ -29,12 +29,11 @@ public class JdbcPostgresOwnedByProvider implements OwnedByProvider {
     }
 
     @Override
-    public OwnedBy provide(final AnyAggregateId aggregateId) throws OwnedByProviderException {
+    public OwnedBy provide(final AggregateId aggregateId) throws OwnedByProviderException {
         Objects.requireNonNull(aggregateId);
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(PROVIDE_SQL)) {
             preparedStatement.setString(1, aggregateId.id());
-            preparedStatement.setString(2, aggregateId.simpleName());
             final var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 return new OwnedBy(resultSet.getString("owned_by"));

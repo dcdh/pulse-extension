@@ -33,7 +33,7 @@ public record Result<P extends Projection>(List<P> projections, Set<AggregateId>
     }
 
     @Override
-    public Set<AnyAggregateId> anyAggregateIds() {
+    public Set<AggregateId> aggregateIds() {
         return aggregateIds.stream().map(AnyAggregateId::from).collect(Collectors.toSet());
     }
 }

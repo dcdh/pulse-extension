@@ -1,11 +1,10 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
-import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
+import com.damdamdeo.pulse.extension.core.executedby.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +21,9 @@ class ExecutedByEncodedProviderTest {
 
     private static final AggregateId AGGREGATE_ID = mock(AggregateId.class);
     private static final OwnedBy OWNED_BY = new OwnedBy("owner");
+    private static final Username USERNAME = new Username("bob@mail.com");
+
+    private static final ExecutedBy EXECUTED_BY = new ExecutedBy.EndUser(USERNAME);
 
     @Mock
     private ExecutedByEncodedRepository executedByEncodedRepository;
@@ -30,19 +32,22 @@ class ExecutedByEncodedProviderTest {
     private OwnedByProvider ownedByProvider;
 
     @Mock
-    private com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder usernameEncoder;
+    private UsernameEncoder usernameEncoder;
 
     @Mock
-    private com.damdamdeo.pulse.extension.core.executedby.UsernameHasher usernameHasher;
-
-    @Mock
-    private ExecutedBy executedBy;
+    private UsernameHasher usernameHasher;
 
     @Mock
     private ExecutedByHashed executedByHashed;
 
     @Mock
+    private UsernameHashed usernameHashed;
+
+    @Mock
     private ExecutedByEncoded executedByEncoded;
+
+    @Mock
+    private UsernameEncoded usernameEncoded;
 
     private ExecutedByEncodedProvider provider;
 
@@ -55,18 +60,20 @@ class ExecutedByEncodedProviderTest {
     @Test
     void shouldReturnExistingEncodedValue() throws Exception {
         // Given
-        when(executedBy.hash(usernameHasher)).thenReturn(executedByHashed);
+        when(usernameHashed.hashed()).thenReturn("hashed-bob");
+        when(usernameHasher.hash(USERNAME)).thenReturn(usernameHashed);
+        final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed-bob");
         when(executedByEncodedRepository.findBy(executedByHashed)).thenReturn(executedByEncoded);
 
         // When
-        final ExecutedByEncoded result = provider.provide(AGGREGATE_ID, executedBy);
+        final ExecutedByEncoded result = provider.provide(AGGREGATE_ID, EXECUTED_BY);
 
         // Then
         assertAll(
                 () -> assertThat(result).isSameAs(executedByEncoded),
-                () -> verify(executedBy).hash(usernameHasher),
+                () -> verify(usernameHasher).hash(USERNAME),
                 () -> verify(executedByEncodedRepository).findBy(executedByHashed),
-                () -> verify(executedBy, never()).encode(any(), any()),
+                () -> verify(usernameEncoder, never()).encode(any(), any()),
                 () -> verify(ownedByProvider, never()).provide(any()),
                 () -> verify(executedByEncodedRepository, never()).store(any(), any())
         );
@@ -75,43 +82,51 @@ class ExecutedByEncodedProviderTest {
     @Test
     void shouldEncodeAndStoreWhenEncodedValueDoesNotExist() throws Exception {
         // Given
-        when(executedBy.hash(usernameHasher)).thenReturn(executedByHashed);
+        when(usernameHashed.hashed()).thenReturn("hashed-bob");
+        when(usernameHasher.hash(USERNAME)).thenReturn(usernameHashed);
+        final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed-bob");
         when(executedByEncodedRepository.findBy(executedByHashed)).thenReturn(null);
         when(ownedByProvider.provide(AGGREGATE_ID)).thenReturn(OWNED_BY);
-        when(executedBy.encode(usernameEncoder, OWNED_BY)).thenReturn(executedByEncoded);
+        when(usernameEncoder.encode(USERNAME, OWNED_BY)).thenReturn(usernameEncoded);
+        when(usernameEncoded.encoded()).thenReturn("encoded-bob");
 
         // When
-        final ExecutedByEncoded result = provider.provide(AGGREGATE_ID, executedBy);
+        final ExecutedByEncoded result = provider.provide(AGGREGATE_ID, EXECUTED_BY);
 
         // Then
         assertAll(
-                () -> assertThat(result).isSameAs(executedByEncoded),
-                () -> verify(executedBy).hash(usernameHasher),
+                () -> assertThat(result).isEqualTo(new ExecutedByEncoded("EU:encoded-bob")),
+                () -> verify(usernameHasher).hash(USERNAME),
                 () -> verify(executedByEncodedRepository).findBy(executedByHashed),
                 () -> verify(ownedByProvider).provide(AGGREGATE_ID),
-                () -> verify(executedBy).encode(usernameEncoder, OWNED_BY),
-                () -> verify(executedByEncodedRepository).store(executedByHashed, executedByEncoded)
+                () -> verify(usernameEncoder).encode(USERNAME, OWNED_BY),
+                () -> verify(usernameEncoded).encoded(),
+                () -> verify(executedByEncodedRepository)
+                        .store(executedByHashed, new ExecutedByEncoded("EU:encoded-bob"))
         );
     }
 
     @Test
     void shouldThrowExecutedByEncoderExceptionWhenEncodingFails() throws Exception {
         // Given
-        when(executedBy.hash(usernameHasher)).thenReturn(executedByHashed);
+        when(usernameHashed.hashed()).thenReturn("hashed-bob");
+        when(usernameHasher.hash(USERNAME)).thenReturn(usernameHashed);
+        final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed-bob");
         when(executedByEncodedRepository.findBy(executedByHashed)).thenReturn(null);
         when(ownedByProvider.provide(AGGREGATE_ID)).thenReturn(OWNED_BY);
-        final UnableToEncodeException cause = new UnableToEncodeException(new IllegalStateException("Unable to encode"));
-        when(executedBy.encode(usernameEncoder, OWNED_BY)).thenThrow(cause);
+        final UnableToEncodeException cause = new UnableToEncodeException(
+                new IllegalStateException("Unable to encode"));
+        when(usernameEncoder.encode(USERNAME, OWNED_BY)).thenThrow(cause);
 
         // When / Then
         assertAll(
-                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, executedBy))
+                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, EXECUTED_BY))
                         .isInstanceOf(ExecutedByEncoderException.class)
                         .hasCause(cause),
-                () -> verify(executedBy).hash(usernameHasher),
+                () -> verify(usernameHasher).hash(USERNAME),
                 () -> verify(executedByEncodedRepository).findBy(executedByHashed),
                 () -> verify(ownedByProvider).provide(AGGREGATE_ID),
-                () -> verify(executedBy).encode(usernameEncoder, OWNED_BY),
+                () -> verify(usernameEncoder).encode(USERNAME, OWNED_BY),
                 () -> verify(executedByEncodedRepository, never()).store(any(), any())
         );
     }
@@ -119,20 +134,22 @@ class ExecutedByEncodedProviderTest {
     @Test
     void shouldThrowExecutedByEncoderExceptionWhenRepositoryFindFails() throws Exception {
         // Given
-        when(executedBy.hash(usernameHasher)).thenReturn(executedByHashed);
+        when(usernameHashed.hashed()).thenReturn("hashed-bob");
+        when(usernameHasher.hash(USERNAME)).thenReturn(usernameHashed);
+        final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed-bob");
         final ExecutedByEncodedRepositoryException cause = new ExecutedByEncodedRepositoryException(
                 new IllegalStateException("Repository failure"));
         when(executedByEncodedRepository.findBy(executedByHashed)).thenThrow(cause);
 
         // When / Then
         assertAll(
-                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, executedBy))
+                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, EXECUTED_BY))
                         .isInstanceOf(ExecutedByEncoderException.class)
                         .hasCause(cause),
-                () -> verify(executedBy).hash(usernameHasher),
+                () -> verify(usernameHasher).hash(USERNAME),
                 () -> verify(executedByEncodedRepository).findBy(executedByHashed),
                 () -> verify(ownedByProvider, never()).provide(any()),
-                () -> verify(executedBy, never()).encode(any(), any()),
+                () -> verify(usernameEncoder, never()).encode(any(), any()),
                 () -> verify(executedByEncodedRepository, never()).store(any(), any())
         );
     }
@@ -140,31 +157,41 @@ class ExecutedByEncodedProviderTest {
     @Test
     void shouldThrowExecutedByEncoderExceptionWhenRepositoryStoreFails() throws Exception {
         // Given
-        when(executedBy.hash(usernameHasher)).thenReturn(executedByHashed);
+        when(usernameHashed.hashed()).thenReturn("hashed-bob");
+        when(usernameHasher.hash(USERNAME)).thenReturn(usernameHashed);
+        final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed-bob");
         when(executedByEncodedRepository.findBy(executedByHashed)).thenReturn(null);
         when(ownedByProvider.provide(AGGREGATE_ID)).thenReturn(OWNED_BY);
-        when(executedBy.encode(usernameEncoder, OWNED_BY)).thenReturn(executedByEncoded);
+        when(usernameEncoder.encode(USERNAME, OWNED_BY)).thenReturn(usernameEncoded);
+        when(usernameEncoded.encoded()).thenReturn("encoded-bob");
+        final ExecutedByEncoded encoded = new ExecutedByEncoded("EU:encoded-bob");
         final ExecutedByEncodedRepositoryException cause = new ExecutedByEncodedRepositoryException(
                 new IllegalStateException("Repository failure"));
-        doThrow(cause).when(executedByEncodedRepository).store(executedByHashed, executedByEncoded);
+
+        doThrow(cause)
+                .when(executedByEncodedRepository)
+                .store(executedByHashed, encoded);
 
         // When / Then
         assertAll(
-                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, executedBy))
+                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, EXECUTED_BY))
                         .isInstanceOf(ExecutedByEncoderException.class)
                         .hasCause(cause),
-                () -> verify(executedBy).hash(usernameHasher),
+                () -> verify(usernameHasher).hash(USERNAME),
                 () -> verify(executedByEncodedRepository).findBy(executedByHashed),
                 () -> verify(ownedByProvider).provide(AGGREGATE_ID),
-                () -> verify(executedBy).encode(usernameEncoder, OWNED_BY),
-                () -> verify(executedByEncodedRepository).store(executedByHashed, executedByEncoded)
+                () -> verify(usernameEncoder).encode(USERNAME, OWNED_BY),
+                () -> verify(usernameEncoded).encoded(),
+                () -> verify(executedByEncodedRepository).store(executedByHashed, encoded)
         );
     }
 
     @Test
     void shouldThrowExecutedByEncoderExceptionWhenOwnedByCannotBeProvided() throws Exception {
         // Given
-        when(executedBy.hash(usernameHasher)).thenReturn(executedByHashed);
+        when(usernameHashed.hashed()).thenReturn("hashed-bob");
+        when(usernameHasher.hash(USERNAME)).thenReturn(usernameHashed);
+        final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed-bob");
         when(executedByEncodedRepository.findBy(executedByHashed)).thenReturn(null);
         final OwnedByProviderException cause = new OwnedByProviderException(
                 new IllegalStateException("Unable to provide owner"));
@@ -172,13 +199,13 @@ class ExecutedByEncodedProviderTest {
 
         // When / Then
         assertAll(
-                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, executedBy))
+                () -> assertThatThrownBy(() -> provider.provide(AGGREGATE_ID, EXECUTED_BY))
                         .isInstanceOf(ExecutedByEncoderException.class)
                         .hasCause(cause),
-                () -> verify(executedBy).hash(usernameHasher),
+                () -> verify(usernameHasher).hash(USERNAME),
                 () -> verify(executedByEncodedRepository).findBy(executedByHashed),
                 () -> verify(ownedByProvider).provide(AGGREGATE_ID),
-                () -> verify(executedBy, never()).encode(any(), any()),
+                () -> verify(usernameEncoder, never()).encode(any(), any()),
                 () -> verify(executedByEncodedRepository, never()).store(any(), any())
         );
     }

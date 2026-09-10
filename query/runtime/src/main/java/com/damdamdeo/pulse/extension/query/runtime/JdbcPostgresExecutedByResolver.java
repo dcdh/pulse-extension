@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.query.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -30,7 +29,7 @@ public final class JdbcPostgresExecutedByResolver implements ExecutedByResolver 
     UsernameDecoder usernameDecoder;
 
     @Override
-    public Set<ExecutedBy> resolve(final Set<AnyAggregateId> aggregatesId) throws UnableToResolveException {
+    public Set<ExecutedBy> resolve(final Set<AggregateId> aggregatesId) throws UnableToResolveException {
         Objects.requireNonNull(aggregatesId);
         if (aggregatesId.isEmpty()) {
             return Set.of();

@@ -28,52 +28,92 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
     }
 
     @Override
-    public Page<EncodedDetailedInvolved> findBy(final AggregateId aggregateId, final Pagination pagination) throws TraceRepositoryException {
+    public Page<EncodedDetailedInvolved> findBy(final AggregateId aggregateId, final Pagination pagination)
+            throws TraceRepositoryException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(pagination);
-        try (final Connection connection = dataSource.getConnection();
-             // language=sql
-             final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(*) AS count FROM pulse.traceability_aggregate WHERE aggregate_root_id = ? and aggregate_root_type = ?
-                     """);
-             // language=sql
-             final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
-                     SELECT trace_id, executed_by_hashed, executed_by_encoded, from_value, executed_at, executed_status FROM pulse.traceability_details WHERE aggregate_root_id = ? LIMIT ? OFFSET ?
-                     """)) {
+        try (final Connection connection = dataSource.getConnection()) {
             if (pagination.loadAll()) {
-                selectPreparedStatement.setString(1, aggregateId.id());
-                final List<EncodedDetailedInvolved> content = new ArrayList<>();
-                try (final ResultSet select = selectPreparedStatement.executeQuery()) {
-                    while (select.next()) {
-                        content.add(new EncodedDetailedInvolved(
-                                new TraceId(select.getLong("trace_id")),
-                                new EncodedInvolved(aggregateId, new ExecutedByHashed(select.getString("executed_by_hashed")), new ExecutedByEncoded(select.getString("executed_by_encoded"))),
-                                new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
-                                ExecutionStatus.values()[select.getInt("executed_status")]));
+                // language=sql
+                try (final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
+                        SELECT
+                            ta.trace_id AS trace_id,
+                            ebe.executed_by_hashed AS executed_by_hashed,
+                            ebe.executed_by_encoded AS executed_by_encoded,
+                            td.from_value AS from_value,
+                            td.executed_at AS executed_at
+                        FROM pulse.traceability_aggregate ta
+                        JOIN pulse.traceability_details td
+                            ON td.trace_id = ta.trace_id
+                        JOIN pulse.executed_by_encoded ebe
+                            ON ebe.id = ta.executed_by_encoded_id
+                        WHERE ta.aggregate_root_id = ?
+                        ORDER BY td.executed_at, ta.trace_id
+                        """)) {
+                    selectPreparedStatement.setString(1, aggregateId.id());
+                    final List<EncodedDetailedInvolved> content = new ArrayList<>();
+                    try (final ResultSet select = selectPreparedStatement.executeQuery()) {
+                        while (select.next()) {
+                            content.add(new EncodedDetailedInvolved(
+                                    new TraceId(select.getLong("trace_id")),
+                                    new EncodedInvolved(
+                                            aggregateId,
+                                            new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                            new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                                    ),
+                                    new From(select.getString("from_value")),
+                                    new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                            ));
+                        }
                     }
+                    return new Page<>(content, pagination, content.size());
                 }
-                return new Page<>(content, pagination, content.size());
             } else {
-                countPreparedStatement.setString(1, aggregateId.id());
-                countPreparedStatement.setString(2, aggregateId.getClass().getSimpleName());
-                selectPreparedStatement.setString(1, aggregateId.id());
-                selectPreparedStatement.setLong(2, pagination.size());
-                selectPreparedStatement.setLong(3, pagination.offset());
-                try (final ResultSet count = countPreparedStatement.executeQuery();
-                     final ResultSet select = selectPreparedStatement.executeQuery()) {
-                    count.next();
-                    final long totalElements = count.getLong("count");
-                    final List<EncodedDetailedInvolved> content = new ArrayList<>(pagination.size());
-                    while (select.next()) {
-                        content.add(new EncodedDetailedInvolved(
-                                new TraceId(select.getLong("trace_id")),
-                                new EncodedInvolved(aggregateId, new ExecutedByHashed(select.getString("executed_by_hashed")), new ExecutedByEncoded(select.getString("executed_by_encoded"))),
-                                new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
-                                ExecutionStatus.values()[select.getInt("executed_status")]));
+                // language=sql
+                try (final PreparedStatement countPreparedStatement = connection.prepareStatement("""
+                        SELECT COUNT(*) AS count
+                        FROM pulse.traceability_aggregate
+                        WHERE aggregate_root_id = ?
+                        """);
+                     // language=sql
+                     final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
+                             SELECT
+                                 ta.trace_id AS trace_id,
+                                 ebe.executed_by_hashed AS executed_by_hashed,
+                                 ebe.executed_by_encoded AS executed_by_encoded,
+                                 td.from_value AS from_value,
+                                 td.executed_at AS executed_at
+                             FROM pulse.traceability_aggregate ta
+                             JOIN pulse.traceability_details td
+                                 ON td.trace_id = ta.trace_id
+                             JOIN pulse.executed_by_encoded ebe
+                                 ON ebe.id = ta.executed_by_encoded_id
+                             WHERE ta.aggregate_root_id = ?
+                             ORDER BY td.executed_at, ta.trace_id
+                             LIMIT ? OFFSET ?
+                             """)) {
+                    countPreparedStatement.setString(1, aggregateId.id());
+                    selectPreparedStatement.setString(1, aggregateId.id());
+                    selectPreparedStatement.setLong(2, pagination.size());
+                    selectPreparedStatement.setLong(3, pagination.offset());
+                    try (final ResultSet count = countPreparedStatement.executeQuery();
+                         final ResultSet select = selectPreparedStatement.executeQuery()) {
+                        count.next();
+                        final long totalElements = count.getLong("count");
+                        final List<EncodedDetailedInvolved> content = new ArrayList<>(pagination.size());
+                        while (select.next()) {
+                            content.add(new EncodedDetailedInvolved(
+                                    new TraceId(select.getLong("trace_id")),
+                                    new EncodedInvolved(
+                                            aggregateId,
+                                            new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                            new ExecutedByEncoded(select.getString("executed_by_encoded"))),
+                                    new From(select.getString("from_value")),
+                                    new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                            ));
+                        }
+                        return new Page<>(content, pagination, totalElements);
                     }
-                    return new Page<>(content, pagination, totalElements);
                 }
             }
         } catch (final SQLException exception) {
@@ -85,48 +125,90 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
     public Page<EncodedDetailedInvolved> findBy(final ExecutedByHashed executedByHashed, final Pagination pagination) throws TraceRepositoryException {
         Objects.requireNonNull(executedByHashed);
         Objects.requireNonNull(pagination);
-        try (final Connection connection = dataSource.getConnection();
-             // language=sql
-             final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(*) AS count FROM pulse.traceability_aggregate WHERE executed_by_hashed = ?
-                     """);
-             // language=sql
-             final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
-                     SELECT trace_id, aggregate_root_id, executed_by_encoded, from_value, executed_at, executed_status FROM pulse.traceability_details WHERE executed_by_hashed = ? LIMIT ? OFFSET ?
-                     """)) {
+        try (final Connection connection = dataSource.getConnection()) {
             if (pagination.loadAll()) {
-                selectPreparedStatement.setString(1, executedByHashed.hashed());
-                final List<EncodedDetailedInvolved> content = new ArrayList<>();
-                try (final ResultSet select = selectPreparedStatement.executeQuery()) {
-                    while (select.next()) {
-                        content.add(new EncodedDetailedInvolved(
-                                new TraceId(select.getLong("trace_id")),
-                                new EncodedInvolved(new AnyAggregateId(select.getString("aggregate_root_id")), executedByHashed, new ExecutedByEncoded(select.getString("executed_by_encoded"))),
-                                new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
-                                ExecutionStatus.values()[select.getInt("executed_status")]));
+                // language=sql
+                try (final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
+                        SELECT
+                            ta.trace_id AS trace_id,
+                            ta.aggregate_root_id AS aggregate_root_id,
+                            ebe.executed_by_hashed AS executed_by_hashed,
+                            ebe.executed_by_encoded AS executed_by_encoded,
+                            td.from_value AS from_value,
+                            td.executed_at AS executed_at
+                        FROM pulse.traceability_aggregate ta
+                        JOIN pulse.traceability_details td
+                            ON td.trace_id = ta.trace_id
+                        JOIN pulse.executed_by_encoded ebe
+                            ON ebe.id = ta.executed_by_encoded_id
+                        WHERE ta.executed_by_encoded_id = ?
+                        ORDER BY td.executed_at, ta.trace_id
+                        """)) {
+                    selectPreparedStatement.setString(1, executedByHashed.hashed());
+                    final List<EncodedDetailedInvolved> content = new ArrayList<>();
+                    try (final ResultSet select = selectPreparedStatement.executeQuery()) {
+                        while (select.next()) {
+                            content.add(new EncodedDetailedInvolved(
+                                    new TraceId(select.getLong("trace_id")),
+                                    new EncodedInvolved(
+                                            new AnyAggregateId(select.getString("aggregate_root_id")),
+                                            new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                            new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                                    ),
+                                    new From(select.getString("from_value")),
+                                    new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                            ));
+                        }
                     }
+                    return new Page<>(content, pagination, content.size());
                 }
-                return new Page<>(content, pagination, content.size());
             } else {
-                countPreparedStatement.setString(1, executedByHashed.hashed());
-                selectPreparedStatement.setString(1, executedByHashed.hashed());
-                selectPreparedStatement.setLong(2, pagination.size());
-                selectPreparedStatement.setLong(3, pagination.offset());
-                try (final ResultSet count = countPreparedStatement.executeQuery();
-                     final ResultSet select = selectPreparedStatement.executeQuery()) {
-                    count.next();
-                    final long totalElements = count.getLong("count");
-                    final List<EncodedDetailedInvolved> content = new ArrayList<>(pagination.size());
-                    while (select.next()) {
-                        content.add(new EncodedDetailedInvolved(
-                                new TraceId(select.getLong("trace_id")),
-                                new EncodedInvolved(new AnyAggregateId(select.getString("aggregate_root_id")), executedByHashed, new ExecutedByEncoded(select.getString("executed_by_encoded"))),
-                                new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
-                                ExecutionStatus.values()[select.getInt("executed_status")]));
+                // language=sql
+                try (final PreparedStatement countPreparedStatement = connection.prepareStatement("""
+                        SELECT COUNT(*) AS count
+                        FROM pulse.traceability_aggregate
+                        WHERE executed_by_encoded_id = ?
+                        """);
+                     // language=sql
+                     final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
+                             SELECT
+                                 ta.trace_id AS trace_id,
+                                 ta.aggregate_root_id AS aggregate_root_id,
+                                 ebe.executed_by_hashed AS executed_by_hashed,
+                                 ebe.executed_by_encoded AS executed_by_encoded,
+                                 td.from_value AS from_value,
+                                 td.executed_at AS executed_at
+                             FROM pulse.traceability_aggregate ta
+                             JOIN pulse.traceability_details td
+                                 ON td.trace_id = ta.trace_id
+                             JOIN pulse.executed_by_encoded ebe
+                                 ON ebe.id = ta.executed_by_encoded_id
+                             WHERE ta.executed_by_encoded_id = ?
+                             ORDER BY td.executed_at, ta.trace_id
+                             LIMIT ? OFFSET ?
+                             """)) {
+                    countPreparedStatement.setString(1, executedByHashed.hashed());
+                    selectPreparedStatement.setString(1, executedByHashed.hashed());
+                    selectPreparedStatement.setLong(2, pagination.size());
+                    selectPreparedStatement.setLong(3, pagination.offset());
+                    try (final ResultSet count = countPreparedStatement.executeQuery();
+                         final ResultSet select = selectPreparedStatement.executeQuery()) {
+                        count.next();
+                        final long totalElements = count.getLong("count");
+                        final List<EncodedDetailedInvolved> content = new ArrayList<>(pagination.size());
+                        while (select.next()) {
+                            content.add(new EncodedDetailedInvolved(
+                                    new TraceId(select.getLong("trace_id")),
+                                    new EncodedInvolved(
+                                            new AnyAggregateId(select.getString("aggregate_root_id")),
+                                            new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                            new ExecutedByEncoded(select.getString("executed_by_encoded"))),
+                                    new From(select.getString("from_value")),
+                                    new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                            ));
+                        }
+                        return new Page<>(content, pagination, totalElements);
                     }
-                    return new Page<>(content, pagination, totalElements);
                 }
             }
         } catch (final SQLException exception) {

@@ -10,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -17,10 +18,30 @@ import java.util.Objects;
 @Unremovable
 public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorderRepository {
 
+    // executed_by_hashed is determinist
+    // executed_by_encoded is non-deterministic even on the same username
+
+    // language=sql
+    public static final String INSERT_EXECUTED_BY_ENCODED_SQL = """
+            INSERT INTO pulse.executed_by_encoded (
+                executed_by_hashed,
+                executed_by_encoded
+            )
+            VALUES (?, ?)
+            ON CONFLICT (executed_by_hashed)
+            DO NOTHING
+            RETURNING id;
+            """;
+
     // language=sql
     public static final String INSERT_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO pulse.traceability_aggregate(aggregate_root_id, aggregate_root_type, executed_by_hashed, executed_by_encoded)
-            VALUES (?, ?, ?, ?) ON CONFLICT (aggregate_root_id, aggregate_root_type, executed_by_hashed) DO NOTHING;
+            INSERT INTO pulse.traceability_aggregate (
+                aggregate_root_id,
+                executed_by_encoded_id
+            )
+            VALUES (?, ?)
+            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            DO NOTHING;
             """;
 
     private final DataSource dataSource;
@@ -32,16 +53,30 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     @Override
     public void store(final TraceRecorder traceRecorder) throws TraceRepositoryException {
         Objects.requireNonNull(traceRecorder);
-        try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement preparedStatement = connection.prepareStatement(INSERT_TRACEABILITY_AGGREGATE_SQL)) {
-            for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
-                preparedStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
-                preparedStatement.setString(2, encodedTraceAggregateId.aggregateId().getClass().getSimpleName());
-                preparedStatement.setString(3, encodedTraceAggregateId.executedByHashed().hashed());
-                preparedStatement.setString(4, encodedTraceAggregateId.executedByEncoded().encoded());
-                preparedStatement.addBatch();
+        try (final Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            try (final PreparedStatement executedByStatement = connection.prepareStatement(INSERT_EXECUTED_BY_ENCODED_SQL);
+                 final PreparedStatement aggregateStatement = connection.prepareStatement(INSERT_TRACEABILITY_AGGREGATE_SQL)) {
+                for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
+                    final long executedByEncodedId;
+                    executedByStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
+                    executedByStatement.setString(2, encodedTraceAggregateId.executedByEncoded().encoded());
+                    try (final ResultSet resultSet = executedByStatement.executeQuery()) {
+                        if (!resultSet.next()) {
+                            throw new SQLException("Unable to retrieve executed_by_encoded id");
+                        }
+                        executedByEncodedId = resultSet.getLong(1);
+                    }
+                    aggregateStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
+                    aggregateStatement.setLong(2, executedByEncodedId);
+                    aggregateStatement.addBatch();
+                }
+                aggregateStatement.executeBatch();
+                connection.commit();
+            } catch (final SQLException exception) {
+                connection.rollback();
+                throw new TraceRepositoryException(exception);
             }
-            preparedStatement.executeBatch();
         } catch (final SQLException exception) {
             throw new TraceRepositoryException(exception);
         }
