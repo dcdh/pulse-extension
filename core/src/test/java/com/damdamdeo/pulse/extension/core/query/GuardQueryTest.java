@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-// FCK tester l'appel au appender
 @ExtendWith(MockitoExtension.class)
 class GuardQueryTest {
 
@@ -66,7 +66,8 @@ class GuardQueryTest {
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(new SampleInput()),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
-                        executedByResolver)
+                        executedByResolver),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -89,7 +90,8 @@ class GuardQueryTest {
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(any()),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(backendUserVisibilityRolesProvider).provide()
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -108,7 +110,8 @@ class GuardQueryTest {
                         .isExactlyInstanceOf(QueryException.class)
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseExactlyInstanceOf(UnauthorizedException.class),
-                () -> verify(decorated, never()).execute(any())
+                () -> verify(decorated, never()).execute(any()),
+                () -> verify(traceAppender, never()).append(any(), any())
         );
     }
 
@@ -131,7 +134,8 @@ class GuardQueryTest {
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(any()),
                 () -> verify(executedByResolver).resolve(anySet()),
-                () -> verify(executionContextProvider).provide()
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -153,7 +157,8 @@ class GuardQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(anySet())
+                () -> verify(executedByResolver).resolve(anySet()),
+                () -> verify(traceAppender, never()).append(any(), any())
         );
     }
 
@@ -171,7 +176,8 @@ class GuardQueryTest {
         // Then
         assertAll(
                 () -> Assertions.assertSame(expected, actual),
-                () -> verify(decorated, times(1)).execute(any())
+                () -> verify(decorated, times(1)).execute(any()),
+                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
         );
     }
 
@@ -196,7 +202,8 @@ class GuardQueryTest {
                         .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
                         .hasCauseExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(anySet())
+                () -> verify(executedByResolver).resolve(anySet()),
+                () -> verify(traceAppender, never()).append(any(), any())
         );
     }
 }
