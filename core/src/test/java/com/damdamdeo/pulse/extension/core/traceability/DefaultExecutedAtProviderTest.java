@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.core.traceability;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,13 +13,13 @@ class DefaultExecutedAtProviderTest {
     @Test
     void shouldNowCurrentDateTime() {
         // Given
-        final ZonedDateTime before = ZonedDateTime.now();
+        final Instant before = Instant.now();
 
         // When
         final ExecutedAt executedAt = provider.now();
 
         // Then
-        final ZonedDateTime after = ZonedDateTime.now();
+        final Instant after = Instant.now();
 
         assertThat(executedAt.at()).isBetween(before, after);
     }

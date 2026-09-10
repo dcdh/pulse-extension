@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 
 public class AggregateIdDecomposer {
 
-    public Set<AggregateId> unCompound(final Set<AggregateId> aggregateIds) {
+    public Set<AnyAggregateId> unCompound(final Set<AggregateId> aggregateIds) {
         return aggregateIds.stream()
                 .flatMap(aggregateId -> {
                     final String[] split = aggregateId.id().split(AggregateId.SEPARATOR);
                     final List<AggregateId> uncompounded = new ArrayList<>(split.length);
-                    uncompounded.add(new AnyAggregateId(aggregateId.id()));
+                    uncompounded.add(AnyAggregateId.from(aggregateId));
                     for (int i = 1; i < split.length; i++) {
                         uncompounded.add(new AnyAggregateId(String.join(AggregateId.SEPARATOR,
                                 Arrays.asList(split).subList(0, i))));

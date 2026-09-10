@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+// FCK tester l'appel au appender
 @ExtendWith(MockitoExtension.class)
 class GuardQueryTest {
 
@@ -36,15 +38,15 @@ class GuardQueryTest {
     @Mock
     Query<SampleInput, TestProjection> decorated;
 
+    @Mock
+    TraceAppender traceAppender;
+
     GuardQuery<SampleInput, TestProjection> guardQuery;
 
     @BeforeEach
     void setUp() {
-        guardQuery = new GuardQuery<>(
-                executionContextProvider,
-                backendUserVisibilityRolesProvider,
-                executedByResolver,
-                decorated) {
+        guardQuery = new GuardQuery<>(executionContextProvider, backendUserVisibilityRolesProvider, executedByResolver,
+                decorated, traceAppender) {
         };
     }
 
@@ -63,11 +65,8 @@ class GuardQueryTest {
         assertAll(
                 () -> Assertions.assertSame(expected, actual),
                 () -> verify(decorated).execute(new SampleInput()),
-                () -> verifyNoInteractions(
-                        executionContextProvider,
-                        backendUserVisibilityRolesProvider,
-                        executedByResolver
-                )
+                () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
+                        executedByResolver)
         );
     }
 
@@ -162,12 +161,8 @@ class GuardQueryTest {
     void shouldReturnResultWhenFirstAudienceFailsAndSecondAudienceSucceeds() throws Exception {
         // Given
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-        final ExecutionContext context = new ExecutionContext(BOB, Set.of("ADMIN"));
 
         when(decorated.audiences()).thenReturn(List.of(Audience.ROLE_RESTRICTED, Audience.EVERYONE));
-
-        when(executionContextProvider.provide()).thenReturn(context);
-        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("SUPER_ADMIN"));
         when(decorated.execute(new SampleInput())).thenReturn(expected);
 
         // When

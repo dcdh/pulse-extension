@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;
@@ -20,21 +21,24 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
     private final ExecutionContextProvider executionContextProvider;
     private final List<OnStoredEventListener<K, Event<K>>> onStoredEventListeners;
     private final AggregateIdGenerator aggregateIdGenerator;
+    private final TraceAppender traceAppender;
 
     public CommandHandler(final CommandHandlerRegistry commandHandlerRegistry,
                           final EventRepository<A, K> eventRepository,
                           final Transaction transaction,
                           final ExecutionContextProvider executionContextProvider,
                           final List<OnStoredEventListener<K, Event<K>>> onStoredEventListeners,
-                          final AggregateIdGenerator aggregateIdGenerator) {
+                          final AggregateIdGenerator aggregateIdGenerator,
+                          final TraceAppender traceAppender) {
         this.commandHandlerRegistry = Objects.requireNonNull(commandHandlerRegistry);
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.transaction = Objects.requireNonNull(transaction);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.onStoredEventListeners = Objects.requireNonNull(onStoredEventListeners);
         this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
+        this.traceAppender = Objects.requireNonNull(traceAppender);
     }
-
+//FCK mutualiser et do la job  sur le traceAppender!
     public A handle(final K id, final CreationalCommand<K> creationalCommand,
                     final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException {
         Objects.requireNonNull(id);

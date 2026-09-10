@@ -1,8 +1,12 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameHasher;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public final class DefaultTraceAppender implements TraceAppender {
@@ -11,43 +15,43 @@ public final class DefaultTraceAppender implements TraceAppender {
     private final ExecutedAtProvider executedAtProvider;
     private final TraceIdGenerator traceIdGenerator;
     private final UsernameHasher usernameHasher;
-    private final TraceRepository traceRepository;
+    private final ExecutedByEncodedProvider executedByEncodedProvider;
+    private final TraceRecorderRepository traceRecorderRepository;
 
     public DefaultTraceAppender(final ExecutionContextProvider executionContextProvider,
                                 final ExecutedAtProvider executedAtProvider,
                                 final TraceIdGenerator traceIdGenerator,
                                 final UsernameHasher usernameHasher,
-                                final TraceRepository traceRepository) {
+                                final ExecutedByEncodedProvider executedByEncodedProvider,
+                                final TraceRecorderRepository traceRecorderRepository) {
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.executedAtProvider = Objects.requireNonNull(executedAtProvider);
         this.traceIdGenerator = Objects.requireNonNull(traceIdGenerator);
         this.usernameHasher = Objects.requireNonNull(usernameHasher);
-        this.traceRepository = Objects.requireNonNull(traceRepository);
+        this.executedByEncodedProvider = Objects.requireNonNull(executedByEncodedProvider);
+        this.traceRecorderRepository = Objects.requireNonNull(traceRecorderRepository);
     }
 
     @Override
-    public void append(final Traceable traceable, final ExecutionStatus executionStatus) throws TraceAppenderException {
+    public void append(final Traceable traceable, final From from) throws TraceAppenderException {
         Objects.requireNonNull(traceable);
-        Objects.requireNonNull(executionStatus);
+        Objects.requireNonNull(from);
         try {
-            FCK je ne peux pas utiliser le mecanisme d'ownership ... c'est compliqué si je retourne une liste
-                    le executedBy devrait être lié à un compte commun ...
-            je dois le faire au niveau de chaque trace ou bien
-            FCK c'est la vision item qui me pose pb
-                    
-            traceRepository.store(new Trace(
-                    traceIdGenerator.generate(),
-                    TracedByHashed.from(executionContextProvider.provide().executedBy().hash(usernameHasher)),
-                    ,
-                    ,
-                    executedAtProvider.now(),
-                    traceable.executedOn(),
-                    executionStatus));
-        } catch (final TraceIdGeneratorException | TraceRepositoryException exception) {
+            if (traceable.anyAggregateIds().isEmpty()) {
+                return;
+            }
+            final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
+            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(traceable.anyAggregateIds().size());
+            for (final AnyAggregateId aggregateId : traceable.anyAggregateIds()) {
+                EncodedTraceAggregateId encodedTraceAggregateId = new EncodedTraceAggregateId(aggregateId,
+                        executedBy.hash(usernameHasher),
+                        executedByEncodedProvider.provide(aggregateId, executedBy));
+                encodedTraceAggregateIds.add(encodedTraceAggregateId);
+            }
+            traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(), executedAtProvider.now(),
+                    from, encodedTraceAggregateIds));
+        } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException exception) {
             throw new TraceAppenderException(exception);
         }
     }
 }
-
-// FCK il me faut savoir si cela à reussi ou echouer c'est pour cela que je dois plutot passer par un interceptor ... cote infrastructure
-// FCK comment faire dans le guard ... uniquemment si cela passe ou pas ?

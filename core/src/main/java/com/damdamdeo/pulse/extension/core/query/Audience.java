@@ -7,22 +7,22 @@ public enum Audience {
 
     EVERYONE {
         @Override
-        Integer priority() {
+        int priority() {
             return 0;
         }
     },
     ROLE_RESTRICTED {
         @Override
-        Integer priority() {
+        int priority() {
             return 1;
         }
     },
     IN_EXECUTED_BY {
         @Override
-        Integer priority() {
+        int priority() {
             return 2;
         }
     };
 
-    abstract Integer priority();
+    abstract int priority();
 }
