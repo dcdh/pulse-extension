@@ -4,6 +4,9 @@ import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.query.audience.Everyone;
+import com.damdamdeo.pulse.extension.core.query.audience.InExecutedBy;
+import com.damdamdeo.pulse.extension.core.query.audience.RoleRestricted;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.junit.jupiter.api.Assertions;
@@ -55,7 +58,7 @@ class GuardQueryUseCaseTest {
         // Given
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
 
-        when(decorated.audiences()).thenReturn(List.of(Audience.EVERYONE));
+        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE));
         when(decorated.execute(new SampleInput())).thenReturn(expected);
 
         // When
@@ -77,7 +80,7 @@ class GuardQueryUseCaseTest {
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
         final ExecutionContext context = new ExecutionContext(BOB, Set.of("ADMIN"));
 
-        when(decorated.audiences()).thenReturn(List.of(Audience.ROLE_RESTRICTED));
+        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE));
         when(executionContextProvider.provide()).thenReturn(context);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
         when(decorated.execute(new SampleInput())).thenReturn(expected);
@@ -100,7 +103,7 @@ class GuardQueryUseCaseTest {
         // Given
         final ExecutionContext context = new ExecutionContext(BOB, Set.of("USER"));
 
-        when(decorated.audiences()).thenReturn(List.of(Audience.ROLE_RESTRICTED));
+        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE));
         when(executionContextProvider.provide()).thenReturn(context);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
 
@@ -121,7 +124,7 @@ class GuardQueryUseCaseTest {
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
         final ExecutionContext context = new ExecutionContext(BOB, Set.of());
 
-        when(decorated.audiences()).thenReturn(List.of(Audience.IN_EXECUTED_BY));
+        when(decorated.audiences()).thenReturn(List.of(InExecutedBy.INSTANCE));
         when(decorated.execute(new SampleInput())).thenReturn(expected);
         when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of(BOB));
         when(executionContextProvider.provide()).thenReturn(context);
@@ -145,7 +148,7 @@ class GuardQueryUseCaseTest {
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
         final ExecutionContext context = new ExecutionContext(BOB, Set.of());
 
-        when(decorated.audiences()).thenReturn(List.of(Audience.IN_EXECUTED_BY));
+        when(decorated.audiences()).thenReturn(List.of(InExecutedBy.INSTANCE));
         when(decorated.execute(new SampleInput())).thenReturn(expected);
         when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of());
         when(executionContextProvider.provide()).thenReturn(context);
@@ -167,7 +170,7 @@ class GuardQueryUseCaseTest {
         // Given
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
 
-        when(decorated.audiences()).thenReturn(List.of(Audience.ROLE_RESTRICTED, Audience.EVERYONE));
+        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE, Everyone.INSTANCE));
         when(decorated.execute(new SampleInput())).thenReturn(expected);
 
         // When
@@ -187,8 +190,8 @@ class GuardQueryUseCaseTest {
         final ExecutionContext context = new ExecutionContext(BOB, Set.of());
         final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
 
-        when(decorated.audiences()).thenReturn(List.of(Audience.ROLE_RESTRICTED,
-                Audience.IN_EXECUTED_BY));
+        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE,
+                InExecutedBy.INSTANCE));
 
         when(executionContextProvider.provide()).thenReturn(context);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));

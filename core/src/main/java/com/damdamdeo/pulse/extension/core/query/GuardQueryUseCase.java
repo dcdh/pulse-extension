@@ -1,9 +1,8 @@
 package com.damdamdeo.pulse.extension.core.query;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.query.audience.Audience;
+import com.damdamdeo.pulse.extension.core.query.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
@@ -11,7 +10,7 @@ import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.Optional;
 
 public abstract class GuardQueryUseCase<I extends Input, P extends Projection> implements QueryUseCase<I, P> {
 
@@ -42,46 +41,17 @@ public abstract class GuardQueryUseCase<I extends Input, P extends Projection> i
                 .stream()
                 .sorted(Comparator.comparing(Audience::priority))
                 .toList();
-        final ExecutionContext executionContext;
-        if ((audiences.contains(Audience.ROLE_RESTRICTED) || audiences.contains(Audience.IN_EXECUTED_BY))
-                && !audiences.contains(Audience.EVERYONE)) {
-            executionContext = executionContextProvider.provide();
-        } else {
-            executionContext = null;
-        }
+        final AudienceExecutionContext context = new AudienceExecutionContext(executionContextProvider,
+                backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         for (final Audience audience : audiences) {
-            final Result<P> result = switch (audience) {
-                case EVERYONE -> decorated.execute(input);
-                case ROLE_RESTRICTED -> {
-                    Objects.requireNonNull(executionContext);
-                    final List<String> visibilityRoles = backendUserVisibilityRolesProvider.provide();
-                    if (visibilityRoles.stream().anyMatch(executionContext::hasRole)) {
-                        yield decorated.execute(input);
-                    }
-                    yield null;
-                }
-                case IN_EXECUTED_BY -> {
-                    try {
-                        Objects.requireNonNull(executionContext);
-                        final Result<P> executed = decorated.execute(input);
-                        final Set<AggregateId> uncompounded = aggregateIdDecomposer.unCompound(executed.aggregateIds());
-                        final Set<ExecutedBy> executedByEligibles = executedByResolver.resolve(uncompounded);
-                        if (executedByEligibles.contains(executionContext.executedBy())) {
-                            yield executed;
-                        }
-                        yield null;
-                    } catch (final UnableToResolveException e) {
-                        throw new QueryException(e, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
-                    }
-                }
-            };
-            if (result != null) {
+            final Optional<Result<P>> result = audience.execute(input, decorated, context);
+            if (result.isPresent()) {
                 try {
-                    traceAppender.append(result, From.from(input));
+                    traceAppender.append(result.get(), From.from(input));
                 } catch (final TraceAppenderException exception) {
                     throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
                 }
-                return result;
+                return result.get();
             }
         }
         throw new QueryException(new UnauthorizedException());

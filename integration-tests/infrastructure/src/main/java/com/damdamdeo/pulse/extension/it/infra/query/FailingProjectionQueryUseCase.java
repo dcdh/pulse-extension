@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.it.infra.query;
 
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.audience.Audience;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import jakarta.enterprise.context.ApplicationScoped;
 

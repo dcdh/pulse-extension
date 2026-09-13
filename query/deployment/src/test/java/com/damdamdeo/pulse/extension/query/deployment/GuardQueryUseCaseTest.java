@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.audience.Audience;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query;
 
+import com.damdamdeo.pulse.extension.core.query.audience.Audience;
+
 import java.util.List;
 
 public interface QueryUseCase<I extends Input, P extends Projection> {

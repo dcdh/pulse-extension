@@ -1,9 +1,9 @@
 = TODO
 
 == Must have
-1. Query is a UseCase, rename it to QueryUseCase. I've got ambiguity with the UseCase interface. Should handle it !
-2. In GuardQuery audience add a ROLE_RESTRICTED with a name, and an audience for a specific Service Account and an Audience for a specific End User
-3. Create a GuardUseCase using the same audience than GuardQuery
+1. In GuardQuery audience add a ROLE_RESTRICTED with a name, and an audience for a specific Service Account and an Audience for a specific End User
+2. Create a GuardDomainUseCase using the same audience than GuardQuery
+- I would need to have a Creational one
 
 == Nice to have
 1. propage traceId in CommandHandler on onStoredEventListener#execute
