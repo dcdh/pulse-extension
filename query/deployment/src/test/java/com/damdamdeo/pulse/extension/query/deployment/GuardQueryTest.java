@@ -12,7 +12,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class GuardQueryTest {
+class GuardQueryTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

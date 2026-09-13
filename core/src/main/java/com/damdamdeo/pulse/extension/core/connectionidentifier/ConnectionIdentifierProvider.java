@@ -21,8 +21,8 @@ public class ConnectionIdentifierProvider {
             final ConnectedUser connectedUser = connectedUserProvider.provide();
             return ConnectionIdentifier.from(hasher.hash(connectedUser));
         } catch (final ConnectedIsAnonymousException | UsernameNotAMailException |
-                       ConnectedUserNotAvailableException e) {
-            throw new ConnectionIdentifierProviderException(e);
+                       ConnectedUserNotAvailableException exception) {
+            throw new ConnectionIdentifierProviderException(exception);
         }
     }
 }

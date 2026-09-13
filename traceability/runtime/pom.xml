@@ -92,7 +92,7 @@
                 <version>${quarkus.version}</version>
                 <configuration>
                     <capabilities>
-                        <provides>com.damdamdeo.pulse-query-extension</provides>
+                        <provides>com.damdamdeo.pulse-traceability-extension</provides>
                     </capabilities>
                 </configuration>
                 <executions>

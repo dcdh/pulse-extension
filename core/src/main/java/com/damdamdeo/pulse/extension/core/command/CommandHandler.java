@@ -5,7 +5,10 @@ import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListenerException;
+import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;
@@ -38,33 +41,40 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
         this.traceAppender = Objects.requireNonNull(traceAppender);
     }
-//FCK mutualiser et do la job  sur le traceAppender!
-    public A handle(final K id, final CreationalCommand<K> creationalCommand,
-                    final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException {
+
+    public final A handle(final K id, final CreationalCommand<K> creationalCommand,
+                          final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws CommandException {
         Objects.requireNonNull(id);
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateExceptionSupplier);
         final ExecutionContext executionContext = executionContextProvider.provide();
         Validate.validState(!executionContext.executedBy().value().equals(ExecutedBy.Banned.DISCRIMINANT));
-        return commandHandlerRegistry.execute(id, () -> {
-            if (eventRepository.hasEventsFor(id)) {
-                throw new BusinessException(duplicateAggregateExceptionSupplier.apply(id));
-            }
-            final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
-            final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
-            final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-            for (final VersionizedEvent<K> newEvent : newEvents) {
-                for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
-                    onStoredEventListener.execute(id, newEvent.event());
+        return transaction.joiningExisting(() -> {
+            try {
+                if (eventRepository.hasEventsFor(id)) {
+                    throw duplicateAggregateExceptionSupplier.apply(id);
                 }
+                final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
+                final A aggregate = commandHandlerRegistry.execute(id,
+                        () -> stateApplier.executeCommand(creationalCommand, executionContext));
+                final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+                for (final VersionizedEvent<K> newEvent : newEvents) {
+                    for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
+                        onStoredEventListener.execute(id, newEvent.event());
+                    }
+                }
+                eventRepository.save(newEvents, aggregate, executionContext.executedBy());
+                traceAppender.append(new AggregateIdTraceable(aggregate.id()), From.from(creationalCommand));
+                return aggregate;
+            } catch (final DuplicateAggregateException | BusinessException | OnStoredEventListenerException |
+                           TraceAppenderException exception) {
+                throw new CommandException(exception);
             }
-            eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-            return aggregate;
         });
     }
 
-    public A handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
-                    final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws BusinessException {
+    public final A handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
+                          final Function<K, DuplicateAggregateException> duplicateAggregateExceptionSupplier) throws CommandException {
         Objects.requireNonNull(creational);
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateExceptionSupplier);
@@ -78,56 +88,64 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                 } else {
                     id = aggregateIdGenerator.generate(getAggregateIdClass(), creational);
                 }
-                return commandHandlerRegistry.execute(id, () -> {
-                    if (eventRepository.hasEventsFor(id)) {
-                        throw new BusinessException(duplicateAggregateExceptionSupplier.apply(id));
+                if (eventRepository.hasEventsFor(id)) {
+                    throw duplicateAggregateExceptionSupplier.apply(id);
+                }
+                final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
+                final A aggregate = commandHandlerRegistry.execute(id,
+                        () -> stateApplier.executeCommand(creationalCommand, executionContext));
+                final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+                for (final VersionizedEvent<K> newEvent : newEvents) {
+                    for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
+                        onStoredEventListener.execute(id, newEvent.event());
                     }
-                    final StateApplier<A, K> stateApplier = stateApplier(List.of(), id);
-                    final A aggregate = stateApplier.executeCommand(creationalCommand, executionContext);
-                    final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-                    for (final VersionizedEvent<K> newEvent : newEvents) {
-                        for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
-                            onStoredEventListener.execute(id, newEvent.event());
-                        }
-                    }
-                    eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-                    return aggregate;
-                });
-            } catch (final SequenceGenerationException e) {
-                throw new TechnicalException(e);
+                }
+                eventRepository.save(newEvents, aggregate, executionContext.executedBy());
+                traceAppender.append(new AggregateIdTraceable(aggregate.id()), From.from(creationalCommand));
+                return aggregate;
+            } catch (final SequenceGenerationException | DuplicateAggregateException | BusinessException
+                           | OnStoredEventListenerException | TraceAppenderException exception) {
+                throw new CommandException(exception);
             }
         });
     }
 
-    public A handle(final Command<K> command) throws BusinessException {
+    public final A handle(final Command<K> command) throws CommandException {
         return execute(command, executionContextProvider.provide(), null);
     }
 
-    public A handle(final Command<K> command, final Supplier<MissingAggregateException> missingAggregateExceptionSupplier) throws BusinessException {
+    public final A handle(final Command<K> command, final Supplier<MissingAggregateException> missingAggregateExceptionSupplier) throws CommandException {
         return execute(command, executionContextProvider.provide(), missingAggregateExceptionSupplier);
     }
 
     private A execute(final Command<K> command, final ExecutionContext executionContext,
-                      final Supplier<MissingAggregateException> missingAggregateExceptionSupplier) throws BusinessException {
+                      final Supplier<MissingAggregateException> missingAggregateExceptionSupplier) throws CommandException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(executionContext);
         Validate.validState(!executionContext.executedBy().value().equals(ExecutedBy.Banned.DISCRIMINANT));
-        return commandHandlerRegistry.execute(command.id(), () -> transaction.joiningExisting(() -> {
-            final List<ExecutedByEvent<K>> events = eventRepository.loadOrderByVersionASC(command.id());
-            if (events.isEmpty() && missingAggregateExceptionSupplier != null) {
-                throw new BusinessException(missingAggregateExceptionSupplier.get());
-            }
-            final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
-            final A aggregate = stateApplier.executeCommand(command, executionContext);
-            final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
-            for (final VersionizedEvent<K> newEvent : newEvents) {
-                for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
-                    onStoredEventListener.execute(command.id(), newEvent.event());
+        return transaction.joiningExisting(() -> {
+            try {
+                final List<ExecutedByEvent<K>> events = eventRepository.loadOrderByVersionASC(command.id());
+                if (events.isEmpty() && missingAggregateExceptionSupplier != null) {
+                    throw missingAggregateExceptionSupplier.get();
                 }
+                final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
+                final A aggregate = commandHandlerRegistry.execute(command.id(),
+                        () -> stateApplier.executeCommand(command, executionContext));
+                final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
+                for (final VersionizedEvent<K> newEvent : newEvents) {
+                    for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
+                        onStoredEventListener.execute(command.id(), newEvent.event());
+                    }
+                }
+                eventRepository.save(newEvents, aggregate, executionContext.executedBy());
+                traceAppender.append(new AggregateIdTraceable(aggregate.id()), From.from(command));
+                return aggregate;
+            } catch (final MissingAggregateException | BusinessException | OnStoredEventListenerException
+                           | TraceAppenderException exception) {
+                throw new CommandException(exception);
             }
-            eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-            return aggregate;
-        }));
+        });
     }
 
     abstract protected Class<A> getAggregateRootClass();

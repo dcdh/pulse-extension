@@ -1,12 +1,11 @@
 = TODO
 
-== Nice to have
+== Must have
+1. Query is a UseCase, rename it to QueryUseCase. I've got ambiguity with the UseCase interface. Should handle it !
+2. In GuardQuery audience add a ROLE_RESTRICTED with a name, and an audience for a specific Service Account and an Audience for a specific End User
+3. Create a GuardUseCase using the same audience than GuardQuery
 
-0. quarkus-jdbc-postgresql : do not include inside dependency, check presence using dependency check, remove Provider<DataSource>, include beans only if dependency is present, do a documentation about it.
-1. pulse-cache
-- caffeine
-- redis (valkey)
-- test-framework: create a Stub
-- cache should not fail: use a degraded mode by doing the call and add a log.
+== Nice to have
+1. propage traceId in CommandHandler on onStoredEventListener#execute
 2. split common module into separate sub modules
 3. tests sharing

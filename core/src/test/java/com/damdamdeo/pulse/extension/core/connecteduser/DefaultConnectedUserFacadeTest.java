@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.core.connecteduser;
 
-import com.damdamdeo.pulse.extension.core.TechnicalException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import org.junit.jupiter.api.Test;
@@ -71,8 +70,8 @@ class DefaultConnectedUserFacadeTest {
         when(connectionIdentifierProvider.provide()).thenThrow(cause);
 
         // When
-        final TechnicalException exception = assertThrows(
-                TechnicalException.class, () -> facade.isRegistered());
+        final RegistrationCheckerException exception = assertThrows(
+                RegistrationCheckerException.class, () -> facade.isRegistered());
 
         // Then
         assertAll(
@@ -91,8 +90,8 @@ class DefaultConnectedUserFacadeTest {
         when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenThrow(cause);
 
         // When
-        final TechnicalException exception = assertThrows(
-                TechnicalException.class, () -> facade.isRegistered());
+        final RegistrationCheckerException exception = assertThrows(
+                RegistrationCheckerException.class, () -> facade.isRegistered());
 
         // Then
         assertAll(

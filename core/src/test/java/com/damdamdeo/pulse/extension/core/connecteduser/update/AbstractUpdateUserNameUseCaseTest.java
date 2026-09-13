@@ -1,12 +1,11 @@
 package com.damdamdeo.pulse.extension.core.connecteduser.update;
 
-import com.damdamdeo.pulse.extension.core.BusinessException;
-import com.damdamdeo.pulse.extension.core.TechnicalException;
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.UserUpdateUsername;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -62,7 +61,7 @@ class AbstractUpdateUserNameUseCaseTest {
         when(connectionIdentifierProvider.provide()).thenThrow(cause);
 
         // When
-        final TechnicalException exception = assertThrows(TechnicalException.class, () -> useCase.execute(command));
+        final UseCaseException exception = assertThrows(UseCaseException.class, () -> useCase.execute(command));
 
         // Then
         assertAll(
@@ -86,24 +85,9 @@ class AbstractUpdateUserNameUseCaseTest {
                 .store(connectionIdentifier, user.id());
 
         // When
-        final TechnicalException exception = assertThrows(TechnicalException.class,() -> useCase.execute(command));
+        final UseCaseException exception = assertThrows(UseCaseException.class, () -> useCase.execute(command));
 
         // Then
         assertSame(cause, exception.getCause());
-    }
-
-    @Test
-    void shouldPropagateBusinessExceptionFromCommandHandler() throws Exception {
-        // Given
-        final UserUpdateUsername command = new UserUpdateUsername(UserId.USER_1);
-        final BusinessException cause =new BusinessException(new RuntimeException());
-        when(connectionIdentifierProvider.provide()).thenReturn(ConnectionIdentifier.from("abcdef123456"));
-        when(commandHandler.handle(eq(command), any())).thenThrow(cause);
-
-        // When
-        final BusinessException exception = assertThrows(BusinessException.class, () -> useCase.execute(command));
-
-        // Then
-        assertSame(cause, exception);
     }
 }

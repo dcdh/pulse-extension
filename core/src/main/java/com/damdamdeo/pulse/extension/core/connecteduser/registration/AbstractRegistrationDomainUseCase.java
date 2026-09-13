@@ -1,10 +1,14 @@
 package com.damdamdeo.pulse.extension.core.connecteduser.registration;
 
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateRoot;
+import com.damdamdeo.pulse.extension.core.SequenceNumber;
+import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
 import java.util.Objects;
 
@@ -23,7 +27,7 @@ public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C
     }
 
     @Override
-    public final A execute(final C registrationCommand) throws BusinessException, TechnicalException {
+    public final A execute(final C registrationCommand) throws UseCaseException {
         Objects.requireNonNull(registrationCommand);
         try {
             final ConnectionIdentifier connectionIdentifier = connectionIdentifierProvider.provide();
@@ -31,14 +35,14 @@ public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C
             connectionIdentifierRepository.store(connectionIdentifier, handled.id());
             onUserNameRegistered(handled, registrationCommand);
             return handled;
-        } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {
-            throw new TechnicalException(exception);
-        } catch (final DuplicateConnectionIdentifierException e) {
-            throw new BusinessException(e);
+        } catch (final CommandException | ConnectionIdentifierProviderException |
+                       ConnectionIdentifierRepositoryException
+                       | DuplicateConnectionIdentifierException exception) {
+            throw new UseCaseException(exception);
         }
     }
 
     protected abstract K from(SequenceNumber sequenceNumber);
 
-    protected abstract void onUserNameRegistered(A aggregateRoot, C registrationCommand) throws BusinessException;
+    protected abstract void onUserNameRegistered(A aggregateRoot, C registrationCommand) throws UseCaseException;
 }

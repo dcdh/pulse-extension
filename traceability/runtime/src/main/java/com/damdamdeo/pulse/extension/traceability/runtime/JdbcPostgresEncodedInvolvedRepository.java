@@ -1,7 +1,9 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
@@ -22,9 +24,12 @@ import java.util.Objects;
 public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRepository {
 
     private final DataSource dataSource;
+    private final SchemaName schemaName;
 
-    public JdbcPostgresEncodedInvolvedRepository(final DataSource dataSource) {
+    public JdbcPostgresEncodedInvolvedRepository(final DataSource dataSource,
+                                                 final ApplicationNamingProvider applicationNamingProvider) {
         this.dataSource = Objects.requireNonNull(dataSource);
+        this.schemaName = SchemaName.from(applicationNamingProvider.provide());
     }
 
     @Override
@@ -34,12 +39,18 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
         try (final Connection connection = dataSource.getConnection();
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(*) AS count FROM pulse.traceability_aggregate WHERE aggregate_root_id = ?
-                     """);
+                     SELECT COUNT(ta.*) AS count FROM %s.traceability_aggregate ta WHERE aggregate_root_id = ?
+                     """.formatted(schemaName.name()));
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
-                     SELECT executed_by_hashed, executed_by_encoded FROM pulse.traceability_aggregate WHERE aggregate_root_id = ? LIMIT ? OFFSET ?
-                     """)) {
+                     SELECT
+                       ebe.executed_by_hashed AS executed_by_hashed,
+                       ebe.executed_by_encoded AS executed_by_encoded
+                     FROM %1$s.traceability_aggregate ta
+                     JOIN %1$s.executed_by_encoded ebe
+                       ON ebe.id = ta.executed_by_encoded_id
+                     WHERE ta.aggregate_root_id = ? LIMIT ? OFFSET ?
+                     """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
                 selectPreparedStatement.setString(1, aggregateId.id());
                 final List<EncodedInvolved> content = new ArrayList<>();
@@ -54,11 +65,9 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                 return new Page<>(content, pagination, content.size());
             } else {
                 countPreparedStatement.setString(1, aggregateId.id());
-                countPreparedStatement.setString(2, aggregateId.getClass().getSimpleName());
                 selectPreparedStatement.setString(1, aggregateId.id());
-                countPreparedStatement.setString(2, aggregateId.getClass().getSimpleName());
-                selectPreparedStatement.setLong(3, pagination.size());
-                selectPreparedStatement.setLong(2, pagination.offset());
+                selectPreparedStatement.setLong(2, pagination.size());
+                selectPreparedStatement.setLong(3, pagination.offset());
                 try (final ResultSet count = countPreparedStatement.executeQuery();
                      final ResultSet select = selectPreparedStatement.executeQuery()) {
                     count.next();
@@ -85,12 +94,22 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
         try (final Connection connection = dataSource.getConnection();
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(*) AS count FROM pulse.traceability_aggregate WHERE executed_by_hashed = ?
-                     """);
+                     SELECT COUNT(ta.*) AS count
+                     FROM %1$s.traceability_aggregate ta
+                     JOIN %1$s.executed_by_encoded ebe
+                       ON ebe.id = ta.executed_by_encoded_id
+                     WHERE ebe.executed_by_hashed = ?
+                     """.formatted(schemaName.name()));
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
-                     SELECT aggregate_root_id, executed_by_encoded FROM pulse.traceability_aggregate  WHERE executed_by_hashed = ? LIMIT ? OFFSET ?
-                     """)) {
+                     SELECT
+                       ta.aggregate_root_id AS aggregate_root_id,
+                       ebe.executed_by_encoded AS executed_by_encoded
+                     FROM %1$s.traceability_aggregate ta
+                     JOIN %1$s.executed_by_encoded ebe
+                       ON ebe.id = ta.executed_by_encoded_id
+                     WHERE ebe.executed_by_hashed = ? LIMIT ? OFFSET ?
+                     """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
                 selectPreparedStatement.setString(1, executedByHashed.hashed());
                 final List<EncodedInvolved> content = new ArrayList<>();

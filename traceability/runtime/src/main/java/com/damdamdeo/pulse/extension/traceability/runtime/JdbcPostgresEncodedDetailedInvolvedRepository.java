@@ -1,7 +1,9 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
@@ -22,9 +24,12 @@ import java.util.Objects;
 public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDetailedInvolvedRepository {
 
     private final DataSource dataSource;
+    private final SchemaName schemaName;
 
-    public JdbcPostgresEncodedDetailedInvolvedRepository(final DataSource dataSource) {
+    public JdbcPostgresEncodedDetailedInvolvedRepository(final DataSource dataSource,
+                                                         final ApplicationNamingProvider applicationNamingProvider) {
         this.dataSource = Objects.requireNonNull(dataSource);
+        this.schemaName = SchemaName.from(applicationNamingProvider.provide());
     }
 
     @Override
@@ -37,19 +42,19 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                 // language=sql
                 try (final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                         SELECT
-                            ta.trace_id AS trace_id,
-                            ebe.executed_by_hashed AS executed_by_hashed,
-                            ebe.executed_by_encoded AS executed_by_encoded,
-                            td.from_value AS from_value,
-                            td.executed_at AS executed_at
-                        FROM pulse.traceability_aggregate ta
-                        JOIN pulse.traceability_details td
-                            ON td.trace_id = ta.trace_id
-                        JOIN pulse.executed_by_encoded ebe
-                            ON ebe.id = ta.executed_by_encoded_id
+                          ta.trace_id AS trace_id,
+                          ebe.executed_by_hashed AS executed_by_hashed,
+                          ebe.executed_by_encoded AS executed_by_encoded,
+                          td.from_value AS from_value,
+                          td.executed_at AS executed_at
+                        FROM %1$s.traceability_aggregate ta
+                        JOIN %1$s.traceability_details td
+                          ON td.trace_id = ta.trace_id
+                        JOIN %1$s.executed_by_encoded ebe
+                          ON ebe.id = ta.executed_by_encoded_id
                         WHERE ta.aggregate_root_id = ?
                         ORDER BY td.executed_at, ta.trace_id
-                        """)) {
+                        """.formatted(schemaName.name()))) {
                     selectPreparedStatement.setString(1, aggregateId.id());
                     final List<EncodedDetailedInvolved> content = new ArrayList<>();
                     try (final ResultSet select = selectPreparedStatement.executeQuery()) {
@@ -71,27 +76,25 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
             } else {
                 // language=sql
                 try (final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                        SELECT COUNT(*) AS count
-                        FROM pulse.traceability_aggregate
-                        WHERE aggregate_root_id = ?
-                        """);
+                        SELECT COUNT(ta.*) AS count FROM %s.traceability_aggregate ta WHERE aggregate_root_id = ?
+                        """.formatted(schemaName.name()));
                      // language=sql
                      final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                              SELECT
-                                 ta.trace_id AS trace_id,
-                                 ebe.executed_by_hashed AS executed_by_hashed,
-                                 ebe.executed_by_encoded AS executed_by_encoded,
-                                 td.from_value AS from_value,
-                                 td.executed_at AS executed_at
-                             FROM pulse.traceability_aggregate ta
-                             JOIN pulse.traceability_details td
-                                 ON td.trace_id = ta.trace_id
-                             JOIN pulse.executed_by_encoded ebe
-                                 ON ebe.id = ta.executed_by_encoded_id
+                               ta.trace_id AS trace_id,
+                               ebe.executed_by_hashed AS executed_by_hashed,
+                               ebe.executed_by_encoded AS executed_by_encoded,
+                               td.from_value AS from_value,
+                               td.executed_at AS executed_at
+                             FROM %1$s.traceability_aggregate ta
+                             JOIN %1$s.traceability_details td
+                               ON td.trace_id = ta.trace_id
+                             JOIN %1$s.executed_by_encoded ebe
+                               ON ebe.id = ta.executed_by_encoded_id
                              WHERE ta.aggregate_root_id = ?
                              ORDER BY td.executed_at, ta.trace_id
                              LIMIT ? OFFSET ?
-                             """)) {
+                             """.formatted(schemaName.name()))) {
                     countPreparedStatement.setString(1, aggregateId.id());
                     selectPreparedStatement.setString(1, aggregateId.id());
                     selectPreparedStatement.setLong(2, pagination.size());
@@ -136,14 +139,14 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                             ebe.executed_by_encoded AS executed_by_encoded,
                             td.from_value AS from_value,
                             td.executed_at AS executed_at
-                        FROM pulse.traceability_aggregate ta
-                        JOIN pulse.traceability_details td
+                        FROM %1$s.traceability_aggregate ta
+                        JOIN %1$s.traceability_details td
                             ON td.trace_id = ta.trace_id
-                        JOIN pulse.executed_by_encoded ebe
+                        JOIN %1$s.executed_by_encoded ebe
                             ON ebe.id = ta.executed_by_encoded_id
-                        WHERE ta.executed_by_encoded_id = ?
+                        WHERE ebe.executed_by_hashed = ?
                         ORDER BY td.executed_at, ta.trace_id
-                        """)) {
+                        """.formatted(schemaName.name()))) {
                     selectPreparedStatement.setString(1, executedByHashed.hashed());
                     final List<EncodedDetailedInvolved> content = new ArrayList<>();
                     try (final ResultSet select = selectPreparedStatement.executeQuery()) {
@@ -165,10 +168,12 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
             } else {
                 // language=sql
                 try (final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                        SELECT COUNT(*) AS count
-                        FROM pulse.traceability_aggregate
-                        WHERE executed_by_encoded_id = ?
-                        """);
+                        SELECT COUNT(ta.*) AS count
+                        FROM %1$s.traceability_aggregate ta
+                        JOIN %1$s.executed_by_encoded ebe
+                          ON ebe.id = ta.executed_by_encoded_id
+                        WHERE ebe.executed_by_hashed = ?
+                        """.formatted(schemaName.name()));
                      // language=sql
                      final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                              SELECT
@@ -178,15 +183,15 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                  ebe.executed_by_encoded AS executed_by_encoded,
                                  td.from_value AS from_value,
                                  td.executed_at AS executed_at
-                             FROM pulse.traceability_aggregate ta
-                             JOIN pulse.traceability_details td
+                             FROM %1$s.traceability_aggregate ta
+                             JOIN %1$s.traceability_details td
                                  ON td.trace_id = ta.trace_id
-                             JOIN pulse.executed_by_encoded ebe
+                             JOIN %1$s.executed_by_encoded ebe
                                  ON ebe.id = ta.executed_by_encoded_id
-                             WHERE ta.executed_by_encoded_id = ?
+                             WHERE ebe.executed_by_hashed = ?
                              ORDER BY td.executed_at, ta.trace_id
                              LIMIT ? OFFSET ?
-                             """)) {
+                             """.formatted(schemaName.name()))) {
                     countPreparedStatement.setString(1, executedByHashed.hashed());
                     selectPreparedStatement.setString(1, executedByHashed.hashed());
                     selectPreparedStatement.setLong(2, pagination.size());

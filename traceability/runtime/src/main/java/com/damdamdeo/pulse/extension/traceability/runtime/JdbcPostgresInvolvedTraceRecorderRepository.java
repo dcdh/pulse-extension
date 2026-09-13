@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
+import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.traceability.EncodedTraceAggregateId;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorder;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorderRepository;
@@ -23,19 +25,30 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
 
     // language=sql
     public static final String INSERT_EXECUTED_BY_ENCODED_SQL = """
-            INSERT INTO pulse.executed_by_encoded (
-                executed_by_hashed,
-                executed_by_encoded
+            WITH inserted AS (
+                INSERT INTO %1$s.executed_by_encoded (
+                    executed_by_hashed,
+                    executed_by_encoded
+                )
+                VALUES (?, ?)
+                ON CONFLICT (executed_by_hashed)
+                DO NOTHING
+                RETURNING id
             )
-            VALUES (?, ?)
-            ON CONFLICT (executed_by_hashed)
-            DO NOTHING
-            RETURNING id;
+            SELECT id
+            FROM inserted
+            
+            UNION ALL
+            
+            SELECT id
+            FROM %1$s.executed_by_encoded
+            WHERE executed_by_hashed = ?
+            LIMIT 1;
             """;
 
     // language=sql
     public static final String INSERT_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO pulse.traceability_aggregate (
+            INSERT INTO %s.traceability_aggregate (
                 aggregate_root_id,
                 executed_by_encoded_id
             )
@@ -45,9 +58,12 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             """;
 
     private final DataSource dataSource;
+    private final SchemaName schemaName;
 
-    public JdbcPostgresInvolvedTraceRecorderRepository(final DataSource dataSource) {
+    public JdbcPostgresInvolvedTraceRecorderRepository(final DataSource dataSource,
+                                                       final ApplicationNamingProvider applicationNamingProvider) {
         this.dataSource = Objects.requireNonNull(dataSource);
+        this.schemaName = SchemaName.from(applicationNamingProvider.provide());
     }
 
     @Override
@@ -55,12 +71,15 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
         Objects.requireNonNull(traceRecorder);
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            try (final PreparedStatement executedByStatement = connection.prepareStatement(INSERT_EXECUTED_BY_ENCODED_SQL);
-                 final PreparedStatement aggregateStatement = connection.prepareStatement(INSERT_TRACEABILITY_AGGREGATE_SQL)) {
+            try (final PreparedStatement executedByStatement = connection.prepareStatement(
+                    INSERT_EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
+                 final PreparedStatement aggregateStatement = connection.prepareStatement(
+                         INSERT_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
                 for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
                     final long executedByEncodedId;
                     executedByStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
                     executedByStatement.setString(2, encodedTraceAggregateId.executedByEncoded().encoded());
+                    executedByStatement.setString(3, encodedTraceAggregateId.executedByHashed().hashed());
                     try (final ResultSet resultSet = executedByStatement.executeQuery()) {
                         if (!resultSet.next()) {
                             throw new SQLException("Unable to retrieve executed_by_encoded id");

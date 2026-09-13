@@ -8,11 +8,24 @@ import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityFinder
 import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityParamConverterProvider;
 import com.damdamdeo.pulse.extension.traceability.runtime.api.deserializer.TraceabilityObjectMapperProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 
 public class BeansProcessor {
+
+    @BuildStep
+    AdditionalBeanBuildItem registerTraceIdGenerator(final TraceabilityConfiguration traceabilityConfiguration) {
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        switch (traceabilityConfiguration.tracingMode()) {
+            case DISABLED -> builder.addBeanClass(NoOpTraceIdGenerator.class)
+                    .setUnremovable()
+                    .setDefaultScope(DotNames.APPLICATION_SCOPED);
+            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(JdbcPostgresTraceIdGenerator.class);
+        }
+        return builder.build();
+    }
 
     @BuildStep
     AdditionalBeanBuildItem registerTraceRecorderRepository(final TraceabilityConfiguration traceabilityConfiguration) {
@@ -91,8 +104,12 @@ public class BeansProcessor {
     AdditionalBeanBuildItem registerDetailedInvolvedFinder(final TraceabilityConfiguration traceabilityConfiguration) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
         switch (traceabilityConfiguration.tracingMode()) {
-            case DISABLED -> builder.addBeanClass(NoOpDetailedInvolvedFinder.class);
-            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(DefaultDetailedInvolvedFinder.class);
+            case INVOLVED, DISABLED -> builder.addBeanClass(NoOpDetailedInvolvedFinder.class)
+                    .setUnremovable()
+                    .setDefaultScope(DotNames.APPLICATION_SCOPED);
+            case INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(DefaultDetailedInvolvedFinder.class)
+                    .setUnremovable()
+                    .setDefaultScope(DotNames.APPLICATION_SCOPED);
         }
         return builder.build();
     }
@@ -140,5 +157,24 @@ public class BeansProcessor {
     @BuildStep
     AdditionalIndexedClassesBuildItem registerFinderExceptionMapper() {
         return new AdditionalIndexedClassesBuildItem(FinderExceptionMapper.class.getName());
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerEncodedInvolvedRepository(final TraceabilityConfiguration traceabilityConfiguration) {
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        if (TracingMode.INVOLVED.equals(traceabilityConfiguration.tracingMode())
+                || TracingMode.INVOLVED_WITH_FULL_DETAILS.equals(traceabilityConfiguration.tracingMode())) {
+            builder.addBeanClass(JdbcPostgresEncodedInvolvedRepository.class);
+        }
+        return builder.build();
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerEncodedDetailedInvolvedRepository(final TraceabilityConfiguration traceabilityConfiguration) {
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        if (TracingMode.INVOLVED_WITH_FULL_DETAILS.equals(traceabilityConfiguration.tracingMode())) {
+            builder.addBeanClass(JdbcPostgresEncodedDetailedInvolvedRepository.class);
+        }
+        return builder.build();
     }
 }

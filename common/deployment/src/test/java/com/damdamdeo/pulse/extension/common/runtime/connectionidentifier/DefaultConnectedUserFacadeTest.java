@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
 import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
+import com.damdamdeo.pulse.extension.core.connecteduser.RegistrationCheckerException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
@@ -57,7 +58,7 @@ class DefaultConnectedUserFacadeTest {
 
         @GET
         @Path("isRegistered")
-        public String isRegistered() {
+        public String isRegistered() throws RegistrationCheckerException {
             return defaultConnectedUserFacade.isRegistered().map(Identifiable::id).orElse(null);
         }
 

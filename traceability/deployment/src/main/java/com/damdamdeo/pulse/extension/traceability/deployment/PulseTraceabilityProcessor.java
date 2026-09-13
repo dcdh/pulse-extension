@@ -37,8 +37,7 @@ public class PulseTraceabilityProcessor {
                               executed_by_hashed character varying(255) NOT NULL,
                               executed_by_encoded character varying(255) NOT NULL,
                               CONSTRAINT executed_by_encoded_pkey PRIMARY KEY (id),
-                              CONSTRAINT executed_by_encoded_unique
-                                UNIQUE (executed_by_hashed, executed_by_encoded)
+                              CONSTRAINT executed_by_encoded_unique UNIQUE (executed_by_hashed)
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
@@ -55,6 +54,8 @@ public class PulseTraceabilityProcessor {
                     """
                             CREATE SCHEMA IF NOT EXISTS %1$s;
                             
+                            CREATE SEQUENCE IF NOT EXISTS %1$s.trace_id_seq START WITH 1 INCREMENT BY 1;
+                            
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details (
                               trace_id bigint not null,
                               executed_at timestamptz not null,
@@ -67,8 +68,7 @@ public class PulseTraceabilityProcessor {
                               executed_by_hashed character varying(255) NOT NULL,
                               executed_by_encoded character varying(255) NOT NULL,
                               CONSTRAINT executed_by_encoded_pkey PRIMARY KEY (id),
-                              CONSTRAINT executed_by_encoded_unique
-                                UNIQUE (executed_by_hashed, executed_by_encoded)
+                              CONSTRAINT executed_by_encoded_unique UNIQUE (executed_by_hashed)
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
@@ -89,7 +89,7 @@ public class PulseTraceabilityProcessor {
         if (tablesDefinition != null) {
             additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                    new ComposeServiceBuildItem.Volume("./%s_traceability_tables.sql".formatted("pulse"), "/docker-entrypoint-initdb.d/%s_traceability_tables.sql".formatted("pulse"),
+                    new ComposeServiceBuildItem.Volume("./%s_traceability_tables.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_traceability_tables.sql".formatted("pulse"),
                             tablesDefinition.getBytes(StandardCharsets.UTF_8), "sql")));
         }
     }

@@ -1,6 +1,10 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.SequenceNumber;
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.UserId;
+import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -63,7 +67,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
     }
 
     @Test
-    void shouldListenToEvent() throws BusinessException, SequenceGenerationException {
+    void shouldListenToEvent() throws CommandException {
         // Given
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 

@@ -1,12 +1,14 @@
 package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.BeanParam;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -88,22 +90,24 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
     }
 
     @Path("byAggregateId/{aggregateId}")
-    public DetailedInvolvedPageDTO findBy(@PathParam("aggregateId") final AggregateId aggregateId,
-                                          @BeanParam final Pagination pagination) throws FinderException {
+    @GET
+    public DetailedInvolvedPageDTO findBy(@PathParam("aggregateId") final AnyAggregateId aggregateId,
+                                          @BeanParam final PaginationDTO paginationDTO) throws FinderException {
         Objects.requireNonNull(aggregateId);
-        Objects.requireNonNull(pagination);
-        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(aggregateId, pagination);
+        Objects.requireNonNull(paginationDTO);
+        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(aggregateId, paginationDTO.toPagination());
         return new DetailedInvolvedPageDTO(
                 by.content().stream().map(DetailedInvolvedDTO::new).toList(),
                 by.totalPages(), by.hasNext(), by.hasPrevious());
     }
 
     @Path("byExecutedByHashed/{executedByHashed}")
+    @GET
     public DetailedInvolvedPageDTO findBy(@PathParam("executedByHashed") final ExecutedByHashed executedByHashed,
-                                          @BeanParam final Pagination pagination) throws FinderException {
+                                          @BeanParam final PaginationDTO paginationDTO) throws FinderException {
         Objects.requireNonNull(executedByHashed);
-        Objects.requireNonNull(pagination);
-        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(executedByHashed, pagination);
+        Objects.requireNonNull(paginationDTO);
+        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(executedByHashed, paginationDTO.toPagination());
         return new DetailedInvolvedPageDTO(
                 by.content().stream().map(DetailedInvolvedDTO::new).toList(),
                 by.totalPages(), by.hasNext(), by.hasPrevious());

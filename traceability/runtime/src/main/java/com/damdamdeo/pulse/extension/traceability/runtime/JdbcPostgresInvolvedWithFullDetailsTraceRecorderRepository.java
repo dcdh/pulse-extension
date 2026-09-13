@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
+import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
+import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.traceability.EncodedTraceAggregateId;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorder;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorderRepository;
@@ -20,7 +22,7 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
 
     // language=sql
     public static final String TRACEABILITY_DETAILS_SQL = """
-            INSERT INTO pulse.traceability_details (
+            INSERT INTO %s.traceability_details (
                 trace_id,
                 executed_at,
                 from_value
@@ -28,21 +30,33 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             VALUES (?, ?, ?);
             """;
 
+    // CTE pattern
     // language=sql
     public static final String EXECUTED_BY_ENCODED_SQL = """
-            INSERT INTO pulse.executed_by_encoded (
-                executed_by_hashed,
-                executed_by_encoded
+            WITH inserted AS (
+                INSERT INTO %1$s.executed_by_encoded (
+                    executed_by_hashed,
+                    executed_by_encoded
+                )
+                VALUES (?, ?)
+                ON CONFLICT (executed_by_hashed)
+                DO NOTHING
+                RETURNING id
             )
-            VALUES (?, ?)
-            ON CONFLICT (executed_by_hashed)
-            DO NOTHING
-            RETURNING id;
+            SELECT id
+            FROM inserted
+            
+            UNION ALL
+            
+            SELECT id
+            FROM %1$s.executed_by_encoded
+            WHERE executed_by_hashed = ?
+            LIMIT 1;
             """;
 
     // language=sql
     public static final String TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO pulse.traceability_aggregate (
+            INSERT INTO %s.traceability_aggregate (
                 trace_id,
                 aggregate_root_id,
                 executed_by_encoded_id
@@ -53,9 +67,12 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             """;
 
     private final DataSource dataSource;
+    private final SchemaName schemaName;
 
-    public JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository(final DataSource dataSource) {
+    public JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository(final DataSource dataSource,
+                                                                      final ApplicationNamingProvider applicationNamingProvider) {
         this.dataSource = Objects.requireNonNull(dataSource);
+        this.schemaName = SchemaName.from(applicationNamingProvider.provide());
     }
 
     @Override
@@ -63,9 +80,12 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
         Objects.requireNonNull(traceRecorder);
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            try (final PreparedStatement traceabilityDetailsPreparedStatement = connection.prepareStatement(TRACEABILITY_DETAILS_SQL);
-                 final PreparedStatement executedByEncodedPreparedStatement = connection.prepareStatement(EXECUTED_BY_ENCODED_SQL);
-                 final PreparedStatement traceabilityAggregatePreparedStatement = connection.prepareStatement(TRACEABILITY_AGGREGATE_SQL)) {
+            try (final PreparedStatement traceabilityDetailsPreparedStatement = connection.prepareStatement(
+                    TRACEABILITY_DETAILS_SQL.formatted(schemaName.name()));
+                 final PreparedStatement executedByEncodedPreparedStatement = connection.prepareStatement(
+                         EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
+                 final PreparedStatement traceabilityAggregatePreparedStatement = connection.prepareStatement(
+                         TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
                 traceabilityDetailsPreparedStatement.setLong(1, traceRecorder.traceId().id());
                 traceabilityDetailsPreparedStatement.setTimestamp(2, Timestamp.from(traceRecorder.executedAt().at()));
                 traceabilityDetailsPreparedStatement.setString(3, traceRecorder.from().from());
@@ -73,6 +93,7 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                 for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
                     executedByEncodedPreparedStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
                     executedByEncodedPreparedStatement.setString(2, encodedTraceAggregateId.executedByEncoded().encoded());
+                    executedByEncodedPreparedStatement.setString(3, encodedTraceAggregateId.executedByHashed().hashed());
                     final long executedByEncodedId;
                     try (final ResultSet resultSet = executedByEncodedPreparedStatement.executeQuery()) {
                         if (!resultSet.next()) {
