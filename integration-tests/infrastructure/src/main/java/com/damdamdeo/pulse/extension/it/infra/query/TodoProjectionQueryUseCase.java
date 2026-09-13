@@ -17,7 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
-public class TodoProjectionQuery implements Query<ListTodos, TodoProjection> {
+public class TodoProjectionQueryUseCase implements QueryUseCase<ListTodos, TodoProjection> {
 
     @Inject
     ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;

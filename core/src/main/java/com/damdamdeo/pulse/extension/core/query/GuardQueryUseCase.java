@@ -13,20 +13,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public abstract class GuardQuery<I extends Input, P extends Projection> implements Query<I, P> {
+public abstract class GuardQueryUseCase<I extends Input, P extends Projection> implements QueryUseCase<I, P> {
 
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;
     private final ExecutedByResolver executedByResolver;
     private final AggregateIdDecomposer aggregateIdDecomposer;
-    private final Query<I, P> decorated;
+    private final QueryUseCase<I, P> decorated;
     private final TraceAppender traceAppender;
 
-    public GuardQuery(final ExecutionContextProvider executionContextProvider,
-                      final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider,
-                      final ExecutedByResolver executedByResolver,
-                      final Query<I, P> decorated,
-                      final TraceAppender traceAppender) {
+    public GuardQueryUseCase(final ExecutionContextProvider executionContextProvider,
+                             final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider,
+                             final ExecutedByResolver executedByResolver,
+                             final QueryUseCase<I, P> decorated,
+                             final TraceAppender traceAppender) {
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.backendUserVisibilityRolesProvider = Objects.requireNonNull(backendUserVisibilityRolesProvider);
         this.executedByResolver = Objects.requireNonNull(executedByResolver);

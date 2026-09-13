@@ -12,7 +12,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class GuardQueryTest {
+class GuardQueryUseCaseTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -24,7 +24,7 @@ class GuardQueryTest {
     }
 
     @ApplicationScoped
-    static class NoAudienceQuery implements Query<ListTodos, TodoProjection> {
+    static class NoAudienceQueryUseCase implements QueryUseCase<ListTodos, TodoProjection> {
 
         @Override
         public Result<TodoProjection> execute(final ListTodos input) throws QueryException {
@@ -38,7 +38,7 @@ class GuardQueryTest {
     }
 
     @Inject
-    NoAudienceQuery noAudienceQuery;
+    NoAudienceQueryUseCase noAudienceQuery;
 
     @Test
     void shouldFailWhenNoAudienceIsDefined() {

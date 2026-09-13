@@ -51,9 +51,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class FileQueryTest {
+class FileQueryUseCaseTest {
 
-    static final Logger LOGGER = Logger.getLogger(FileQueryTest.class.getName());
+    static final Logger LOGGER = Logger.getLogger(FileQueryUseCaseTest.class.getName());
 
     private final static FileIdentifier GIVEN_FILE_IDENTIFIER = new FileIdentifier("F000001");
 

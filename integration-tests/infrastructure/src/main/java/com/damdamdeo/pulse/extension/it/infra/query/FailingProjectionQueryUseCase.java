@@ -7,7 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 @ApplicationScoped
-public class FailingProjectionQuery implements Query<ListTodos, TodoProjection> {
+public class FailingProjectionQueryUseCase implements QueryUseCase<ListTodos, TodoProjection> {
 
     @Override
     public Result<TodoProjection> execute(final ListTodos input) throws QueryException {

@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GuardQueryTest {
+class GuardQueryUseCaseTest {
 
     private static final ExecutedBy.EndUser BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 
@@ -36,16 +36,16 @@ class GuardQueryTest {
     ExecutedByResolver executedByResolver;
 
     @Mock
-    Query<SampleInput, TestProjection> decorated;
+    QueryUseCase<SampleInput, TestProjection> decorated;
 
     @Mock
     TraceAppender traceAppender;
 
-    GuardQuery<SampleInput, TestProjection> guardQuery;
+    GuardQueryUseCase<SampleInput, TestProjection> guardQuery;
 
     @BeforeEach
     void setUp() {
-        guardQuery = new GuardQuery<>(executionContextProvider, backendUserVisibilityRolesProvider, executedByResolver,
+        guardQuery = new GuardQueryUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider, executedByResolver,
                 decorated, traceAppender) {
         };
     }

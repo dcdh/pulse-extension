@@ -28,8 +28,8 @@ import com.damdamdeo.pulse.extension.it.domain.InitialiserUseCase;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
 import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
-import com.damdamdeo.pulse.extension.it.infra.query.FailingProjectionQuery;
-import com.damdamdeo.pulse.extension.it.infra.query.TodoProjectionQuery;
+import com.damdamdeo.pulse.extension.it.infra.query.FailingProjectionQueryUseCase;
+import com.damdamdeo.pulse.extension.it.infra.query.TodoProjectionQueryUseCase;
 import io.quarkus.security.Authenticated;
 import io.quarkus.vault.VaultKVSecretEngine;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -66,10 +66,10 @@ public class PulseExtensionResource {
     Instance<StatisticsEventHandler> statisticsEventHandlerInstance;
 
     @Inject
-    TodoProjectionQuery todoProjectionQuery;
+    TodoProjectionQueryUseCase todoProjectionQuery;
 
     @Inject
-    FailingProjectionQuery failingProjectionQuery;
+    FailingProjectionQueryUseCase failingProjectionQuery;
 
     @Inject
     DataSource dataSource;

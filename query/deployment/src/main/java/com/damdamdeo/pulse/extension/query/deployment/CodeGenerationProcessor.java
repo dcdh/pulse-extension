@@ -74,11 +74,11 @@ public class CodeGenerationProcessor {
                             final OutputTargetBuildItem outputTargetBuildItem) {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementations(Query.class)
+                .getAllKnownImplementations(QueryUseCase.class)
                 .forEach(queryClassInfo -> {
                     try {
                         final org.jboss.jandex.Type queryInterface = queryClassInfo.interfaceTypes().stream()
-                                .filter(t -> t.name().equals(DotName.createSimple(Query.class)))
+                                .filter(t -> t.name().equals(DotName.createSimple(QueryUseCase.class)))
                                 .findFirst()
                                 .orElseThrow();
 
@@ -96,7 +96,7 @@ public class CodeGenerationProcessor {
                                 .signature(SignatureBuilder.forClass()
                                         .setSuperClass(
                                                 Type.parameterizedType(
-                                                        Type.classType(GuardQuery.class),
+                                                        Type.classType(GuardQueryUseCase.class),
                                                         Type.classType(inputClass),
                                                         Type.classType(projectionClass))))
                                 .setFinal(true)
@@ -112,14 +112,14 @@ public class CodeGenerationProcessor {
 
                             try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
                                     ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class, ExecutedByResolver.class,
-                                    Query.class, TraceAppender.class)) {
+                                    QueryUseCase.class, TraceAppender.class)) {
                                 constructor
                                         .setSignature(SignatureBuilder.forMethod()
                                                 .addParameterType(Type.classType(ExecutionContextProvider.class))
                                                 .addParameterType(Type.classType(BackendUserVisibilityRolesProvider.class))
                                                 .addParameterType(Type.classType(ExecutedByResolver.class))
                                                 .addParameterType(Type.parameterizedType(
-                                                        Type.classType(Query.class),
+                                                        Type.classType(QueryUseCase.class),
                                                         Type.classType(inputClass),
                                                         Type.classType(projectionClass)))
                                                 .addParameterType(Type.classType(TraceAppender.class))
@@ -128,9 +128,9 @@ public class CodeGenerationProcessor {
                                 constructor.getParameterAnnotations(3).addAnnotation(Delegate.class);
                                 constructor.setModifiers(Modifier.PUBLIC);
                                 constructor.invokeSpecialMethod(
-                                        MethodDescriptor.ofConstructor(GuardQuery.class,
+                                        MethodDescriptor.ofConstructor(GuardQueryUseCase.class,
                                                 ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class,
-                                                ExecutedByResolver.class, Query.class, TraceAppender.class),
+                                                ExecutedByResolver.class, QueryUseCase.class, TraceAppender.class),
                                         constructor.getThis(),
                                         constructor.getMethodParam(0),
                                         constructor.getMethodParam(1),

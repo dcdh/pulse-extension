@@ -19,7 +19,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
-class QueryExceptionMapperTest {
+class QueryUseCaseExceptionMapperTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()

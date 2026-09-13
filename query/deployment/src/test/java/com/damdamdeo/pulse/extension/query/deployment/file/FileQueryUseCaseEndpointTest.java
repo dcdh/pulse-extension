@@ -46,7 +46,7 @@ import static org.hamcrest.Matchers.greaterThan;
  * @see com.damdamdeo.pulse.extension.livenotifier.deployment.consumer.LiveConnectedConsumerTest
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FileQueryEndpointTest {
+public class FileQueryUseCaseEndpointTest {
 
     private final static FileIdentifier GIVEN_FILE_IDENTIFIER = new FileIdentifier("F000001");
 

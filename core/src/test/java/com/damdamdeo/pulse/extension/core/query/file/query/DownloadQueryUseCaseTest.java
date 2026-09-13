@@ -36,7 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-class DownloadQueryTest {
+class DownloadQueryUseCaseTest {
 
     private final FileRepository fileRepository = mock(FileRepository.class);
     private final ExecutionContextProvider executionContextProvider = mock(ExecutionContextProvider.class);

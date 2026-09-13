@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class QueryEventStoreTest {
+class QueryUseCaseEventStoreTest {
 
     private static ExecutedBy BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
 

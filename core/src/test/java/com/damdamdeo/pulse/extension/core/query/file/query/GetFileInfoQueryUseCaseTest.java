@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.*;
 
-class GetFileInfoQueryTest {
+class GetFileInfoQueryUseCaseTest {
 
     private final FileRepository fileRepository = mock(FileRepository.class);
     private final ExecutionContextProvider executionContextProvider = mock(ExecutionContextProvider.class);
