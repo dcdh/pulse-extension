@@ -74,12 +74,12 @@ class DefaultDetailedInvolvedFinderTest {
                 from, executedAt);
         final Page<EncodedDetailedInvolved> encodedPage = new Page<>(List.of(encodedDetailedInvolved), pagination, 1);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination)).willReturn(encodedPage);
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination)).willReturn(encodedPage);
         given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
         given(usernameDecoder.decode(any(), same(ownedBy))).willReturn(username);
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertThat(result.content()).hasSize(1);
@@ -93,7 +93,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(detailedInvolved.involved().aggregateId()).isSameAs(aggregateId),
                 () -> assertThat(detailedInvolved.involved().executedByHashed()).isSameAs(executedByHashed),
                 () -> assertThat(detailedInvolved.involved().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
-                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, pagination),
+                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, new IncludeUncompounded(false), pagination),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
     }
@@ -138,18 +138,18 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination)).willReturn(new Page<>(
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination)).willReturn(new Page<>(
                 List.of(), pagination, 0));
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertAll(
                 () -> assertThat(result.content()).isEmpty(),
                 () -> assertThat(result.pagination()).isSameAs(pagination),
                 () -> assertThat(result.totalElements()).isZero(),
-                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, pagination),
+                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, new IncludeUncompounded(false), pagination),
                 () -> verifyNoInteractions(ownedByProvider, usernameDecoder)
         );
     }
@@ -164,12 +164,12 @@ class DefaultDetailedInvolvedFinderTest {
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, encodedInvolved,
                 from, executedAt);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination))
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
         given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertAll(
@@ -188,12 +188,12 @@ class DefaultDetailedInvolvedFinderTest {
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, encodedInvolved,
                 from, executedAt);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination))
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
         given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertAll(
@@ -213,12 +213,12 @@ class DefaultDetailedInvolvedFinderTest {
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, encodedInvolved,
                 from, executedAt);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination))
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
         given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertAll(
@@ -238,12 +238,12 @@ class DefaultDetailedInvolvedFinderTest {
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, encodedInvolved,
                 from, executedAt);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination))
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
         given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertAll(
@@ -263,7 +263,7 @@ class DefaultDetailedInvolvedFinderTest {
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, encodedInvolved,
                 from, executedAt);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination))
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
         given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
         given(usernameDecoder.decode(any(), same(ownedBy)))
@@ -271,7 +271,7 @@ class DefaultDetailedInvolvedFinderTest {
                         new RuntimeException("Unable to decode username")));
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertAll(
@@ -279,7 +279,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(result.content().getFirst().traceId()).isSameAs(traceId),
                 () -> assertThat(result.content().getFirst().from()).isSameAs(from),
                 () -> assertThat(result.content().getFirst().executedAt()).isSameAs(executedAt),
-                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, pagination),
+                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, new IncludeUncompounded(false), pagination),
                 () -> verify(ownedByProvider).provide(aggregateId)
         );
     }
@@ -292,7 +292,7 @@ class DefaultDetailedInvolvedFinderTest {
 
         // when / then
         assertAll(
-                () -> assertThatThrownBy(() -> finder.findBy(aggregateId, pagination))
+                () -> assertThatThrownBy(() -> finder.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                         .isInstanceOf(FinderException.class)
                         .hasCauseInstanceOf(UnauthorizedException.class),
                 () -> verifyNoInteractions(encodedDetailedInvolvedRepository, ownedByProvider, usernameDecoder)
@@ -322,14 +322,14 @@ class DefaultDetailedInvolvedFinderTest {
         final TraceRepositoryException exception = new TraceRepositoryException(new RuntimeException(
                 "Unable to find detailed involved"));
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination)).willThrow(exception);
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination)).willThrow(exception);
 
         // when / then
         assertAll(
-                () -> assertThatThrownBy(() -> finder.findBy(aggregateId, pagination))
+                () -> assertThatThrownBy(() -> finder.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                         .isInstanceOf(FinderException.class)
                         .cause().isSameAs(exception),
-                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, pagination),
+                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, new IncludeUncompounded(false), pagination),
                 () -> verifyNoInteractions(ownedByProvider, usernameDecoder)
         );
     }
@@ -341,14 +341,14 @@ class DefaultDetailedInvolvedFinderTest {
         final TraceRepositoryException exception = new TraceRepositoryException(new OwnedByProviderException(
                 new RuntimeException("Unable to find detailed involved")));
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination)).willThrow(exception);
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination)).willThrow(exception);
 
         // when / then
         assertAll(
-                () -> assertThatThrownBy(() -> finder.findBy(aggregateId, pagination))
+                () -> assertThatThrownBy(() -> finder.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                         .isInstanceOf(FinderException.class)
                         .cause().isSameAs(exception),
-                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, pagination),
+                () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, new IncludeUncompounded(false), pagination),
                 () -> verifyNoInteractions(ownedByProvider, usernameDecoder)
         );
     }
@@ -408,14 +408,14 @@ class DefaultDetailedInvolvedFinderTest {
         final EncodedDetailedInvolved second = new EncodedDetailedInvolved(secondTraceId, new EncodedInvolved(
                 secondAggregateId, secondHash, new ExecutedByEncoded("SA:second")), secondFrom, secondExecutedAt);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, pagination))
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(first, second), pagination, 2));
         given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
         given(ownedByProvider.provide(secondAggregateId)).willReturn(ownedBy);
         given(usernameDecoder.decode(any(), same(ownedBy))).willReturn(username);
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, pagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), pagination);
 
         // then
         assertThat(result.content()).hasSize(2);
@@ -444,11 +444,11 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination requestedPagination = new Pagination(2, 20);
         final Pagination returnedPagination = new Pagination(2, 20);
         givenTraceabilityReadRole();
-        given(encodedDetailedInvolvedRepository.findBy(aggregateId, requestedPagination))
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), requestedPagination))
                 .willReturn(new Page<>(List.of(), returnedPagination, 100));
 
         // when
-        final Page<DetailedInvolved> result = finder.findBy(aggregateId, requestedPagination);
+        final Page<DetailedInvolved> result = finder.findBy(aggregateId, new IncludeUncompounded(false), requestedPagination);
 
         // then
         assertAll(

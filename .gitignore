@@ -125,3 +125,11 @@
 /query/deployment/realm.json
 /query/deployment/src/test/resources/file-query-endpoint-generated-file.jpg
 /query/deployment/src/test/resources/lorem-ipsum.pdf
+/traceability/deployment/target/
+/traceability/deployment/compose-devservices-pulse.yml
+/traceability/deployment/pulse_passphrase.sql
+/traceability/deployment/pulse_traceability_tables.sql
+/traceability/deployment/quarkus-pulse-traceability-extension-deployment.iml
+/traceability/deployment/todo_taking_traceability_tables.sql
+/traceability/runtime/target/
+/traceability/runtime/quarkus-pulse-traceability-extension.iml

@@ -1,23 +1,12 @@
 package com.damdamdeo.pulse.extension.traceability.deployment.api;
 
-import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
-import com.damdamdeo.pulse.extension.core.traceability.*;
-import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedTraceRecorderRepository;
 import io.quarkus.test.QuarkusUnitTest;
-import jakarta.inject.Inject;
 import org.json.JSONException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-
-import java.time.Instant;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,28 +23,11 @@ class TraceabilityFinderInvolvedEndpointTest {
             .overrideConfigKey("pulse.traceability.tracing-mode", "INVOLVED")
             .withConfigurationResource("application.properties");
 
-    @Inject
-    JdbcPostgresInvolvedTraceRecorderRepository jdbcPostgresInvolvedTraceRecorderRepository;
-
-    @BeforeAll
-    void prepare() throws TraceRepositoryException {
-        for (final TraceRecorder traceRecorder : List.of(
-                new TraceRecorder(
-                        new TraceId(0L),
-                        new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
-                        new From("from"),
-                        List.of(
-                                new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
-                                new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded"))))
-        )) {
-            jdbcPostgresInvolvedTraceRecorderRepository.store(traceRecorder);
-        }
-    }
-
     @Test
     void shouldFindByAggregateId() {
         given()
                 .pathParam("aggregateId", "U000001-T000001")
+                .queryParam("includeUncompounded" , "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -79,6 +51,7 @@ class TraceabilityFinderInvolvedEndpointTest {
     void shouldMapOnException() {
         given()
                 .pathParam("aggregateId", "BOOM")
+                .queryParam("includeUncompounded" , "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -248,6 +221,14 @@ class TraceabilityFinderInvolvedEndpointTest {
                                     }
                                 }
                             },
+                            "IncludeUncompounded": {
+                                "type": "object",
+                                "properties": {
+                                    "included": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            },
                             "InvolvedDTO": {
                                 "type": "object",
                                 "required": [
@@ -346,6 +327,20 @@ class TraceabilityFinderInvolvedEndpointTest {
                                         "required": true,
                                         "schema": {
                                             "$ref": "#/components/schemas/AnyAggregateId"
+                                        }
+                                    },
+                                    {
+                                        "name": "includeUncompounded",
+                                        "in": "query",
+                                        "schema": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/IncludeUncompounded"
+                                                },
+                                                {
+                                                    "default": "false"
+                                                }
+                                            ]
                                         }
                                     },
                                     {

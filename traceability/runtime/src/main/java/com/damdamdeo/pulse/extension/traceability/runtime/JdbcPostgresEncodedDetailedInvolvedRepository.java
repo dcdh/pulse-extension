@@ -33,9 +33,10 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
     }
 
     @Override
-    public Page<EncodedDetailedInvolved> findBy(final AggregateId aggregateId, final Pagination pagination)
-            throws TraceRepositoryException {
+    public Page<EncodedDetailedInvolved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded,
+                                                final Pagination pagination) throws TraceRepositoryException {
         Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(pagination);
         try (final Connection connection = dataSource.getConnection()) {
             if (pagination.loadAll()) {
@@ -43,6 +44,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                 try (final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                         SELECT
                           ta.trace_id AS trace_id,
+                          ta.aggregate_root_id as aggregate_root_id,
                           ebe.executed_by_hashed AS executed_by_hashed,
                           ebe.executed_by_encoded AS executed_by_encoded,
                           td.from_value AS from_value,
@@ -52,17 +54,21 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                           ON td.trace_id = ta.trace_id
                         JOIN %1$s.executed_by_encoded ebe
                           ON ebe.id = ta.executed_by_encoded_id
-                        WHERE ta.aggregate_root_id = ?
+                        WHERE ta.aggregate_root_id LIKE ?
                         ORDER BY td.executed_at, ta.trace_id
                         """.formatted(schemaName.name()))) {
-                    selectPreparedStatement.setString(1, aggregateId.id());
+                    if (!includeUncompounded.included()) {
+                        selectPreparedStatement.setString(1, aggregateId.id());
+                    } else {
+                        selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                    }
                     final List<EncodedDetailedInvolved> content = new ArrayList<>();
                     try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                         while (select.next()) {
                             content.add(new EncodedDetailedInvolved(
                                     new TraceId(select.getLong("trace_id")),
                                     new EncodedInvolved(
-                                            aggregateId,
+                                            new AnyAggregateId(select.getString("aggregate_root_id")),
                                             new ExecutedByHashed(select.getString("executed_by_hashed")),
                                             new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                     ),
@@ -76,12 +82,13 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
             } else {
                 // language=sql
                 try (final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                        SELECT COUNT(ta.*) AS count FROM %s.traceability_aggregate ta WHERE aggregate_root_id = ?
+                        SELECT COUNT(ta.*) AS count FROM %s.traceability_aggregate ta WHERE aggregate_root_id LIKE ?
                         """.formatted(schemaName.name()));
                      // language=sql
                      final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                              SELECT
                                ta.trace_id AS trace_id,
+                               ta.aggregate_root_id as aggregate_root_id,
                                ebe.executed_by_hashed AS executed_by_hashed,
                                ebe.executed_by_encoded AS executed_by_encoded,
                                td.from_value AS from_value,
@@ -91,12 +98,17 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                ON td.trace_id = ta.trace_id
                              JOIN %1$s.executed_by_encoded ebe
                                ON ebe.id = ta.executed_by_encoded_id
-                             WHERE ta.aggregate_root_id = ?
+                             WHERE ta.aggregate_root_id LIKE ?
                              ORDER BY td.executed_at, ta.trace_id
                              LIMIT ? OFFSET ?
                              """.formatted(schemaName.name()))) {
-                    countPreparedStatement.setString(1, aggregateId.id());
-                    selectPreparedStatement.setString(1, aggregateId.id());
+                    if (!includeUncompounded.included()) {
+                        countPreparedStatement.setString(1, aggregateId.id());
+                        selectPreparedStatement.setString(1, aggregateId.id());
+                    } else {
+                        countPreparedStatement.setString(1, aggregateId.id() + "%");
+                        selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                    }
                     selectPreparedStatement.setLong(2, pagination.size());
                     selectPreparedStatement.setLong(3, pagination.offset());
                     try (final ResultSet count = countPreparedStatement.executeQuery();
@@ -108,7 +120,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                             content.add(new EncodedDetailedInvolved(
                                     new TraceId(select.getLong("trace_id")),
                                     new EncodedInvolved(
-                                            aggregateId,
+                                            new AnyAggregateId(select.getString("aggregate_root_id")),
                                             new ExecutedByHashed(select.getString("executed_by_hashed")),
                                             new ExecutedByEncoded(select.getString("executed_by_encoded"))),
                                     new From(select.getString("from_value")),

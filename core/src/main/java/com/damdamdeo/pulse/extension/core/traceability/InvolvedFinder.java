@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 
 public interface InvolvedFinder extends Finder {
 
-    Page<Involved> findBy(AggregateId aggregateId, Pagination pagination) throws FinderException;
+    Page<Involved> findBy(AggregateId aggregateId, IncludeUncompounded includeUncompounded, Pagination pagination) throws FinderException;
 
     Page<Involved> findBy(ExecutedByHashed executedByHashed, Pagination pagination) throws FinderException;
 }

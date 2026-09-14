@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 public final class NoOpDetailedInvolvedFinder implements DetailedInvolvedFinder {
 
     @Override
-    public Page<DetailedInvolved> findBy(final AggregateId aggregateId, final Pagination pagination) throws FinderException {
+    public Page<DetailedInvolved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded, final Pagination pagination) throws FinderException {
         throw new FinderException(new UnsupportedOperationException("No-op involved finder"));
     }
 

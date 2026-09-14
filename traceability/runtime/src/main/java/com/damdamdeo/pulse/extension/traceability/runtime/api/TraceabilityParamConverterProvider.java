@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.traceability.runtime.api;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
+import com.damdamdeo.pulse.extension.core.traceability.IncludeUncompounded;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
 import jakarta.ws.rs.ext.Provider;
@@ -18,7 +19,8 @@ public class TraceabilityParamConverterProvider implements ParamConverterProvide
 
     private static final Map<Class<?>, Function<String, ?>> CONVERTERS = Map.of(
             AnyAggregateId.class, AnyAggregateId::from,
-            ExecutedByHashed.class, ExecutedByHashed::from
+            ExecutedByHashed.class, ExecutedByHashed::from,
+            IncludeUncompounded.class, value -> new IncludeUncompounded(Boolean.parseBoolean(value))
     );
 
     private static final Map<Class<?>, Function<Object, String>> SERIALIZERS = Map.of(

@@ -7,10 +7,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.BeanParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.*;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -92,10 +89,12 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
     @Path("byAggregateId/{aggregateId}")
     @GET
     public DetailedInvolvedPageDTO findBy(@PathParam("aggregateId") final AnyAggregateId aggregateId,
+                                          @QueryParam("includeUncompounded") @DefaultValue("false") final IncludeUncompounded includeUncompounded,
                                           @BeanParam final PaginationDTO paginationDTO) throws FinderException {
         Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(paginationDTO);
-        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(aggregateId, paginationDTO.toPagination());
+        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(aggregateId, includeUncompounded, paginationDTO.toPagination());
         return new DetailedInvolvedPageDTO(
                 by.content().stream().map(DetailedInvolvedDTO::new).toList(),
                 by.totalPages(), by.hasNext(), by.hasPrevious());

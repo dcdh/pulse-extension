@@ -56,13 +56,13 @@ class DefaultInvolvedFinderTest {
         // Given
 
         // When
-        final Page<Involved> by = defaultInvolvedFinder.findBy(TodoId.USER_1_TODO_1, new Pagination(0, 10));
+        final Page<Involved> by = defaultInvolvedFinder.findBy(TodoId.USER_1_TODO_1, new IncludeUncompounded(false), new Pagination(0, 10));
 
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new Involved(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                        new Involved(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com")))),
+                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com")))),
                 new Pagination(0, 10), 2L));
     }
 

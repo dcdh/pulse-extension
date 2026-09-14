@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.traceability.*;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
+import org.apache.commons.lang3.Validate;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,8 +22,10 @@ import java.util.Objects;
 public class StubDefaultDetailedInvolvedFinder implements DetailedInvolvedFinder {
 
     @Override
-    public Page<DetailedInvolved> findBy(final AggregateId aggregateId, final Pagination pagination) throws FinderException {
+    public Page<DetailedInvolved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded, final Pagination pagination) throws FinderException {
         Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(includeUncompounded);
+        Validate.validState(includeUncompounded.included() == true);// force setting the query parameter
         Objects.requireNonNull(pagination);
         if (aggregateId.equals(new AnyAggregateId("BOOM"))) {
             throw new FinderException(new RuntimeException("BOOM"));

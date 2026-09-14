@@ -56,14 +56,14 @@ class DefaultDetailedInvolvedFinderTest {
         // Given
 
         // When
-        final Page<DetailedInvolved> by = defaultDetailedInvolvedFinder.findBy(TodoId.USER_1_TODO_1, new Pagination(0, 10));
+        final Page<DetailedInvolved> by = defaultDetailedInvolvedFinder.findBy(TodoId.USER_1_TODO_1, new IncludeUncompounded(false), new Pagination(0, 10));
 
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new DetailedInvolved(new TraceId(1L), new Involved(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new DetailedInvolved(new TraceId(1L), new Involved(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 2L));
     }

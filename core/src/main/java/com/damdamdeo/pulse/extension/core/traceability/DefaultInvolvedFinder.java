@@ -28,10 +28,12 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
     }
 
     @Override
-    public Page<Involved> findBy(final AggregateId aggregateId, final Pagination pagination) throws FinderException {
+    public Page<Involved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded,
+                                 final Pagination pagination) throws FinderException {
         Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(pagination);
-        return findBy(() -> encodedInvolvedRepository.findBy(aggregateId, pagination));
+        return findBy(() -> encodedInvolvedRepository.findBy(aggregateId, includeUncompounded, pagination));
     }
 
     @Override

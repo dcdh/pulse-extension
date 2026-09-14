@@ -33,39 +33,51 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
     }
 
     @Override
-    public Page<EncodedInvolved> findBy(final AggregateId aggregateId, final Pagination pagination) throws TraceRepositoryException {
+    public Page<EncodedInvolved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded,
+                                        final Pagination pagination) throws TraceRepositoryException {
         Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(pagination);
         try (final Connection connection = dataSource.getConnection();
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(ta.*) AS count FROM %s.traceability_aggregate ta WHERE aggregate_root_id = ?
+                     SELECT COUNT(ta.*) AS count FROM %s.traceability_aggregate ta WHERE aggregate_root_id LIKE ?
                      """.formatted(schemaName.name()));
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
+                       ta.aggregate_root_id as aggregate_root_id,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded
                      FROM %1$s.traceability_aggregate ta
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
-                     WHERE ta.aggregate_root_id = ? LIMIT ? OFFSET ?
+                     WHERE ta.aggregate_root_id LIKE ? LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
-                selectPreparedStatement.setString(1, aggregateId.id());
+                if (!includeUncompounded.included()) {
+                    selectPreparedStatement.setString(1, aggregateId.id());
+                } else {
+                    selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                }
                 final List<EncodedInvolved> content = new ArrayList<>();
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                aggregateId,
+                                new AnyAggregateId(select.getString("aggregate_root_id")),
                                 new ExecutedByHashed(select.getString("executed_by_hashed")),
                                 new ExecutedByEncoded(select.getString("executed_by_encoded"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
             } else {
-                countPreparedStatement.setString(1, aggregateId.id());
-                selectPreparedStatement.setString(1, aggregateId.id());
+                if (!includeUncompounded.included()) {
+                    countPreparedStatement.setString(1, aggregateId.id());
+                    selectPreparedStatement.setString(1, aggregateId.id());
+                } else {
+                    countPreparedStatement.setString(1, aggregateId.id() + "%");
+                    selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                }
                 selectPreparedStatement.setLong(2, pagination.size());
                 selectPreparedStatement.setLong(3, pagination.offset());
                 try (final ResultSet count = countPreparedStatement.executeQuery();
@@ -75,7 +87,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     final List<EncodedInvolved> content = new ArrayList<>(pagination.size());
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                aggregateId,
+                                new AnyAggregateId(select.getString("aggregate_root_id")),
                                 new ExecutedByHashed(select.getString("executed_by_hashed")),
                                 new ExecutedByEncoded(select.getString("executed_by_encoded"))));
                     }

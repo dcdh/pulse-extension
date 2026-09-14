@@ -1,0 +1,38 @@
+= Traceability
+
+Two implementations:
+
+* INVOLVED
+* INVOLVED_WITH_FULL_DETAILS
+
+== Implementations
+
+=== INVOLVED
+
+- Only store aggregateId with whom (ExecutedBy);
+- No duplicates;
+
+**Pros**
+
+- limited logging.
+
+**Cons**
+
+- do not know when.
+
+=== INVOLVED_WITH_FULL_DETAILS
+
+- Each time an aggregateId is mutated, accessed a log will be added.
+- Database will always increase.
+
+== UseCases
+
+=== Appending
+
+- Appending is added to the CommandHandler side.
+
+=== Finding
+
+- Finding by AnyAggregateId or ExecutedByHashed;
+- When finding by AnyAggregateId, Compound aggregateIds are returned to if queried to via **includeUncompounded**;
+- Finding by AnyAggregateId should take a list too, and in this case (same for other, return the aggregateId per line).
