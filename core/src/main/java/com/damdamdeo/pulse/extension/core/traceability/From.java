@@ -10,7 +10,7 @@ public record From(String from) {
 
     public From {
         Objects.requireNonNull(from);
-        Validate.matchesPattern(from, MATCH_PATTERN);
+        Validate.matchesPattern(from, MATCH_PATTERN, "from must be a valid class name - current value: " + from);
     }
 
     public static From from(final Object from) {

@@ -1,15 +1,14 @@
 package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.query.audience.Audience;
 import com.damdamdeo.pulse.extension.core.query.audience.Everyone;
-import com.damdamdeo.pulse.extension.core.query.audience.InExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.audience.RoleRestricted;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import org.junit.jupiter.api.Assertions;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,15 +18,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GuardQueryUseCaseTest {
 
-    private static final ExecutedBy.EndUser BOB = new ExecutedBy.EndUser(new Username("bob@mail.com"));
+    private static final Input INPUT = new SampleInput();
+
+    @Mock
+    Result<Projection> result;
 
     @Mock
     ExecutionContextProvider executionContextProvider;
@@ -39,174 +40,156 @@ class GuardQueryUseCaseTest {
     ExecutedByResolver executedByResolver;
 
     @Mock
-    QueryUseCase<SampleInput, TestProjection> decorated;
+    QueryUseCase<Input, Projection> decorated;
 
     @Mock
     TraceAppender traceAppender;
 
-    GuardQueryUseCase<SampleInput, TestProjection> guardQuery;
+    private GuardQueryUseCase<Input, Projection> guardQuery;
 
     @BeforeEach
     void setUp() {
-        guardQuery = new GuardQueryUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider, executedByResolver,
-                decorated, traceAppender) {
+        guardQuery = new GuardQueryUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
+                executedByResolver, decorated, traceAppender) {
         };
     }
 
     @Test
-    void shouldReturnDecoratedResultWhenAudienceIsEveryone() throws Exception {
+    void shouldReturnResultWhenEveryoneAllowsAccess() throws QueryException {
         // Given
-        final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-
         when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE));
-        when(decorated.execute(new SampleInput())).thenReturn(expected);
+        when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
+        final Result<Projection> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
-                () -> Assertions.assertSame(expected, actual),
-                () -> verify(decorated).execute(new SampleInput()),
+                () -> assertSame(result, executed),
+                () -> verify(decorated).execute(INPUT),
+                () -> verify(traceAppender).append(eq(result), any(From.class))
+        );
+    }
+
+    @Test
+    void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws QueryException {
+        // Given
+        final RoleRestricted roleRestricted = RoleRestricted.INSTANCE;
+        when(decorated.audiences()).thenReturn(List.of(roleRestricted, Everyone.INSTANCE));
+        when(decorated.execute(INPUT)).thenReturn(result);
+
+        // When
+        final Result<Projection> executed = guardQuery.execute(INPUT);
+
+        // Then
+        assertAll(
+                () -> assertSame(result, executed),
+                () -> verify(decorated).execute(INPUT),
+                () -> verify(traceAppender).append(eq(result), any(From.class))
+        );
+    }
+
+    @Test
+    void shouldExecuteAudiencesInPriorityOrder() throws QueryException {
+        // Given
+        final RoleRestricted roleRestricted = RoleRestricted.INSTANCE;
+        final ExecutionContext executionContext = new ExecutionContext(
+                new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
+        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, roleRestricted));
+        when(decorated.execute(INPUT)).thenReturn(result);
+
+        // When
+        final Result<Projection> executed = guardQuery.execute(INPUT);
+
+        // Then
+        assertAll(
+                () -> assertSame(result, executed),
+                () -> verify(decorated).execute(INPUT),
+                () -> verify(traceAppender).append(eq(result), any(From.class))
+        );
+    }
+
+    @Test
+    void shouldNotExecuteFollowingAudiencesWhenEveryoneAllowsAccess() throws QueryException {
+        // Given
+        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, RoleRestricted.INSTANCE));
+        when(decorated.execute(INPUT)).thenReturn(result);
+
+        // When
+        final Result<Projection> executed = guardQuery.execute(INPUT);
+
+        // Then
+        assertAll(
+                () -> assertSame(result, executed),
+                () -> verify(decorated).execute(INPUT),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
-                        executedByResolver),
-                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
+                        executedByResolver)
         );
     }
 
     @Test
-    void shouldReturnDecoratedResultWhenAudienceIsRoleRestrictedAndUserHasRequiredRole() throws Exception {
+    void shouldThrowUnauthorizedExceptionWhenNoAudienceAllowsAccess() {
         // Given
-        final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-        final ExecutionContext context = new ExecutionContext(BOB, Set.of("ADMIN"));
-
+        final ExecutionContext executionContext = new ExecutionContext(
+                new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
         when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE));
-        when(executionContextProvider.provide()).thenReturn(context);
-        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
-        when(decorated.execute(new SampleInput())).thenReturn(expected);
-
-        // When
-        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
-
-        // Then
-        assertAll(
-                () -> Assertions.assertSame(expected, actual),
-                () -> verify(decorated).execute(any()),
-                () -> verify(executionContextProvider).provide(),
-                () -> verify(backendUserVisibilityRolesProvider).provide(),
-                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
-        );
-    }
-
-    @Test
-    void shouldThrowQueryExceptionWhenAudienceIsRoleRestrictedAndUserDoesNotHaveRequiredRole() {
-        // Given
-        final ExecutionContext context = new ExecutionContext(BOB, Set.of("USER"));
-
-        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE));
-        when(executionContextProvider.provide()).thenReturn(context);
-        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
+        when(executionContextProvider.provide()).thenReturn(executionContext);
+        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("admin"));
 
         // When / Then
+        assertThrows(
+                QueryException.class,
+                () -> guardQuery.execute(INPUT));
+
         assertAll(
-                () -> assertThatThrownBy(() -> guardQuery.execute(new SampleInput()))
-                        .isExactlyInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
-                        .hasCauseExactlyInstanceOf(UnauthorizedException.class),
-                () -> verify(decorated, never()).execute(any()),
-                () -> verify(traceAppender, never()).append(any(), any())
+                () -> verify(decorated).audiences(),
+                () -> verifyNoInteractions(traceAppender)
         );
     }
 
     @Test
-    void shouldReturnDecoratedResultWhenAudienceIsInExecutedByAndUserIsEligible() throws Exception {
+    void shouldAppendTraceWhenAccessIsGranted() throws QueryException, TraceAppenderException {
         // Given
-        final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-        final ExecutionContext context = new ExecutionContext(BOB, Set.of());
-
-        when(decorated.audiences()).thenReturn(List.of(InExecutedBy.INSTANCE));
-        when(decorated.execute(new SampleInput())).thenReturn(expected);
-        when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of(BOB));
-        when(executionContextProvider.provide()).thenReturn(context);
+        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
+        guardQuery.execute(INPUT);
 
         // Then
-        assertAll(
-                () -> Assertions.assertSame(expected, actual),
-                () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(anySet()),
-                () -> verify(executionContextProvider).provide(),
-                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
-        );
+        verify(traceAppender).append(eq(result), any(From.class));
     }
 
     @Test
-    void shouldThrowQueryExceptionWhenAudienceIsInExecutedByAndUserIsNotEligible() throws Exception {
+    void shouldThrowInfrastructureFailureWhenTraceAppendingFails() throws QueryException, TraceAppenderException {
         // Given
-        final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-        final ExecutionContext context = new ExecutionContext(BOB, Set.of());
-
-        when(decorated.audiences()).thenReturn(List.of(InExecutedBy.INSTANCE));
-        when(decorated.execute(new SampleInput())).thenReturn(expected);
-        when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of());
-        when(executionContextProvider.provide()).thenReturn(context);
+        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.execute(INPUT)).thenReturn(result);
+        doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
+                .when(traceAppender).append(eq(result), any(From.class));
 
         // When / Then
+        final QueryException exception = assertThrows(
+                QueryException.class,
+                () -> guardQuery.execute(INPUT));
+
         assertAll(
-                () -> assertThatThrownBy(() -> guardQuery.execute(new SampleInput()))
-                        .isExactlyInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
-                        .hasCauseExactlyInstanceOf(UnauthorizedException.class),
-                () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(anySet()),
-                () -> verify(traceAppender, never()).append(any(), any())
+                () -> assertEquals(QueryExceptionCode.INFRASTRUCTURE_FAILURE, exception.queryExceptionCode()),
+                () -> verify(decorated).execute(INPUT),
+                () -> verify(traceAppender).append(eq(result), any(From.class))
         );
     }
 
     @Test
-    void shouldReturnResultWhenFirstAudienceFailsAndSecondAudienceSucceeds() throws Exception {
+    void shouldDelegateAudiences() {
         // Given
-        final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-
-        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE, Everyone.INSTANCE));
-        when(decorated.execute(new SampleInput())).thenReturn(expected);
+        final List<Audience> audiences = List.of(Everyone.INSTANCE, RoleRestricted.INSTANCE);
+        when(decorated.audiences()).thenReturn(audiences);
 
         // When
-        final Result<TestProjection> actual = guardQuery.execute(new SampleInput());
+        final List<Audience> result = guardQuery.audiences();
 
         // Then
-        assertAll(
-                () -> Assertions.assertSame(expected, actual),
-                () -> verify(decorated, times(1)).execute(any()),
-                () -> verify(traceAppender).append(actual, From.from(new SampleInput()))
-        );
-    }
-
-    @Test
-    void shouldThrowQueryExceptionWhenNoAudienceAllowsExecution() throws QueryException, UnableToResolveException {
-        // Given
-        final ExecutionContext context = new ExecutionContext(BOB, Set.of());
-        final Result<TestProjection> expected = Result.of(TestProjection.PROJECTION_USER_1, Set.of());
-
-        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE,
-                InExecutedBy.INSTANCE));
-
-        when(executionContextProvider.provide()).thenReturn(context);
-        when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("ADMIN"));
-        when(decorated.execute(new SampleInput())).thenReturn(expected);
-        when(executedByResolver.resolve(expected.aggregateIds())).thenReturn(Set.of());
-
-        // When / Then
-        assertAll(
-                () -> assertThatThrownBy(() -> guardQuery.execute(new SampleInput()))
-                        .isExactlyInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
-                        .hasCauseExactlyInstanceOf(UnauthorizedException.class),
-                () -> verify(decorated).execute(any()),
-                () -> verify(executedByResolver).resolve(anySet()),
-                () -> verify(traceAppender, never()).append(any(), any())
-        );
+        assertSame(audiences, result);
     }
 }
