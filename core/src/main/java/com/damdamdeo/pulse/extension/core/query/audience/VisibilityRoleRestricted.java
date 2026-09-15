@@ -1,17 +1,18 @@
 package com.damdamdeo.pulse.extension.core.query.audience;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.*;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class RoleRestricted implements Audience {
+public final class VisibilityRoleRestricted implements Audience {
 
-    public static final RoleRestricted INSTANCE = new RoleRestricted();
+    public static final VisibilityRoleRestricted INSTANCE = new VisibilityRoleRestricted();
 
-    private RoleRestricted() {
+    private VisibilityRoleRestricted() {
     }
 
     @Override

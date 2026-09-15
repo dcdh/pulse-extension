@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.audience;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.*;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RoleRestrictedTest {
+class VisibilityRoleRestrictedTest {
 
     @Mock
     Input mock;
@@ -50,7 +51,7 @@ class RoleRestrictedTest {
         when(decorated.execute(mock)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = RoleRestricted.INSTANCE.execute(
+        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
                 mock, decorated, audienceExecutionContext);
 
         // Then
@@ -75,7 +76,7 @@ class RoleRestrictedTest {
         when(decorated.execute(mock)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = RoleRestricted.INSTANCE.execute(
+        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
                 mock, decorated, audienceExecutionContext);
 
         // Then
@@ -101,7 +102,7 @@ class RoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final Optional<Result<Projection>> executed = RoleRestricted.INSTANCE.execute(
+        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
                 mock, decorated, audienceExecutionContext);
 
         // Then
@@ -123,7 +124,7 @@ class RoleRestrictedTest {
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of());
 
         // When
-        final Optional<Result<Projection>> executed = RoleRestricted.INSTANCE.execute(
+        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
                 mock, decorated, audienceExecutionContext);
 
         // Then
@@ -139,11 +140,9 @@ class RoleRestrictedTest {
         // Given
 
         // When
-        final int priority = RoleRestricted.INSTANCE.priority();
+        final int priority = VisibilityRoleRestricted.INSTANCE.priority();
 
         // Then
-        assertAll(
-                () -> assertEquals(1, priority)
-        );
+        assertEquals(1, priority);
     }
 }

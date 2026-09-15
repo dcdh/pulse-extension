@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
-import com.damdamdeo.pulse.extension.core.query.UnauthorizedException;
+import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.traceability.FinderException;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProviderException;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRepositoryException;

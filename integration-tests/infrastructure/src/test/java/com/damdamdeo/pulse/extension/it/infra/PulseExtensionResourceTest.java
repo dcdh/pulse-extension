@@ -164,7 +164,7 @@ class PulseExtensionResourceTest {
                 .statusCode(403)
                 .body("status", equalTo(403))
                 .body("title", equalTo("Forbidden"))
-                .body("detail", equalTo("com.damdamdeo.pulse.extension.core.query.UnauthorizedException"))
+                .body("detail", equalTo("com.damdamdeo.pulse.extension.core.UnauthorizedException"))
                 .body("instance", equalTo("/pulse-extension/failingProjectionQuery"));
     }
 

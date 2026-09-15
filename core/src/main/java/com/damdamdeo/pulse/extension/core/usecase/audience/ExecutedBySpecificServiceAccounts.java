@@ -1,12 +1,12 @@
-package com.damdamdeo.pulse.extension.core.query.audience;
+package com.damdamdeo.pulse.extension.core.usecase.audience;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,19 +18,19 @@ public record ExecutedBySpecificServiceAccounts(String... names) implements Audi
     }
 
     @Override
-    public <I extends Input, P extends Projection> Optional<Result<P>> execute(final I input, final QueryUseCase<I, P> decorated,
-                                                                               final AudienceExecutionContext audienceExecutionContext) throws QueryException {
-        Objects.requireNonNull(input);
-        Objects.requireNonNull(decorated);
+    public boolean allow(final AggregateId aggregateId, final AudienceExecutionContext audienceExecutionContext) throws UseCaseException {
+        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(audienceExecutionContext);
+        return allow(audienceExecutionContext);
+    }
+
+    @Override
+    public boolean allow(final AudienceExecutionContext audienceExecutionContext) throws UseCaseException {
         Objects.requireNonNull(audienceExecutionContext);
         final ExecutionContext executionContext = audienceExecutionContext.executionContextProvider().provide();
         final Set<String> candidates = Stream.of(names).map(name -> ExecutedBy.ServiceAccount.DISCRIMINANT + ExecutedBy.SEPARATOR + name)
                 .collect(Collectors.toSet());
-        if (candidates.contains(executionContext.executedBy().value())) {
-            return Optional.of(decorated.execute(input));
-        } else {
-            return Optional.empty();
-        }
+        return candidates.contains(executionContext.executedBy().value());
     }
 
     @Override

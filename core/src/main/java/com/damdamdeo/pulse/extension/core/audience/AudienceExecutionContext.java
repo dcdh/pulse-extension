@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.query.audience;
+package com.damdamdeo.pulse.extension.core.audience;
 
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;

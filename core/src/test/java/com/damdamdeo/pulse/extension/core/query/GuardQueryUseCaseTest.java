@@ -1,11 +1,12 @@
 package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.audience.Audience;
 import com.damdamdeo.pulse.extension.core.query.audience.Everyone;
-import com.damdamdeo.pulse.extension.core.query.audience.RoleRestricted;
+import com.damdamdeo.pulse.extension.core.query.audience.VisibilityRoleRestricted;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -74,8 +76,8 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws QueryException {
         // Given
-        final RoleRestricted roleRestricted = RoleRestricted.INSTANCE;
-        when(decorated.audiences()).thenReturn(List.of(roleRestricted, Everyone.INSTANCE));
+        final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
+        when(decorated.audiences()).thenReturn(List.of(visibilityRoleRestricted, Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -92,10 +94,8 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldExecuteAudiencesInPriorityOrder() throws QueryException {
         // Given
-        final RoleRestricted roleRestricted = RoleRestricted.INSTANCE;
-        final ExecutionContext executionContext = new ExecutionContext(
-                new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
-        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, roleRestricted));
+        final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
+        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, visibilityRoleRestricted));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -112,7 +112,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldNotExecuteFollowingAudiencesWhenEveryoneAllowsAccess() throws QueryException {
         // Given
-        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, RoleRestricted.INSTANCE));
+        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -132,16 +132,16 @@ class GuardQueryUseCaseTest {
         // Given
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
-        when(decorated.audiences()).thenReturn(List.of(RoleRestricted.INSTANCE));
+        when(decorated.audiences()).thenReturn(List.of(VisibilityRoleRestricted.INSTANCE));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("admin"));
 
         // When / Then
-        assertThrows(
-                QueryException.class,
-                () -> guardQuery.execute(INPUT));
-
         assertAll(
+                () -> assertThatThrownBy(() -> guardQuery.execute(INPUT))
+                        .isExactlyInstanceOf(QueryException.class)
+                        .cause()
+                        .isExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).audiences(),
                 () -> verifyNoInteractions(traceAppender)
         );
@@ -183,7 +183,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldDelegateAudiences() {
         // Given
-        final List<Audience> audiences = List.of(Everyone.INSTANCE, RoleRestricted.INSTANCE);
+        final List<Audience> audiences = List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE);
         when(decorated.audiences()).thenReturn(audiences);
 
         // When

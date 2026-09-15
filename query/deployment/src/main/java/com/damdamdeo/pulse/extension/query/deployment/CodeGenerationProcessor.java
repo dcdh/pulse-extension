@@ -62,8 +62,8 @@ public class CodeGenerationProcessor {
 
                             writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
                         }
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
+                    } catch (final ClassNotFoundException exception) {
+                        throw new RuntimeException(exception);
                     }
                 });
     }
@@ -86,7 +86,7 @@ public class CodeGenerationProcessor {
                         final Class<?> inputClass = classLoader.loadClass(
                                 parameterizedType.arguments().getFirst().name().toString());
 
-                        Class<?> projectionClass = classLoader.loadClass(
+                        final Class<?> projectionClass = classLoader.loadClass(
                                 parameterizedType.arguments().get(1).name().toString());
 
                         final Class<?> queryClass = classLoader.loadClass(queryClassInfo.name().toString());
@@ -144,8 +144,8 @@ public class CodeGenerationProcessor {
 
                             writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
                         }
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
+                    } catch (final ClassNotFoundException exception) {
+                        throw new RuntimeException(exception);
                     }
                 });
     }

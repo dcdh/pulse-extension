@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.core.query;
 
+import com.damdamdeo.pulse.extension.core.Prioritable;
+import com.damdamdeo.pulse.extension.core.UnauthorizedException;
+import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.audience.Audience;
-import com.damdamdeo.pulse.extension.core.query.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
@@ -35,11 +37,11 @@ public abstract class GuardQueryUseCase<I extends Input, P extends Projection> i
     }
 
     @Override
-    public Result<P> execute(final I input) throws QueryException {
+    public final Result<P> execute(final I input) throws QueryException {
         Objects.requireNonNull(input);
         final List<Audience> audiences = decorated.audiences()
                 .stream()
-                .sorted(Comparator.comparing(Audience::priority))
+                .sorted(Comparator.comparing(Prioritable::priority))
                 .toList();
         final AudienceExecutionContext context = new AudienceExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);

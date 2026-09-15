@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
 
 import java.util.Objects;
 
@@ -38,9 +39,14 @@ public abstract class AbstractUpdateUserNameUseCase<K extends AggregateId, C ext
             }
             onUserNameUpdated(handled, updateUserNameCommand);
             return handled;
-        } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException
-                       | CommandException exception) {
-            throw new UseCaseException(exception);
+        } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {
+            throw new UseCaseException(exception, UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
+        } catch (final CommandException commandException) {
+            final UseCaseExceptionCode useCaseExceptionCode = switch (commandException.commandExceptionCode()) {
+                case BUSINESS_FAILURE -> UseCaseExceptionCode.BUSINESS_FAILURE;
+                case INFRASTRUCTURE_FAILURE -> UseCaseExceptionCode.INFRASTRUCTURE_FAILURE;
+            };
+            throw new UseCaseException(commandException, useCaseExceptionCode);
         }
     }
 

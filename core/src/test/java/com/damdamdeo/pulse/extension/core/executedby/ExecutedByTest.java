@@ -24,7 +24,7 @@ class ExecutedByTest {
             final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
 
             // Then
-            assertThat(encoded).isEqualTo(new ExecutedByEncoded("EU:encoded"));
+            assertThat(encoded).isEqualTo(new ExecutedByEncoded("EU:aliceEncoded"));
         }
 
         @Test

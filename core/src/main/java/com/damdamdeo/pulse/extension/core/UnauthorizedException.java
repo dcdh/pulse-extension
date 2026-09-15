@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.query;
+package com.damdamdeo.pulse.extension.core;
 
 public class UnauthorizedException extends Exception {
 }

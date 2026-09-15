@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
 
 import java.util.Objects;
 
@@ -35,10 +36,16 @@ public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C
             connectionIdentifierRepository.store(connectionIdentifier, handled.id());
             onUserNameRegistered(handled, registrationCommand);
             return handled;
-        } catch (final CommandException | ConnectionIdentifierProviderException |
-                       ConnectionIdentifierRepositoryException
-                       | DuplicateConnectionIdentifierException exception) {
-            throw new UseCaseException(exception);
+        } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {
+            throw new UseCaseException(exception, UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
+        } catch (final CommandException commandException) {
+            final UseCaseExceptionCode useCaseExceptionCode = switch (commandException.commandExceptionCode()) {
+                case BUSINESS_FAILURE -> UseCaseExceptionCode.BUSINESS_FAILURE;
+                case INFRASTRUCTURE_FAILURE -> UseCaseExceptionCode.INFRASTRUCTURE_FAILURE;
+            };
+            throw new UseCaseException(commandException, useCaseExceptionCode);
+        } catch (final DuplicateConnectionIdentifierException exception) {
+            throw new UseCaseException(exception, UseCaseExceptionCode.BUSINESS_FAILURE);
         }
     }
 

@@ -8,7 +8,10 @@ import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
+import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
+import com.damdamdeo.pulse.extension.core.usecase.audience.Everyone;
 
+import java.util.List;
 import java.util.Objects;
 
 public class UserRegistrationDomainUseCase extends AbstractRegistrationDomainUseCase<UserId, RegisterUser, User> {
@@ -28,5 +31,10 @@ public class UserRegistrationDomainUseCase extends AbstractRegistrationDomainUse
     protected void onUserNameRegistered(final User user, final RegisterUser registrationCommand) throws UseCaseException {
         Objects.requireNonNull(user);
         Objects.requireNonNull(registrationCommand);
+    }
+
+    @Override
+    public List<Audience> audiences() {
+        return List.of(Everyone.INSTANCE);
     }
 }

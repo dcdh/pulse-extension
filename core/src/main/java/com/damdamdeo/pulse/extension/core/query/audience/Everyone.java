@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query.audience;
 
+import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.*;
 
 import java.util.Objects;

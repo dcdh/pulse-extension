@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query;
 
+import com.damdamdeo.pulse.extension.core.UnauthorizedException;
+
 import java.util.Objects;
 
 public class QueryException extends Exception {

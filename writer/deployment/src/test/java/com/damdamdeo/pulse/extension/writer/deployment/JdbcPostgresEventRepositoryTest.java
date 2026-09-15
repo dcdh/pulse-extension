@@ -168,7 +168,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded"),
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bobEncoded"),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 TodoId.USER_1_TODO_1.id()),
                         () -> assertThat(tAggregateRootResultSet.getString(
@@ -240,7 +240,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded"));
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bobEncoded"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo(TodoId.USER_1_TODO_2.id()),
@@ -251,7 +251,7 @@ class JdbcPostgresEventRepositoryTest {
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
                         () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded"));
+                        () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bobEncoded"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
@@ -599,7 +599,7 @@ class JdbcPostgresEventRepositoryTest {
                              """)) {
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
-                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:encoded");
+                assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bobEncoded");
             }
         } catch (final SQLException e) {
             throw new RuntimeException(e);

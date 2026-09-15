@@ -1,15 +1,23 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.UserId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
+import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
+import com.damdamdeo.pulse.extension.core.usecase.audience.Everyone;
 import io.quarkus.test.QuarkusUnitTest;
+import jakarta.annotation.Priority;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -18,7 +26,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,14 +42,66 @@ class DomainUseCaseTest extends AbstractWriterTest {
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(CommandHandlerTest.DuplicateTodoException.class))
             .withConfigurationResource("application.properties");
 
+    @ApplicationScoped
+    @Priority(1)
+    @Alternative
+    static class StubBackendUserVisibilityRolesProvider implements BackendUserVisibilityRolesProvider {
+
+        @Override
+        public List<String> provide() {
+            throw new IllegalStateException("Should not be called");
+        }
+    }
+
+    @ApplicationScoped
+    @Priority(1)
+    @Alternative
+    static class StubExecutedByResolver implements ExecutedByResolver {
+
+        @Override
+        public Set<ExecutedBy> resolve(final Set<AggregateId> aggregatesId) throws UnableToResolveException {
+            throw new IllegalStateException("Should not be called");
+        }
+
+        @Override
+        public Set<ExecutedBy> resolve(final OwnedBy ownedBy) throws UnableToResolveException {
+            throw new IllegalStateException("Should not be called");
+        }
+    }
+
+    static class NoAudienceCreateTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
+
+        @Override
+        public Todo execute(final CreateTodo givenCreateTodo) throws UseCaseException {
+            throw new IllegalStateException("Should not be called");
+        }
+
+        @Override
+        public List<Audience> audiences() {
+            return List.of();
+        }
+    }
+
     @Inject
     DataSource dataSource;
 
     @Inject
-    CreateTodoDomainUseCase createTodoUseCase;
+    CreateTodoDomainUseCase createTodoDomainUseCase;
 
     @Inject
-    UseCaseExceptionTodoDomainUseCase useCaseExceptionTodoUseCase;
+    UseCaseExceptionTodoDomainUseCase useCaseExceptionTodoDomainUseCase;
+
+    @Inject
+    NoAudienceCreateTodoDomainUseCase noAudienceCreateTodoDomainUseCase;
+
+    @Test
+    void shouldFailWhenNoAudienceIsDefined() {
+        assertThatThrownBy(() -> noAudienceCreateTodoDomainUseCase.execute(new CreateTodo("lorem ipsum")))
+                .isExactlyInstanceOf(UseCaseException.class)
+                .hasFieldOrPropertyWithValue("useCaseExceptionCode", UseCaseExceptionCode.FORBIDDEN)
+                .cause()
+                .isExactlyInstanceOf(UnauthorizedException.class);
+    }
 
     @Order(1)
     @Test
@@ -47,7 +109,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        final Todo loremIpsum = createTodoUseCase.execute(new CreateTodo("lorem ipsum"));
+        final Todo loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum"));
 
         // Then
         assertAll(
@@ -62,7 +124,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        assertThatThrownBy(() -> useCaseExceptionTodoUseCase.execute(new CreateTodo("lorem ipsum")))
+        assertThatThrownBy(() -> useCaseExceptionTodoDomainUseCase.execute(new CreateTodo("lorem ipsum")))
                 .isInstanceOf(UseCaseException.class)
                 .hasRootCauseInstanceOf(RuntimeException.class)
                 .hasRootCauseMessage("Something wrong happened");
@@ -83,8 +145,13 @@ class DomainUseCaseTest extends AbstractWriterTest {
                 return commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
                         CommandHandlerTest.DuplicateTodoException::new);
             } catch (final CommandException exception) {
-                throw new IllegalStateException("should not be called");
+                throw new UseCaseException(new IllegalStateException("should not be called"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
             }
+        }
+
+        @Override
+        public List<Audience> audiences() {
+            return List.of(Everyone.INSTANCE);
         }
     }
 
@@ -98,10 +165,15 @@ class DomainUseCaseTest extends AbstractWriterTest {
             try {
                 commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
                         CommandHandlerTest.DuplicateTodoException::new);
-                throw new UseCaseException(new RuntimeException("Something wrong happened"));
+                throw new UseCaseException(new RuntimeException("Something wrong happened"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
             } catch (final CommandException exception) {
                 throw new IllegalStateException("should not be called");
             }
+        }
+
+        @Override
+        public List<Audience> audiences() {
+            return List.of(Everyone.INSTANCE);
         }
     }
 }

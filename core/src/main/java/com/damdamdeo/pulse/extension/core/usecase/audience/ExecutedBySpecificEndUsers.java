@@ -1,12 +1,12 @@
-package com.damdamdeo.pulse.extension.core.query.audience;
+package com.damdamdeo.pulse.extension.core.usecase.audience;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 public record ExecutedBySpecificEndUsers(ExecutedBy.EndUser... endUsers) implements Audience {
@@ -16,19 +16,18 @@ public record ExecutedBySpecificEndUsers(ExecutedBy.EndUser... endUsers) impleme
     }
 
     @Override
-    public <I extends Input, P extends Projection> Optional<Result<P>> execute(final I input, final QueryUseCase<I, P> decorated,
-                                                                               final AudienceExecutionContext audienceExecutionContext)
-            throws QueryException {
-        Objects.requireNonNull(input);
-        Objects.requireNonNull(decorated);
+    public boolean allow(final AggregateId aggregateId, final AudienceExecutionContext audienceExecutionContext) throws UseCaseException {
+        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(audienceExecutionContext);
+        return allow(audienceExecutionContext);
+    }
+
+    @Override
+    public boolean allow(final AudienceExecutionContext audienceExecutionContext) throws UseCaseException {
         Objects.requireNonNull(audienceExecutionContext);
         final ExecutionContext executionContext = audienceExecutionContext.executionContextProvider().provide();
         final ExecutedBy executedBy = executionContext.executedBy();
-        if (Stream.of(endUsers).anyMatch(endUser -> endUser.value().equals(executedBy.value()))) {
-            return Optional.of(decorated.execute(input));
-        } else {
-            return Optional.empty();
-        }
+        return Stream.of(endUsers).anyMatch(endUser -> endUser.value().equals(executedBy.value()));
     }
 
     @Override

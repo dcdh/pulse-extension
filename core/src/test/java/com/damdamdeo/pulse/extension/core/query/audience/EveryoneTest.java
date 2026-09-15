@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query.audience;
 
+import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

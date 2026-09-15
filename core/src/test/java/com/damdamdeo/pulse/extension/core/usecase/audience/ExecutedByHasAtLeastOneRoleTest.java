@@ -1,28 +1,20 @@
-package com.damdamdeo.pulse.extension.core.query.audience;
+package com.damdamdeo.pulse.extension.core.usecase.audience;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExecutedByHasAtLeastOneRoleTest {
-
-    @Mock
-    Input input;
-
-    @Mock
-    Result<Projection> result;
 
     @Mock
     ExecutionContext executionContext;
@@ -34,89 +26,78 @@ class ExecutedByHasAtLeastOneRoleTest {
     AudienceExecutionContext audienceExecutionContext;
 
     @Test
-    void shouldReturnDecoratedResultWhenExecutedByHasOneOfTheRequiredRoles() throws QueryException {
+    void shouldAllowWhenExecutedByHasOneOfTheRequiredRoles() throws UseCaseException {
         // Given
         final ExecutedByHasAtLeastOneRole audience = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         when(audienceExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(false);
         when(executionContext.hasRole("USER")).thenReturn(true);
-        when(decorated.execute(input)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = audience.execute(input, decorated, audienceExecutionContext);
+        final boolean allowed = audience.allow(TodoId.USER_1_TODO_1, audienceExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.of(result), executed),
-                () -> verify(decorated).execute(input),
+                () -> assertTrue(allowed),
                 () -> verify(executionContext).hasRole("ADMIN"),
-                () -> verify(executionContext).hasRole("USER"),
-                () -> verifyNoMoreInteractions(decorated)
+                () -> verify(executionContext).hasRole("USER")
         );
     }
 
     @Test
-    void shouldReturnDecoratedResultWhenExecutedByHasFirstRequiredRole() throws QueryException {
+    void shouldAllowWhenExecutedByHasFirstRequiredRole() throws UseCaseException {
         // Given
         final ExecutedByHasAtLeastOneRole audience = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         when(audienceExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
-        when(decorated.execute(input)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = audience.execute(input, decorated, audienceExecutionContext);
+        final boolean allowed = audience.allow(TodoId.USER_1_TODO_1, audienceExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.of(result), executed),
-                () -> verify(decorated).execute(input),
+                () -> assertTrue(allowed),
                 () -> verify(executionContext).hasRole("ADMIN"),
                 () -> verify(executionContext, never()).hasRole("USER")
         );
     }
 
     @Test
-    void shouldReturnEmptyWhenExecutedByHasNoneOfTheRequiredRoles() throws QueryException {
+    void shouldReturnFalseWhenExecutedByHasNoneOfTheRequiredRoles() throws UseCaseException {
         // Given
         final ExecutedByHasAtLeastOneRole audience = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         when(audienceExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(false);
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final Optional<Result<Projection>> executed = audience.execute(input, decorated, audienceExecutionContext);
+        final boolean allowed = audience.allow(TodoId.USER_1_TODO_1, audienceExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.empty(), executed),
+                () -> assertFalse(allowed),
                 () -> verify(executionContext).hasRole("ADMIN"),
-                () -> verify(executionContext).hasRole("USER"),
-                () -> verifyNoInteractions(decorated)
+                () -> verify(executionContext).hasRole("USER")
         );
     }
 
     @Test
-    void shouldReturnEmptyWhenRequiredRolesAreEmpty() throws QueryException {
+    void shouldReturnFalseWhenRequiredRolesAreEmpty() throws UseCaseException {
         // Given
         final ExecutedByHasAtLeastOneRole audience = new ExecutedByHasAtLeastOneRole();
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         when(audienceExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
 
         // When
-        final Optional<Result<Projection>> executed = audience.execute(input, decorated, audienceExecutionContext);
+        final boolean allowed = audience.allow(TodoId.USER_1_TODO_1, audienceExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.empty(), executed),
-                () -> verifyNoInteractions(executionContext),
-                () -> verifyNoInteractions(decorated)
+                () -> assertFalse(allowed),
+                () -> verifyNoInteractions(executionContext)
         );
     }
 
