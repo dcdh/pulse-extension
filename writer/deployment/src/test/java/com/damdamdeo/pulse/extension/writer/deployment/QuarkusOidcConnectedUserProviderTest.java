@@ -5,6 +5,8 @@ import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedIsAnonymousExce
 import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUser;
 import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserNotAvailableException;
 import com.damdamdeo.pulse.extension.core.connecteduser.UsernameNotAMailException;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -28,7 +30,9 @@ class QuarkusOidcConnectedUserProviderTest extends AbstractWriterTest {
     // cf. QuarkusOidcExecutionContextProviderTest
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(

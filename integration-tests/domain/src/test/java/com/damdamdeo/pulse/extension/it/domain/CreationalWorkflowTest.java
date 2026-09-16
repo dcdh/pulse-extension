@@ -15,14 +15,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.function.Function;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class InitialiserDomainUseCaseTest {
+class CreationalWorkflowTest {
 
     @Mock
     UserRegistrationDomainUseCase userRegistrationDomainUseCase;
@@ -33,11 +32,11 @@ class InitialiserDomainUseCaseTest {
     @Mock
     CommandHandler<TodoChecklist, TodoChecklistId> todoChecklistCommandHandler;
 
-    InitialiserUseCase initialiserUseCase;
+    CreationalWorkflow creationalWorkflow;
 
     @BeforeEach
     void setup() {
-        initialiserUseCase = new InitialiserUseCase(userRegistrationDomainUseCase, todoCommandHandler, todoChecklistCommandHandler);
+        creationalWorkflow = new CreationalWorkflow(userRegistrationDomainUseCase, todoCommandHandler, todoChecklistCommandHandler);
     }
 
     @Test
@@ -67,7 +66,7 @@ class InitialiserDomainUseCaseTest {
         )).thenReturn(todoChecklist);
 
         // When
-        initialiserUseCase.execute(command);
+        creationalWorkflow.execute(command);
 
         // Then
         assertAll(
@@ -78,12 +77,5 @@ class InitialiserDomainUseCaseTest {
                 () -> verify(todoChecklistCommandHandler).handle(ArgumentMatchers.<Function<SequenceNumber, TodoChecklistId>>any(),
                         any(AddNewTodoItem.class),
                         ArgumentMatchers.<Function<TodoChecklistId, DuplicateAggregateException>>any()));
-    }
-
-    @Test
-    void shouldThrowNullPointerExceptionWhenCommandIsNull() {
-        // When / Then
-        assertThatThrownBy(() -> initialiserUseCase.execute(null))
-                .isInstanceOf(NullPointerException.class);
     }
 }

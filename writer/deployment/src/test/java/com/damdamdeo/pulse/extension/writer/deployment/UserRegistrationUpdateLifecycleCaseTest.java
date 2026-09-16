@@ -7,6 +7,8 @@ import com.damdamdeo.pulse.extension.core.command.UserUpdateUsername;
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.UserRegistrationDomainUseCase;
 import com.damdamdeo.pulse.extension.core.connecteduser.update.UserUpdateUserNameUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -36,7 +38,9 @@ class UserRegistrationUpdateLifecycleCaseTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(

@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.BusinessException;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import com.damdamdeo.pulse.extension.writer.runtime.BusinessExceptionToHttpProblemDetailMapper;
 import io.quarkus.test.QuarkusUnitTest;
 import io.restassured.http.ContentType;
@@ -20,6 +22,9 @@ class BusinessExceptionMapperTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .withConfigurationResource("application.properties");
 
     @ApplicationScoped

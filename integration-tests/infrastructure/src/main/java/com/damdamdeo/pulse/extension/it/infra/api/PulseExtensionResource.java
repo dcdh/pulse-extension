@@ -24,7 +24,7 @@ import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
-import com.damdamdeo.pulse.extension.it.domain.InitialiserUseCase;
+import com.damdamdeo.pulse.extension.it.domain.CreationalWorkflow;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
 import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
@@ -59,7 +59,7 @@ import java.util.Optional;
 public class PulseExtensionResource {
 
     @Inject
-    InitialiserUseCase initialiserUseCase;
+    CreationalWorkflow creationalWorkflow;
 
     @Inject
     @Any
@@ -100,7 +100,7 @@ public class PulseExtensionResource {
     @Authenticated
     public Response creationalWorkflow() throws SQLException {
         try {
-            initialiserUseCase.execute(new InitialiserCommand());
+            creationalWorkflow.execute(new InitialiserCommand());
 
             final List<String> sequences = new ArrayList<>();
             final List<String> sequencesTable = new ArrayList<>();

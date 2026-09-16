@@ -10,6 +10,8 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.TestUsernameEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import com.damdamdeo.pulse.extension.writer.runtime.InstantProvider;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.annotation.Priority;
@@ -43,6 +45,9 @@ class JdbcPostgresEventRepositoryTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .withConfigurationResource("application.properties");
 
     @Inject

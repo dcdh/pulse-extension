@@ -1,20 +1,14 @@
-package com.damdamdeo.pulse.extension.writer.deployment;
+package com.damdamdeo.pulse.extension.writer.deployment.domainusecase;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
-import com.damdamdeo.pulse.extension.core.event.OwnedBy;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
-import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import com.damdamdeo.pulse.extension.core.usecase.*;
 import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
 import com.damdamdeo.pulse.extension.core.usecase.audience.Everyone;
+import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
+import com.damdamdeo.pulse.extension.writer.deployment.CommandHandlerTest;
 import io.quarkus.test.QuarkusUnitTest;
-import jakarta.annotation.Priority;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Alternative;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -24,7 +18,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -37,35 +30,10 @@ class DomainUseCaseTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withApplicationRoot(javaArchive -> javaArchive.addClasses(CommandHandlerTest.DuplicateTodoException.class))
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(CommandHandlerTest.DuplicateTodoException.class,
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .withConfigurationResource("application.properties");
-
-    @ApplicationScoped
-    @Priority(1)
-    @Alternative
-    static class StubBackendUserVisibilityRolesProvider implements BackendUserVisibilityRolesProvider {
-
-        @Override
-        public List<String> provide() {
-            throw new IllegalStateException("Should not be called");
-        }
-    }
-
-    @ApplicationScoped
-    @Priority(1)
-    @Alternative
-    static class StubExecutedByResolver implements ExecutedByResolver {
-
-        @Override
-        public Set<ExecutedBy> resolve(final Set<AggregateId> aggregatesId) throws UnableToResolveException {
-            throw new IllegalStateException("Should not be called");
-        }
-
-        @Override
-        public Set<ExecutedBy> resolve(final OwnedBy ownedBy) throws UnableToResolveException {
-            throw new IllegalStateException("Should not be called");
-        }
-    }
 
     static class NoAudienceCreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, Todo> {
 
