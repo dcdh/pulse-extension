@@ -2,6 +2,8 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.connecteduser.*;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
@@ -28,7 +30,9 @@ class ConnectedUserAggregateIdProviderTest extends AbstractWriterTest {
     // cf. JdbcPostgresConnectionIdentifierRepositoryTest
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
             .setForcedDependencies(List.of(

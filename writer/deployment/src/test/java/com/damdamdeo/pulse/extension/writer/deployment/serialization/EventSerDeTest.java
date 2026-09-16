@@ -7,6 +7,8 @@ import com.damdamdeo.pulse.extension.core.event.MultipleTodoItemsAdded;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.TodoMarkedAsDone;
 import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
@@ -28,7 +30,9 @@ class EventSerDeTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 

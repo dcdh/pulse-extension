@@ -13,7 +13,8 @@ import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
 
 import java.util.Objects;
 
-public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C extends CreationalCommand<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
+public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C extends CreationalCommand<K>, A extends AggregateRoot<K>>
+        implements DomainUseCase<K, C, A> {
 
     private final CommandHandler<A, K> commandHandler;
     private final ConnectionIdentifierProvider connectionIdentifierProvider;

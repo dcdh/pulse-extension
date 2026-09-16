@@ -3,6 +3,8 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.command.CommandCallable;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -15,6 +17,9 @@ class DefaultQuarkusTransactionTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .withConfigurationResource("application.properties");
 
     @Inject
@@ -38,7 +43,7 @@ class DefaultQuarkusTransactionTest extends AbstractWriterTest {
     @Test
     void shouldJoiningExistingThrowCommandException() {
         // Given
-        CommandCallable<AggregateRoot<?>> boom = () -> {
+        final CommandCallable<AggregateRoot<?>> boom = () -> {
             throw new CommandException(
                     new IllegalStateException("BOOM"));
         };

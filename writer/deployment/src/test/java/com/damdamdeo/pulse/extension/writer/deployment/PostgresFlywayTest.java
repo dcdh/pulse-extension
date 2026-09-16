@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.builder.Version;
 import io.quarkus.logging.Log;
 import io.quarkus.maven.dependency.Dependency;
@@ -27,6 +29,8 @@ class PostgresFlywayTest extends AbstractWriterTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
+                    .addClasses(
+                            StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class)
                     .addAsResource("V1__init.sql", "/db/migration/V1__init.sql"))
             // disable compose dev service and use a new instance of postgres to ensure that flyway will be tested
             // compose dev service comes with initialization scripts we do not want them here

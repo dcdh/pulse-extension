@@ -9,11 +9,11 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.arc.All;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -29,7 +29,9 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(CommandHandlerTest.DuplicateTodoException.class))
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(CommandHandlerTest.DuplicateTodoException.class,
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .withConfigurationResource("application.properties");
 
     @Inject

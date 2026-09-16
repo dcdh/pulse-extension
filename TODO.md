@@ -1,8 +1,7 @@
 = TODO
 
 == Must have
-1. Create a GuardDomainUseCase using the same audience than GuardQuery
-- I would need to have a Creational one
+1. traceability add NbOfTimes (must be >= 1)
 
 == Nice to have
 1. propage traceId in CommandHandler on onStoredEventListener#execute

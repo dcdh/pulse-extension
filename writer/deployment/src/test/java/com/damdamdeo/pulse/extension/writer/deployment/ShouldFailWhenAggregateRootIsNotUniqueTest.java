@@ -4,6 +4,8 @@ import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.test.QuarkusUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,9 @@ class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties")
             .assertException(throwable -> assertThat(throwable)

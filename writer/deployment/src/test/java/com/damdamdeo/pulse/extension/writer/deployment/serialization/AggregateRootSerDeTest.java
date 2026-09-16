@@ -4,6 +4,8 @@ import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.QuarkusUnitTest;
@@ -24,7 +26,9 @@ class AggregateRootSerDeTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
-            .withEmptyApplication()
+            // classes.add(GuardDomainUseCase.class);
+            .withApplicationRoot(javaArchive -> javaArchive.addClasses(
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
