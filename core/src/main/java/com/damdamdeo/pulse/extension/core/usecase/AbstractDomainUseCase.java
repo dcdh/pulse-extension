@@ -10,7 +10,7 @@ import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public abstract non-sealed class AbstractDomainUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>>
+public abstract class AbstractDomainUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>>
         implements DomainUseCase<K, C, A> {
 
     private final CommandHandler<A, K> commandHandler;

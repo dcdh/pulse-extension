@@ -17,7 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public abstract non-sealed class GuardDomainUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
+public abstract class GuardDomainUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
 
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;

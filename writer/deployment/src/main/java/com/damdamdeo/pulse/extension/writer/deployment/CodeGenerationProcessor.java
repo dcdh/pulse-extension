@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 
 public class CodeGenerationProcessor {
-// FCK
+
     @BuildStep
     void generateGuardDomainUseCase(final CombinedIndexBuildItem combinedIndexBuildItem,
                                     final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,

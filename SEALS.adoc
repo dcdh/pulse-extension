@@ -1,0 +1,94 @@
+= SEALS
+
+== seals interface
+
+.module-info.java
+[source,java]
+----
+module com.damdamdeo.pulse.extension {
+    requires java.logging;
+    requires java.sql;
+    requires org.apache.commons.lang3;
+    requires org.slf4j;
+}
+----
+
+.GuardDomainUseCase.java
+[source,java]
+----
+public abstract non-sealed class GuardDomainUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
+----
+
+.AbstractUpdateUserNameUseCase.java
+[source,java]
+----
+public abstract non-sealed class AbstractUpdateUserNameUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
+----
+
+.AbstractRegistrationDomainUseCase.java
+[source,java]
+----
+public abstract non-sealed class AbstractRegistrationDomainUseCase<K extends AggregateId, C extends CreationalCommand<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
+----
+
+.AbstractCreationalDomainUseCase.java
+[source,java]
+----
+public abstract non-sealed class AbstractCreationalDomainUseCase<K extends AggregateId, C extends CreationalCommand<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
+----
+
+.AbstractDomainUseCase.java
+[source,java]
+----
+public abstract non-sealed class AbstractDomainUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>> implements DomainUseCase<K, C, A> {
+----
+
+.DomainUseCase.java
+[source,java]
+----
+public sealed interface DomainUseCase<K extends AggregateId, C extends Command<K>, A extends AggregateRoot<K>>
+permits AbstractDomainUseCase, AbstractCreationalDomainUseCase, AbstractRegistrationDomainUseCase,
+AbstractUpdateUserNameUseCase, GuardDomainUseCase {
+----
+
+.CodeGenerationProcessor.class
+[source,java]
+----
+@BuildStep
+void generateGuardDomainUseCase(
+----
+
+.DomainUseCaseTest.class
+[source,console]
+----
+Caused by: java.lang.IncompatibleClassChangeError: Failed same module check: subclass com.damdamdeo.pulse.extension.writer.deployment.DomainUseCaseTest_UseCaseExceptionTodoDomainUseCaseGuardDomainUseCaseGenerated_reQXYGmkCh-jgomtrXF8JsT9u0k_Delegate_Subclass is in module 'unnamed module' with loader io.quarkus.bootstrap.classloading.QuarkusClassLoader @2aa5bd48, and sealed class com.damdamdeo.pulse.extension.core.usecase.DomainUseCase is in module 'unnamed module' with loader io.quarkus.bootstrap.classloading.QuarkusClassLoader @7c9beb51
+----
+
+[source,java]
+----
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
+import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.GuardDomainUseCase;
+import io.quarkus.arc.Unremovable;
+import jakarta.annotation.Priority;
+import jakarta.decorator.Decorator;
+import jakarta.decorator.Delegate;
+import jakarta.enterprise.inject.Any;
+
+// $FF: synthetic class
+@Unremovable
+@Decorator
+@Priority(1)
+public final class DomainUseCaseTest_UseCaseExceptionTodoDomainUseCaseGuardDomainUseCaseGenerated extends GuardDomainUseCase<TodoId, CreateTodo, Todo> {
+    public DomainUseCaseTest_UseCaseExceptionTodoDomainUseCaseGuardDomainUseCaseGenerated(ExecutionContextProvider var1, BackendUserVisibilityRolesProvider var2, ExecutedByResolver var3, AggregateIdDecomposer var4, @Any @Delegate DomainUseCase<TodoId, CreateTodo, Todo> var5) {
+        super(var1, var2, var3, var4, var5);
+    }
+}
+----
+

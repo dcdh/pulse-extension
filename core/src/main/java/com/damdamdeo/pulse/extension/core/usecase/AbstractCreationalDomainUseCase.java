@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
 import java.util.Objects;
 import java.util.function.Function;
 
-public abstract non-sealed class AbstractCreationalDomainUseCase<K extends AggregateId, C extends CreationalCommand<K>, A extends AggregateRoot<K>>
+public abstract class AbstractCreationalDomainUseCase<K extends AggregateId, C extends CreationalCommand<K>, A extends AggregateRoot<K>>
         implements DomainUseCase<K, C, A> {
 
     private final CommandHandler<A, K> commandHandler;
