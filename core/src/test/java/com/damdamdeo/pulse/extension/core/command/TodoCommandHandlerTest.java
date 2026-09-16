@@ -51,9 +51,8 @@ class TodoCommandHandlerTest {
 
     Function<SequenceNumber, TodoId> creational = sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber);
 
-    // TodoId.SEQUENCE_NUMBER_1)
     @BeforeEach
-    void setUp() throws SequenceGenerationException {
+    void setUp() {
         todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), todoEventRepository, new StubTransaction(),
                 notAvailableExecutedByProvider, todoOnStoredEventListeners, aggregateIdGenerator, traceAppender);
         todoChecklistCommandHandler = new TodoChecklistCommandHandler(new JvmCommandHandlerRegistry(), todoChecklistEventRepository, new StubTransaction(),
@@ -153,7 +152,7 @@ class TodoCommandHandlerTest {
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When
-        final Todo todoMarkedAsDone = todoCommandHandler.handle(givenMarkTodoAsDone);
+        final Todo todoMarkedAsDone = todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(TodoId.USER_1_TODO_1));
 
         // Then
         assertAll(
@@ -181,7 +180,7 @@ class TodoCommandHandlerTest {
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
-        assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone))
+        assertThatThrownBy(() -> todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
                 .isExactlyInstanceOf(CommandException.class)
                 .cause()
                 .isExactlyInstanceOf(BusinessException.class)
@@ -193,9 +192,11 @@ class TodoCommandHandlerTest {
     void shouldThrowCommandException() {
         // Given
         final FailTodo failTodo = new FailTodo(TodoId.USER_1_TODO_1);
+        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+                .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
-        assertThatThrownBy(() -> todoCommandHandler.handle(failTodo))
+        assertThatThrownBy(() -> todoCommandHandler.handle(failTodo, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
                 .isExactlyInstanceOf(CommandException.class)
                 .cause()
                 .isExactlyInstanceOf(BusinessException.class)
@@ -207,9 +208,11 @@ class TodoCommandHandlerTest {
     void shouldFailWhenCommandIsNotHandled() {
         // Given
         final UnhandledTodo unhandledTodo = new UnhandledTodo(TodoId.USER_1_TODO_1);
+        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+                .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
-        assertThatThrownBy(() -> todoCommandHandler.handle(unhandledTodo))
+        assertThatThrownBy(() -> todoCommandHandler.handle(unhandledTodo, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessage("Missing 'handle' method for command class - you must implement the method 'public void handle(final UnhandledTodo unhandledTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException' in 'Todo'");
     }
@@ -218,9 +221,11 @@ class TodoCommandHandlerTest {
     void shouldFailWhenEventIsNotHandled() {
         // Given
         final CommandWithoutOnEvent commandWithoutOnEvent = new CommandWithoutOnEvent(TodoId.USER_1_TODO_1);
+        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+                .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
-        assertThatThrownBy(() -> todoCommandHandler.handle(commandWithoutOnEvent))
+        assertThatThrownBy(() -> todoCommandHandler.handle(commandWithoutOnEvent, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessage("Missing 'on' method for event class - you must implement the method 'public void on(final Missing missing, final ExecutedBy executedBy)' in 'Todo'");
     }
@@ -287,7 +292,7 @@ class TodoCommandHandlerTest {
         final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
 
         // When && Then
-        assertThatThrownBy(() -> todoCommandHandler.handle(givenCreateTodo))
+        assertThatThrownBy(() -> todoCommandHandler.handle(givenCreateTodo, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessage("You must use handle(final K id, final CreationalCommand<K> creationalCommand, final Supplier<DuplicateAggregateException> duplicateAggregateExceptionSupplier)");
     }

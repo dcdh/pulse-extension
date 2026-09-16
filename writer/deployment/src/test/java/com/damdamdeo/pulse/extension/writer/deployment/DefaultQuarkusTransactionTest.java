@@ -38,7 +38,7 @@ class DefaultQuarkusTransactionTest extends AbstractWriterTest {
     @Test
     void shouldJoiningExistingThrowCommandException() {
         // Given
-        CommandCallable<AggregateRoot<?>> boom = () -> {
+        final CommandCallable<AggregateRoot<?>> boom = () -> {
             throw new CommandException(
                     new IllegalStateException("BOOM"));
         };

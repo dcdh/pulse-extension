@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
-import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -9,9 +8,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
-import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
-import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
-import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
+import com.damdamdeo.pulse.extension.core.usecase.*;
 import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
 import com.damdamdeo.pulse.extension.core.usecase.audience.Everyone;
 import io.quarkus.test.QuarkusUnitTest;
@@ -27,13 +24,15 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+// FCK PRIO 1
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DomainUseCaseTest extends AbstractWriterTest {
 
@@ -69,16 +68,29 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
     }
 
-    static class NoAudienceCreateTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
+    static class NoAudienceCreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, Todo> {
 
-        @Override
-        public Todo execute(final CreateTodo givenCreateTodo) throws UseCaseException {
-            throw new IllegalStateException("Should not be called");
+        protected NoAudienceCreateTodoDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler) {
+            super(commandHandler);
         }
 
         @Override
         public List<Audience> audiences() {
             return List.of();
+        }
+
+        @Override
+        protected Function<SequenceNumber, TodoId> creational() {
+            return sequenceNumber -> {
+                throw new RuntimeException("Should not be called");
+            };
+        }
+
+        @Override
+        protected Function<TodoId, DuplicateAggregateException> duplicateAggregateException() {
+            return todoId -> {
+                throw new RuntimeException("Should not be called");
+            };
         }
     }
 
@@ -133,20 +145,22 @@ class DomainUseCaseTest extends AbstractWriterTest {
         assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001");
     }
 
-    static class CreateTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
+    static class CreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, Todo> {
 
-        @Inject
-        CommandHandler<Todo, TodoId> commandHandler;
+        protected CreateTodoDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler) {
+            super(commandHandler);
+        }
 
         @Override
-        public Todo execute(final CreateTodo givenCreateTodo) throws UseCaseException {
-            Objects.requireNonNull(givenCreateTodo);
-            try {
-                return commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
-                        CommandHandlerTest.DuplicateTodoException::new);
-            } catch (final CommandException exception) {
-                throw new UseCaseException(new IllegalStateException("should not be called"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
-            }
+        protected Function<SequenceNumber, TodoId> creational() {
+            return sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber);
+        }
+
+        @Override
+        protected Function<TodoId, DuplicateAggregateException> duplicateAggregateException() {
+            return todoId -> {
+                throw new IllegalStateException("Should not be called");
+            };
         }
 
         @Override
@@ -155,25 +169,25 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
     }
 
-    static class UseCaseExceptionTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
+    static class UseCaseExceptionTodoDomainUseCase extends AbstractDomainUseCase<TodoId, CreateTodo, Todo> {
 
-        @Inject
-        CommandHandler<Todo, TodoId> commandHandler;
+        protected UseCaseExceptionTodoDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler) {
+            super(commandHandler);
+        }
 
         @Override
-        public Todo execute(final CreateTodo givenCreateTodo) throws UseCaseException {
-            try {
-                commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
-                        CommandHandlerTest.DuplicateTodoException::new);
-                throw new UseCaseException(new RuntimeException("Something wrong happened"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
-            } catch (final CommandException exception) {
-                throw new IllegalStateException("should not be called");
-            }
+        protected void onBefore(final CreateTodo command) throws UseCaseExecutionException {
+            throw new UseCaseExecutionException(new RuntimeException("Something wrong happened"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
         }
 
         @Override
         public List<Audience> audiences() {
             return List.of(Everyone.INSTANCE);
+        }
+
+        @Override
+        protected Supplier<MissingAggregateException> missingAggregateException() {
+            throw new IllegalStateException("Should not be called");
         }
     }
 }

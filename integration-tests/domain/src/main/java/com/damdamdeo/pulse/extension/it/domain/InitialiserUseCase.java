@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.it.domain;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.*;
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.UserRegistrationDomainUseCase;
-import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.AbstractDomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
 import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
@@ -14,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Objects;
 
-public class InitialiserUseCase implements DomainUseCase<TodoId, InitialiserCommand, Todo> {
+// ok je vais devoir passer par deux UseCase InitialierUseCaseStageOne et InitialiserUseCaseStateTwo
+// FCK PRIO 1 : pk le build plante ??? le bean n'est pas trouvé ...
+public class InitialiserUseCase extends AbstractDomainUseCase<TodoId, InitialiserCommand, Todo> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InitialiserUseCase.class);
 
