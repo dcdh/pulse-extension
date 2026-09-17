@@ -36,3 +36,39 @@ Two implementations:
 - Finding by AnyAggregateId or ExecutedByHashed;
 - When finding by AnyAggregateId, Compound aggregateIds are returned to if queried to via **includeUncompounded**;
 - Finding by AnyAggregateId should take a list too, and in this case (same for other, return the aggregateId per line).
+
+== Execution 49999
+
+49999 - todo_taking.executed_by_encoded - table_size '16 kB' - indexes_size '32 kB' - total_size '48 kB'
+49999 - todo_taking.traceability_aggregate - table_size '40 kB' - indexes_size '32 kB' - total_size '72 kB'
+49999 - todo_taking.traceability_details - table_size '2584 kB' - indexes_size '1112 kB' - total_size '3696 kB'
+49999 - todo_taking.traceability_details_traceability_aggregate - table_size '2200 kB' - indexes_size '1552 kB' - total_size '3752 kB'
+
+[cols="1,3,1,1,1", options="header"]
+|===
+| Rows | Table | Table size | Indexes size | Total size
+
+| 49&#8239;999
+| `todo_taking.executed_by_encoded`
+| 16 kB
+| 32 kB
+| 48 kB
+
+| 49&#8239;999
+| `todo_taking.traceability_aggregate`
+| 40 kB
+| 32 kB
+| 72 kB
+
+| 49&#8239;999
+| `todo_taking.traceability_details`
+| 2584 kB
+| 1112 kB
+| 3696 kB
+
+| 49&#8239;999
+| `todo_taking.traceability_details_traceability_aggregate`
+| 2200 kB
+| 1552 kB
+| 3752 kB
+|===

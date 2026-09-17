@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -35,9 +36,10 @@ class DiskUsageTest {
     JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
 
     @Test
+    @Disabled
     void run() throws TraceRepositoryException {
         // Given
-        for (long execution = 0; execution < 500; execution++) {
+        for (long execution = 0; execution < 50000; execution++) {
             final TraceRecorder traceRecorder = new TraceRecorder(
                     new TraceId(execution),
                     new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
