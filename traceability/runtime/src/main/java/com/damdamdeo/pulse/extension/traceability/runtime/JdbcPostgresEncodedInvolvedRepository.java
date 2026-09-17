@@ -47,6 +47,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
                        ta.aggregate_root_id as aggregate_root_id,
+                       ta.nb_of_times AS nb_of_times,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded
                      FROM %1$s.traceability_aggregate ta
@@ -65,8 +66,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
-                                new ExecutedByHashed(select.getString("executed_by_hashed")),
-                                new ExecutedByEncoded(select.getString("executed_by_encoded"))));
+                                new EncodedActor(
+                                        new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))),
+                                new NbOfTimes(select.getInt("nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -88,8 +91,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
-                                new ExecutedByHashed(select.getString("executed_by_hashed")),
-                                new ExecutedByEncoded(select.getString("executed_by_encoded"))));
+                                new EncodedActor(
+                                        new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))),
+                                new NbOfTimes(select.getInt("nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }
@@ -116,6 +121,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
                        ta.aggregate_root_id AS aggregate_root_id,
+                       ta.nb_of_times AS nb_of_times,
                        ebe.executed_by_encoded AS executed_by_encoded
                      FROM %1$s.traceability_aggregate ta
                      JOIN %1$s.executed_by_encoded ebe
@@ -129,8 +135,11 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
-                                executedByHashed,
-                                new ExecutedByEncoded(select.getString("executed_by_encoded"))));
+                                new EncodedActor(
+                                        executedByHashed,
+                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                                ),
+                                new NbOfTimes(select.getInt("nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -147,8 +156,11 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
-                                executedByHashed,
-                                new ExecutedByEncoded(select.getString("executed_by_encoded"))));
+                                new EncodedActor(
+                                        executedByHashed,
+                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                                ),
+                                new NbOfTimes(select.getInt("nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }

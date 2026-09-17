@@ -80,8 +80,8 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         }
 
         public DetailedInvolvedDTO(final DetailedInvolved detailedInvolved) {
-            this(detailedInvolved.traceId(), detailedInvolved.involved().aggregateId(),
-                    detailedInvolved.involved().executedByHashed(), detailedInvolved.involved().executedBy(),
+            this(detailedInvolved.traceId(), detailedInvolved.aggregateId(),
+                    detailedInvolved.actor().executedByHashed(), detailedInvolved.actor().executedBy(),
                     detailedInvolved.from(), detailedInvolved.executedAt());
         }
     }

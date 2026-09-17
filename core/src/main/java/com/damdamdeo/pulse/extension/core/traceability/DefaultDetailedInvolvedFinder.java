@@ -1,10 +1,10 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
-import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,10 +57,13 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
             for (final EncodedDetailedInvolved encodedDetailedInvolved : involvedPage.content()) {
                 final DetailedInvolved detailedInvolved = new DetailedInvolved(
                         encodedDetailedInvolved.traceId(),
-                        new Involved(encodedDetailedInvolved.encodedInvolved().aggregateId(),
-                                encodedDetailedInvolved.encodedInvolved().executedByHashed(),
-                                encodedDetailedInvolved.encodedInvolved().executedByEncoded()
-                                        .to(usernameDecoder, ownedByProvider.provide(encodedDetailedInvolved.encodedInvolved().aggregateId()))),
+                        encodedDetailedInvolved.aggregateId(),
+                        new Actor(
+                                encodedDetailedInvolved.encodedActor().executedByHashed(),
+                                encodedDetailedInvolved.encodedActor().executedByEncoded()
+                                        .to(usernameDecoder, ownedByProvider.provide(encodedDetailedInvolved.aggregateId())
+                                        )
+                        ),
                         encodedDetailedInvolved.from(),
                         encodedDetailedInvolved.executedAt()
                 );

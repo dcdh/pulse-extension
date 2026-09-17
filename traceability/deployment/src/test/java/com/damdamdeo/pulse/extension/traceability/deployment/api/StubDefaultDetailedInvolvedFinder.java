@@ -32,9 +32,9 @@ public class StubDefaultDetailedInvolvedFinder implements DetailedInvolvedFinder
         }
         return new Page<>(
                 List.of(
-                        new DetailedInvolved(new TraceId(1L), new Involved(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new DetailedInvolved(new TraceId(1L), new Involved(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 2L);
     }
@@ -45,7 +45,7 @@ public class StubDefaultDetailedInvolvedFinder implements DetailedInvolvedFinder
         Objects.requireNonNull(pagination);
         return new Page<>(
                 List.of(
-                        new DetailedInvolved(new TraceId(1L), new Involved(new AnyAggregateId("U000001-T000001"), new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), new AnyAggregateId("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 1L);
     }

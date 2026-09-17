@@ -69,8 +69,14 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
              final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT trace_id, aggregate_root_id, executed_by_encoded_id FROM todo_taking.traceability_aggregate
-                             """)) {
+                             SELECT id, aggregate_root_id, executed_by_encoded_id, nb_of_times FROM todo_taking.traceability_aggregate
+                             """);
+             final PreparedStatement selectTraceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
+                     // language=sql
+                     """
+                             SELECT traceability_details_id, traceability_aggregate_id FROM todo_taking.traceability_details_traceability_aggregate
+                             """
+             )) {
             ResultSet resultSet = selectTraceabilityDetailsPreparedStatement.executeQuery();
             while (resultSet.next()) {
                 data.add(String.join("|", resultSet.getString("trace_id"), resultSet.getString("executed_at"),
@@ -83,14 +89,20 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
             }
             resultSet = selectTraceabilityAggregatePreparedStatement.executeQuery();
             while (resultSet.next()) {
-                data.add(String.join("|", resultSet.getString("trace_id"), resultSet.getString("aggregate_root_id"),
-                        resultSet.getString("executed_by_encoded_id")));
+                data.add(String.join("|", resultSet.getString("id"), resultSet.getString("aggregate_root_id"),
+                        resultSet.getString("executed_by_encoded_id") + "|" + resultSet.getLong("nb_of_times")));
+            }
+            resultSet = selectTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeQuery();
+            while (resultSet.next()) {
+                data.add(String.join("|", resultSet.getString("traceability_details_id"), resultSet.getString("traceability_aggregate_id")));
             }
         }
         assertThat(data).containsExactly("0|2026-09-06 14:00:00+02|from",
                 "1|EU:alice-hashed|EU:aliceEncoded",
                 "3|EU:bob-hashed|EU:bobEncoded",
-                "0|U000001-T000001|1",
-                "0|U000001-T000001|3");
+                "1|U000001-T000001|1|2",
+                "3|U000001-T000001|3|1",
+                "0|1",
+                "0|3");
     }
 }

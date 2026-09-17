@@ -61,8 +61,8 @@ class DefaultInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com")))),
+                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))), new NbOfTimes(1)),
+                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))), new NbOfTimes(1))),
                 new Pagination(0, 10), 2L));
     }
 
@@ -76,7 +76,7 @@ class DefaultInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new Involved(AnyAggregateId.from("U000001-T000001"), new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com")))),
+                        new Involved(AnyAggregateId.from("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))), new NbOfTimes(1))),
                 new Pagination(0, 10), 1L));
     }
 }

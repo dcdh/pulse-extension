@@ -20,7 +20,7 @@ public class PulseTraceabilityProcessor {
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
-
+//fck verifier la taille d'un enregistrement en detail et non detail dans postgres puis le rajouter dans l'ADR
     @BuildStep
     void generateAdditionalVolumeBuildItem(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                            final TraceabilityConfiguration traceabilityConfiguration,
@@ -28,7 +28,7 @@ public class PulseTraceabilityProcessor {
         final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
         final String tablesDefinition = switch (traceabilityConfiguration.tracingMode()) {
             case DISABLED -> null;
-            case INVOLVED -> // language=sql
+            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> // language=sql
                     """
                             CREATE SCHEMA IF NOT EXISTS %1$s;
                             
@@ -41,18 +41,17 @@ public class PulseTraceabilityProcessor {
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
+                              id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                               aggregate_root_id character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
-                              CONSTRAINT traceability_aggregate_pkey
-                                PRIMARY KEY (aggregate_root_id, executed_by_encoded_id),
+                              nb_of_times bigint NOT NULL,
+                              CONSTRAINT traceability_aggregate_pkey PRIMARY KEY (id),
+                              CONSTRAINT traceability_aggregate_unique
+                                UNIQUE (aggregate_root_id, executed_by_encoded_id),
                               CONSTRAINT traceability_aggregate_executed_by_encoded_fkey
                                 FOREIGN KEY (executed_by_encoded_id)
                                 REFERENCES %1$s.executed_by_encoded (id)
                             );
-                            """.formatted(schemaName);
-            case INVOLVED_WITH_FULL_DETAILS -> // language=sql
-                    """
-                            CREATE SCHEMA IF NOT EXISTS %1$s;
                             
                             CREATE SEQUENCE IF NOT EXISTS %1$s.trace_id_seq START WITH 1 INCREMENT BY 1;
                             
@@ -60,29 +59,20 @@ public class PulseTraceabilityProcessor {
                               trace_id bigint not null,
                               executed_at timestamptz not null,
                               from_value character varying(255) not null,
-                              CONSTRAINT aggregate_root_pkey PRIMARY KEY (trace_id)
+                              CONSTRAINT traceability_details_pkey PRIMARY KEY (trace_id)
                             );
                             
-                            CREATE TABLE IF NOT EXISTS %1$s.executed_by_encoded (
-                              id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-                              executed_by_hashed character varying(255) NOT NULL,
-                              executed_by_encoded character varying(255) NOT NULL,
-                              CONSTRAINT executed_by_encoded_pkey PRIMARY KEY (id),
-                              CONSTRAINT executed_by_encoded_unique UNIQUE (executed_by_hashed)
-                            );
-                            
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
-                              trace_id bigint not null,
-                              aggregate_root_id character varying(255) NOT NULL,
-                              executed_by_encoded_id bigint NOT NULL,
-                              CONSTRAINT traceability_aggregate_pkey
-                                PRIMARY KEY (aggregate_root_id, executed_by_encoded_id),
-                              CONSTRAINT traceability_details_fkey
-                                FOREIGN KEY (trace_id)
-                                REFERENCES %1$s.traceability_details (trace_id),
-                              CONSTRAINT traceability_aggregate_executed_by_encoded_fkey
-                                FOREIGN KEY (executed_by_encoded_id)
-                                REFERENCES %1$s.executed_by_encoded (id)
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate (
+                                traceability_details_id bigint not null,
+                                traceability_aggregate_id bigint not null,
+                                CONSTRAINT traceability_details_traceability_aggregate_unique
+                                  UNIQUE (traceability_details_id, traceability_aggregate_id),
+                                CONSTRAINT traceability_details_traceability_aggregate_traceability_details_id_fkey
+                                  FOREIGN KEY (traceability_details_id)
+                                  REFERENCES %1$s.traceability_details (trace_id),
+                                CONSTRAINT traceability_details_traceability_aggregate_traceability_aggregate_id_fkey
+                                  FOREIGN KEY (traceability_aggregate_id)
+                                  REFERENCES %1$s.traceability_aggregate (id)
                             );
                             """.formatted(schemaName);
         };

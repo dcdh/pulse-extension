@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.ExecutedAt;
 import com.damdamdeo.pulse.extension.core.traceability.From;
+import com.damdamdeo.pulse.extension.core.traceability.NbOfTimes;
 import com.damdamdeo.pulse.extension.core.traceability.TraceId;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -56,6 +57,7 @@ public class TraceabilityObjectMapperProducer {
         traceabilityMapperModule.addSerializer(From.class, new FromSerializer());
         traceabilityMapperModule.addSerializer(ExecutedAt.class, new ExecutedAtSerializer());
         traceabilityMapperModule.addSerializer(TraceId.class, new TraceIdSerializer());
+        traceabilityMapperModule.addSerializer(NbOfTimes.class, new NbOfTimesSerializer());
         objectMapper.registerModule(traceabilityMapperModule);
         return objectMapper;
     }

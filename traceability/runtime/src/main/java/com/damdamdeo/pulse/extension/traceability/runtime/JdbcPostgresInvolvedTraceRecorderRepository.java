@@ -50,11 +50,12 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public static final String INSERT_TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_aggregate (
                 aggregate_root_id,
-                executed_by_encoded_id
+                executed_by_encoded_id,
+                nb_of_times
             )
-            VALUES (?, ?)
+            VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
-            DO NOTHING;
+            DO UPDATE SET nb_of_times = %1$s.traceability_aggregate.nb_of_times + 1
             """;
 
     private final DataSource dataSource;

@@ -1,10 +1,10 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
-import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +54,11 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
             for (final EncodedInvolved encodedInvolved : involvedPage.content()) {
                 final Involved involved = new Involved(
                         encodedInvolved.aggregateId(),
-                        encodedInvolved.executedByHashed(),
-                        encodedInvolved.executedByEncoded().to(usernameDecoder, ownedByProvider.provide(encodedInvolved.aggregateId())));
+                        new Actor(
+                                encodedInvolved.encodedActor().executedByHashed(),
+                                encodedInvolved.encodedActor().executedByEncoded()
+                                        .to(usernameDecoder, ownedByProvider.provide(encodedInvolved.aggregateId()))),
+                        encodedInvolved.nbOfTimes());
                 list.add(involved);
             }
             return new Page<>(list, involvedPage.pagination(), involvedPage.totalElements());

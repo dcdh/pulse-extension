@@ -19,7 +19,6 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
 
     // executed_by_hashed is determinist
     // executed_by_encoded is non-deterministic even on the same username
-
     // language=sql
     public static final String TRACEABILITY_DETAILS_SQL = """
             INSERT INTO %s.traceability_details (
@@ -30,10 +29,9 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             VALUES (?, ?, ?);
             """;
 
-    // CTE pattern
     // language=sql
     public static final String EXECUTED_BY_ENCODED_SQL = """
-            WITH inserted AS (
+             WITH inserted AS (
                 INSERT INTO %1$s.executed_by_encoded (
                     executed_by_hashed,
                     executed_by_encoded
@@ -57,13 +55,26 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     // language=sql
     public static final String TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_aggregate (
-                trace_id,
                 aggregate_root_id,
-                executed_by_encoded_id
+                executed_by_encoded_id,
+                nb_of_times
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
-            DO NOTHING;
+            DO UPDATE
+            SET nb_of_times = %1$s.traceability_aggregate.nb_of_times + 1
+            RETURNING id;
+            """;
+
+    // language=sql
+    public static final String TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL = """
+            INSERT INTO %s.traceability_details_traceability_aggregate (
+                traceability_details_id,
+                traceability_aggregate_id
+            )
+            VALUES (?, ?)
+            ON CONFLICT (traceability_details_id, traceability_aggregate_id)
+            DO NOTHING
             """;
 
     private final DataSource dataSource;
@@ -85,7 +96,9 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                  final PreparedStatement executedByEncodedPreparedStatement = connection.prepareStatement(
                          EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
                  final PreparedStatement traceabilityAggregatePreparedStatement = connection.prepareStatement(
-                         TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
+                         TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()));
+                 final PreparedStatement traceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
+                         TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
                 traceabilityDetailsPreparedStatement.setLong(1, traceRecorder.traceId().id());
                 traceabilityDetailsPreparedStatement.setTimestamp(2, Timestamp.from(traceRecorder.executedAt().at()));
                 traceabilityDetailsPreparedStatement.setString(3, traceRecorder.from().from());
@@ -101,12 +114,19 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                         }
                         executedByEncodedId = resultSet.getLong(1);
                     }
-                    traceabilityAggregatePreparedStatement.setLong(1, traceRecorder.traceId().id());
-                    traceabilityAggregatePreparedStatement.setString(2, encodedTraceAggregateId.aggregateId().id());
-                    traceabilityAggregatePreparedStatement.setLong(3, executedByEncodedId);
-                    traceabilityAggregatePreparedStatement.addBatch();
+                    traceabilityAggregatePreparedStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
+                    traceabilityAggregatePreparedStatement.setLong(2, executedByEncodedId);
+                    final long traceabilityAggregateId;
+                    try (final ResultSet resultSet = traceabilityAggregatePreparedStatement.executeQuery()) {
+                        if (!resultSet.next()) {
+                            throw new SQLException("Unable to retrieve traceability_aggregate id");
+                        }
+                        traceabilityAggregateId = resultSet.getLong(1);
+                    }
+                    traceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(1, traceRecorder.traceId().id());
+                    traceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(2, traceabilityAggregateId);
+                    traceabilityDetailsTraceabilityAggregatePreparedStatement.executeUpdate();
                 }
-                traceabilityAggregatePreparedStatement.executeBatch();
                 connection.commit();
             } catch (final SQLException exception) {
                 connection.rollback();

@@ -58,16 +58,21 @@ public class TraceabilityFinderInvolvedEndpoint {
 
             @Schema(type = SchemaType.STRING, implementation = String.class,
                     description = "Information identifying the actor who executed the operation.", required = true)
-            ExecutedBy executedBy) {
+            ExecutedBy executedBy,
+
+            @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
+                    description = "Nombre of times the actor has been involved.", required = true)
+            NbOfTimes nbOfTimes) {
 
         public InvolvedDTO {
             Objects.requireNonNull(aggregateId);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
+            Objects.requireNonNull(nbOfTimes);
         }
 
         public InvolvedDTO(final Involved involved) {
-            this(involved.aggregateId(), involved.executedByHashed(), involved.executedBy());
+            this(involved.aggregateId(), involved.actor().executedByHashed(), involved.actor().executedBy(), involved.nbOfTimes());
         }
     }
 

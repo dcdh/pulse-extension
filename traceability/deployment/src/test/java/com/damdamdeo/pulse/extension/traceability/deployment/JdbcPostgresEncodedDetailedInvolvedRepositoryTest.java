@@ -81,18 +81,18 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(0, 1), 2L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(1, 1), 2L),
                 new Page<>(List.of(), new Pagination(2, 1), 2L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(0, 10), 2L)
         );
@@ -116,23 +116,23 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(0, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(1, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(3L), new EncodedInvolved(AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
                         new Pagination(2, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(3L), new EncodedInvolved(AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
                         new Pagination(0, 10), 3L)
         );
@@ -152,23 +152,23 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from("U000001-T000001"), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(0, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(2L), new EncodedInvolved(AnyAggregateId.from("U000001-T000002"), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(2L), AnyAggregateId.from("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")))),
                         new Pagination(1, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(3L), new EncodedInvolved(AnyAggregateId.from("U000001-T000001-CL000001"), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), AnyAggregateId.from("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
                         new Pagination(2, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new EncodedInvolved(AnyAggregateId.from("U000001-T000001"), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(2L), new EncodedInvolved(AnyAggregateId.from("U000001-T000002"), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(2L), AnyAggregateId.from("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(3L), new EncodedInvolved(AnyAggregateId.from("U000001-T000001-CL000001"), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), AnyAggregateId.from("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new From("from"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
                         new Pagination(0, 10), 3L)
         );

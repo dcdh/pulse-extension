@@ -391,7 +391,8 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                 "required": [
                                     "aggregateId",
                                     "executedByHashed",
-                                    "executedBy"
+                                    "executedBy",
+                                    "nbOfTimes"
                                 ],
                                 "description": "Actor involved in the execution of an aggregate.",
                                 "properties": {
@@ -406,6 +407,14 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "executedBy": {
                                         "type": "string",
                                         "description": "Information identifying the actor who executed the operation."
+                                    },
+                                    "nbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved."
                                     }
                                 }
                             },
