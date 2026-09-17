@@ -20,7 +20,7 @@ public class PulseTraceabilityProcessor {
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
     }
-//fck verifier la taille d'un enregistrement en detail et non detail dans postgres puis le rajouter dans l'ADR
+
     @BuildStep
     void generateAdditionalVolumeBuildItem(final ApplicationInfoBuildItem applicationInfoBuildItem,
                                            final TraceabilityConfiguration traceabilityConfiguration,
