@@ -25,7 +25,11 @@ public record UserId(SequenceNumber sequence) implements AggregateId {
     }
 
     public static UserId from(final Identifiable identifiable) {
-        Validate.validState(identifiable.id().startsWith("U"), "invalid id " + identifiable.id());
-        return new UserId(new SequenceNumber(identifiable.id().substring(1)));
+        return from(identifiable.id());
+    }
+
+    public static UserId from(final String id) {
+        Validate.validState(id.startsWith("U"), "invalid id " + id);
+        return new UserId(new SequenceNumber(id.substring(1)));
     }
 }

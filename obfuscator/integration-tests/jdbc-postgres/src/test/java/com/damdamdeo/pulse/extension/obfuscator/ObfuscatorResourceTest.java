@@ -28,6 +28,16 @@ class ObfuscatorResourceTest {
 
     @Order(2)
     @Test
+    void shouldGetByTodoId() {
+        given().when().get("/obfuscator/byAggregateId/U000001-T000001")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body(is("U000001-T000001"));
+    }
+
+    @Order(3)
+    @Test
     void shouldObfuscateUsingObfuscatedAnnotation() {
         given().when().get("/obfuscator/annotatedProjection")
                 .then()
@@ -40,10 +50,20 @@ class ObfuscatorResourceTest {
                 .body("important", is(false));
     }
 
-    @Order(3)
+    @Order(4)
     @Test
     void shouldDeobfuscateParameter() {
         given().when().get("/obfuscator/deObfuscate/00000000-0000-0000-0000-000000000000")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .body(is("U000001-T000001"));
+    }
+
+    @Order(5)
+    @Test
+    void shouldDeobfuscateByAggregateIdParameter() {
+        given().when().get("/obfuscator/deObfuscateByAggregateId/00000000-0000-0000-0000-000000000000")
                 .then()
                 .log().all()
                 .statusCode(200)

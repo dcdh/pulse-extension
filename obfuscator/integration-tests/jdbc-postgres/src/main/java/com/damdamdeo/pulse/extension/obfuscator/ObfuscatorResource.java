@@ -15,6 +15,13 @@ public class ObfuscatorResource {
         return new Todo(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false);
     }
 
+    // If a 404 is returned, it means that an issue has arrise when converting from String to TodoId ... It is disturbing.
+    @GET
+    @Path("byAggregateId/{todoId}")
+    public String getByAggregateId(@PathParam("todoId") final TodoId todoId) {
+        return todoId.id();
+    }
+
     @GET
     @Path("annotatedProjection")
     public TodoProjection getTodoProjection() {
@@ -25,5 +32,11 @@ public class ObfuscatorResource {
     @GET
     public String deObfuscate(@DeObfuscate @PathParam("todoId") final String todoId) {
         return todoId;
+    }
+
+    @Path("deObfuscateByAggregateId/{todoId}")
+    @GET
+    public String deObfuscate(@DeObfuscate @PathParam("todoId") final TodoId todoId) {
+        return todoId.id();
     }
 }

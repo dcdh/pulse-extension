@@ -1,0 +1,29 @@
+= ADR
+
+== JAX-RS
+
+- Apply deobfuscation on any type;
+- Each type must implement a custom **ParamConverter** with **ParamConverterProvider**;
+- Use custom **ParamConverterProvider** to deobfuscate;
+- Annotate parameter with DeObfuscate annotation to indicate that the value should be deobfuscated;
+- **DeObfuscatingParamConverterProvider** must select the delegate and run it after deobfuscation;
+- **DeObfuscatingParamConverterProvider** must be lunch at first.
+
+== WARNING
+
+=== Fail to translate from String to a target type
+
+If this kind of code produces an exception:
+
+[source,java]
+----
+        return new ParamConverter<>() {
+
+            @Override
+            public T fromString(final String value) {
+                Objects.requireNonNull(value);
+                return rawType.cast(converter.apply(value));
+            }
+----
+
+A 404 response with no log will be produced. It's very disturbing.

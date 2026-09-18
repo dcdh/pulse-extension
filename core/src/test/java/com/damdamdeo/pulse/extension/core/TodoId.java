@@ -44,8 +44,12 @@ public record TodoId(UserId userId, SequenceNumber sequence) implements Aggregat
     }
 
     public static TodoId from(final Identifiable identifiable) {
-        String[] split = identifiable.id().split(SEPARATOR);
-        return new TodoId(UserId.from(identifiable), new SequenceNumber(split[1]));
+        return from(identifiable.id());
+    }
+
+    public static TodoId from(final String id) {
+        final String[] split = id.split(SEPARATOR);
+        return new TodoId(UserId.from(split[0]), new SequenceNumber(split[1].substring(1)));
     }
 
     public String id() {
