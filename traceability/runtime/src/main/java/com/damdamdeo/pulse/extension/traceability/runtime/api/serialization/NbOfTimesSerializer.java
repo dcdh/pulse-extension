@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.traceability.runtime.api.deserializer;
+package com.damdamdeo.pulse.extension.traceability.runtime.api.serialization;
 
 import com.damdamdeo.pulse.extension.core.traceability.NbOfTimes;
 import com.fasterxml.jackson.core.JsonGenerator;

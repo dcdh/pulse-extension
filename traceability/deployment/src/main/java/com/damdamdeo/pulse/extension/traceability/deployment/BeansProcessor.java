@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.traceability.runtime.api.FinderExceptionMap
 import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityFinderDetailedInvolvedEndpoint;
 import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityFinderInvolvedEndpoint;
 import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityParamConverterProvider;
-import com.damdamdeo.pulse.extension.traceability.runtime.api.deserializer.TraceabilityObjectMapperProducer;
+import com.damdamdeo.pulse.extension.traceability.runtime.api.serialization.TraceabilityObjectMapperProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildProducer;

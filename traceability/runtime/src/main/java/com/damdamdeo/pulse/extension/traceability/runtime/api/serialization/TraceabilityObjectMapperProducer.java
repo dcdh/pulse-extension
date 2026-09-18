@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.traceability.runtime.api.deserializer;
+package com.damdamdeo.pulse.extension.traceability.runtime.api.serialization;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.core.AggregateId;
