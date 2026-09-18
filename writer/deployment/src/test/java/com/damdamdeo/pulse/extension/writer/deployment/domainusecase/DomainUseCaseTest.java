@@ -146,7 +146,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
 
         @Override
-        protected void onBefore(final CreateTodo command) throws UseCaseExecutionException {
+        protected CreateTodo onBefore(final CreateTodo command) throws UseCaseExecutionException {
             throw new UseCaseExecutionException(new RuntimeException("Something wrong happened"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
         }
 

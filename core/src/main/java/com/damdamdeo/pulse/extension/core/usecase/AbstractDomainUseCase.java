@@ -23,8 +23,8 @@ public abstract class AbstractDomainUseCase<K extends AggregateId, C extends Com
     public final A execute(final C command) throws UseCaseException {
         Objects.requireNonNull(command);
         try {
-            onBefore(command);
-            final A handled = commandHandler.handle(command, missingAggregateException());
+            final C processedCommand = onBefore(command);
+            final A handled = commandHandler.handle(processedCommand, missingAggregateException());
             return onAfter(command, handled);
         } catch (final UseCaseExecutionException useCaseExecutionException) {
             throw new UseCaseException(useCaseExecutionException, useCaseExecutionException.useCaseExceptionCode());
@@ -43,10 +43,12 @@ public abstract class AbstractDomainUseCase<K extends AggregateId, C extends Com
      * Override this method to perform any pre-processing before the command is handled.
      *
      * @param command
+     * @return
      * @throws UseCaseExecutionException
      */
-    protected void onBefore(final C command) throws UseCaseExecutionException {
+    protected C onBefore(final C command) throws UseCaseExecutionException {
         Objects.requireNonNull(command);
+        return command;
     }
 
     /**

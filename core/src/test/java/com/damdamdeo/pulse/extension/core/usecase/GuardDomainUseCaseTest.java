@@ -70,8 +70,9 @@ class GuardDomainUseCaseTest {
         }
 
         @Override
-        protected void onBefore(final MarkTodoAsDone command) throws UseCaseExecutionException {
+        protected MarkTodoAsDone onBefore(final MarkTodoAsDone command) throws UseCaseExecutionException {
             called.add("onBefore");
+            return command;
         }
 
         @Override
