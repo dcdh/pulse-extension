@@ -33,6 +33,7 @@ class ObfuscatorResourceTest {
                 .then()
                 .log().all()
                 .statusCode(200)
+                .body("id", is("00000000-0000-0000-0000-000000000000"))
                 .body("todoId", is("00000000-0000-0000-0000-000000000000"))
                 .body("description", is("lorem ipsum"))
                 .body("status", is("IN_PROGRESS"))

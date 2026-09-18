@@ -18,7 +18,7 @@ public class ObfuscatorResource {
     @GET
     @Path("annotatedProjection")
     public TodoProjection getTodoProjection() {
-        return new TodoProjection(TodoId.USER_1_TODO_1.id(), "lorem ipsum", Status.IN_PROGRESS, false);
+        return new TodoProjection(TodoId.USER_1_TODO_1.id(), TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false);
     }
 
     @Path("deObfuscate/{todoId}")

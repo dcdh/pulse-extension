@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.obfuscator.runtime.annotation;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.obfuscator.Obfuscator;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -25,9 +26,9 @@ public class ObfuscationBeanSerializerModifier extends BeanSerializerModifier {
             final List<BeanPropertyWriter> beanProperties) {
 
         final List<BeanPropertyWriter> result = new ArrayList<>();
-        for (BeanPropertyWriter writer : beanProperties) {
+        for (final BeanPropertyWriter writer : beanProperties) {
             if (writer.getAnnotation(Obfuscate.class) != null
-                    && writer.getType().getRawClass() == String.class) {
+                    && (writer.getType().getRawClass() == String.class || writer.getType().isTypeOrSubTypeOf(AggregateId.class))) {
                 result.add(new ObfuscatedBeanPropertyWriter(writer, obfuscator));
             } else {
                 result.add(writer);

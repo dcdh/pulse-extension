@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.obfuscator.runtime.annotation;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.obfuscator.Obfuscator;
-import com.damdamdeo.pulse.extension.core.obfuscator.UnableToObfuscateException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -23,13 +23,13 @@ public class ObfuscatedBeanPropertyWriter extends BeanPropertyWriter {
     public void serializeAsField(final Object bean, final JsonGenerator gen, final SerializerProvider prov) throws Exception {
         final Object value = delegate.get(bean);
         if (value instanceof String stringValue) {
-            try {
-                gen.writeFieldName(delegate.getName());
-                gen.writeString(obfuscator.obfuscate(stringValue));
-                return;
-            } catch (UnableToObfuscateException e) {
-                throw new RuntimeException(e);
-            }
+            gen.writeFieldName(delegate.getName());
+            gen.writeString(obfuscator.obfuscate(stringValue));
+            return;
+        } else if (value instanceof AggregateId aggregateId) {
+            gen.writeFieldName(delegate.getName());
+            gen.writeString(obfuscator.obfuscate(aggregateId.id()));
+            return;
         }
         delegate.serializeAsField(bean, gen, prov);
     }

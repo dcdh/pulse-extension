@@ -133,3 +133,5 @@
 /traceability/deployment/todo_taking_traceability_tables.sql
 /traceability/runtime/target/
 /traceability/runtime/quarkus-pulse-traceability-extension.iml
+/common/deployment/todo_taking_aggregate_executed_by.sql
+/query/deployment/todo_taking_aggregate_executed_by.sql
