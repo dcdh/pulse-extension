@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime;
+package com.damdamdeo.pulse.extension.common.deployment;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
 import com.damdamdeo.pulse.extension.core.encryption.*;

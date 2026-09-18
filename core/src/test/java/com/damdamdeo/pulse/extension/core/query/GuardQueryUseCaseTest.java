@@ -2,6 +2,8 @@ package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.audience.Audience;

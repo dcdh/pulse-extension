@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;

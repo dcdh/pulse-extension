@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.query.audience;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.*;
 import org.junit.jupiter.api.Test;

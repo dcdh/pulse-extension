@@ -1,6 +1,6 @@
-package com.damdamdeo.pulse.extension.common.runtime.executedby;
+package com.damdamdeo.pulse.extension.common.deployment.executedby;
 
-import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
+import com.damdamdeo.pulse.extension.common.deployment.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;

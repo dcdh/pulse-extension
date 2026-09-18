@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.query.runtime;
+package com.damdamdeo.pulse.extension.common.runtime.audience;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
-import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import io.quarkus.arc.DefaultBean;
 import jakarta.enterprise.context.ApplicationScoped;

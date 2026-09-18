@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment.domainusecase;
 
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;

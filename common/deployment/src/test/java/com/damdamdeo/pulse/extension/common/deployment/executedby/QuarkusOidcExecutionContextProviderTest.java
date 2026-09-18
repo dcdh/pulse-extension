@@ -1,79 +1,58 @@
-package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
+package com.damdamdeo.pulse.extension.common.deployment.executedby;
 
-import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
-import com.damdamdeo.pulse.extension.core.UserId;
-import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
-import com.damdamdeo.pulse.extension.core.connecteduser.RegistrationCheckerException;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
-import com.damdamdeo.pulse.extension.core.hashing.Hasher;
+import com.damdamdeo.pulse.extension.common.deployment.StubPassphraseRepository;
+import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.List;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class DefaultConnectedUserFacadeTest {
+class QuarkusOidcExecutionContextProviderTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClass(StubPassphraseRepository.class))
-            .overrideConfigKey("quarkus.oidc.client-id", "account")
             .withConfigurationResource("application.properties")
+            .overrideConfigKey("quarkus.oidc.client-id", "account")
             .setForcedDependencies(List.of(
                     Dependency.of("io.quarkus", "quarkus-oidc", Version.getVersion()),
                     Dependency.of("io.quarkus", "quarkus-jdbc-postgresql", Version.getVersion()),
                     Dependency.of("io.quarkus", "quarkus-rest-jackson", Version.getVersion())
             ));
 
-    @Path("/registration")
-    public static class RegistrationEndpoint {
+    @Path("/executedByProvider")
+    public static class ExecutedByProviderEndpoint {
 
         @Inject
-        ConnectionIdentifierRepository connectionIdentifierRepository;
-
-        @Inject
-        ConnectionIdentifierProvider connectionIdentifierProvider;
-
-        @Inject
-        Hasher hasher;
-
-        @Inject
-        DefaultConnectedUserFacade defaultConnectedUserFacade;
+        ExecutionContextProvider executionContextProvider;
 
         @GET
-        @Path("isRegistered")
-        public String isRegistered() throws RegistrationCheckerException {
-            return defaultConnectedUserFacade.isRegistered().map(Identifiable::id).orElse(null);
-        }
-
-        @POST
-        @Path("register")
-        @Transactional
-        public void register() throws ConnectionIdentifierProviderException, ConnectionIdentifierRepositoryException,
-                DuplicateConnectionIdentifierException {
-            final ConnectionIdentifier connectionIdentifier = connectionIdentifierProvider.provide();
-            connectionIdentifierRepository.store(connectionIdentifier, UserId.USER_1);
+        public ExecutionContextDTO getExecutionContextDTO() {
+            final ExecutionContext executionContext = executionContextProvider.provide();
+            return new ExecutionContextDTO(
+                    executionContext.executedBy().value(),
+                    executionContext.roles());
         }
     }
 
+    public record ExecutionContextDTO(String executedBy, Set<String> roles) {
+    }
+
     @Test
-    void shouldReturnFalseWhenNotRegistered() {
+    void shouldReturnAliceEndUser() {
         // Given
         final String authServerUrl = ConfigProvider.getConfig().getValue("quarkus.oidc.auth-server-url", String.class);
         final String clientId = ConfigProvider.getConfig().getValue("quarkus.oidc.client-id", String.class);
@@ -84,8 +63,8 @@ class DefaultConnectedUserFacadeTest {
                         .formParam("grant_type", "password")
                         .formParam("client_id", clientId)
                         .formParam("client_secret", secret)
-                        .formParam("username", "bob@mail.com")
-                        .formParam("password", "bob")
+                        .formParam("username", "alice@mail.com")
+                        .formParam("password", "alice")
                         .when()
                         .log().all()
                         .post("%s/protocol/openid-connect/token".formatted(authServerUrl))
@@ -100,13 +79,15 @@ class DefaultConnectedUserFacadeTest {
                 .header("Authorization", "Bearer %s".formatted(accessToken))
                 .when()
                 .log().all()
-                .get("/registration/isRegistered")
+                .get("/executedByProvider")
                 .then().log().all()
-                .statusCode(204);
+                .statusCode(200)
+                .body("executedBy", is("EU:alice@mail.com"))
+                .body("roles", hasItems("admin", "user"));
     }
 
     @Test
-    void shouldReturnTrueWhenRegistered() {
+    void shouldReturnServiceAccount() {
         // Given
         final String authServerUrl = ConfigProvider.getConfig().getValue("quarkus.oidc.auth-server-url", String.class);
         final String clientId = ConfigProvider.getConfig().getValue("quarkus.oidc.client-id", String.class);
@@ -114,37 +95,37 @@ class DefaultConnectedUserFacadeTest {
         final String accessToken =
                 given()
                         .contentType(ContentType.URLENC)
-                        .formParam("grant_type", "password")
+                        .formParam("grant_type", "client_credentials")
                         .formParam("client_id", clientId)
                         .formParam("client_secret", secret)
-                        .formParam("username", "bob@mail.com")
-                        .formParam("password", "bob")
                         .when()
-                        .log().all()
                         .post("%s/protocol/openid-connect/token".formatted(authServerUrl))
                         .then()
-                        .log().all()
                         .statusCode(200)
                         .extract()
                         .path("access_token");
 
-        // When
+        // When && Then
         given()
                 .header("Authorization", "Bearer %s".formatted(accessToken))
                 .when()
                 .log().all()
-                .post("/registration/register")
-                .then().log().all()
-                .statusCode(204);
-
-        // Then
-        given()
-                .header("Authorization", "Bearer %s".formatted(accessToken))
-                .when()
-                .log().all()
-                .get("/registration/isRegistered")
+                .get("/executedByProvider")
                 .then().log().all()
                 .statusCode(200)
-                .body(equalTo("U000001"));
+                .body("executedBy", is("SA:service-account-account"))
+                .body("roles", hasItems("offline_access", "default-roles-quarkus", "uma_authorization"));
+    }
+
+    @Test
+    void shouldReturnAnonymous() {
+        given()
+                .when()
+                .log().all()
+                .get("/executedByProvider")
+                .then().log().all()
+                .statusCode(200)
+                .body("executedBy", is("A"))
+                .body("roles", empty());
     }
 }

@@ -2,8 +2,6 @@ package com.damdamdeo.pulse.extension.core.audience;
 
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
 
 import java.util.Objects;
 

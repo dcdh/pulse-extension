@@ -9,8 +9,8 @@ import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
 
 import java.util.Comparator;

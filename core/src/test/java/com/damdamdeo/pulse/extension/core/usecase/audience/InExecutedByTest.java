@@ -9,7 +9,7 @@ import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;

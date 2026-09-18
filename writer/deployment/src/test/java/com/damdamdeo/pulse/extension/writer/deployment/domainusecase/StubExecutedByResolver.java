@@ -3,7 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment.domainusecase;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;

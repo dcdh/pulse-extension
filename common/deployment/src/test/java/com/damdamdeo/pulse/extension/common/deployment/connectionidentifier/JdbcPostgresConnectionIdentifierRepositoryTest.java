@@ -1,6 +1,8 @@
-package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
+package com.damdamdeo.pulse.extension.common.deployment.connectionidentifier;
 
-import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
+import com.damdamdeo.pulse.extension.common.deployment.StubPassphraseRepository;
+import com.damdamdeo.pulse.extension.common.runtime.connectionidentifier.CachedConnectionIdentifierRepository;
+import com.damdamdeo.pulse.extension.common.runtime.connectionidentifier.JdbcPostgresConnectionIdentifierRepository;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifier;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;

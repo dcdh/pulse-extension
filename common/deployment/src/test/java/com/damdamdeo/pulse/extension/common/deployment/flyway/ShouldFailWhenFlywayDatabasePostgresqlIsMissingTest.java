@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime.flyway;
+package com.damdamdeo.pulse.extension.common.deployment.flyway;
 
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;

@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;

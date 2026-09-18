@@ -1,7 +1,7 @@
 = TODO
 
 == Must have
-1. traceability add NbOfTimes (must be >= 1)
+1. OwnedByProvider replace by ExecutedByResolver
 
 == Nice to have
 1. propage traceId in CommandHandler on onStoredEventListener#execute

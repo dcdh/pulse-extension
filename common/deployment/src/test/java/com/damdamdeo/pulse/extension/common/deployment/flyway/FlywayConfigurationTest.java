@@ -1,6 +1,6 @@
-package com.damdamdeo.pulse.extension.common.runtime.flyway;
+package com.damdamdeo.pulse.extension.common.deployment.flyway;
 
-import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
+import com.damdamdeo.pulse.extension.common.deployment.StubPassphraseRepository;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
 import io.quarkus.test.QuarkusUnitTest;

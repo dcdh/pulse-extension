@@ -10,9 +10,7 @@ import com.damdamdeo.pulse.extension.core.query.file.query.UploadQuery;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultDownloadedAtProvider;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultTokenGenerator;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedAtProvider;
-import com.damdamdeo.pulse.extension.query.runtime.JdbcPostgresExecutedByResolver;
 import com.damdamdeo.pulse.extension.query.runtime.QueryExceptionMapper;
-import com.damdamdeo.pulse.extension.query.runtime.SmallryeConfigBackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.query.runtime.file.*;
 import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.*;
 import com.damdamdeo.pulse.extension.query.runtime.file.traceability.*;
@@ -31,8 +29,7 @@ public class BeansProcessor {
     @BuildStep
     AdditionalBeanBuildItem additionalBeans() {
         return AdditionalBeanBuildItem.builder()
-                .addBeanClasses(SmallryeConfigBackendUserVisibilityRolesProvider.class,
-                        JdbcPostgresExecutedByResolver.class, JdbcPostgresOwnedByProvider.class)
+                .addBeanClasses(JdbcPostgresOwnedByProvider.class)
                 .build();
     }
 

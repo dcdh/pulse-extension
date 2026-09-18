@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime;
+package com.damdamdeo.pulse.extension.common.deployment;
 
 import io.quarkus.test.QuarkusUnitTest;
 import org.junit.jupiter.api.Assertions;

@@ -3,6 +3,8 @@ package com.damdamdeo.pulse.extension.core.query;
 import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.audience.Audience;
 import com.damdamdeo.pulse.extension.core.traceability.From;

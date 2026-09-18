@@ -4,7 +4,6 @@ import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 
-import java.util.List;
 import java.util.Optional;
 
 @ConfigMapping(prefix = "pulse.query")
@@ -17,36 +16,11 @@ public interface PulseQueryConfig {
     String masterKey();
 
     /**
-     * backendUser
-     *
-     * @return backendUser
-     */
-    BackendUser backendUser();
-
-    /**
      * file
      *
      * @return file
      */
     File file();
-
-    interface BackendUser {
-
-        /**
-         * visibility
-         *
-         * @return visibility
-         */
-        Visibility visibility();
-    }
-
-    interface Visibility {
-
-        /**
-         * Roles that are allowed to execute the Query.
-         */
-        List<String> roles();
-    }
 
     interface File {
 

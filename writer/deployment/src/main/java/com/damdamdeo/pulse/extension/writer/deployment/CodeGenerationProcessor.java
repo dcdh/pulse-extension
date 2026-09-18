@@ -4,8 +4,8 @@ import com.damdamdeo.pulse.extension.core.connecteduser.registration.AbstractReg
 import com.damdamdeo.pulse.extension.core.connecteduser.update.AbstractUpdateUserNameUseCase;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.query.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.usecase.AbstractCreationalDomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.AbstractDomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;

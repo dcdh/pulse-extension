@@ -1,6 +1,7 @@
-package com.damdamdeo.pulse.extension.query.runtime;
+package com.damdamdeo.pulse.extension.common.runtime.audience;
 
-import com.damdamdeo.pulse.extension.core.query.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.common.runtime.BackendUserConfiguration;
+import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.inject.Inject;
@@ -14,10 +15,10 @@ import java.util.List;
 public class SmallryeConfigBackendUserVisibilityRolesProvider implements BackendUserVisibilityRolesProvider {
 
     @Inject
-    PulseQueryConfig pulseQueryConfig;
+    BackendUserConfiguration backendUserConfiguration;
 
     @Override
     public List<String> provide() {
-        return pulseQueryConfig.backendUser().visibility().roles();
+        return backendUserConfiguration.visibility().roles().orElseGet(List::of);
     }
 }

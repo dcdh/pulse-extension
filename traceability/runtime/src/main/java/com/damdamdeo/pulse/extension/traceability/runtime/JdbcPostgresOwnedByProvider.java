@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Objects;
 
+// TODO use ExecutedByResolver instead
 @ApplicationScoped
 @Unremovable
 public class JdbcPostgresOwnedByProvider implements OwnedByProvider {

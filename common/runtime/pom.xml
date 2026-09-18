@@ -47,6 +47,10 @@
             <artifactId>quarkus-security</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jdbc-postgresql</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-encryption-storage-extension</artifactId>
             <version>${project.version}</version>

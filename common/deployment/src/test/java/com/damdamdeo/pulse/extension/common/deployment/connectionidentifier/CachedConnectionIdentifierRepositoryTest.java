@@ -1,6 +1,6 @@
-package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
+package com.damdamdeo.pulse.extension.common.deployment.connectionidentifier;
 
-import com.damdamdeo.pulse.extension.common.runtime.StubPassphraseRepository;
+import com.damdamdeo.pulse.extension.common.deployment.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifier;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;

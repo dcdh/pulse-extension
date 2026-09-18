@@ -1,8 +1,9 @@
-package com.damdamdeo.pulse.extension.core.query;
+package com.damdamdeo.pulse.extension.core.audience;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 
 import java.util.Set;
 
