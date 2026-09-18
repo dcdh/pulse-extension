@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -47,7 +48,8 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
 
         @Override
-        protected Function<SequenceNumber, TodoId> creational() {
+        protected Function<SequenceNumber, TodoId> creational(final CreateTodo createTodo) {
+            Objects.requireNonNull(createTodo);
             return sequenceNumber -> {
                 throw new RuntimeException("Should not be called");
             };
@@ -119,7 +121,8 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
 
         @Override
-        protected Function<SequenceNumber, TodoId> creational() {
+        protected Function<SequenceNumber, TodoId> creational(final CreateTodo createTodo) {
+            Objects.requireNonNull(createTodo);
             return sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber);
         }
 

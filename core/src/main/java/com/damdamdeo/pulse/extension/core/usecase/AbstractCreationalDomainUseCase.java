@@ -25,7 +25,7 @@ public abstract class AbstractCreationalDomainUseCase<K extends AggregateId, C e
         Objects.requireNonNull(command);
         try {
             onBefore(command);
-            final A handled = commandHandler.handle(creational(), command, duplicateAggregateException());
+            final A handled = commandHandler.handle(creational(command), command, duplicateAggregateException());
             return onAfter(command, handled);
         } catch (final UseCaseExecutionException useCaseExecutionException) {
             throw new UseCaseException(useCaseExecutionException, useCaseExecutionException.useCaseExceptionCode());
@@ -38,8 +38,19 @@ public abstract class AbstractCreationalDomainUseCase<K extends AggregateId, C e
         }
     }
 
-    protected abstract Function<SequenceNumber, K> creational();
+    /**
+     * Implements this method to provide the creational function.
+     *
+     * @param command to add context to aggregate id
+     * @return
+     */
+    protected abstract Function<SequenceNumber, K> creational(C command);
 
+    /**
+     * Implements this method to provide the duplicate aggregate exception function.
+     *
+     * @return
+     */
     protected abstract Function<K, DuplicateAggregateException> duplicateAggregateException();
 
     /**
