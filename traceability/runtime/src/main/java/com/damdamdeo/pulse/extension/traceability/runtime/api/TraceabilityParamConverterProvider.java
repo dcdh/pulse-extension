@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.traceability.IncludeUncompounded;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
@@ -22,9 +21,7 @@ public class TraceabilityParamConverterProvider implements ParamConverterProvide
             IncludeUncompounded.class, value -> new IncludeUncompounded(Boolean.parseBoolean(value))
     );
 
-    private static final Map<Class<?>, Function<Object, String>> SERIALIZERS = Map.of(
-            AggregateId.class, value -> ((AggregateId) value).id()
-    );
+    private static final Map<Class<?>, Function<Object, String>> SERIALIZERS = Map.of();
 
     @Override
     public <T> ParamConverter<T> getConverter(final Class<T> rawType, final Type genericType, final Annotation[] annotations) {
