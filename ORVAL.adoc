@@ -1,0 +1,113 @@
+= Orval
+
+== Generation quick tips
+
+By default, this code:
+[source,java]
+----
+    @Path("commencerLaPriseDeCommande")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public ResponseDTO commencerLaPriseDeCommande(
+            @Schema(type = SchemaType.INTEGER, implementation = Integer.class, required = true)
+            @FormParam("nombreDeConvives") final NombreDeConvives nombreDeConvives,
+            @Schema(type = SchemaType.INTEGER, implementation = Integer.class, required = true)
+            @FormParam("numeroDeTable") final NumeroDeTable numeroDeTable) throws UseCaseException {
+        final Commande executed = commencerLaPriseDeCommandeUseCase.execute(new CommencerLaPriseDeCommande(nombreDeConvives, numeroDeTable, null));
+        return new ResponseDTO(
+                CommandeDTO.from(executed),
+                eventRepository.loadOrderByVersionASC(executed.id()).stream().map(this::from).toList());
+    }
+----
+will produce this openapi.
+
+[source,json]
+----
+    "/priseDeCommande/commencerLaPriseDeCommande" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "nombreDeConvives" : {
+                    "$ref" : "#/components/schemas/NombreDeConvives",
+                    "type" : "integer",
+                    "format" : "int32"
+                  },
+                  "numeroDeTable" : {
+                    "$ref" : "#/components/schemas/NumeroDeTable",
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+
+----
+**"$ref"** is problematic because Orval will treat it as a JSON Object and will want to do JSON manipulation on posting a request while it should be only an int.
+
+To fix it, just define this class
+
+[source,java]
+----
+package com.creperie.salle.infrastructure.api;
+
+import org.eclipse.microprofile.openapi.OASFilter;
+import org.eclipse.microprofile.openapi.models.media.Schema;
+
+public class RemoveRefIfTypeDefinedFilter implements OASFilter {
+
+    @Override
+    public Schema filterSchema(final Schema schema) {
+        // If the schema have a $ref and an explicit type defined
+        if (schema.getRef() != null && schema.getType() != null) {
+            // delete the ref to keep only the primitive type
+            schema.setRef(null);
+        }
+        return schema;
+    }
+}
+----
+
+with this conf:
+
+[source,properties]
+----
+mp.openapi.filter=com.creperie.salle.infrastructure.api.RemoveRefIfTypeDefinedFilter
+----
+
+It will produce
+
+[source,json]
+----
+    "/priseDeCommande/commencerLaPriseDeCommande" : {
+      "post" : {
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "nombreDeConvives" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  },
+                  "numeroDeTable" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+----
+
+and so we are fined :)
