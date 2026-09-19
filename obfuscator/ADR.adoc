@@ -1,5 +1,10 @@
 = ADR
 
+== Considerations
+
+- It is now allowed to transmit the obfuscated id to deeper inside the application;
+- Obfuscation - deobfuscation must be done at the frontier of the application;
+
 == JAX-RS
 
 - Apply deobfuscation on any type;
