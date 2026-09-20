@@ -28,7 +28,7 @@ public class UserUpdateUserNameUseCase extends AbstractUpdateUserNameUseCase<Use
     }
 
     @Override
-    public List<Permission> permissions() {
-        return List.of(Everyone.INSTANCE);
+    public List<Permission<UserId, UserUpdateUsername>> permissions() {
+        return List.of(new Everyone<>());
     }
 }

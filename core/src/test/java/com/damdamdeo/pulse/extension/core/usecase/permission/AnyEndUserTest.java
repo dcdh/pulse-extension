@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.usecase.permission;
 
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,8 @@ class AnyEndUserTest {
         when(permissionExecutionContext.isEndUser()).thenReturn(true);
 
         // When
-        final boolean allowed = AnyEndUser.INSTANCE.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = new AnyEndUser<TodoId, MarkTodoAsDone>().allow(TodoId.USER_1_TODO_1,
+                new MarkTodoAsDone(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -38,7 +40,8 @@ class AnyEndUserTest {
         when(permissionExecutionContext.isEndUser()).thenReturn(false);
 
         // When
-        final boolean allowed = AnyEndUser.INSTANCE.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = new AnyEndUser<TodoId, MarkTodoAsDone>().allow(TodoId.USER_1_TODO_1,
+                new MarkTodoAsDone(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -49,7 +52,7 @@ class AnyEndUserTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
-        final AnyEndUser permission = AnyEndUser.INSTANCE;
+        final AnyEndUser<TodoId, MarkTodoAsDone> permission = new AnyEndUser<>();
 
         // When
         final int priority = permission.priority();

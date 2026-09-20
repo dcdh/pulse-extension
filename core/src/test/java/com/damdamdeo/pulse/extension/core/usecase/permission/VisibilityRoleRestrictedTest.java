@@ -2,9 +2,10 @@ package com.damdamdeo.pulse.extension.core.usecase.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +44,8 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(true);
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = new VisibilityRoleRestricted<TodoId, MarkTodoAsDone>().allow(TodoId.USER_1_TODO_1,
+                new MarkTodoAsDone(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -64,7 +66,8 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = new VisibilityRoleRestricted<TodoId, MarkTodoAsDone>().allow(TodoId.USER_1_TODO_1,
+                new MarkTodoAsDone(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -86,7 +89,8 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = new VisibilityRoleRestricted<TodoId, MarkTodoAsDone>().allow(TodoId.USER_1_TODO_1,
+                new MarkTodoAsDone(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -105,7 +109,8 @@ class VisibilityRoleRestrictedTest {
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of());
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = new VisibilityRoleRestricted<TodoId, MarkTodoAsDone>().allow(TodoId.USER_1_TODO_1,
+                new MarkTodoAsDone(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -119,7 +124,7 @@ class VisibilityRoleRestrictedTest {
         // Given
 
         // When
-        final int priority = VisibilityRoleRestricted.INSTANCE.priority();
+        final int priority = new VisibilityRoleRestricted<TodoId, MarkTodoAsDone>().priority();
 
         // Then
         assertEquals(2, priority);

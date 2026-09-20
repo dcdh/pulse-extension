@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.usecase.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
@@ -28,14 +29,15 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldAllowWhenExecutedByHasOneOfTheRequiredRoles() throws UseCaseException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
+        final ExecutedByHasAtLeastOneRole<TodoId, MarkTodoAsDone> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(false);
         when(executionContext.hasRole("USER")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -48,13 +50,14 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldAllowWhenExecutedByHasFirstRequiredRole() throws UseCaseException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
+        final ExecutedByHasAtLeastOneRole<TodoId, MarkTodoAsDone> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -67,14 +70,15 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldReturnFalseWhenExecutedByHasNoneOfTheRequiredRoles() throws UseCaseException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
+        final ExecutedByHasAtLeastOneRole<TodoId, MarkTodoAsDone> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(false);
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -87,12 +91,13 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldReturnFalseWhenRequiredRolesAreEmpty() throws UseCaseException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole();
+        final ExecutedByHasAtLeastOneRole<TodoId, MarkTodoAsDone> permission = new ExecutedByHasAtLeastOneRole<>();
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -104,7 +109,7 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN");
+        final ExecutedByHasAtLeastOneRole<TodoId, MarkTodoAsDone> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN");
 
         // When
         final int priority = permission.priority();

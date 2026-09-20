@@ -58,11 +58,11 @@ class GuardDomainUseCaseTest {
     public static class StubDomainUseCase extends AbstractDomainUseCase<TodoId, MarkTodoAsDone, Todo> {
 
         final List<String> called = new ArrayList<>();
-        private final List<Permission> permissions;
+        private final List<Permission<TodoId, MarkTodoAsDone>> permissions;
         private final Supplier<MissingAggregateException> missingAggregateException;
 
         protected StubDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler,
-                                    final List<Permission> permissions,
+                                    final List<Permission<TodoId, MarkTodoAsDone>> permissions,
                                     final Supplier<MissingAggregateException> missingAggregateException) {
             super(commandHandler);
             this.permissions = permissions;
@@ -87,7 +87,7 @@ class GuardDomainUseCaseTest {
         }
 
         @Override
-        public List<Permission> permissions() {
+        public List<Permission<TodoId, MarkTodoAsDone>> permissions() {
             called.add("permissions");
             return permissions;
         }
@@ -100,7 +100,7 @@ class GuardDomainUseCaseTest {
     @Test
     void shouldReturnResultWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
         // Given
-        decorated = new StubDomainUseCase(commandHandler, List.of(Everyone.INSTANCE), missingAggregateException);
+        decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated) {
@@ -120,7 +120,7 @@ class GuardDomainUseCaseTest {
     @Test
     void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws UseCaseException, CommandException {
         // Given
-        decorated = new StubDomainUseCase(commandHandler, List.of(VisibilityRoleRestricted.INSTANCE, Everyone.INSTANCE), missingAggregateException);
+        decorated = new StubDomainUseCase(commandHandler, List.of(new VisibilityRoleRestricted<>(), new Everyone<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated) {
@@ -140,7 +140,7 @@ class GuardDomainUseCaseTest {
     @Test
     void shouldExecutePermissionsInPriorityOrder() throws UseCaseException, CommandException {
         // Given
-        decorated = new StubDomainUseCase(commandHandler, List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE), missingAggregateException);
+        decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated) {
@@ -160,7 +160,7 @@ class GuardDomainUseCaseTest {
     @Test
     void shouldNotExecuteFollowingPermissionsWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
         // Given
-        decorated = new StubDomainUseCase(commandHandler, List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE), missingAggregateException);
+        decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated) {
@@ -183,7 +183,7 @@ class GuardDomainUseCaseTest {
         // Given
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
-        decorated = new StubDomainUseCase(commandHandler, List.of(VisibilityRoleRestricted.INSTANCE), missingAggregateException);
+        decorated = new StubDomainUseCase(commandHandler, List.of(new VisibilityRoleRestricted<>()), missingAggregateException);
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated) {
         };
@@ -203,14 +203,14 @@ class GuardDomainUseCaseTest {
     @Test
     void shouldDelegatePermissions() {
         // Given
-        final List<Permission> permissions = List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE);
+        final List<Permission<TodoId, MarkTodoAsDone>> permissions = List.of(new Everyone<>(), new VisibilityRoleRestricted<>());
         decorated = new StubDomainUseCase(commandHandler, permissions, missingAggregateException);
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated) {
         };
 
         // When
-        final List<Permission> result = guardDomainUseCase.permissions();
+        final List<Permission<TodoId, MarkTodoAsDone>> result = guardDomainUseCase.permissions();
 
         // Then
         assertSame(permissions, result);

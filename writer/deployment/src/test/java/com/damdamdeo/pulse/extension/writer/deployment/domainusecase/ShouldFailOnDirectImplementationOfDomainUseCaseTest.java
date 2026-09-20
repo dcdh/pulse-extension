@@ -5,8 +5,8 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
-import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.inject.spi.DeploymentException;
 import org.junit.jupiter.api.Assertions;
@@ -46,8 +46,8 @@ class ShouldFailOnDirectImplementationOfDomainUseCaseTest {
         }
 
         @Override
-        public List<Permission> permissions() {
-            return List.of(Everyone.INSTANCE);
+        public List<Permission<TodoId, CreateTodo>> permissions() {
+            return List.of(new Everyone<>());
         }
     }
 }

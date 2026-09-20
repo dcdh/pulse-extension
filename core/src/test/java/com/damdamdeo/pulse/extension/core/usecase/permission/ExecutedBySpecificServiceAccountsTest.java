@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.usecase.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -34,13 +35,14 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldAllowWhenExecutedByIsOneOfSpecificServiceAccounts() throws UseCaseException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout", "payment");
+        final ExecutedBySpecificServiceAccounts<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificServiceAccounts<>("checkout", "payment");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(CHECKOUT);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -52,13 +54,14 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldAllowWhenExecutedByMatchesSecondSpecificServiceAccount() throws UseCaseException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout", "payment");
+        final ExecutedBySpecificServiceAccounts<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificServiceAccounts<>("checkout", "payment");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(PAYMENT);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -70,14 +73,15 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldReturnFalseWhenExecutedByIsNotOneOfSpecificServiceAccounts() throws UseCaseException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout", "payment");
+        final ExecutedBySpecificServiceAccounts<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificServiceAccounts<>("checkout", "payment");
         final ExecutedBy.ServiceAccount charlie = new ExecutedBy.ServiceAccount("charlie");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(charlie);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -89,13 +93,14 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldReturnFalseWhenSpecificServiceAccountsAreEmpty() throws UseCaseException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts();
+        final ExecutedBySpecificServiceAccounts<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificServiceAccounts<>();
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(CHECKOUT);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -107,7 +112,7 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldNotMatchEndUserWithSameName() throws UseCaseException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout");
+        final ExecutedBySpecificServiceAccounts<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificServiceAccounts<>("checkout");
         final ExecutedBy.EndUser endUser = new ExecutedBy.EndUser(new Username("alice@mail.com"));
 
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -115,7 +120,8 @@ class ExecutedBySpecificServiceAccountsTest {
         when(executionContext.executedBy()).thenReturn(endUser);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -127,10 +133,10 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
-        final ExecutedBySpecificServiceAccounts audience = new ExecutedBySpecificServiceAccounts("checkout");
+        final ExecutedBySpecificServiceAccounts<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificServiceAccounts<>("checkout");
 
         // When
-        final int priority = audience.priority();
+        final int priority = permission.priority();
 
         // Then
         assertEquals(4, priority);

@@ -4,12 +4,13 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.command.AddNewTodoItem;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,8 @@ class InExecutedByTest {
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
-        final boolean allowed = InExecutedBy.INSTANCE.allow(TodoChecklistId.USER_1_TODO_1_1, permissionExecutionContext);
+        final boolean allowed = new InExecutedBy<TodoChecklistId, AddNewTodoItem>().allow(TodoChecklistId.USER_1_TODO_1_1,
+                new AddNewTodoItem(TodoId.USER_1_TODO_1, "lorem ipsum"), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -83,7 +85,8 @@ class InExecutedByTest {
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
-        final boolean allowed = InExecutedBy.INSTANCE.allow(TodoChecklistId.USER_1_TODO_1_1, permissionExecutionContext);
+        final boolean allowed = new InExecutedBy<TodoChecklistId, AddNewTodoItem>().allow(TodoChecklistId.USER_1_TODO_1_1,
+                new AddNewTodoItem(TodoId.USER_1_TODO_1, "lorem ipsum"), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -108,7 +111,8 @@ class InExecutedByTest {
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
 
         // When
-        InExecutedBy.INSTANCE.allow(TodoChecklistId.USER_1_TODO_1_1, permissionExecutionContext);
+        new InExecutedBy<TodoChecklistId, AddNewTodoItem>().allow(TodoChecklistId.USER_1_TODO_1_1,
+                new AddNewTodoItem(TodoId.USER_1_TODO_1, "lorem ipsum"), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -133,7 +137,8 @@ class InExecutedByTest {
         // When
         final UseCaseException exception = assertThrows(
                 UseCaseException.class,
-                () -> InExecutedBy.INSTANCE.allow(TodoChecklistId.USER_1_TODO_1_1, permissionExecutionContext));
+                () -> new InExecutedBy<TodoChecklistId, AddNewTodoItem>().allow(TodoChecklistId.USER_1_TODO_1_1,
+                        new AddNewTodoItem(TodoId.USER_1_TODO_1, "lorem ipsum"), permissionExecutionContext));
 
         // Then
         assertSame(cause, exception.getCause());
@@ -144,7 +149,7 @@ class InExecutedByTest {
         // Given
 
         // When
-        final int priority = InExecutedBy.INSTANCE.priority();
+        final int priority = new InExecutedBy<TodoChecklistId, AddNewTodoItem>().priority();
 
         // Then
         assertEquals(3, priority);

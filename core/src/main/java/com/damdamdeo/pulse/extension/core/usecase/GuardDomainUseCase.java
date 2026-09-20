@@ -4,13 +4,13 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
 import java.util.Comparator;
@@ -40,7 +40,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
     @Override
     public final A execute(final C command) throws UseCaseException {
         Objects.requireNonNull(command);
-        final List<Permission> permissions = decorated.permissions()
+        final List<Permission<K, C>> permissions = decorated.permissions()
                 .stream()
                 .sorted(Comparator.comparing(Prioritable::priority))
                 .toList();
@@ -48,14 +48,14 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         // TODO avoid instanceof
         if (command instanceof CreationalCommand<?>) {
-            for (final Permission permission : permissions) {
-                if (permission.allow(context)) {
+            for (final Permission<K, C> permission : permissions) {
+                if (permission.allow(command, context)) {
                     return decorated.execute(command);
                 }
             }
         } else {
-            for (final Permission permission : permissions) {
-                if (permission.allow(command.id(), context)) {
+            for (final Permission<K, C> permission : permissions) {
+                if (permission.allow(command.id(), command, context)) {
                     return decorated.execute(command);
                 }
             }
@@ -64,7 +64,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
     }
 
     @Override
-    public List<Permission> permissions() {
+    public List<Permission<K, C>> permissions() {
         return decorated.permissions();
     }
 }

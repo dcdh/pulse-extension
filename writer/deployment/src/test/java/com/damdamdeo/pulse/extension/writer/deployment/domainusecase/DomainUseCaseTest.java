@@ -4,8 +4,8 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.usecase.*;
-import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
 import com.damdamdeo.pulse.extension.writer.deployment.CommandHandlerTest;
 import io.quarkus.test.QuarkusUnitTest;
@@ -43,7 +43,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
 
         @Override
-        public List<Permission> permissions() {
+        public List<Permission<TodoId, CreateTodo>> permissions() {
             return List.of();
         }
 
@@ -134,8 +134,8 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
 
         @Override
-        public List<Permission> permissions() {
-            return List.of(Everyone.INSTANCE);
+        public List<Permission<TodoId, CreateTodo>> permissions() {
+            return List.of(new Everyone<>());
         }
     }
 
@@ -151,8 +151,8 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
 
         @Override
-        public List<Permission> permissions() {
-            return List.of(Everyone.INSTANCE);
+        public List<Permission<TodoId, CreateTodo>> permissions() {
+            return List.of(new Everyone<>());
         }
 
         @Override

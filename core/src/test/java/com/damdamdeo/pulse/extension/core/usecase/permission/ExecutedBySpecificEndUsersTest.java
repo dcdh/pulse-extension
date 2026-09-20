@@ -2,10 +2,11 @@ package com.damdamdeo.pulse.extension.core.usecase.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,13 +35,14 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldAllowWhenExecutedByIsOneOfSpecificEndUsers() throws UseCaseException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE, BOB);
+        final ExecutedBySpecificEndUsers<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificEndUsers<>(ALICE, BOB);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(ALICE);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -52,13 +54,14 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldAllowWhenExecutedByMatchesSecondSpecificEndUser() throws UseCaseException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE, BOB);
+        final ExecutedBySpecificEndUsers<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificEndUsers<>(ALICE, BOB);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(BOB);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -70,14 +73,15 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldReturnFalseWhenExecutedByIsNotOneOfSpecificEndUsers() throws UseCaseException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE, BOB);
+        final ExecutedBySpecificEndUsers<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificEndUsers<>(ALICE, BOB);
         final ExecutedBy.EndUser charlie = new ExecutedBy.EndUser(new Username("charlie@mail.com"));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(charlie);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -89,13 +93,14 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldReturnFalseWhenSpecificEndUsersAreEmpty() throws UseCaseException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers();
+        final ExecutedBySpecificEndUsers<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificEndUsers<>();
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(ALICE);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertAll(
@@ -109,13 +114,14 @@ class ExecutedBySpecificEndUsersTest {
         // Given
         final ExecutedBy.EndUser configuredEndUser = new ExecutedBy.EndUser(new Username("alice@mail.com"));
         final ExecutedBy.EndUser executionEndUser = new ExecutedBy.EndUser(new Username("alice@mail.com"));
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(configuredEndUser);
+        final ExecutedBySpecificEndUsers<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificEndUsers<>(configuredEndUser);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(executionEndUser);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertTrue(allowed);
@@ -124,7 +130,7 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE);
+        final ExecutedBySpecificEndUsers<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificEndUsers<>(ALICE);
 
         // When
         final int priority = permission.priority();

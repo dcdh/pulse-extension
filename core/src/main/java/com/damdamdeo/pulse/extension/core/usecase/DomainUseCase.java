@@ -11,5 +11,5 @@ public interface DomainUseCase<K extends AggregateId, C extends Command<K>, A ex
 
     A execute(C command) throws UseCaseException;
 
-    List<Permission> permissions();
+    List<Permission<K, C>> permissions();
 }
