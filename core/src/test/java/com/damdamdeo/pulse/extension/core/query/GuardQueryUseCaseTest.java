@@ -2,13 +2,13 @@ package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
-import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.audience.Audience;
-import com.damdamdeo.pulse.extension.core.query.audience.Everyone;
-import com.damdamdeo.pulse.extension.core.query.audience.VisibilityRoleRestricted;
+import com.damdamdeo.pulse.extension.core.query.permission.Permission;
+import com.damdamdeo.pulse.extension.core.query.permission.Everyone;
+import com.damdamdeo.pulse.extension.core.query.permission.VisibilityRoleRestricted;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
@@ -61,7 +61,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldReturnResultWhenEveryoneAllowsAccess() throws QueryException {
         // Given
-        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -79,7 +79,7 @@ class GuardQueryUseCaseTest {
     void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws QueryException {
         // Given
         final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
-        when(decorated.audiences()).thenReturn(List.of(visibilityRoleRestricted, Everyone.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(visibilityRoleRestricted, Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -94,10 +94,10 @@ class GuardQueryUseCaseTest {
     }
 
     @Test
-    void shouldExecuteAudiencesInPriorityOrder() throws QueryException {
+    void shouldExecutePermissionsInPriorityOrder() throws QueryException {
         // Given
         final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
-        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, visibilityRoleRestricted));
+        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE, visibilityRoleRestricted));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -112,9 +112,9 @@ class GuardQueryUseCaseTest {
     }
 
     @Test
-    void shouldNotExecuteFollowingAudiencesWhenEveryoneAllowsAccess() throws QueryException {
+    void shouldNotExecuteFollowingPermissionsWhenEveryoneAllowsAccess() throws QueryException {
         // Given
-        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -134,7 +134,7 @@ class GuardQueryUseCaseTest {
         // Given
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
-        when(decorated.audiences()).thenReturn(List.of(VisibilityRoleRestricted.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(VisibilityRoleRestricted.INSTANCE));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("admin"));
 
@@ -144,7 +144,7 @@ class GuardQueryUseCaseTest {
                         .isExactlyInstanceOf(QueryException.class)
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
-                () -> verify(decorated).audiences(),
+                () -> verify(decorated).permissions(),
                 () -> verifyNoInteractions(traceAppender)
         );
     }
@@ -152,7 +152,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldAppendTraceWhenAccessIsGranted() throws QueryException, TraceAppenderException {
         // Given
-        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -165,7 +165,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldThrowInfrastructureFailureWhenTraceAppendingFails() throws QueryException, TraceAppenderException {
         // Given
-        when(decorated.audiences()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
         doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
                 .when(traceAppender).append(eq(result), any(From.class));
@@ -183,15 +183,15 @@ class GuardQueryUseCaseTest {
     }
 
     @Test
-    void shouldDelegateAudiences() {
+    void shouldDelegatePermissions() {
         // Given
-        final List<Audience> audiences = List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE);
-        when(decorated.audiences()).thenReturn(audiences);
+        final List<Permission> permissions = List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE);
+        when(decorated.permissions()).thenReturn(permissions);
 
         // When
-        final List<Audience> result = guardQuery.audiences();
+        final List<Permission> result = guardQuery.permissions();
 
         // Then
-        assertSame(audiences, result);
+        assertSame(permissions, result);
     }
 }

@@ -7,8 +7,8 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
-import com.damdamdeo.pulse.extension.core.query.audience.Audience;
-import com.damdamdeo.pulse.extension.core.query.audience.Everyone;
+import com.damdamdeo.pulse.extension.core.query.permission.Permission;
+import com.damdamdeo.pulse.extension.core.query.permission.Everyone;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -83,7 +83,7 @@ public class TodoProjectionQueryUseCase implements QueryUseCase<ListTodos, TodoP
     }
 
     @Override
-    public List<Audience> audiences() {
+    public List<Permission> permissions() {
         return List.of(Everyone.INSTANCE);
     }
 }

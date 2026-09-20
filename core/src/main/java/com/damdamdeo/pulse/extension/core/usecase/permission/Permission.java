@@ -1,0 +1,14 @@
+package com.damdamdeo.pulse.extension.core.usecase.permission;
+
+import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.Prioritable;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
+
+public sealed interface Permission extends Prioritable permits Everyone, VisibilityRoleRestricted, InExecutedBy, ExecutedBySpecificServiceAccounts,
+        ExecutedBySpecificEndUsers, ExecutedByHasAtLeastOneRole {
+
+    boolean allow(AggregateId aggregateId, PermissionExecutionContext permissionExecutionContext) throws UseCaseException;
+
+    boolean allow(PermissionExecutionContext permissionExecutionContext) throws UseCaseException;
+}

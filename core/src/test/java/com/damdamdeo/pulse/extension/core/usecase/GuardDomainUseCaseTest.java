@@ -7,11 +7,11 @@ import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
-import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
-import com.damdamdeo.pulse.extension.core.usecase.audience.Everyone;
-import com.damdamdeo.pulse.extension.core.usecase.audience.VisibilityRoleRestricted;
+import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
+import com.damdamdeo.pulse.extension.core.usecase.permission.VisibilityRoleRestricted;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -58,14 +58,14 @@ class GuardDomainUseCaseTest {
     public static class StubDomainUseCase extends AbstractDomainUseCase<TodoId, MarkTodoAsDone, Todo> {
 
         final List<String> called = new ArrayList<>();
-        private final List<Audience> audiences;
+        private final List<Permission> permissions;
         private final Supplier<MissingAggregateException> missingAggregateException;
 
         protected StubDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler,
-                                    final List<Audience> audiences,
+                                    final List<Permission> permissions,
                                     final Supplier<MissingAggregateException> missingAggregateException) {
             super(commandHandler);
-            this.audiences = audiences;
+            this.permissions = permissions;
             this.missingAggregateException = missingAggregateException;
         }
 
@@ -87,9 +87,9 @@ class GuardDomainUseCaseTest {
         }
 
         @Override
-        public List<Audience> audiences() {
-            called.add("audiences");
-            return audiences;
+        public List<Permission> permissions() {
+            called.add("permissions");
+            return permissions;
         }
 
         public List<String> called() {
@@ -112,7 +112,7 @@ class GuardDomainUseCaseTest {
         // Then
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
-                () -> assertThat(decorated.called()).containsExactly("audiences", "onBefore", "onAfter"),
+                () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any())
         );
     }
@@ -132,13 +132,13 @@ class GuardDomainUseCaseTest {
         // Then
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
-                () -> assertThat(decorated.called()).containsExactly("audiences", "onBefore", "onAfter"),
+                () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any())
         );
     }
 
     @Test
-    void shouldExecuteAudiencesInPriorityOrder() throws UseCaseException, CommandException {
+    void shouldExecutePermissionsInPriorityOrder() throws UseCaseException, CommandException {
         // Given
         decorated = new StubDomainUseCase(commandHandler, List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
@@ -152,13 +152,13 @@ class GuardDomainUseCaseTest {
         // Then
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
-                () -> assertThat(decorated.called()).containsExactly("audiences", "onBefore", "onAfter"),
+                () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any())
         );
     }
 
     @Test
-    void shouldNotExecuteFollowingAudiencesWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
+    void shouldNotExecuteFollowingPermissionsWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
         // Given
         decorated = new StubDomainUseCase(commandHandler, List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
@@ -172,7 +172,7 @@ class GuardDomainUseCaseTest {
         // Then
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
-                () -> assertThat(decorated.called()).containsExactly("audiences", "onBefore", "onAfter"),
+                () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
                         executedByResolver)
         );
@@ -196,23 +196,23 @@ class GuardDomainUseCaseTest {
                         .isExactlyInstanceOf(UseCaseException.class)
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
-                () -> assertThat(decorated.called()).containsExactly("audiences")
+                () -> assertThat(decorated.called()).containsExactly("permissions")
         );
     }
 
     @Test
-    void shouldDelegateAudiences() {
+    void shouldDelegatePermissions() {
         // Given
-        final List<Audience> audiences = List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE);
-        decorated = new StubDomainUseCase(commandHandler, audiences, missingAggregateException);
+        final List<Permission> permissions = List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE);
+        decorated = new StubDomainUseCase(commandHandler, permissions, missingAggregateException);
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated) {
         };
 
         // When
-        final List<Audience> result = guardDomainUseCase.audiences();
+        final List<Permission> result = guardDomainUseCase.permissions();
 
         // Then
-        assertSame(audiences, result);
+        assertSame(permissions, result);
     }
 }

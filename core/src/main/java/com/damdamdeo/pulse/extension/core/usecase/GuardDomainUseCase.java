@@ -4,14 +4,14 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
-import com.damdamdeo.pulse.extension.core.audience.AudienceExecutionContext;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.audience.ExecutedByResolver;
-import com.damdamdeo.pulse.extension.core.usecase.audience.Audience;
+import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
 import java.util.Comparator;
 import java.util.List;
@@ -40,22 +40,22 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
     @Override
     public final A execute(final C command) throws UseCaseException {
         Objects.requireNonNull(command);
-        final List<Audience> audiences = decorated.audiences()
+        final List<Permission> permissions = decorated.permissions()
                 .stream()
                 .sorted(Comparator.comparing(Prioritable::priority))
                 .toList();
-        final AudienceExecutionContext context = new AudienceExecutionContext(executionContextProvider,
+        final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         // TODO avoid instanceof
         if (command instanceof CreationalCommand<?>) {
-            for (final Audience audience : audiences) {
-                if (audience.allow(context)) {
+            for (final Permission permission : permissions) {
+                if (permission.allow(context)) {
                     return decorated.execute(command);
                 }
             }
         } else {
-            for (final Audience audience : audiences) {
-                if (audience.allow(command.id(), context)) {
+            for (final Permission permission : permissions) {
+                if (permission.allow(command.id(), context)) {
                     return decorated.execute(command);
                 }
             }
@@ -64,7 +64,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
     }
 
     @Override
-    public List<Audience> audiences() {
-        return decorated.audiences();
+    public List<Permission> permissions() {
+        return decorated.permissions();
     }
 }

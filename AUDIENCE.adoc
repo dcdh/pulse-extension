@@ -1,6 +1,0 @@
-= Audience
-
-Move **ExecutedByResolver** and **BackendUserVisibilityRolesProvider** implementations inside common because audience is used in **query** and **write** modules.
-
-
-DatabaseProcessor in common had to redefine the event table. It had to be done because it will fail on Postgres datasource. The table creation will create **aggregate_executed_by** SQL stuffs before the event table (and a trigger is made on it).

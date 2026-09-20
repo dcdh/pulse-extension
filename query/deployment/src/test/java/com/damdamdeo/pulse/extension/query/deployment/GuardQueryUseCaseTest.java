@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.query.*;
-import com.damdamdeo.pulse.extension.core.query.audience.Audience;
+import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -33,7 +33,7 @@ class GuardQueryUseCaseTest {
         }
 
         @Override
-        public List<Audience> audiences() {
+        public List<Permission> permissions() {
             return List.of();
         }
     }

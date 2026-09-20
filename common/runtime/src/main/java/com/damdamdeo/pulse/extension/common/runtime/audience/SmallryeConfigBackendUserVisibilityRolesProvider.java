@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.audience;
 
 import com.damdamdeo.pulse.extension.common.runtime.BackendUserConfiguration;
-import com.damdamdeo.pulse.extension.core.audience.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import jakarta.inject.Inject;
