@@ -152,6 +152,6 @@ class ExecutedBySpecificServiceAccountsTest {
         final int priority = permission.priority();
 
         // Then
-        assertEquals(3, priority);
+        assertEquals(4, priority);
     }
 }

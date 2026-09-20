@@ -18,6 +18,8 @@ public sealed interface ExecutedBy
 
     Username username();
 
+    boolean isEndUser();
+
     final class Anonymous implements ExecutedBy {
 
         public static final String DISCRIMINANT = "A";
@@ -46,6 +48,11 @@ public sealed interface ExecutedBy
         public Username username() {
             throw new UnsupportedOperationException("Anonymous does not have a username");
         }
+
+        @Override
+        public boolean isEndUser() {
+            return false;
+        }
     }
 
     record EndUser(Username username) implements ExecutedBy {
@@ -68,6 +75,11 @@ public sealed interface ExecutedBy
         @Override
         public String value() {
             return DISCRIMINANT + SEPARATOR + username.username();
+        }
+
+        @Override
+        public boolean isEndUser() {
+            return true;
         }
     }
 
@@ -101,6 +113,11 @@ public sealed interface ExecutedBy
         public Username username() {
             throw new UnsupportedOperationException("Service account does not have a username");
         }
+
+        @Override
+        public boolean isEndUser() {
+            return false;
+        }
     }
 
     final class NotAvailable implements ExecutedBy {
@@ -131,6 +148,11 @@ public sealed interface ExecutedBy
         public Username username() {
             throw new UnsupportedOperationException("Not available does not have a username");
         }
+
+        @Override
+        public boolean isEndUser() {
+            return false;
+        }
     }
 
     final class Banned implements ExecutedBy {
@@ -157,6 +179,11 @@ public sealed interface ExecutedBy
         @Override
         public Username username() {
             throw new UnsupportedOperationException("Banned does not have a username");
+        }
+
+        @Override
+        public boolean isEndUser() {
+            return false;
         }
     }
 }

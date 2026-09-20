@@ -16,4 +16,8 @@ public record PermissionExecutionContext(ExecutionContextProvider executionConte
         Objects.requireNonNull(executedByResolver);
         Objects.requireNonNull(aggregateIdDecomposer);
     }
+
+    public boolean isEndUser() {
+        return executionContextProvider().provide().executedBy().isEndUser();
+    }
 }

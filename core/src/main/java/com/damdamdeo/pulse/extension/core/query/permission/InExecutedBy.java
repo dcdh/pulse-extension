@@ -40,6 +40,6 @@ public final class InExecutedBy implements Permission {
 
     @Override
     public int priority() {
-        return 2;
+        return 3;
     }
 }

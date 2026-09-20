@@ -31,6 +31,6 @@ public final class VisibilityRoleRestricted implements Permission {
 
     @Override
     public int priority() {
-        return 1;
+        return 2;
     }
 }

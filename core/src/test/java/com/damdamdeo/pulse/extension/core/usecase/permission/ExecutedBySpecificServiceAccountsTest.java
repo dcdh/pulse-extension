@@ -133,6 +133,6 @@ class ExecutedBySpecificServiceAccountsTest {
         final int priority = audience.priority();
 
         // Then
-        assertEquals(3, priority);
+        assertEquals(4, priority);
     }
 }

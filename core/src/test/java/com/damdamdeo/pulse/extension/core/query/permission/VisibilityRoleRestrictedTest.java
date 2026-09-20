@@ -144,6 +144,6 @@ class VisibilityRoleRestrictedTest {
         final int priority = VisibilityRoleRestricted.INSTANCE.priority();
 
         // Then
-        assertEquals(1, priority);
+        assertEquals(2, priority);
     }
 }

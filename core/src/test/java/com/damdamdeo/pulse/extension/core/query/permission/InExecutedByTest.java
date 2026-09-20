@@ -170,6 +170,6 @@ class InExecutedByTest {
         final int priority = InExecutedBy.INSTANCE.priority();
 
         // Then
-        assertEquals(2, priority);
+        assertEquals(3, priority);
     }
 }

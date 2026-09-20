@@ -130,6 +130,6 @@ class ExecutedBySpecificEndUsersTest {
         final int priority = permission.priority();
 
         // Then
-        assertEquals(5, priority);
+        assertEquals(6, priority);
     }
 }

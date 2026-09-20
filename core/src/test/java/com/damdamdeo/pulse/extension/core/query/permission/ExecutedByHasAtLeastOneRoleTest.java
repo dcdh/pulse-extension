@@ -129,6 +129,6 @@ class ExecutedByHasAtLeastOneRoleTest {
         final int priority = permission.priority();
 
         // Then
-        assertEquals(4, priority);
+        assertEquals(5, priority);
     }
 }

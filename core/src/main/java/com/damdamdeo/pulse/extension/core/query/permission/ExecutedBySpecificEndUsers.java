@@ -33,6 +33,6 @@ public record ExecutedBySpecificEndUsers(ExecutedBy.EndUser... endUsers) impleme
 
     @Override
     public int priority() {
-        return 5;
+        return 6;
     }
 }

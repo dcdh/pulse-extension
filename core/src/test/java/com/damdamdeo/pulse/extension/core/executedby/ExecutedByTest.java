@@ -126,6 +126,11 @@ class ExecutedByTest {
             // Given / When / Then
             assertThat(new ExecutedBy.EndUser(new Username("bob@mail.com")).username()).isEqualTo(new Username("bob@mail.com"));
         }
+
+        @Test
+        void shouldBeAnEndUser() {
+            assertThat(new ExecutedBy.EndUser(new Username("bob@mail.com")).isEndUser()).isTrue();
+        }
     }
 
     @Nested
@@ -146,6 +151,11 @@ class ExecutedByTest {
                     .isInstanceOf(UnsupportedOperationException.class)
                     .hasMessage("Service account does not have a username");
         }
+
+        @Test
+        void shouldNotBeAnEndUser() {
+            assertThat(new ExecutedBy.ServiceAccount("cron-job").isEndUser()).isFalse();
+        }
     }
 
     @Nested
@@ -158,6 +168,11 @@ class ExecutedByTest {
                     .isInstanceOf(UnsupportedOperationException.class)
                     .hasMessage("Anonymous does not have a username");
         }
+
+        @Test
+        void shouldNotBeAnEndUser() {
+            assertThat(ExecutedBy.Anonymous.INSTANCE.isEndUser()).isFalse();
+        }
     }
 
     @Nested
@@ -169,6 +184,28 @@ class ExecutedByTest {
             assertThatThrownBy(ExecutedBy.NotAvailable.INSTANCE::username)
                     .isInstanceOf(UnsupportedOperationException.class)
                     .hasMessage("Not available does not have a username");
+        }
+
+        @Test
+        void shouldNotBeAnEndUser() {
+            assertThat(ExecutedBy.NotAvailable.INSTANCE.isEndUser()).isFalse();
+        }
+    }
+
+    @Nested
+    class Banned {
+
+        @Test
+        void shouldThrowExceptionOnUsername() {
+            // Given / When / Then
+            assertThatThrownBy(ExecutedBy.Banned.INSTANCE::username)
+                    .isInstanceOf(UnsupportedOperationException.class)
+                    .hasMessage("Banned does not have a username");
+        }
+
+        @Test
+        void shouldNotBeAnEndUser() {
+            assertThat(ExecutedBy.Banned.INSTANCE.isEndUser()).isFalse();
         }
     }
 }
