@@ -1,9 +1,8 @@
 = TODO
 
 == Must have
-1. permission: query add a domainId one
-2. traceability store if Query (Q) or Command (C) faire un count pour la partie involved et rajouter C ou K dans la partie detail
-3. traceability store if ok ko (count ok, count ko)
+1. traceability store if Query (Q) or Command (C) faire un count pour la partie involved et rajouter C ou K dans la partie detail
+2. traceability store if ok ko (count ok, count ko)
 4. OwnedByProvider replace by ExecutedByResolver
 == Nice to have
 1. propage traceId in CommandHandler on onStoredEventListener#execute
