@@ -11,10 +11,7 @@ import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,6 +58,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                 } else {
                     selectPreparedStatement.setString(1, aggregateId.id() + "%");
                 }
+                selectPreparedStatement.setNull(2, Types.INTEGER);
+                selectPreparedStatement.setLong(3, 0);
                 final List<EncodedInvolved> content = new ArrayList<>();
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
@@ -126,10 +125,14 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                      FROM %1$s.traceability_aggregate ta
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
-                     WHERE ebe.executed_by_hashed = ? LIMIT ? OFFSET ?
+                     WHERE ebe.executed_by_hashed = ?
+                     ORDER BY aggregate_root_id ASC
+                     LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
                 selectPreparedStatement.setString(1, executedByHashed.hashed());
+                selectPreparedStatement.setNull(2, Types.INTEGER);
+                selectPreparedStatement.setLong(3, 0);
                 final List<EncodedInvolved> content = new ArrayList<>();
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
