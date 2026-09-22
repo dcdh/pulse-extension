@@ -41,6 +41,7 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
         final TraceRecorder traceRecorder = new TraceRecorder(
                 new TraceId(0L),
                 new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
+                Source.COMMAND,
                 new From("from"),
                 List.of(
                         new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
@@ -62,7 +63,7 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
              final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT aggregate_root_id, executed_by_encoded_id FROM todo_taking.traceability_aggregate
+                             SELECT aggregate_root_id, executed_by_encoded_id, command_nb_of_times, query_nb_of_times FROM todo_taking.traceability_aggregate
                              """)) {
             ResultSet resultSet = selectExecutedByEncodedPreparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -70,12 +71,14 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
             }
             resultSet = selectTraceabilityAggregatePreparedStatement.executeQuery();
             while (resultSet.next()) {
-                data.add(String.join("|", resultSet.getString("aggregate_root_id"), resultSet.getString("executed_by_encoded_id")));
+                data.add(String.join("|", resultSet.getString("aggregate_root_id"), resultSet.getString("executed_by_encoded_id"),
+                        String.valueOf(resultSet.getLong("command_nb_of_times")),
+                        String.valueOf(resultSet.getLong("query_nb_of_times"))));
             }
         }
         assertThat(data).containsExactly("1|EU:alice-hashed|EU:aliceEncoded",
                 "3|EU:bob-hashed|EU:bobEncoded",
-                "U000001-T000001|1",
-                "U000001-T000001|3");
+                "U000001-T000001|1|2|0",
+                "U000001-T000001|3|1|0");
     }
 }

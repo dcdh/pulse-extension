@@ -24,46 +24,10 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             INSERT INTO %s.traceability_details (
                 trace_id,
                 executed_at,
+                source_value,
                 from_value
             )
-            VALUES (?, ?, ?);
-            """;
-
-    // language=sql
-    public static final String EXECUTED_BY_ENCODED_SQL = """
-             WITH inserted AS (
-                INSERT INTO %1$s.executed_by_encoded (
-                    executed_by_hashed,
-                    executed_by_encoded
-                )
-                VALUES (?, ?)
-                ON CONFLICT (executed_by_hashed)
-                DO NOTHING
-                RETURNING id
-            )
-            SELECT id
-            FROM inserted
-            
-            UNION ALL
-            
-            SELECT id
-            FROM %1$s.executed_by_encoded
-            WHERE executed_by_hashed = ?
-            LIMIT 1;
-            """;
-
-    // language=sql
-    public static final String TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_aggregate (
-                aggregate_root_id,
-                executed_by_encoded_id,
-                nb_of_times
-            )
-            VALUES (?, ?, 1)
-            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
-            DO UPDATE
-            SET nb_of_times = %1$s.traceability_aggregate.nb_of_times + 1
-            RETURNING id;
+            VALUES (?, ?, ?, ?);
             """;
 
     // language=sql
@@ -89,19 +53,24 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     @Override
     public void store(final TraceRecorder traceRecorder) throws TraceRepositoryException {
         Objects.requireNonNull(traceRecorder);
+        final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
+            case COMMAND -> JdbcPostgresInvolvedTraceRecorderRepository.KIND_COMMAND_TRACEABILITY_AGGREGATE_SQL;
+            case QUERY -> JdbcPostgresInvolvedTraceRecorderRepository.KIND_QUERY_TRACEABILITY_AGGREGATE_SQL;
+        };
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try (final PreparedStatement traceabilityDetailsPreparedStatement = connection.prepareStatement(
                     TRACEABILITY_DETAILS_SQL.formatted(schemaName.name()));
                  final PreparedStatement executedByEncodedPreparedStatement = connection.prepareStatement(
-                         EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
+                         JdbcPostgresInvolvedTraceRecorderRepository.INSERT_EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
                  final PreparedStatement traceabilityAggregatePreparedStatement = connection.prepareStatement(
-                         TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()));
+                         traceabilityAggregateSQL.formatted(schemaName.name()));
                  final PreparedStatement traceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                          TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
                 traceabilityDetailsPreparedStatement.setLong(1, traceRecorder.traceId().id());
                 traceabilityDetailsPreparedStatement.setTimestamp(2, Timestamp.from(traceRecorder.executedAt().at()));
-                traceabilityDetailsPreparedStatement.setString(3, traceRecorder.from().from());
+                traceabilityDetailsPreparedStatement.setInt(3, traceRecorder.source().ordinal());
+                traceabilityDetailsPreparedStatement.setString(4, traceRecorder.from().from());
                 traceabilityDetailsPreparedStatement.executeUpdate();
                 for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
                     executedByEncodedPreparedStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());

@@ -11,6 +11,7 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
 import java.util.Comparator;

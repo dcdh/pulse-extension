@@ -206,6 +206,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "aggregateId",
                                     "executedByHashed",
                                     "executedBy",
+                                    "source",
                                     "from",
                                     "executedAt"
                                 ],
@@ -230,6 +231,10 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "executedBy": {
                                         "type": "string",
                                         "description": "Information identifying the actor who executed the operation."
+                                    },
+                                    "source": {
+                                        "type": "string",
+                                        "description": "Kind"
                                     },
                                     "from": {
                                         "type": "string",
@@ -392,7 +397,8 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "aggregateId",
                                     "executedByHashed",
                                     "executedBy",
-                                    "nbOfTimes"
+                                    "commandNbOfTimes",
+                                    "queryNbOfTimes"
                                 ],
                                 "description": "Actor involved in the execution of an aggregate.",
                                 "properties": {
@@ -408,13 +414,21 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                         "type": "string",
                                         "description": "Information identifying the actor who executed the operation."
                                     },
-                                    "nbOfTimes": {
+                                    "commandNbOfTimes": {
                                         "type": [
                                             "integer",
                                             "number"
                                         ],
                                         "format": "int32",
-                                        "description": "Nombre of times the actor has been involved."
+                                        "description": "Nombre of times the actor has been involved on executing a command."
+                                    },
+                                    "queryNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved on executing a query."
                                     }
                                 }
                             },

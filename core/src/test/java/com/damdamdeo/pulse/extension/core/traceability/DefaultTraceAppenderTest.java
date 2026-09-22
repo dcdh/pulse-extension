@@ -79,7 +79,7 @@ class DefaultTraceAppenderTest {
         when(executedByEncodedProvider.provide(secondAggregateId, executedBy)).thenReturn(secondExecutedByEncoded);
 
         // When
-        traceAppender.append(traceable, from);
+        traceAppender.append(traceable, Source.COMMAND, from);
 
         // Then
         final ArgumentCaptor<TraceRecorder> traceRecorderCaptor = ArgumentCaptor.forClass(TraceRecorder.class);
@@ -108,7 +108,7 @@ class DefaultTraceAppenderTest {
         };
 
         // When
-        traceAppender.append(traceable, new From("TestService"));
+        traceAppender.append(traceable, Source.COMMAND, new From("TestService"));
 
         // Then
         verifyNoInteractions(executionContextProvider, executedAtProvider, traceIdGenerator, usernameHasher,
@@ -136,7 +136,7 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(traceable, new From("TestService")));
+                () -> traceAppender.append(traceable, Source.COMMAND, new From("TestService")));
 
         // Then
         assertAll(
@@ -174,7 +174,7 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(traceable, new From("TestService")));
+                () -> traceAppender.append(traceable, Source.COMMAND, new From("TestService")));
 
         // Then
         assertAll(

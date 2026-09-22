@@ -44,7 +44,8 @@ public class PulseTraceabilityProcessor {
                               id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                               aggregate_root_id character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
-                              nb_of_times bigint NOT NULL,
+                              command_nb_of_times bigint DEFAULT 0,
+                              query_nb_of_times bigint DEFAULT 0,
                               CONSTRAINT traceability_aggregate_pkey PRIMARY KEY (id),
                               CONSTRAINT traceability_aggregate_unique
                                 UNIQUE (aggregate_root_id, executed_by_encoded_id),
@@ -58,8 +59,10 @@ public class PulseTraceabilityProcessor {
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details (
                               trace_id bigint not null,
                               executed_at timestamptz not null,
+                              source_value int not null,
                               from_value character varying(255) not null,
-                              CONSTRAINT traceability_details_pkey PRIMARY KEY (trace_id)
+                              CONSTRAINT traceability_details_pkey PRIMARY KEY (trace_id),
+                              CONSTRAINT traceability_details_kind_check CHECK (source_value IN (0, 1))
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate (

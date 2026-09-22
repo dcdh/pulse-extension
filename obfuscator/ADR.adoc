@@ -18,7 +18,7 @@
 
 === Fail to translate from String to a target type
 
-If this kind of code produces an exception:
+If this source of code produces an exception:
 
 [source,java]
 ----

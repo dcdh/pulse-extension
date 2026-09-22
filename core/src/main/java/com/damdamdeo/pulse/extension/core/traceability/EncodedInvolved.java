@@ -4,11 +4,13 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 
 import java.util.Objects;
 
-public record EncodedInvolved(AggregateId aggregateId, EncodedActor encodedActor, NbOfTimes nbOfTimes) {
+public record EncodedInvolved(AggregateId aggregateId, EncodedActor encodedActor, NbOfTimes commandNbOfTimes,
+                              NbOfTimes queryNbOfTimes) {
 
     public EncodedInvolved {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(encodedActor);
-        Objects.requireNonNull(nbOfTimes);
+        Objects.requireNonNull(commandNbOfTimes);
+        Objects.requireNonNull(queryNbOfTimes);
     }
 }

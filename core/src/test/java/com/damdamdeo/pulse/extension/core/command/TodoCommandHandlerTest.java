@@ -5,6 +5,8 @@ import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.traceability.From;
+import com.damdamdeo.pulse.extension.core.traceability.Source;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,6 +84,7 @@ class TodoCommandHandlerTest {
                         todoCreated,
                         ExecutedBy.NotAvailable.INSTANCE
                 ),
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(givenCreateTodo)),
                 () -> verify(notAvailableExecutedByProvider, times(2)).provide()
         );
     }

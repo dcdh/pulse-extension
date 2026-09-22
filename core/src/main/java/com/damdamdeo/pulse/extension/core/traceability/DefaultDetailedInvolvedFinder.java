@@ -61,9 +61,9 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
                         new Actor(
                                 encodedDetailedInvolved.encodedActor().executedByHashed(),
                                 encodedDetailedInvolved.encodedActor().executedByEncoded()
-                                        .to(usernameDecoder, ownedByProvider.provide(encodedDetailedInvolved.aggregateId())
-                                        )
+                                        .to(usernameDecoder, ownedByProvider.provide(encodedDetailedInvolved.aggregateId()))
                         ),
+                        encodedDetailedInvolved.source(),
                         encodedDetailedInvolved.from(),
                         encodedDetailedInvolved.executedAt()
                 );

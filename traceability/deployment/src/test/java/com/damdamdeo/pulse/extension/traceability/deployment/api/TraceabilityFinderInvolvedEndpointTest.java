@@ -235,7 +235,8 @@ class TraceabilityFinderInvolvedEndpointTest {
                                     "aggregateId",
                                     "executedByHashed",
                                     "executedBy",
-                                    "nbOfTimes"
+                                    "commandNbOfTimes",
+                                    "queryNbOfTimes"
                                 ],
                                 "description": "Actor involved in the execution of an aggregate.",
                                 "properties": {
@@ -251,13 +252,21 @@ class TraceabilityFinderInvolvedEndpointTest {
                                         "type": "string",
                                         "description": "Information identifying the actor who executed the operation."
                                     },
-                                    "nbOfTimes": {
+                                    "commandNbOfTimes": {
                                         "type": [
                                             "integer",
                                             "number"
                                         ],
                                         "format": "int32",
-                                        "description": "Nombre of times the actor has been involved."
+                                        "description": "Nombre of times the actor has been involved on executing a command."
+                                    },
+                                    "queryNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved on executing a query."
                                     }
                                 }
                             },

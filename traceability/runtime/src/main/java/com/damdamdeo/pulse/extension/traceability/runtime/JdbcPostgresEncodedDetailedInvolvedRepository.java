@@ -52,6 +52,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded,
                        td.trace_id AS trace_id,
+                       td.source_value AS source_value,
                        td.from_value AS from_value,
                        td.executed_at AS executed_at
                      FROM %1$s.traceability_aggregate ta
@@ -83,6 +84,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Source.values()[select.getInt("source_value")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));
@@ -112,6 +114,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Source.values()[select.getInt("source_value")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));
@@ -147,6 +150,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                          ebe.executed_by_hashed AS executed_by_hashed,
                          ebe.executed_by_encoded AS executed_by_encoded,
                          td.trace_id AS trace_id,
+                         td.source_value AS source_value,
                          td.from_value AS from_value,
                          td.executed_at AS executed_at
                      FROM %1$s.traceability_aggregate ta
@@ -174,6 +178,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Source.values()[select.getInt("source_value")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));
@@ -198,6 +203,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Source.values()[select.getInt("source_value")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));

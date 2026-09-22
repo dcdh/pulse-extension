@@ -64,6 +64,9 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
                     description = "Information identifying the actor who executed the operation.", required = true)
             ExecutedBy executedBy,
 
+            @Schema(type = SchemaType.STRING, implementation = String.class, description = "Kind", required = true)
+            Source source,
+
             @Schema(type = SchemaType.STRING, implementation = String.class, description = "From", required = true)
             From from,
 
@@ -75,6 +78,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
             Objects.requireNonNull(aggregateId);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
+            Objects.requireNonNull(source);
             Objects.requireNonNull(from);
             Objects.requireNonNull(executedAt);
         }
@@ -82,6 +86,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         public DetailedInvolvedDTO(final DetailedInvolved detailedInvolved) {
             this(detailedInvolved.traceId(), detailedInvolved.aggregateId(),
                     detailedInvolved.actor().executedByHashed(), detailedInvolved.actor().executedBy(),
+                    detailedInvolved.source(),
                     detailedInvolved.from(), detailedInvolved.executedAt());
         }
     }

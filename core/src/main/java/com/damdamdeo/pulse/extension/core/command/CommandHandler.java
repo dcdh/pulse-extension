@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListenerException;
 import com.damdamdeo.pulse.extension.core.traceability.From;
+import com.damdamdeo.pulse.extension.core.traceability.Source;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import org.apache.commons.lang3.Validate;
@@ -70,7 +71,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-                traceAppender.append(new AggregateIdTraceable(aggregate.id()), From.from(creationalCommand));
+                traceAppender.append(new AggregateIdTraceable(aggregate.id()), Source.COMMAND, From.from(creationalCommand));
                 return aggregate;
             } catch (final SequenceGenerationException | DuplicateAggregateException | BusinessException
                            | OnStoredEventListenerException | TraceAppenderException exception) {
@@ -100,7 +101,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-                traceAppender.append(new AggregateIdTraceable(aggregate.id()), From.from(command));
+                traceAppender.append(new AggregateIdTraceable(aggregate.id()), Source.COMMAND, From.from(command));
                 return aggregate;
             } catch (final MissingAggregateException | BusinessException | OnStoredEventListenerException
                            | TraceAppenderException exception) {

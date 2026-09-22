@@ -2,16 +2,14 @@ package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
-import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
-import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.permission.Permission;
+import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.permission.Everyone;
+import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.core.query.permission.VisibilityRoleRestricted;
-import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
+import com.damdamdeo.pulse.extension.core.traceability.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,7 +69,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), any(From.class))
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
         );
     }
 
@@ -89,7 +87,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), any(From.class))
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
         );
     }
 
@@ -107,7 +105,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), any(From.class))
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
         );
     }
 
@@ -159,7 +157,7 @@ class GuardQueryUseCaseTest {
         guardQuery.execute(INPUT);
 
         // Then
-        verify(traceAppender).append(eq(result), any(From.class));
+        verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class));
     }
 
     @Test
@@ -168,7 +166,7 @@ class GuardQueryUseCaseTest {
         when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
         doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
-                .when(traceAppender).append(eq(result), any(From.class));
+                .when(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class));
 
         // When / Then
         final QueryException exception = assertThrows(
@@ -178,7 +176,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertEquals(QueryExceptionCode.INFRASTRUCTURE_FAILURE, exception.queryExceptionCode()),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), any(From.class))
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
         );
     }
 

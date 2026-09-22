@@ -7,9 +7,7 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
-import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
+import com.damdamdeo.pulse.extension.core.traceability.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -51,7 +49,7 @@ public abstract class GuardQueryUseCase<I extends Input, P extends Projection> i
             final Optional<Result<P>> result = permission.execute(input, decorated, context);
             if (result.isPresent()) {
                 try {
-                    traceAppender.append(result.get(), From.from(input));
+                    traceAppender.append(result.get(), Source.QUERY, From.from(input));
                 } catch (final TraceAppenderException exception) {
                     throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
                 }

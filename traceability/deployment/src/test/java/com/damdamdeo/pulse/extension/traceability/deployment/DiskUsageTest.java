@@ -43,6 +43,7 @@ class DiskUsageTest {
             final TraceRecorder traceRecorder = new TraceRecorder(
                     new TraceId(execution),
                     new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
+                    Source.COMMAND,
                     new From("from"),
                     List.of(
                             new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded"))));

@@ -47,15 +47,31 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             """;
 
     // language=sql
-    public static final String INSERT_TRACEABILITY_AGGREGATE_SQL = """
+    public static final String KIND_COMMAND_TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_aggregate (
                 aggregate_root_id,
                 executed_by_encoded_id,
-                nb_of_times
+                command_nb_of_times
             )
             VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
-            DO UPDATE SET nb_of_times = %1$s.traceability_aggregate.nb_of_times + 1
+            DO UPDATE
+            SET command_nb_of_times = %1$s.traceability_aggregate.command_nb_of_times + 1
+            RETURNING id;
+            """;
+
+    // language=sql
+    public static final String KIND_QUERY_TRACEABILITY_AGGREGATE_SQL = """
+            INSERT INTO %s.traceability_aggregate (
+                aggregate_root_id,
+                executed_by_encoded_id,
+                query_nb_of_times
+            )
+            VALUES (?, ?, 1)
+            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            DO UPDATE
+            SET query_nb_of_times = %1$s.traceability_aggregate.query_nb_of_times + 1
+            RETURNING id;
             """;
 
     private final DataSource dataSource;
@@ -70,12 +86,16 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     @Override
     public void store(final TraceRecorder traceRecorder) throws TraceRepositoryException {
         Objects.requireNonNull(traceRecorder);
+        final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
+            case COMMAND -> KIND_COMMAND_TRACEABILITY_AGGREGATE_SQL;
+            case QUERY -> KIND_QUERY_TRACEABILITY_AGGREGATE_SQL;
+        };
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try (final PreparedStatement executedByStatement = connection.prepareStatement(
                     INSERT_EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
                  final PreparedStatement aggregateStatement = connection.prepareStatement(
-                         INSERT_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
+                         traceabilityAggregateSQL.formatted(schemaName.name()))) {
                 for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
                     final long executedByEncodedId;
                     executedByStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
