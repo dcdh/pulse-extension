@@ -63,9 +63,9 @@ class DefaultInvolvedFinderTest {
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
                         new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                new NbOfTimes(1), new NbOfTimes(0)),
+                                new CommandNbOfTimes(1), new QueryNbOfTimes(0)),
                         new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
-                                new NbOfTimes(1), new NbOfTimes(0))),
+                                new CommandNbOfTimes(1), new QueryNbOfTimes(0))),
                 new Pagination(0, 10), 2L));
     }
 
@@ -80,7 +80,7 @@ class DefaultInvolvedFinderTest {
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
                         new Involved(AnyAggregateId.from("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                new NbOfTimes(1), new NbOfTimes(0))),
+                                new CommandNbOfTimes(1), new QueryNbOfTimes(0))),
                 new Pagination(0, 10), 1L));
     }
 }

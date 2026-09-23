@@ -69,8 +69,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
-                                new NbOfTimes(select.getInt("command_nb_of_times")),
-                                new NbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -95,8 +95,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
-                                new NbOfTimes(select.getInt("command_nb_of_times")),
-                                new NbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }
@@ -146,8 +146,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                         executedByHashed,
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
-                                new NbOfTimes(select.getInt("command_nb_of_times")),
-                                new NbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -168,8 +168,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                         executedByHashed,
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
-                                new NbOfTimes(select.getInt("command_nb_of_times")),
-                                new NbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }
