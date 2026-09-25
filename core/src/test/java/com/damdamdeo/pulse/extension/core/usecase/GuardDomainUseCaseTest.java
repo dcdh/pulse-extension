@@ -1,16 +1,20 @@
 package com.damdamdeo.pulse.extension.core.usecase;
 
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.core.command.AggregateIdTraceable;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
-import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
+import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
+import com.damdamdeo.pulse.extension.core.traceability.From;
+import com.damdamdeo.pulse.extension.core.traceability.Source;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 import com.damdamdeo.pulse.extension.core.usecase.permission.VisibilityRoleRestricted;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +50,9 @@ class GuardDomainUseCaseTest {
 
     @Mock
     CommandHandler<Todo, TodoId> commandHandler;
+
+    @Mock
+    TraceAppender traceAppender;
 
     final Supplier<MissingAggregateException> missingAggregateException = () -> {
         throw new RuntimeException("Should not be called");
@@ -97,13 +104,14 @@ class GuardDomainUseCaseTest {
         }
     }
 
+    // FCK
     @Test
     void shouldReturnResultWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
         // Given
         decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
-                executedByResolver, aggregateIdDecomposer, decorated) {
+                executedByResolver, aggregateIdDecomposer, decorated, traceAppender) {
         };
 
         // When
@@ -113,7 +121,8 @@ class GuardDomainUseCaseTest {
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
-                () -> verify(commandHandler).handle(any(), any())
+                () -> verify(commandHandler).handle(any(), any()),
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT))
         );
     }
 
@@ -123,7 +132,7 @@ class GuardDomainUseCaseTest {
         decorated = new StubDomainUseCase(commandHandler, List.of(new VisibilityRoleRestricted<>(), new Everyone<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
-                executedByResolver, aggregateIdDecomposer, decorated) {
+                executedByResolver, aggregateIdDecomposer, decorated, traceAppender) {
         };
 
         // When
@@ -133,7 +142,8 @@ class GuardDomainUseCaseTest {
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
-                () -> verify(commandHandler).handle(any(), any())
+                () -> verify(commandHandler).handle(any(), any()),
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT))
         );
     }
 
@@ -143,7 +153,7 @@ class GuardDomainUseCaseTest {
         decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
-                executedByResolver, aggregateIdDecomposer, decorated) {
+                executedByResolver, aggregateIdDecomposer, decorated, traceAppender) {
         };
 
         // When
@@ -153,7 +163,8 @@ class GuardDomainUseCaseTest {
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
-                () -> verify(commandHandler).handle(any(), any())
+                () -> verify(commandHandler).handle(any(), any()),
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT))
         );
     }
 
@@ -163,7 +174,7 @@ class GuardDomainUseCaseTest {
         decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Todo(TodoId.USER_1_TODO_1));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
-                executedByResolver, aggregateIdDecomposer, decorated) {
+                executedByResolver, aggregateIdDecomposer, decorated, traceAppender) {
         };
 
         // When
@@ -173,6 +184,7 @@ class GuardDomainUseCaseTest {
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT)),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
                         executedByResolver)
         );
@@ -185,7 +197,7 @@ class GuardDomainUseCaseTest {
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
         decorated = new StubDomainUseCase(commandHandler, List.of(new VisibilityRoleRestricted<>()), missingAggregateException);
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
-                executedByResolver, aggregateIdDecomposer, decorated) {
+                executedByResolver, aggregateIdDecomposer, decorated, traceAppender) {
         };
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("admin"));
@@ -196,7 +208,8 @@ class GuardDomainUseCaseTest {
                         .isExactlyInstanceOf(UseCaseException.class)
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
-                () -> assertThat(decorated.called()).containsExactly("permissions")
+                () -> assertThat(decorated.called()).containsExactly("permissions"),
+                () -> verifyNoInteractions(traceAppender)
         );
     }
 
@@ -206,7 +219,7 @@ class GuardDomainUseCaseTest {
         final List<Permission<TodoId, MarkTodoAsDone>> permissions = List.of(new Everyone<>(), new VisibilityRoleRestricted<>());
         decorated = new StubDomainUseCase(commandHandler, permissions, missingAggregateException);
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
-                executedByResolver, aggregateIdDecomposer, decorated) {
+                executedByResolver, aggregateIdDecomposer, decorated, traceAppender) {
         };
 
         // When

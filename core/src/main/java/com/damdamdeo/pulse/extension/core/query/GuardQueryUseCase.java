@@ -2,12 +2,15 @@ package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
-import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.From;
+import com.damdamdeo.pulse.extension.core.traceability.Source;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -45,18 +48,18 @@ public abstract class GuardQueryUseCase<I extends Input, P extends Projection> i
                 .toList();
         final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
-        for (final Permission permission : permissions) {
-            final Optional<Result<P>> result = permission.execute(input, decorated, context);
-            if (result.isPresent()) {
-                try {
+        try {
+            for (final Permission permission : permissions) {
+                final Optional<Result<P>> result = permission.execute(input, decorated, context);
+                if (result.isPresent()) {
                     traceAppender.append(result.get(), Source.QUERY, From.from(input));
-                } catch (final TraceAppenderException exception) {
-                    throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
+                    return result.get();
                 }
-                return result.get();
             }
+            throw new QueryException(new UnauthorizedException());
+        } catch (final TraceAppenderException exception) {
+            throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
-        throw new QueryException(new UnauthorizedException());
     }
 
     @Override

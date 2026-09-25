@@ -7,7 +7,6 @@ import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 
 import java.util.List;
 
@@ -18,10 +17,9 @@ public final class TodoChecklistCommandHandler extends CommandHandler<TodoCheckl
                                        final Transaction transaction,
                                        final ExecutionContextProvider executionContextProvider,
                                        final List<OnStoredEventListener<TodoChecklistId, Event<TodoChecklistId>>> onStoredEventListeners,
-                                       final AggregateIdGenerator aggregateIdGenerator,
-                                       final TraceAppender traceAppender) {
+                                       final AggregateIdGenerator aggregateIdGenerator) {
         super(commandHandlerRegistry, eventRepository, transaction, executionContextProvider, onStoredEventListeners,
-                aggregateIdGenerator, traceAppender);
+                aggregateIdGenerator);
     }
 
     @Override

@@ -6,10 +6,6 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListenerException;
-import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.Source;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;
@@ -25,22 +21,19 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
     private final ExecutionContextProvider executionContextProvider;
     private final List<OnStoredEventListener<K, Event<K>>> onStoredEventListeners;
     private final AggregateIdGenerator aggregateIdGenerator;
-    private final TraceAppender traceAppender;
 
     public CommandHandler(final CommandHandlerRegistry commandHandlerRegistry,
                           final EventRepository<A, K> eventRepository,
                           final Transaction transaction,
                           final ExecutionContextProvider executionContextProvider,
                           final List<OnStoredEventListener<K, Event<K>>> onStoredEventListeners,
-                          final AggregateIdGenerator aggregateIdGenerator,
-                          final TraceAppender traceAppender) {
+                          final AggregateIdGenerator aggregateIdGenerator) {
         this.commandHandlerRegistry = Objects.requireNonNull(commandHandlerRegistry);
         this.eventRepository = Objects.requireNonNull(eventRepository);
         this.transaction = Objects.requireNonNull(transaction);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.onStoredEventListeners = Objects.requireNonNull(onStoredEventListeners);
         this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
-        this.traceAppender = Objects.requireNonNull(traceAppender);
     }
 
     public final A handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
@@ -71,10 +64,9 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-                traceAppender.append(new AggregateIdTraceable(aggregate.id()), Source.COMMAND, From.from(creationalCommand));
                 return aggregate;
             } catch (final SequenceGenerationException | DuplicateAggregateException | BusinessException
-                           | OnStoredEventListenerException | TraceAppenderException exception) {
+                           | OnStoredEventListenerException exception) {
                 throw new CommandException(exception);
             }
         });
@@ -101,10 +93,8 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-                traceAppender.append(new AggregateIdTraceable(aggregate.id()), Source.COMMAND, From.from(command));
                 return aggregate;
-            } catch (final MissingAggregateException | BusinessException | OnStoredEventListenerException
-                           | TraceAppenderException exception) {
+            } catch (final MissingAggregateException | BusinessException | OnStoredEventListenerException exception) {
                 throw new CommandException(exception);
             }
         });

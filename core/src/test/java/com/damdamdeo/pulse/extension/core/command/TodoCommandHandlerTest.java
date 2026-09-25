@@ -5,9 +5,6 @@ import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
-import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.Source;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,9 +41,6 @@ class TodoCommandHandlerTest {
     @Mock
     AggregateIdGenerator aggregateIdGenerator;
 
-    @Mock
-    TraceAppender traceAppender;
-
     List<OnStoredEventListener<TodoId, Event<TodoId>>> todoOnStoredEventListeners = new ArrayList<>();
 
     List<OnStoredEventListener<TodoChecklistId, Event<TodoChecklistId>>> todoChecklistOnStoredEventListeners = new ArrayList<>();
@@ -56,9 +50,9 @@ class TodoCommandHandlerTest {
     @BeforeEach
     void setUp() {
         todoCommandHandler = new TodoCommandHandler(new JvmCommandHandlerRegistry(), todoEventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider, todoOnStoredEventListeners, aggregateIdGenerator, traceAppender);
+                notAvailableExecutedByProvider, todoOnStoredEventListeners, aggregateIdGenerator);
         todoChecklistCommandHandler = new TodoChecklistCommandHandler(new JvmCommandHandlerRegistry(), todoChecklistEventRepository, new StubTransaction(),
-                notAvailableExecutedByProvider, todoChecklistOnStoredEventListeners, aggregateIdGenerator, traceAppender);
+                notAvailableExecutedByProvider, todoChecklistOnStoredEventListeners, aggregateIdGenerator);
     }
 
     @Test
@@ -84,7 +78,6 @@ class TodoCommandHandlerTest {
                         todoCreated,
                         ExecutedBy.NotAvailable.INSTANCE
                 ),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(givenCreateTodo)),
                 () -> verify(notAvailableExecutedByProvider, times(2)).provide()
         );
     }
