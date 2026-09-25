@@ -47,7 +47,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             """;
 
     // language=sql
-    public static final String KIND_COMMAND_TRACEABILITY_AGGREGATE_SQL = """
+    public static final String SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_aggregate (
                 aggregate_root_id,
                 executed_by_encoded_id,
@@ -61,7 +61,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             """;
 
     // language=sql
-    public static final String KIND_QUERY_TRACEABILITY_AGGREGATE_SQL = """
+    public static final String SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_aggregate (
                 aggregate_root_id,
                 executed_by_encoded_id,
@@ -87,8 +87,8 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public void store(final TraceRecorder traceRecorder) throws TraceRepositoryException {
         Objects.requireNonNull(traceRecorder);
         final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
-            case COMMAND -> KIND_COMMAND_TRACEABILITY_AGGREGATE_SQL;
-            case QUERY -> KIND_QUERY_TRACEABILITY_AGGREGATE_SQL;
+            case COMMAND -> SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
+            case QUERY -> SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
         };
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);

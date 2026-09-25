@@ -64,7 +64,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
                     description = "Information identifying the actor who executed the operation.", required = true)
             ExecutedBy executedBy,
 
-            @Schema(type = SchemaType.STRING, implementation = String.class, description = "Kind", required = true)
+            @Schema(type = SchemaType.STRING, implementation = String.class, description = "Source", required = true)
             Source source,
 
             @Schema(type = SchemaType.STRING, implementation = String.class, description = "From", required = true)

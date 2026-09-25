@@ -54,8 +54,8 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     public void store(final TraceRecorder traceRecorder) throws TraceRepositoryException {
         Objects.requireNonNull(traceRecorder);
         final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
-            case COMMAND -> JdbcPostgresInvolvedTraceRecorderRepository.KIND_COMMAND_TRACEABILITY_AGGREGATE_SQL;
-            case QUERY -> JdbcPostgresInvolvedTraceRecorderRepository.KIND_QUERY_TRACEABILITY_AGGREGATE_SQL;
+            case COMMAND -> JdbcPostgresInvolvedTraceRecorderRepository.SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
+            case QUERY -> JdbcPostgresInvolvedTraceRecorderRepository.SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
         };
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
