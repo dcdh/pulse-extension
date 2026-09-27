@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.query.file.query.UploadQuery;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultDownloadedAtProvider;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DefaultTokenGenerator;
 import com.damdamdeo.pulse.extension.core.query.file.traceability.DownloadedAtProvider;
+import com.damdamdeo.pulse.extension.core.query.permission.SpecificQuery;
 import com.damdamdeo.pulse.extension.query.runtime.QueryExceptionMapper;
 import com.damdamdeo.pulse.extension.query.runtime.file.*;
 import com.damdamdeo.pulse.extension.query.runtime.file.filigrane.*;
@@ -185,5 +186,17 @@ public class BeansProcessor {
     @BuildStep
     AdditionalBeanBuildItem registerDefaultCustomMetadataEncryption() {
         return new AdditionalBeanBuildItem(DefaultCustomMetadataEncryption.class);
+    }
+
+    @BuildStep
+    List<AdditionalBeanBuildItem> registerSpecificQuery(final CombinedIndexBuildItem combinedIndexBuildItem) {
+        return combinedIndexBuildItem.getIndex().getAllKnownSubclasses(SpecificQuery.class)
+                .stream()
+                .map(specificQuery -> AdditionalBeanBuildItem.builder()
+                        .addBeanClass(specificQuery.name().toString())
+                        .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                        .setUnremovable()
+                        .build())
+                .toList();
     }
 }

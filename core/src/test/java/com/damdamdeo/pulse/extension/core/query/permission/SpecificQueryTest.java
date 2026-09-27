@@ -19,7 +19,7 @@ class SpecificQueryTest {
 
     @BeforeEach
     void setup() {
-        permission = new SpecificQuery<TodoId>() {
+        permission = new SpecificQuery<>() {
 
             @Override
             public boolean allow(final Set<TodoId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
