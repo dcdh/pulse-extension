@@ -13,6 +13,8 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Objects;
 
+import static com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedTraceRecorderRepository.*;
+
 @ApplicationScoped
 @Unremovable
 public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implements TraceRecorderRepository {
@@ -55,8 +57,16 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     public void store(final TraceRecorder traceRecorder) throws TraceRepositoryException {
         Objects.requireNonNull(traceRecorder);
         final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
-            case COMMAND -> JdbcPostgresInvolvedTraceRecorderRepository.SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
-            case QUERY -> JdbcPostgresInvolvedTraceRecorderRepository.SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
+            case COMMAND -> switch (traceRecorder.executionStatus()) {
+                case SUCCESS -> SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_BUSINESS -> SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_AGGREGATE_SQL;
+            };
+            case QUERY -> switch (traceRecorder.executionStatus()) {
+                case SUCCESS -> SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
+            };
         };
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);

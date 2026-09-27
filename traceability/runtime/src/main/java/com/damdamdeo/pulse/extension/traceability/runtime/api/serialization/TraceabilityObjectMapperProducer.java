@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.ExecutedAt;
 import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.NbOfTimes;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.NbOfTimes;
 import com.damdamdeo.pulse.extension.core.traceability.TraceId;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;

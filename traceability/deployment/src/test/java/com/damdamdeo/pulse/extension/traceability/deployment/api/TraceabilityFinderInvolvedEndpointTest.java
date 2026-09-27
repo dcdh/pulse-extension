@@ -3,7 +3,6 @@ package com.damdamdeo.pulse.extension.traceability.deployment.api;
 import io.quarkus.test.QuarkusUnitTest;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -14,7 +13,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapWithSize.anEmptyMap;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TraceabilityFinderInvolvedEndpointTest {
 
     @RegisterExtension
@@ -27,7 +25,7 @@ class TraceabilityFinderInvolvedEndpointTest {
     void shouldFindByAggregateId() {
         given()
                 .pathParam("aggregateId", "U000001-T000001")
-                .queryParam("includeUncompounded" , "true")
+                .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -39,9 +37,19 @@ class TraceabilityFinderInvolvedEndpointTest {
                 .body("listOfInvolved[0].aggregateId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
+                .body("listOfInvolved[0].commandNbOfTimes", equalTo(1))
+                .body("listOfInvolved[0].commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("listOfInvolved[0].commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("listOfInvolved[0].queryNbOfTimes", equalTo(0))
+                .body("listOfInvolved[0].queryUnauthorizedNbOfTimes", equalTo(0))
                 .body("listOfInvolved[1].aggregateId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[1].executedByHashed", equalTo("EU:bob-hashed"))
                 .body("listOfInvolved[1].executedBy", equalTo("EU:bob@mail.com"))
+                .body("listOfInvolved[1].commandNbOfTimes", equalTo(1))
+                .body("listOfInvolved[1].commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("listOfInvolved[1].commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("listOfInvolved[1].queryNbOfTimes", equalTo(0))
+                .body("listOfInvolved[1].queryUnauthorizedNbOfTimes", equalTo(0))
                 .body("totalPages", equalTo(1))
                 .body("hasNext", equalTo(false))
                 .body("hasPrevious", equalTo(false));
@@ -51,7 +59,7 @@ class TraceabilityFinderInvolvedEndpointTest {
     void shouldMapOnException() {
         given()
                 .pathParam("aggregateId", "BOOM")
-                .queryParam("includeUncompounded" , "true")
+                .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -236,7 +244,10 @@ class TraceabilityFinderInvolvedEndpointTest {
                                     "executedByHashed",
                                     "executedBy",
                                     "commandNbOfTimes",
-                                    "queryNbOfTimes"
+                                    "commandUnauthorizedNbOfTimes",
+                                    "commandBusinessFailedNbOfTimes",
+                                    "queryNbOfTimes",
+                                    "queryUnauthorizedNbOfTimes"
                                 ],
                                 "description": "Actor involved in the execution of an aggregate.",
                                 "properties": {
@@ -258,7 +269,23 @@ class TraceabilityFinderInvolvedEndpointTest {
                                             "number"
                                         ],
                                         "format": "int32",
-                                        "description": "Nombre of times the actor has been involved on executing a command."
+                                        "description": "Nombre of times the actor has been involved on executing successfully a command."
+                                    },
+                                    "commandUnauthorizedNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved on an unauthorize execution of a command."
+                                    },
+                                    "commandBusinessFailedNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved on a business failing execution of a command."
                                     },
                                     "queryNbOfTimes": {
                                         "type": [
@@ -267,6 +294,14 @@ class TraceabilityFinderInvolvedEndpointTest {
                                         ],
                                         "format": "int32",
                                         "description": "Nombre of times the actor has been involved on executing a query."
+                                    },
+                                    "queryUnauthorizedNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved on an unauthorized execution of a query."
                                     }
                                 }
                             },

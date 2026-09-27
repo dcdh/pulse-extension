@@ -146,7 +146,7 @@ class E2ETest {
              final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT id, aggregate_root_id, executed_by_encoded_id, command_nb_of_times, query_nb_of_times FROM todo_taking.traceability_aggregate
+                             SELECT id, aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times FROM todo_taking.traceability_aggregate
                              """);
              final PreparedStatement selectTraceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
@@ -171,7 +171,10 @@ class E2ETest {
                 data.add(String.join("|", resultSet.getString("id"), resultSet.getString("aggregate_root_id"),
                         resultSet.getString("executed_by_encoded_id"),
                         String.valueOf(resultSet.getLong("command_nb_of_times")),
-                        String.valueOf(resultSet.getLong("query_nb_of_times"))));
+                        String.valueOf(resultSet.getLong("command_unauthorized_nb_of_times")),
+                        String.valueOf(resultSet.getLong("command_business_failed_nb_of_times")),
+                        String.valueOf(resultSet.getLong("query_nb_of_times")),
+                        String.valueOf(resultSet.getLong("query_unauthorized_nb_of_times"))));
             }
             resultSet = selectTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -180,7 +183,7 @@ class E2ETest {
         }
         assertThat(data).containsExactly("1|2026-09-06 14:00:00+02|0|0|shouldStoreAndRetrieveTrace",
                 "1|EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4|EU:aliceEncoded",
-                "1|U000001-T000001|1|1|0",
+                "1|U000001-T000001|1|1|0|0|0|0",
                 "1|1");
     }
 

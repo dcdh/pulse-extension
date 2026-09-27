@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
@@ -32,9 +33,9 @@ public class StubInvolvedFinder implements InvolvedFinder {
         return new Page<>(
                 List.of(
                         new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                new CommandNbOfTimes(1), new QueryNbOfTimes(0)),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER),
                         new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
-                                new CommandNbOfTimes(1), new QueryNbOfTimes(0))),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
                 new Pagination(0, 10), 2L);
     }
 
@@ -45,7 +46,7 @@ public class StubInvolvedFinder implements InvolvedFinder {
         return new Page<>(
                 List.of(
                         new Involved(AnyAggregateId.from("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                new CommandNbOfTimes(1), new QueryNbOfTimes(0))),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L);
     }
 }

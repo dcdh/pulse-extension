@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.*;
@@ -61,23 +62,43 @@ public class TraceabilityFinderInvolvedEndpoint {
             ExecutedBy executedBy,
 
             @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
-                    description = "Nombre of times the actor has been involved on executing a command.", required = true)
-            NbOfTimes commandNbOfTimes,
+                    description = "Nombre of times the actor has been involved on executing successfully a command.", required = true)
+            CommandNbOfTimes commandNbOfTimes,
+
+            @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
+                    description = "Nombre of times the actor has been involved on an unauthorize execution of a command.", required = true)
+            CommandUnauthorizedNbOfTimes commandUnauthorizedNbOfTimes,
+
+            @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
+                    description = "Nombre of times the actor has been involved on a business failing execution of a command.", required = true)
+            CommandBusinessFailedNbOfTimes commandBusinessFailedNbOfTimes,
 
             @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
                     description = "Nombre of times the actor has been involved on executing a query.", required = true)
-            NbOfTimes queryNbOfTimes) {
+            QueryNbOfTimes queryNbOfTimes,
+
+            @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
+                    description = "Nombre of times the actor has been involved on an unauthorized execution of a query.", required = true)
+            QueryUnauthorizedNbOfTimes queryUnauthorizedNbOfTimes) {
 
         public InvolvedDTO {
             Objects.requireNonNull(aggregateId);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
             Objects.requireNonNull(commandNbOfTimes);
+            Objects.requireNonNull(commandUnauthorizedNbOfTimes);
+            Objects.requireNonNull(commandBusinessFailedNbOfTimes);
+            Objects.requireNonNull(queryNbOfTimes);
+            Objects.requireNonNull(queryUnauthorizedNbOfTimes);
         }
 
         public InvolvedDTO(final Involved involved) {
             this(involved.aggregateId(), involved.actor().executedByHashed(), involved.actor().executedBy(),
-                    involved.commandNbOfTimes(), involved.queryNbOfTimes());
+                    involved.commandNbOfTimes(),
+                    involved.commandUnauthorizedNbOfTimes(),
+                    involved.commandBusinessFailedNbOfTimes(),
+                    involved.queryNbOfTimes(),
+                    involved.queryUnauthorizedNbOfTimes());
         }
     }
 

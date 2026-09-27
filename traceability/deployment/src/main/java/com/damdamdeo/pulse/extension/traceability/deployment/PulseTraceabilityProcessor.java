@@ -45,7 +45,10 @@ public class PulseTraceabilityProcessor {
                               aggregate_root_id character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
                               command_nb_of_times bigint DEFAULT 0,
+                              command_unauthorized_nb_of_times bigint DEFAULT 0,
+                              command_business_failed_nb_of_times bigint DEFAULT 0,
                               query_nb_of_times bigint DEFAULT 0,
+                              query_unauthorized_nb_of_times bigint DEFAULT 0,
                               CONSTRAINT traceability_aggregate_pkey PRIMARY KEY (id),
                               CONSTRAINT traceability_aggregate_unique
                                 UNIQUE (aggregate_root_id, executed_by_encoded_id),

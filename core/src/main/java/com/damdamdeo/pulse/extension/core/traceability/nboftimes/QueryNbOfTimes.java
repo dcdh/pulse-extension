@@ -1,6 +1,8 @@
-package com.damdamdeo.pulse.extension.core.traceability;
+package com.damdamdeo.pulse.extension.core.traceability.nboftimes;
 
 public record QueryNbOfTimes(int times) implements NbOfTimes {
+
+    public static final QueryNbOfTimes NEVER = new QueryNbOfTimes(0);
 
     public static final QueryNbOfTimes ONE = new QueryNbOfTimes(1);
 

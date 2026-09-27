@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -45,7 +46,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                      SELECT
                        ta.aggregate_root_id as aggregate_root_id,
                        ta.command_nb_of_times AS command_nb_of_times,
+                       ta.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
+                       ta.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
                        ta.query_nb_of_times AS query_nb_of_times,
+                       ta.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded
                      FROM %1$s.traceability_aggregate ta
@@ -70,7 +74,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
                                 new CommandNbOfTimes(select.getInt("command_nb_of_times")),
-                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -96,7 +103,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
                                 new CommandNbOfTimes(select.getInt("command_nb_of_times")),
-                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }
@@ -124,7 +134,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                      SELECT
                        ta.aggregate_root_id AS aggregate_root_id,
                        ta.command_nb_of_times AS command_nb_of_times,
+                       ta.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
+                       ta.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
                        ta.query_nb_of_times AS query_nb_of_times,
+                       ta.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
                        ebe.executed_by_encoded AS executed_by_encoded
                      FROM %1$s.traceability_aggregate ta
                      JOIN %1$s.executed_by_encoded ebe
@@ -147,7 +160,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
                                 new CommandNbOfTimes(select.getInt("command_nb_of_times")),
-                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -169,7 +185,10 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
                                 new CommandNbOfTimes(select.getInt("command_nb_of_times")),
-                                new QueryNbOfTimes(select.getInt("query_nb_of_times"))));
+                                new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }

@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.runtime.api.serialization;
 
-import com.damdamdeo.pulse.extension.core.traceability.NbOfTimes;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.NbOfTimes;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;

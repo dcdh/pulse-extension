@@ -59,7 +59,10 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
                                 encodedInvolved.encodedActor().executedByEncoded()
                                         .to(usernameDecoder, ownedByProvider.provide(encodedInvolved.aggregateId()))),
                         encodedInvolved.commandNbOfTimes(),
-                        encodedInvolved.queryNbOfTimes());
+                        encodedInvolved.commandUnauthorizedNbOfTimes(),
+                        encodedInvolved.commandBusinessFailedNbOfTimes(),
+                        encodedInvolved.queryNbOfTimes(),
+                        encodedInvolved.queryUnauthorizedNbOfTimes());
                 list.add(involved);
             }
             return new Page<>(list, involvedPage.pagination(), involvedPage.totalElements());

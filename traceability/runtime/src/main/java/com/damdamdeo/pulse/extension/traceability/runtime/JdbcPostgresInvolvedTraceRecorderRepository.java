@@ -61,6 +61,34 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             """;
 
     // language=sql
+    public static final String SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL = """
+            INSERT INTO %s.traceability_aggregate (
+                aggregate_root_id,
+                executed_by_encoded_id,
+                command_unauthorized_nb_of_times
+            )
+            VALUES (?, ?, 1)
+            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            DO UPDATE
+            SET command_unauthorized_nb_of_times = %1$s.traceability_aggregate.command_unauthorized_nb_of_times + 1
+            RETURNING id;
+            """;
+
+    // language=sql
+    public static final String SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_AGGREGATE_SQL = """
+            INSERT INTO %s.traceability_aggregate (
+                aggregate_root_id,
+                executed_by_encoded_id,
+                command_business_failed_nb_of_times
+            )
+            VALUES (?, ?, 1)
+            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            DO UPDATE
+            SET command_business_failed_nb_of_times = %1$s.traceability_aggregate.command_business_failed_nb_of_times + 1
+            RETURNING id;
+            """;
+
+    // language=sql
     public static final String SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_aggregate (
                 aggregate_root_id,
@@ -71,6 +99,20 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
             DO UPDATE
             SET query_nb_of_times = %1$s.traceability_aggregate.query_nb_of_times + 1
+            RETURNING id;
+            """;
+
+    // language=sql
+    public static final String SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL = """
+            INSERT INTO %s.traceability_aggregate (
+                aggregate_root_id,
+                executed_by_encoded_id,
+                query_unauthorized_nb_of_times
+            )
+            VALUES (?, ?, 1)
+            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            DO UPDATE
+            SET query_unauthorized_nb_of_times = %1$s.traceability_aggregate.query_unauthorized_nb_of_times + 1
             RETURNING id;
             """;
 
@@ -87,8 +129,16 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public void store(final TraceRecorder traceRecorder) throws TraceRepositoryException {
         Objects.requireNonNull(traceRecorder);
         final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
-            case COMMAND -> SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
-            case QUERY -> SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
+            case COMMAND -> switch (traceRecorder.executionStatus()) {
+                case SUCCESS -> SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_BUSINESS -> SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_AGGREGATE_SQL;
+            };
+            case QUERY -> switch (traceRecorder.executionStatus()) {
+                case SUCCESS -> SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
+            };
         };
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);

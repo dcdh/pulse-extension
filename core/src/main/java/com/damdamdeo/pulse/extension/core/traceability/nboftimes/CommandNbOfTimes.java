@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.traceability;
+package com.damdamdeo.pulse.extension.core.traceability.nboftimes;
 
 public record CommandNbOfTimes(int times) implements NbOfTimes {
 

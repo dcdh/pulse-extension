@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedTraceRecorderRepository;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
@@ -64,9 +65,11 @@ class DefaultInvolvedFinderTest {
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
                         new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                new CommandNbOfTimes(1), new QueryNbOfTimes(0)),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
+                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER),
                         new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
-                                new CommandNbOfTimes(1), new QueryNbOfTimes(0))),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
+                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
                 new Pagination(0, 10), 2L));
     }
 
@@ -81,7 +84,8 @@ class DefaultInvolvedFinderTest {
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
                         new Involved(AnyAggregateId.from("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                new CommandNbOfTimes(1), new QueryNbOfTimes(0))),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
+                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L));
     }
 }

@@ -405,7 +405,10 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "executedByHashed",
                                     "executedBy",
                                     "commandNbOfTimes",
-                                    "queryNbOfTimes"
+                                    "commandUnauthorizedNbOfTimes",
+                                    "commandBusinessFailedNbOfTimes",
+                                    "queryNbOfTimes",
+                                    "queryUnauthorizedNbOfTimes"
                                 ],
                                 "description": "Actor involved in the execution of an aggregate.",
                                 "properties": {
@@ -422,12 +425,28 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                         "description": "Information identifying the actor who executed the operation."
                                     },
                                     "commandNbOfTimes": {
+                                         "type": [
+                                             "integer",
+                                             "number"
+                                         ],
+                                         "format": "int32",
+                                         "description": "Nombre of times the actor has been involved on executing successfully a command."
+                                    },
+                                    "commandUnauthorizedNbOfTimes": {
                                         "type": [
                                             "integer",
                                             "number"
                                         ],
                                         "format": "int32",
-                                        "description": "Nombre of times the actor has been involved on executing a command."
+                                         "description": "Nombre of times the actor has been involved on an unauthorize execution of a command."
+                                    },
+                                    "commandBusinessFailedNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved on a business failing execution of a command."
                                     },
                                     "queryNbOfTimes": {
                                         "type": [
@@ -436,6 +455,14 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                         ],
                                         "format": "int32",
                                         "description": "Nombre of times the actor has been involved on executing a query."
+                                    },
+                                    "queryUnauthorizedNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Nombre of times the actor has been involved on an unauthorized execution of a query."
                                     }
                                 }
                             },
