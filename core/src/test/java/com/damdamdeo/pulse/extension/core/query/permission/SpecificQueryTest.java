@@ -1,32 +1,28 @@
-package com.damdamdeo.pulse.extension.core.usecase.permission;
+package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
-import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-class SpecificDomainTest {
+class SpecificQueryTest {
 
-    SpecificDomain<TodoId, MarkTodoAsDone> permission;
+    SpecificQuery<TodoId> permission;
 
     @BeforeEach
     void setup() {
-        permission = new SpecificDomain<>() {
+        permission = new SpecificQuery<TodoId>() {
 
             @Override
-            public boolean allow(final TodoId aggregateId, final MarkTodoAsDone command, final PermissionExecutionContext permissionExecutionContext) throws UseCaseException {
-                return false;
-            }
-
-            @Override
-            public boolean allow(final MarkTodoAsDone command, final PermissionExecutionContext permissionExecutionContext) throws UseCaseException {
+            public boolean allow(final Set<TodoId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
                 return false;
             }
         };
