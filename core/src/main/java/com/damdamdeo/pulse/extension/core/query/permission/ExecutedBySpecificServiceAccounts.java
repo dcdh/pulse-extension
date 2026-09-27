@@ -11,14 +11,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record ExecutedBySpecificServiceAccounts(String... names) implements Permission {
+public record ExecutedBySpecificServiceAccounts<K extends AggregateId>(String... names) implements Permission<K> {
 
     public ExecutedBySpecificServiceAccounts {
         Objects.requireNonNull(names);
     }
 
     @Override
-    public boolean allow(final Set<AggregateId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
         Objects.requireNonNull(aggregateIds);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();

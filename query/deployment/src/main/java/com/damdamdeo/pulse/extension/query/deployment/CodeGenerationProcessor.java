@@ -1,9 +1,11 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.GuardQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.query.runtime.JdbcProjectionFromEventStore;
 import io.quarkus.arc.DefaultBean;
@@ -41,6 +43,13 @@ public class CodeGenerationProcessor {
                 .getAllKnownImplementations(Projection.class)
                 .forEach(projectionClassInfo -> {
                     try {
+                        final org.jboss.jandex.Type projectionInterface = projectionClassInfo.interfaceTypes().stream()
+                                .filter(t -> t.name().equals(DotName.createSimple(Projection.class)))
+                                .findFirst()
+                                .orElseThrow();
+                        final ParameterizedType parameterizedType = projectionInterface.asParameterizedType();
+                        final Class<?> aggregateIdClass = classLoader.loadClass(
+                                parameterizedType.arguments().getFirst().name().toString());
                         final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
                         try (final ClassCreator beanClassCreator = ClassCreator.builder()
                                 .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
@@ -49,6 +58,7 @@ public class CodeGenerationProcessor {
                                         .setSuperClass(
                                                 Type.parameterizedType(
                                                         Type.classType(JdbcProjectionFromEventStore.class),
+                                                        Type.classType(aggregateIdClass),
                                                         Type.classType(projectionClass))))
                                 .setFinal(false) // must be false when using @Transactional
                                 .build()) {
@@ -57,9 +67,14 @@ public class CodeGenerationProcessor {
                             beanClassCreator.addAnnotation(Unremovable.class);
                             beanClassCreator.addAnnotation(DefaultBean.class);
 
-                            try (final MethodCreator getAggregateClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
-                                getAggregateClass.setModifiers(Modifier.PROTECTED);
-                                getAggregateClass.returnValue(getAggregateClass.loadClass(projectionClass));
+                            try (final MethodCreator getAggregateIdClass = beanClassCreator.getMethodCreator("getAggregateIdClass", Class.class)) {
+                                getAggregateIdClass.setModifiers(Modifier.PROTECTED);
+                                getAggregateIdClass.returnValue(getAggregateIdClass.loadClass(aggregateIdClass));
+                            }
+
+                            try (final MethodCreator getProjectionClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
+                                getProjectionClass.setModifiers(Modifier.PROTECTED);
+                                getProjectionClass.returnValue(getProjectionClass.loadClass(projectionClass));
                             }
 
                             writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
@@ -83,13 +98,14 @@ public class CodeGenerationProcessor {
                                 .filter(t -> t.name().equals(DotName.createSimple(QueryUseCase.class)))
                                 .findFirst()
                                 .orElseThrow();
-
                         final ParameterizedType parameterizedType = queryInterface.asParameterizedType();
-                        final Class<?> inputClass = classLoader.loadClass(
+                        final Class<?> aggregateIdClass = classLoader.loadClass(
                                 parameterizedType.arguments().getFirst().name().toString());
+                        final Class<?> inputClass = classLoader.loadClass(
+                                parameterizedType.arguments().get(1).name().toString());
 
                         final Class<?> projectionClass = classLoader.loadClass(
-                                parameterizedType.arguments().get(1).name().toString());
+                                parameterizedType.arguments().get(2).name().toString());
 
                         final Class<?> queryClass = classLoader.loadClass(queryClassInfo.name().toString());
                         try (final ClassCreator beanClassCreator = ClassCreator.builder()
@@ -99,6 +115,7 @@ public class CodeGenerationProcessor {
                                         .setSuperClass(
                                                 Type.parameterizedType(
                                                         Type.classType(GuardQueryUseCase.class),
+                                                        Type.classType(aggregateIdClass),
                                                         Type.classType(inputClass),
                                                         Type.classType(projectionClass))))
                                 .setFinal(true)
@@ -122,6 +139,7 @@ public class CodeGenerationProcessor {
                                                 .addParameterType(Type.classType(ExecutedByResolver.class))
                                                 .addParameterType(Type.parameterizedType(
                                                         Type.classType(QueryUseCase.class),
+                                                        Type.classType(aggregateIdClass),
                                                         Type.classType(inputClass),
                                                         Type.classType(projectionClass)))
                                                 .addParameterType(Type.classType(TraceAppender.class))

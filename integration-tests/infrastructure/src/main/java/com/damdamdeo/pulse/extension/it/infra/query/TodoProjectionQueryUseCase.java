@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.it.infra.query;
 
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProviderException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
@@ -7,8 +8,8 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
-import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.core.query.permission.Everyone;
+import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,10 +20,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
-public class TodoProjectionQueryUseCase implements QueryUseCase<ListTodos, TodoProjection> {
+public class TodoProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection> {
 
     @Inject
-    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     ConnectionIdentifierProvider connectionIdentifierProvider;
@@ -71,7 +72,7 @@ public class TodoProjectionQueryUseCase implements QueryUseCase<ListTodos, TodoP
     };
 
     @Override
-    public Result<TodoProjection> execute(final ListTodos input) throws QueryException {
+    public Result<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
         Objects.requireNonNull(input);
         try {
             Optional<Identifiable> identifiable = connectionIdentifierRepository.find(connectionIdentifierProvider.provide());
@@ -83,7 +84,7 @@ public class TodoProjectionQueryUseCase implements QueryUseCase<ListTodos, TodoP
     }
 
     @Override
-    public List<Permission> permissions() {
-        return List.of(Everyone.INSTANCE);
+    public List<Permission<TodoId>> permissions() {
+        return List.of(new Everyone<>());
     }
 }

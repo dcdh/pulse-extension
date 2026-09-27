@@ -10,14 +10,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public record ExecutedBySpecificEndUsers(ExecutedBy.EndUser... endUsers) implements Permission {
+public record ExecutedBySpecificEndUsers<K extends AggregateId>(
+        ExecutedBy.EndUser... endUsers) implements Permission<K> {
 
     public ExecutedBySpecificEndUsers {
         Objects.requireNonNull(endUsers);
     }
 
     @Override
-    public boolean allow(final Set<AggregateId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
         Objects.requireNonNull(aggregateIds);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();

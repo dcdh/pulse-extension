@@ -4,9 +4,9 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 
 import java.util.Set;
 
-public interface Traceable {
+public interface Traceable<A extends AggregateId> {
 
-    default Set<AggregateId> aggregateIds() {
+    default Set<A> aggregateIds() {
         // do not log when empty
         return Set.of();
     }

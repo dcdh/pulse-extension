@@ -46,7 +46,8 @@ class InExecutedByTest {
     @Test
     void shouldAllowWhenExecutedByIsEligible() throws QueryException, UnableToResolveException {
         // Given
-        final Set<AggregateId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
+        final InExecutedBy<TodoId> permission = new InExecutedBy<>();
+        final Set<TodoId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final Set<ExecutedBy> executedByEligibles = Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com")));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -58,7 +59,7 @@ class InExecutedByTest {
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
-        final boolean allowed = InExecutedBy.INSTANCE.allow(aggregateIds, permissionExecutionContext);
+        final boolean allowed = permission.allow(aggregateIds, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -77,8 +78,9 @@ class InExecutedByTest {
     @Test
     void shouldDisallowWhenExecutedByIsNotEligible() throws QueryException, UnableToResolveException {
         // Given
+        final InExecutedBy<TodoId> permission = new InExecutedBy<>();
         final ExecutedBy anotherExecutedBy = new ExecutedBy.EndUser(new Username("bob@mail.com"));
-        final Set<AggregateId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
+        final Set<TodoId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final Set<ExecutedBy> executedByEligibles = Set.of(anotherExecutedBy);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -90,7 +92,7 @@ class InExecutedByTest {
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
-        final boolean allowed = InExecutedBy.INSTANCE.allow(aggregateIds, permissionExecutionContext);
+        final boolean allowed = permission.allow(aggregateIds, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -108,7 +110,8 @@ class InExecutedByTest {
     @Test
     void shouldResolveUncompoundedAggregateIds() throws QueryException, UnableToResolveException {
         // Given
-        final Set<AggregateId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
+        final InExecutedBy<TodoId> permission = new InExecutedBy<>();
+        final Set<TodoId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.aggregateIdDecomposer()).thenReturn(aggregateIdDecomposer);
@@ -119,7 +122,7 @@ class InExecutedByTest {
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
 
         // When
-        InExecutedBy.INSTANCE.allow(aggregateIds, permissionExecutionContext);
+        permission.allow(aggregateIds, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -136,7 +139,8 @@ class InExecutedByTest {
     @Test
     void shouldThrowQueryExceptionWhenExecutedByCannotBeResolved() throws QueryException, UnableToResolveException {
         // Given
-        final Set<AggregateId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
+        final InExecutedBy<TodoId> permission = new InExecutedBy<>();
+        final Set<TodoId> aggregateIds = Set.of(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final UnableToResolveException cause = new UnableToResolveException(new RuntimeException("Unable to resolve executed by"));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -148,7 +152,7 @@ class InExecutedByTest {
         // When
         final QueryException exception = Assertions.assertThrows(
                 QueryException.class,
-                () -> InExecutedBy.INSTANCE.allow(aggregateIds, permissionExecutionContext));
+                () -> permission.allow(aggregateIds, permissionExecutionContext));
 
         // Then
         assertAll(
@@ -164,9 +168,10 @@ class InExecutedByTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
+        final InExecutedBy<TodoId> permission = new InExecutedBy<>();
 
         // When
-        final int priority = InExecutedBy.INSTANCE.priority();
+        final int priority = permission.priority();
 
         // Then
         assertEquals(3, priority);

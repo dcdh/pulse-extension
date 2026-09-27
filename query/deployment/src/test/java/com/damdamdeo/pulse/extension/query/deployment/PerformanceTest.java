@@ -51,7 +51,7 @@ class PerformanceTest {
     EventTestRepository eventTestRepository;
 
     @Inject
-    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     DataSource dataSource;
@@ -121,10 +121,10 @@ class PerformanceTest {
 
     private static final class FindByTaskSupplier implements Supplier<Long> {
 
-        private final ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+        private final ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore;
         private final SequenceGenerator sequenceGenerator;
 
-        private FindByTaskSupplier(final ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore,
+        private FindByTaskSupplier(final ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore,
                                    final SequenceGenerator sequenceGenerator) {
             this.todoProjectionProjectionFromEventStore = Objects.requireNonNull(todoProjectionProjectionFromEventStore);
             this.sequenceGenerator = Objects.requireNonNull(sequenceGenerator);

@@ -11,15 +11,10 @@ import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import java.util.Objects;
 import java.util.Set;
 
-public final class InExecutedBy implements Permission {
-
-    public static final InExecutedBy INSTANCE = new InExecutedBy();
-
-    private InExecutedBy() {
-    }
+public final class InExecutedBy<K extends AggregateId> implements Permission<K> {
 
     @Override
-    public boolean allow(final Set<AggregateId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
         Objects.requireNonNull(aggregateIds);
         Objects.requireNonNull(permissionExecutionContext);
         try {

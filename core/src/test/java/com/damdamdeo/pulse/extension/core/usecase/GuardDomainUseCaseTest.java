@@ -105,7 +105,6 @@ class GuardDomainUseCaseTest {
         }
     }
 
-    // FCK
     @Test
     void shouldReturnResultWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
         // Given
@@ -123,7 +122,7 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
                         ExecutionStatus.SUCCESS, From.from(INPUT))
         );
     }
@@ -145,7 +144,7 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
                         ExecutionStatus.SUCCESS, From.from(INPUT))
         );
     }
@@ -167,7 +166,7 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
                         ExecutionStatus.SUCCESS, From.from(INPUT))
         );
     }
@@ -188,7 +187,7 @@ class GuardDomainUseCaseTest {
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
                         ExecutionStatus.SUCCESS, From.from(INPUT)),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
                         executedByResolver)
@@ -214,7 +213,7 @@ class GuardDomainUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
                 () -> assertThat(decorated.called()).containsExactly("permissions"),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
                         ExecutionStatus.FAILED_UNAUTHORIZED, From.from(INPUT))
         );
     }
@@ -238,7 +237,7 @@ class GuardDomainUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(BusinessException.class),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore"),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
                         ExecutionStatus.FAILED_BUSINESS, From.from(INPUT))
         );
     }

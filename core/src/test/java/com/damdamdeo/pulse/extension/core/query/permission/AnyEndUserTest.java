@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import org.junit.jupiter.api.Test;
@@ -22,10 +23,11 @@ class AnyEndUserTest {
     @Test
     void shouldAllowWhenEndUserExecute() throws QueryException {
         // Given
+        final AnyEndUser<TodoId> permission = new AnyEndUser<>();
         when(permissionExecutionContext.isEndUser()).thenReturn(true);
 
         // When
-        final boolean allowed = AnyEndUser.INSTANCE.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -36,10 +38,11 @@ class AnyEndUserTest {
     @Test
     void shouldDisallowWhenNotAnEndUser() throws QueryException {
         // Given
+        final AnyEndUser<TodoId> permission = new AnyEndUser<>();
         when(permissionExecutionContext.isEndUser()).thenReturn(false);
 
         // When
-        final boolean allowed = AnyEndUser.INSTANCE.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -50,9 +53,10 @@ class AnyEndUserTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
+        final AnyEndUser<TodoId> permission = new AnyEndUser<>();
 
         // When
-        final int priority = AnyEndUser.INSTANCE.priority();
+        final int priority = permission.priority();
 
         // Then
         assertEquals(1, priority);

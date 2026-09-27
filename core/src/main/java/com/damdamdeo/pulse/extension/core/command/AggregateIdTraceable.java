@@ -6,14 +6,14 @@ import com.damdamdeo.pulse.extension.core.traceability.Traceable;
 import java.util.Objects;
 import java.util.Set;
 
-public record AggregateIdTraceable(AggregateId aggregateId) implements Traceable {
+public record AggregateIdTraceable<A extends AggregateId>(A aggregateId) implements Traceable<A> {
 
     public AggregateIdTraceable {
         Objects.requireNonNull(aggregateId);
     }
 
     @Override
-    public Set<AggregateId> aggregateIds() {
+    public Set<A> aggregateIds() {
         return Set.of(aggregateId);
     }
 }

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class AggregateIdDecomposer {
 
-    public Set<AggregateId> unCompound(final Set<AggregateId> aggregateIds) {
+    public <K extends AggregateId> Set<AggregateId> unCompound(final Set<K> aggregateIds) {
         Objects.requireNonNull(aggregateIds);
         return aggregateIds.stream()
                 .flatMap(aggregateId -> {

@@ -36,6 +36,7 @@ import jakarta.inject.Inject;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
+import org.jboss.jandex.ParameterizedType;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -121,6 +122,13 @@ public class CachingProcessor {
                     .getAllKnownImplementations(Projection.class)
                     .forEach(projectionClassInfo -> {
                         try {
+                            final org.jboss.jandex.Type projectionInterface = projectionClassInfo.interfaceTypes().stream()
+                                    .filter(t -> t.name().equals(DotName.createSimple(Projection.class)))
+                                    .findFirst()
+                                    .orElseThrow();
+                            final ParameterizedType parameterizedType = projectionInterface.asParameterizedType();
+                            final Class<?> aggregateIdClass = classLoader.loadClass(
+                                    parameterizedType.arguments().getFirst().name().toString());
                             final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
                             final String className = projectionClass.getName().replaceAll("\\$", "_") + "CachedProjectionFromEventStore";
                             try (final ClassCreator beanClassCreator = ClassCreator.builder()
@@ -130,6 +138,7 @@ public class CachingProcessor {
                                             .setSuperClass(
                                                     Type.parameterizedType(
                                                             Type.classType(CachedProjectionFromEventStore.class),
+                                                            Type.classType(aggregateIdClass),
                                                             Type.classType(projectionClass))))
                                     .setFinal(true)
                                     .build()) {
@@ -148,6 +157,7 @@ public class CachingProcessor {
                                             .setSignature(SignatureBuilder.forMethod()
                                                     .addParameterType(Type.parameterizedType(
                                                             Type.classType(ProjectionFromEventStore.class),
+                                                            Type.classType(aggregateIdClass),
                                                             Type.classType(projectionClass)))
                                                     .addParameterType(Type.classType(EventCounter.class))
                                                     .addParameterType(Type.classType(Cache.class))

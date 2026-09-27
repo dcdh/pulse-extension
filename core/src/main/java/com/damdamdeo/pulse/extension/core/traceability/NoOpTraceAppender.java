@@ -5,7 +5,7 @@ import java.util.Objects;
 public final class NoOpTraceAppender implements TraceAppender {
 
     @Override
-    public void append(final Traceable traceable, final Source source, final ExecutionStatus executionStatus,
+    public void append(final Traceable<?> traceable, final Source source, final ExecutionStatus executionStatus,
                        final From from) throws TraceAppenderException {
         Objects.requireNonNull(traceable);
         Objects.requireNonNull(source);

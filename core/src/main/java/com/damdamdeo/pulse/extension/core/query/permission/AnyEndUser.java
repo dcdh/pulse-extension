@@ -7,12 +7,10 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 import java.util.Objects;
 import java.util.Set;
 
-public final class AnyEndUser implements Permission {
-
-    public static final AnyEndUser INSTANCE = new AnyEndUser();
+public final class AnyEndUser<K extends AggregateId> implements Permission<K> {
 
     @Override
-    public boolean allow(final Set<AggregateId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
         Objects.requireNonNull(aggregateIds);
         Objects.requireNonNull(permissionExecutionContext);
         return permissionExecutionContext.isEndUser();

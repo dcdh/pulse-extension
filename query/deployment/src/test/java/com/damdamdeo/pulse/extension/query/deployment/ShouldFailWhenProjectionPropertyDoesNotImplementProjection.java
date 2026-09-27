@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
@@ -32,10 +31,10 @@ class ShouldFailWhenProjectionPropertyDoesNotImplementProjection {
                                  Status status,
                                  Boolean important,
                                  TodoChecklistProjection checklist,
-                                 List<TodoChecklistProjection> checklists) implements Projection {
+                                 List<TodoChecklistProjection> checklists) implements Projection<TodoId> {
 
         @Override
-        public AggregateId id() {
+        public TodoId id() {
             throw new IllegalStateException("Should not be called");
         }
     }

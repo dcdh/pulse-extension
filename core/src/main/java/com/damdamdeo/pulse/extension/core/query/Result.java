@@ -7,18 +7,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public record Result<P extends Projection>(List<P> projections, Set<AggregateId> aggregateIds) implements Traceable {
+public record Result<A extends AggregateId, P extends Projection<A>>(List<P> projections,
+                                                                     Set<A> aggregateIds) implements Traceable<A> {
 
     public Result {
         Objects.requireNonNull(projections);
         Objects.requireNonNull(aggregateIds);
     }
 
-    public static <P extends Projection> Result<P> of(final List<P> projections, final Set<AggregateId> aggregateIds) {
+    public static <A extends AggregateId, P extends Projection<A>> Result<A, P> of(final List<P> projections, final Set<A> aggregateIds) {
         return new Result<>(projections, aggregateIds);
     }
 
-    public static <P extends Projection> Result<P> of(final P projection, final Set<AggregateId> aggregateIds) {
+    public static <A extends AggregateId, P extends Projection<A>> Result<A, P> of(final P projection, final Set<A> aggregateIds) {
         return new Result<>(List.of(projection), aggregateIds);
     }
 
@@ -31,7 +32,7 @@ public record Result<P extends Projection>(List<P> projections, Set<AggregateId>
     }
 
     @Override
-    public Set<AggregateId> aggregateIds() {
+    public Set<A> aggregateIds() {
         return aggregateIds;
     }
 }

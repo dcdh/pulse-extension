@@ -9,15 +9,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public final class VisibilityRoleRestricted implements Permission {
-
-    public static final VisibilityRoleRestricted INSTANCE = new VisibilityRoleRestricted();
-
-    private VisibilityRoleRestricted() {
-    }
+public final class VisibilityRoleRestricted<K extends AggregateId> implements Permission<K> {
 
     @Override
-    public boolean allow(final Set<AggregateId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
         Objects.requireNonNull(aggregateIds);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();

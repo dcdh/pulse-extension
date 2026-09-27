@@ -18,7 +18,7 @@ class AggregateIdDecomposerTest {
     @Test
     void shouldUnCompound() {
         // Given
-        final Set<AggregateId> givenAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1);
+        final Set<TodoChecklistId> givenAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1);
 
         // When
         final Set<AggregateId> uncompounded = aggregateIdDecomposer.unCompound(givenAggregateIds);

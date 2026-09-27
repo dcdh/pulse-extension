@@ -1,13 +1,12 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.Input;
-import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
-import com.damdamdeo.pulse.extension.core.query.Result;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -26,9 +25,6 @@ class VisibilityRoleRestrictedTest {
     Input mock;
 
     @Mock
-    Result<Projection> result;
-
-    @Mock
     ExecutionContext executionContext;
 
     @Mock
@@ -43,6 +39,7 @@ class VisibilityRoleRestrictedTest {
     @Test
     void shouldAllowWhenExecutedByHasOneOfVisibilityRoles() throws QueryException {
         // Given
+        final VisibilityRoleRestricted<TodoId> permission = new VisibilityRoleRestricted<>();
         final List<String> visibilityRoles = List.of("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.backendUserVisibilityRolesProvider()).thenReturn(backendUserVisibilityRolesProvider);
@@ -52,7 +49,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(true);
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -67,6 +64,7 @@ class VisibilityRoleRestrictedTest {
     @Test
     void shouldAllowWhenExecutedByHasFirstVisibilityRole() throws QueryException {
         // Given
+        final VisibilityRoleRestricted<TodoId> permission = new VisibilityRoleRestricted<>();
         final List<String> visibilityRoles = List.of("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.backendUserVisibilityRolesProvider()).thenReturn(backendUserVisibilityRolesProvider);
@@ -75,7 +73,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -90,6 +88,7 @@ class VisibilityRoleRestrictedTest {
     @Test
     void shouldDisallowWhenExecutedByHasNoneOfVisibilityRoles() throws QueryException {
         // Given
+        final VisibilityRoleRestricted<TodoId> permission = new VisibilityRoleRestricted<>();
         final List<String> visibilityRoles = List.of("ADMIN", "USER");
 
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -100,7 +99,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -115,13 +114,14 @@ class VisibilityRoleRestrictedTest {
     @Test
     void shouldDisallowWhenVisibilityRolesAreEmpty() throws QueryException {
         // Given
+        final VisibilityRoleRestricted<TodoId> permission = new VisibilityRoleRestricted<>();
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.backendUserVisibilityRolesProvider()).thenReturn(backendUserVisibilityRolesProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of());
 
         // When
-        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -135,9 +135,10 @@ class VisibilityRoleRestrictedTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
+        final VisibilityRoleRestricted<TodoId> permission = new VisibilityRoleRestricted<>();
 
         // When
-        final int priority = VisibilityRoleRestricted.INSTANCE.priority();
+        final int priority = permission.priority();
 
         // Then
         assertEquals(2, priority);

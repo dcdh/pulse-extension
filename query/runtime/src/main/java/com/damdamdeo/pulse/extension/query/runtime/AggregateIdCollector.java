@@ -6,16 +6,24 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public final class AggregateIdCollector {
+public final class AggregateIdCollector<A extends AggregateId> {
 
-    private final Set<AggregateId> aggregateIds = new LinkedHashSet<>();
+    private final Set<A> aggregateIds = new LinkedHashSet<>();
 
-    public void add(final AggregateId aggregateId) {
-        Objects.requireNonNull(aggregateId);
-        aggregateIds.add(aggregateId);
+    private final Class<A> target;
+
+    public AggregateIdCollector(final Class<A> target) {
+        this.target = Objects.requireNonNull(target);
     }
 
-    public Set<AggregateId> aggregateId() {
+    public void add(final A aggregateId) {
+        Objects.requireNonNull(aggregateId);
+        if (target.isAssignableFrom(aggregateId.getClass())) {
+            aggregateIds.add(aggregateId);
+        }
+    }
+
+    public Set<A> aggregateId() {
         return Set.copyOf(aggregateIds);
     }
 }

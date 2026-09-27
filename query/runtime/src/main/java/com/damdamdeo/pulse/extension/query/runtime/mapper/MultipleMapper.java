@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.query.runtime.mapper;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.query.runtime.AggregateIdCollector;
@@ -12,11 +13,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-public interface MultipleMapper<T> {
+public interface MultipleMapper<P> {
 
-    T map(String json, ObjectMapper objectMapper) throws IOException;
+    P map(String json, ObjectMapper objectMapper) throws IOException;
 
-    static <T extends Projection> MultipleMapper<List<T>> multiple(final TypeReference<List<T>> typeReference) {
+    static <A extends AggregateId, P extends Projection<A>> MultipleMapper<List<P>> multiple(final TypeReference<List<P>> typeReference) {
         Objects.requireNonNull(typeReference);
         return (json, objectMapper) -> {
             Objects.requireNonNull(json);
@@ -25,19 +26,20 @@ public interface MultipleMapper<T> {
         };
     }
 
-    static <T extends Projection> MultipleMapper<Result<T>> resultMultiple(final TypeReference<List<T>> typeReference) {
+    static <A extends AggregateId, P extends Projection<A>> MultipleMapper<Result<A, P>> resultMultiple(final Class<A> clazz, final TypeReference<List<P>> typeReference) {
+        Objects.requireNonNull(clazz);
         Objects.requireNonNull(typeReference);
         return (json, objectMapper) -> {
             Objects.requireNonNull(json);
             Objects.requireNonNull(objectMapper);
-            final AggregateIdCollector collector = new AggregateIdCollector();
+            final AggregateIdCollector<A> collector = new AggregateIdCollector<>(clazz);
             final JavaType javaType = objectMapper
                     .getTypeFactory()
                     .constructType(typeReference);
             final ObjectReader reader = objectMapper
                     .readerFor(javaType)
                     .withAttribute(AggregateIdCollector.class, collector);
-            final List<T> projection = reader.readValue(json);
+            final List<P> projection = reader.readValue(json);
             return Result.of(projection, collector.aggregateId());
         };
     }

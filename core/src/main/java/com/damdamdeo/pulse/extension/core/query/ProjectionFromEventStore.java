@@ -11,11 +11,11 @@ import java.util.Optional;
  * @param <P>
  */
 @Deprecated
-public interface ProjectionFromEventStore<P extends Projection> {
+public interface ProjectionFromEventStore<A extends AggregateId, P extends Projection<A>> {
 
-    Result<P> getOneByAggregateId(AggregateId aggregateId, SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException;
+    Result<A, P> getOneByAggregateId(A aggregateId, SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException;
 
-    Optional<Result<P>> findOneByAggregateId(AggregateId aggregateId, SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException;
+    Optional<Result<A, P>> findOneByAggregateId(A aggregateId, SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException;
 
-    <I extends Input> Result<P> findAllBy(OwnedBy ownedBy, I input, MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException;
+    <I extends Input> Result<A, P> findAllBy(OwnedBy ownedBy, I input, MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException;
 }

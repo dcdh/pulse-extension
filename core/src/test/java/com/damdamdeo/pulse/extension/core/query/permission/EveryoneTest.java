@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,10 @@ class EveryoneTest {
     @Test
     void shouldAllowWhenExecute() throws QueryException {
         // Given
+        final Everyone<TodoId> permission = new Everyone<>();
 
         // When
-        final boolean allowed = Everyone.INSTANCE.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertTrue(allowed);
@@ -32,9 +34,10 @@ class EveryoneTest {
     @Test
     void shouldHaveHighestVisibilityPriority() {
         // Given
+        final Everyone<TodoId> permission = new Everyone<>();
 
         // When
-        final int priority = Everyone.INSTANCE.priority();
+        final int priority = permission.priority();
 
         // Then
         assertEquals(0, priority);

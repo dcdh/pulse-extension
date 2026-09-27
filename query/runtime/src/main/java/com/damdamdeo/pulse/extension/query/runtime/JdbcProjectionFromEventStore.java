@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public abstract class JdbcProjectionFromEventStore<P extends Projection> implements ProjectionFromEventStore<P> {
+public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P extends Projection<A>> implements ProjectionFromEventStore<A, P> {
 
     static final Logger LOGGER = Logger.getLogger(JdbcProjectionFromEventStore.class.getName());
 
@@ -40,7 +40,7 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
     OwnedByProvider ownedByProvider;
 
     @Override
-    public Result<P> getOneByAggregateId(final AggregateId aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+    public Result<A, P> getOneByAggregateId(final A aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         return findOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery)
@@ -48,14 +48,14 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
     }
 
     @Override
-    public Optional<Result<P>> findOneByAggregateId(final AggregateId aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+    public Optional<Result<A, P>> findOneByAggregateId(final A aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         try {
             final OwnedBy ownedBy = ownedByProvider.getByAggregateId(aggregateId);
             final String query = singleResultAggregateIdProjectionQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
             LOGGER.fine(query);
-            final AggregateIdCollector collector = new AggregateIdCollector();
+            final AggregateIdCollector<A> collector = new AggregateIdCollector<>(getAggregateIdClass());
             final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
@@ -77,14 +77,14 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
     }
 
     @Override
-    public <I extends Input> Result<P> findAllBy(final OwnedBy ownedBy, final I input, final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
+    public <I extends Input> Result<A, P> findAllBy(final OwnedBy ownedBy, final I input, final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(input);
         Objects.requireNonNull(multipleResultProjectionQuery);
         try {
             final String query = multipleResultProjectionQuery.query(passphraseProvider.provide(ownedBy), ownedBy, input);
             LOGGER.fine(query);
-            final AggregateIdCollector collector = new AggregateIdCollector();
+            final AggregateIdCollector<A> collector = new AggregateIdCollector<>(getAggregateIdClass());
             final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
             final List<P> responses = new ArrayList<>();
             try (final Connection connection = dataSource.getConnection();
@@ -104,6 +104,8 @@ public abstract class JdbcProjectionFromEventStore<P extends Projection> impleme
             throw new ProjectionException(ownedBy, e);
         }
     }
+
+    abstract protected Class<A> getAggregateIdClass();
 
     abstract protected Class<P> getProjectionClass();
 }

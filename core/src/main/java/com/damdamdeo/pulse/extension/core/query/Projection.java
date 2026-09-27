@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 
-public interface Projection {
+public interface Projection<A extends AggregateId> {
 
-    AggregateId id();
+    A id();
 }

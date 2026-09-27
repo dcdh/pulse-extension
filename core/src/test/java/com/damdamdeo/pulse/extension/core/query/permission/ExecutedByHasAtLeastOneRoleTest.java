@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.Input;
@@ -33,7 +34,7 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldAllowWhenExecutedByHasOneOfTheRequiredRoles() throws QueryException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
+        final ExecutedByHasAtLeastOneRole<TodoId> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(false);
@@ -54,7 +55,7 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldAllowWhenExecutedByHasFirstRequiredRole() throws QueryException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
+        final ExecutedByHasAtLeastOneRole<TodoId> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
@@ -74,7 +75,7 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldDisallowWhenExecutedByHasNoneOfTheRequiredRoles() throws QueryException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN", "USER");
+        final ExecutedByHasAtLeastOneRole<TodoId> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.hasRole("ADMIN")).thenReturn(false);
@@ -95,7 +96,7 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldDisallowWhenRequiredRolesAreEmpty() throws QueryException {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole();
+        final ExecutedByHasAtLeastOneRole<TodoId> permission = new ExecutedByHasAtLeastOneRole<>();
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
 
@@ -113,7 +114,7 @@ class ExecutedByHasAtLeastOneRoleTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
-        final ExecutedByHasAtLeastOneRole permission = new ExecutedByHasAtLeastOneRole("ADMIN");
+        final ExecutedByHasAtLeastOneRole<TodoId> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN");
 
         // When
         final int priority = permission.priority();

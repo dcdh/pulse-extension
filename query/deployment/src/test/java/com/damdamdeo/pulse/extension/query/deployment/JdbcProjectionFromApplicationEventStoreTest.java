@@ -130,7 +130,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
     }
 
     @Inject
-    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     EventTestRepository eventTestRepository;
@@ -215,7 +215,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
 
         // When
-        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_1_TODO_1,
+        final Optional<Result<TodoId, TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_1_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
@@ -233,8 +233,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                                         )
                                 )
                         ),
-                        Set.of(TodoId.USER_1_TODO_1,
-                                TodoChecklistId.USER_1_TODO_1_1))
+                        Set.of(TodoId.USER_1_TODO_1))
         ));
     }
 
@@ -244,7 +243,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Optional<Result<TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_3_TODO_1,
+        final Optional<Result<TodoId, TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_3_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
@@ -298,7 +297,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Result<TodoProjection> getOneByAggregateId = todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_1_TODO_1,
+        final Result<TodoId, TodoProjection> getOneByAggregateId = todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_1_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
@@ -315,8 +314,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                                 )
                         )
                 ),
-                Set.of(TodoId.USER_1_TODO_1,
-                        TodoChecklistId.USER_1_TODO_1_1))
+                Set.of(TodoId.USER_1_TODO_1))
         );
     }
 
@@ -381,7 +379,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Result<TodoProjection> todos = todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,
+        final Result<TodoId, TodoProjection> todos = todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,
                 new SampleInput(),
                 new TodoProjectionMultipleResultProjectionQuery());
 
@@ -416,9 +414,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                 () -> assertThat(todos.count()).isEqualTo(2),
                 () -> assertThat(todos.aggregateIds()).containsExactlyInAnyOrder(
                         TodoId.USER_1_TODO_1,
-                        TodoChecklistId.USER_1_TODO_1_1,
-                        TodoId.USER_1_TODO_2,
-                        TodoChecklistId.USER_1_TODO_2_1
+                        TodoId.USER_1_TODO_2
                 ),
                 () -> assertThat(todos.getFirst()).isEqualTo(new TodoProjection(
                         TodoId.USER_1_TODO_1,

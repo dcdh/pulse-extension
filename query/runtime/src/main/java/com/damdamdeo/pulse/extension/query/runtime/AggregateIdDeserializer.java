@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import java.io.IOException;
 import java.util.Objects;
 
-public final class AggregateIdDeserializer<T extends AggregateId> extends JsonDeserializer<T> implements ContextualDeserializer {
+public final class AggregateIdDeserializer<A extends AggregateId> extends JsonDeserializer<A> implements ContextualDeserializer {
 
     private final JavaType targetType;
 
@@ -21,9 +21,9 @@ public final class AggregateIdDeserializer<T extends AggregateId> extends JsonDe
     }
 
     @Override
-    public T deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
-        final T id = p.getCodec().readValue(p, targetType);
-        final AggregateIdCollector collector = (AggregateIdCollector) ctxt.getAttribute(AggregateIdCollector.class);
+    public A deserialize(final JsonParser p, final DeserializationContext ctxt) throws IOException {
+        final A id = p.getCodec().readValue(p, targetType);
+        final AggregateIdCollector<A> collector = (AggregateIdCollector<A>) ctxt.getAttribute(AggregateIdCollector.class);
         if (collector != null) {
             collector.add(id);
         }

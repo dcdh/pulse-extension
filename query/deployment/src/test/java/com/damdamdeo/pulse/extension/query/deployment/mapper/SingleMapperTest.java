@@ -22,7 +22,7 @@ class SingleMapperTest {
     static ObjectMapper objectMapper = new ObjectMapper();
 
     private record TodoItem(@JsonDeserialize(using = AggregateIdDeserializer.class) TodoChecklistId id,
-                            String description) implements Projection {
+                            String description) implements Projection<TodoChecklistId> {
 
         public TodoItem {
             Objects.requireNonNull(id);
@@ -79,11 +79,11 @@ class SingleMapperTest {
                           "description": "IMPORTANT: pulse extension development"
                         }
                         """;
-        final SingleMapper<Result<TodoItem>> resultSingleMapper = SingleMapper.resultSingle(new TypeReference<>() {
+        final SingleMapper<Result<TodoChecklistId, TodoItem>> resultSingleMapper = SingleMapper.resultSingle(TodoChecklistId.class, new TypeReference<>() {
         });
 
         // When
-        final Result<TodoItem> result = resultSingleMapper.map(givenTodo, objectMapper);
+        final Result<TodoChecklistId, TodoItem> result = resultSingleMapper.map(givenTodo, objectMapper);
 
         // Then
         assertThat(result).isEqualTo(

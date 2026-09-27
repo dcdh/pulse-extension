@@ -17,14 +17,15 @@
 package com.damdamdeo.pulse.extension.it.infra.api;
 
 import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerChannel;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProviderException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
-import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
 import com.damdamdeo.pulse.extension.it.domain.CreationalWorkflow;
+import com.damdamdeo.pulse.extension.it.domain.InitialiserCommand;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
 import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
@@ -227,13 +228,13 @@ public class PulseExtensionResource {
     @GET
     @Path("/listConnectedUserTodos")
     @Authenticated
-    public Result<TodoProjection> listConnectedUserTodos() throws QueryException {
+    public Result<TodoId, TodoProjection> listConnectedUserTodos() throws QueryException {
         return todoProjectionQuery.execute(new ListTodos());
     }
 
     @GET
     @Path("/failingProjectionQuery")
-    public Result<TodoProjection> failingProjectionQuery() throws QueryException {
+    public Result<TodoId, TodoProjection> failingProjectionQuery() throws QueryException {
         return failingProjectionQuery.execute(new ListTodos());
     }
 }

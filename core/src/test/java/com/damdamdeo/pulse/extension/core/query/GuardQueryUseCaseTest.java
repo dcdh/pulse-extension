@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -30,7 +31,7 @@ class GuardQueryUseCaseTest {
     private static final Input INPUT = new SampleInput();
 
     @Mock
-    Result<Projection> result;
+    Result<TodoId, Projection<TodoId>> result;
 
     @Mock
     ExecutionContextProvider executionContextProvider;
@@ -42,12 +43,12 @@ class GuardQueryUseCaseTest {
     ExecutedByResolver executedByResolver;
 
     @Mock
-    QueryUseCase<Input, Projection> decorated;
+    QueryUseCase<TodoId, Input, Projection<TodoId>> decorated;
 
     @Mock
     TraceAppender traceAppender;
 
-    private GuardQueryUseCase<Input, Projection> guardQuery;
+    private GuardQueryUseCase<TodoId, Input, Projection<TodoId>> guardQuery;
 
     @BeforeEach
     void setUp() {
@@ -59,11 +60,11 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldReturnResultWhenEveryoneAllowsAccess() throws QueryException {
         // Given
-        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<Projection> executed = guardQuery.execute(INPUT);
+        final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
@@ -77,12 +78,12 @@ class GuardQueryUseCaseTest {
     void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws QueryException {
         // Given
         when(decorated.execute(INPUT)).thenReturn(result);
-        final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
-        when(decorated.permissions()).thenReturn(List.of(visibilityRoleRestricted, Everyone.INSTANCE));
+        final VisibilityRoleRestricted<TodoId> visibilityRoleRestricted = new VisibilityRoleRestricted<>();
+        when(decorated.permissions()).thenReturn(List.of(visibilityRoleRestricted, new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<Projection> executed = guardQuery.execute(INPUT);
+        final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
@@ -97,12 +98,12 @@ class GuardQueryUseCaseTest {
     void shouldExecutePermissionsInPriorityOrder() throws QueryException {
         // Given
         when(decorated.execute(INPUT)).thenReturn(result);
-        final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
-        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE, visibilityRoleRestricted));
+        final VisibilityRoleRestricted<TodoId> visibilityRoleRestricted = new VisibilityRoleRestricted<>();
+        when(decorated.permissions()).thenReturn(List.of(new Everyone<>(), visibilityRoleRestricted));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<Projection> executed = guardQuery.execute(INPUT);
+        final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
@@ -116,11 +117,11 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldNotExecuteFollowingPermissionsWhenEveryoneAllowsAccess() throws QueryException {
         // Given
-        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(new Everyone<>(), new VisibilityRoleRestricted<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<Projection> executed = guardQuery.execute(INPUT);
+        final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
@@ -137,7 +138,7 @@ class GuardQueryUseCaseTest {
         when(decorated.execute(INPUT)).thenReturn(result);
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
-        when(decorated.permissions()).thenReturn(List.of(VisibilityRoleRestricted.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(new VisibilityRoleRestricted<>()));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("admin"));
 
@@ -156,7 +157,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldAppendTraceWhenAccessIsGranted() throws QueryException, TraceAppenderException {
         // Given
-        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
@@ -169,7 +170,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldThrowInfrastructureFailureWhenTraceAppendingFails() throws QueryException, TraceAppenderException {
         // Given
-        when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
+        when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
         doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
                 .when(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class));
@@ -187,11 +188,11 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldDelegatePermissions() {
         // Given
-        final List<Permission> permissions = List.of(Everyone.INSTANCE, VisibilityRoleRestricted.INSTANCE);
+        final List<Permission<TodoId>> permissions = List.of(new Everyone<>(), new VisibilityRoleRestricted<>());
         when(decorated.permissions()).thenReturn(permissions);
 
         // When
-        final List<Permission> result = guardQuery.permissions();
+        final List<Permission<TodoId>> result = guardQuery.permissions();
 
         // Then
         assertSame(permissions, result);

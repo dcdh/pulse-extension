@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -35,7 +36,7 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldAllowWhenExecutedByIsOneOfSpecificServiceAccounts() throws QueryException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout", "payment");
+        final ExecutedBySpecificServiceAccounts<TodoId> permission = new ExecutedBySpecificServiceAccounts<>("checkout", "payment");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(CHECKOUT);
@@ -54,7 +55,7 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldAllowWhenExecutedByMatchesSecondSpecificServiceAccount() throws QueryException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout", "payment");
+        final ExecutedBySpecificServiceAccounts<TodoId> permission = new ExecutedBySpecificServiceAccounts<>("checkout", "payment");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(PAYMENT);
@@ -73,7 +74,7 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldDisallowWhenExecutedByIsNotOneOfSpecificServiceAccounts() throws QueryException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout", "payment");
+        final ExecutedBySpecificServiceAccounts<TodoId> permission = new ExecutedBySpecificServiceAccounts<>("checkout", "payment");
         final ExecutedBy.ServiceAccount charlie = new ExecutedBy.ServiceAccount("charlie");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
@@ -93,7 +94,7 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldDisallowWhenSpecificServiceAccountsAreEmpty() throws QueryException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts();
+        final ExecutedBySpecificServiceAccounts<TodoId> permission = new ExecutedBySpecificServiceAccounts<>();
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(CHECKOUT);
@@ -112,7 +113,7 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldNotMatchEndUserWithSameName() throws QueryException {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout");
+        final ExecutedBySpecificServiceAccounts<TodoId> permission = new ExecutedBySpecificServiceAccounts<>("checkout");
         final ExecutedBy.EndUser endUser = new ExecutedBy.EndUser(new Username("alice@mail.com"));
 
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -133,7 +134,7 @@ class ExecutedBySpecificServiceAccountsTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
-        final ExecutedBySpecificServiceAccounts permission = new ExecutedBySpecificServiceAccounts("checkout");
+        final ExecutedBySpecificServiceAccounts<TodoId> permission = new ExecutedBySpecificServiceAccounts<>("checkout");
 
         // When
         final int priority = permission.priority();

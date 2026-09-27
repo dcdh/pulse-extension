@@ -1,14 +1,13 @@
 package com.damdamdeo.pulse.extension.core.query;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.UserId;
 
-public record TestProjection(UserId userId) implements Projection {
+public record TestProjection(UserId userId) implements Projection<UserId> {
 
     public static TestProjection PROJECTION_USER_1 = new TestProjection(UserId.USER_1);
 
     @Override
-    public AggregateId id() {
+    public UserId id() {
         return userId;
     }
 }

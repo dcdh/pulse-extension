@@ -22,7 +22,7 @@ public class MultipleMapperTest {
     static ObjectMapper objectMapper = new ObjectMapper();
 
     private record TodoItem(@JsonDeserialize(using = AggregateIdDeserializer.class) TodoChecklistId id,
-                            String description) implements Projection {
+                            String description) implements Projection<TodoChecklistId> {
 
         public TodoItem {
             Objects.requireNonNull(id);
@@ -83,11 +83,11 @@ public class MultipleMapperTest {
                           }
                         ]
                         """;
-        final MultipleMapper<Result<TodoItem>> resultSingleMapper = MultipleMapper.resultMultiple(new TypeReference<>() {
+        final MultipleMapper<Result<TodoChecklistId, TodoItem>> resultSingleMapper = MultipleMapper.resultMultiple(TodoChecklistId.class, new TypeReference<>() {
         });
 
         // When
-        final Result<TodoItem> result = resultSingleMapper.map(givenTodos, objectMapper);
+        final Result<TodoChecklistId, TodoItem> result = resultSingleMapper.map(givenTodos, objectMapper);
 
         // Then
         assertThat(result).isEqualTo(

@@ -19,6 +19,11 @@ public class User extends AggregateRoot<UserId> {
         super(id);
     }
 
+    public User(final UserId id, final Username username) {
+        super(id);
+        this.username = username;
+    }
+
     public void handle(final RegisterUser registerUser, final ExecutionContext executionContext, final EventAppender<UserId> eventAppender) throws BusinessException {
         Objects.requireNonNull(registerUser);
         Objects.requireNonNull(executionContext);

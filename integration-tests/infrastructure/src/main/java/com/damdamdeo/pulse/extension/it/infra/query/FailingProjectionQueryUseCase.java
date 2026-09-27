@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.it.infra.query;
 
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.Result;
@@ -12,16 +13,16 @@ import java.util.List;
 import java.util.Set;
 
 @ApplicationScoped
-public class FailingProjectionQueryUseCase implements QueryUseCase<ListTodos, TodoProjection> {
+public class FailingProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection> {
 
     @Override
-    public Result<TodoProjection> execute(final ListTodos input) throws QueryException {
+    public Result<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
         return Result.of(List.of(), Set.of());
     }
 
     // By returning an empty list, we are telling the guard query that this query is not relevant for the current user
     @Override
-    public List<Permission> permissions() {
+    public List<Permission<TodoId>> permissions() {
         return List.of();
     }
 }

@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -35,7 +36,7 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldAllowWhenExecutedByIsOneOfSpecificEndUsers() throws QueryException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE, BOB);
+        final ExecutedBySpecificEndUsers<TodoId> permission = new ExecutedBySpecificEndUsers<>(ALICE, BOB);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(ALICE);
@@ -55,7 +56,7 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldAllowWhenExecutedByMatchesSecondSpecificEndUser() throws QueryException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE, BOB);
+        final ExecutedBySpecificEndUsers<TodoId> permission = new ExecutedBySpecificEndUsers<>(ALICE, BOB);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(BOB);
@@ -75,7 +76,7 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldDisallowWhenExecutedByIsNotOneOfSpecificEndUsers() throws QueryException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE, BOB);
+        final ExecutedBySpecificEndUsers<TodoId> permission = new ExecutedBySpecificEndUsers<>(ALICE, BOB);
         final ExecutedBy.EndUser charlie = new ExecutedBy.EndUser(new Username("charlie@mail.com"));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
@@ -96,7 +97,7 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldDisallowWhenSpecificEndUsersAreEmpty() throws QueryException {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers();
+        final ExecutedBySpecificEndUsers<TodoId> permission = new ExecutedBySpecificEndUsers<>();
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(ALICE);
@@ -118,7 +119,7 @@ class ExecutedBySpecificEndUsersTest {
         // Given
         final ExecutedBy.EndUser configuredEndUser = new ExecutedBy.EndUser(new Username("alice@mail.com"));
         final ExecutedBy.EndUser executionEndUser = new ExecutedBy.EndUser(new Username("alice@mail.com"));
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(configuredEndUser);
+        final ExecutedBySpecificEndUsers<TodoId> permission = new ExecutedBySpecificEndUsers<>(configuredEndUser);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(executionEndUser);
@@ -137,7 +138,7 @@ class ExecutedBySpecificEndUsersTest {
     @Test
     void shouldHaveExpectedPriority() {
         // Given
-        final ExecutedBySpecificEndUsers permission = new ExecutedBySpecificEndUsers(ALICE);
+        final ExecutedBySpecificEndUsers<TodoId> permission = new ExecutedBySpecificEndUsers<>(ALICE);
 
         // When
         final int priority = permission.priority();

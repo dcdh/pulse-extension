@@ -44,7 +44,7 @@ class CachedProjectionFromEventStoreTest {
     Cache cache;
 
     @Inject
-    ProjectionFromEventStore<TodoProjection> todoProjectionProjectionFromEventStore;
+    ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore;
 
     @Inject
     StubProjectionFromEventStore stubProjectionFromEventStore;
@@ -66,30 +66,30 @@ class CachedProjectionFromEventStoreTest {
     @Singleton
     @Priority(1)
     @Alternative
-    public static class StubProjectionFromEventStore implements ProjectionFromEventStore<TodoProjection> {
+    public static class StubProjectionFromEventStore implements ProjectionFromEventStore<TodoId, TodoProjection> {
 
         final List<String> called = new ArrayList<>();
-        Result<TodoProjection> result;
-        Optional<Result<TodoProjection>> optionalResult;
+        Result<TodoId, TodoProjection> result;
+        Optional<Result<TodoId, TodoProjection>> optionalResult;
 
         @Override
-        public Result<TodoProjection> getOneByAggregateId(final AggregateId aggregateId,
-                                                          final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+        public Result<TodoId, TodoProjection> getOneByAggregateId(final TodoId aggregateId,
+                                                                  final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
             called.add("getOneByAggregateId:" + aggregateId.id());
             return result;
         }
 
         @Override
-        public Optional<Result<TodoProjection>> findOneByAggregateId(final AggregateId aggregateId,
-                                                                     final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+        public Optional<Result<TodoId, TodoProjection>> findOneByAggregateId(final TodoId aggregateId,
+                                                                             final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
             called.add("findOneByAggregateId:" + aggregateId.id());
             return optionalResult;
         }
 
         @Override
-        public <I extends Input> Result<TodoProjection> findAllBy(final OwnedBy ownedBy,
-                                                                  final I input,
-                                                                  final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
+        public <I extends Input> Result<TodoId, TodoProjection> findAllBy(final OwnedBy ownedBy,
+                                                                          final I input,
+                                                                          final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
             called.add("findAllBy:" + ownedBy.id());
             return result;
         }
@@ -142,12 +142,12 @@ class CachedProjectionFromEventStoreTest {
     @Test
     void shouldGetOneByAggregateIdDelegateWhenNotCached() {
         // Given
-        final Result<TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
+        final Result<TodoId, TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
         stubProjectionFromEventStore.result = expected;
 
 
         // When
-        final Result<TodoProjection> actual = todoProjectionProjectionFromEventStore.getOneByAggregateId(
+        final Result<TodoId, TodoProjection> actual = todoProjectionProjectionFromEventStore.getOneByAggregateId(
                 TodoId.USER_1_TODO_1, (passphrase, aggregateId1) -> "");
 
         // Then
@@ -161,15 +161,15 @@ class CachedProjectionFromEventStoreTest {
     @Test
     void shouldGetOneByAggregateIdUseCacheWhenCounterHasNotChanged() {
         // Given
-        final AggregateId givenAggregateId = TodoId.USER_1_TODO_1;
-        final Result<TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
+        final TodoId givenAggregateId = TodoId.USER_1_TODO_1;
+        final Result<TodoId, TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
         stubProjectionFromEventStore.result = expected;
         todoProjectionProjectionFromEventStore.getOneByAggregateId(givenAggregateId, (passphrase, aggregateId) -> "");
         stubProjectionFromEventStore.reset();
         stubEventCounter.reset();
 
         // When
-        final Result<TodoProjection> actual = todoProjectionProjectionFromEventStore.getOneByAggregateId(
+        final Result<TodoId, TodoProjection> actual = todoProjectionProjectionFromEventStore.getOneByAggregateId(
                 givenAggregateId, (passphrase, aggregateId) -> "");
 
         // Then
@@ -183,9 +183,9 @@ class CachedProjectionFromEventStoreTest {
     @Test
     void shouldGetOneByAggregateIdReloadWhenCounterHasChanged() {
         // Given
-        final AggregateId givenAggregateId = TodoId.USER_1_TODO_1;
-        final Result<TodoProjection> first = new Result<>(List.of(), java.util.Set.of());
-        final Result<TodoProjection> second = new Result<>(List.of(), java.util.Set.of());
+        final TodoId givenAggregateId = TodoId.USER_1_TODO_1;
+        final Result<TodoId, TodoProjection> first = new Result<>(List.of(), java.util.Set.of());
+        final Result<TodoId, TodoProjection> second = new Result<>(List.of(), java.util.Set.of());
         stubProjectionFromEventStore.result = first;
         todoProjectionProjectionFromEventStore.getOneByAggregateId(givenAggregateId, (passphrase, aggregateId) -> "");
         stubProjectionFromEventStore.reset();
@@ -193,7 +193,7 @@ class CachedProjectionFromEventStoreTest {
         stubProjectionFromEventStore.result = second;
 
         // When
-        final Result<TodoProjection> actual = todoProjectionProjectionFromEventStore.getOneByAggregateId(
+        final Result<TodoId, TodoProjection> actual = todoProjectionProjectionFromEventStore.getOneByAggregateId(
                 givenAggregateId, (passphrase, aggregateId) -> "");
 
         // Then
@@ -208,12 +208,12 @@ class CachedProjectionFromEventStoreTest {
     @Test
     void shouldFindOneByAggregateIdCacheOptionalProjection() throws Exception {
         // Given
-        final AggregateId givenAggregateId = TodoId.USER_1_TODO_1;
-        final Result<TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
+        final TodoId givenAggregateId = TodoId.USER_1_TODO_1;
+        final Result<TodoId, TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
         stubProjectionFromEventStore.optionalResult = Optional.of(expected);
 
         // When
-        final Optional<Result<TodoProjection>> firstCall = todoProjectionProjectionFromEventStore.findOneByAggregateId(
+        final Optional<Result<TodoId, TodoProjection>> firstCall = todoProjectionProjectionFromEventStore.findOneByAggregateId(
                 givenAggregateId, (passphrase, aggregateId) -> "");
 
         // Then
@@ -226,7 +226,7 @@ class CachedProjectionFromEventStoreTest {
         stubProjectionFromEventStore.reset();
 
         // When
-        final Optional<Result<TodoProjection>> secondCall = todoProjectionProjectionFromEventStore.findOneByAggregateId(givenAggregateId,
+        final Optional<Result<TodoId, TodoProjection>> secondCall = todoProjectionProjectionFromEventStore.findOneByAggregateId(givenAggregateId,
                 (passphrase, aggregateId) -> "");
 
         // Then
@@ -239,7 +239,7 @@ class CachedProjectionFromEventStoreTest {
     @Test
     void shouldFindOneByAggregateIdNotCacheEmptyOptional() throws Exception {
         // Given
-        final AggregateId givenAggregateId = TodoId.USER_1_TODO_1;
+        final TodoId givenAggregateId = TodoId.USER_1_TODO_1;
         stubProjectionFromEventStore.optionalResult = Optional.empty();
 
         todoProjectionProjectionFromEventStore.findOneByAggregateId(givenAggregateId,
@@ -261,14 +261,14 @@ class CachedProjectionFromEventStoreTest {
         final OwnedBy givenOwnedBy = OwnedBy.from(TodoId.USER_1_TODO_1);
         final Input givenInput = new Input() {
         };
-        final Result<TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
+        final Result<TodoId, TodoProjection> expected = new Result<>(List.of(), java.util.Set.of());
         stubProjectionFromEventStore.result = expected;
         todoProjectionProjectionFromEventStore.findAllBy(givenOwnedBy, givenInput,
                 (passphrase, ownedBy, input) -> "");
         stubProjectionFromEventStore.reset();
 
         // When
-        final Result<TodoProjection> actual = todoProjectionProjectionFromEventStore.findAllBy(
+        final Result<TodoId, TodoProjection> actual = todoProjectionProjectionFromEventStore.findAllBy(
                 givenOwnedBy, givenInput, (passphrase, ownedBy, input) -> "");
 
         // Then

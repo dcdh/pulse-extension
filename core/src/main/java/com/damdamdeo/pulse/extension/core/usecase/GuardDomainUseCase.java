@@ -57,7 +57,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                 for (final Permission<K, C> permission : permissions) {
                     if (permission.allow(command, context)) {
                         final A executed = decorated.execute(command);
-                        traceAppender.append(new AggregateIdTraceable(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
+                        traceAppender.append(new AggregateIdTraceable<>(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
                                 From.from(command));
                         return executed;
                     }
@@ -68,17 +68,17 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                     for (final Permission<K, C> permission : permissions) {
                         if (permission.allow(command.id(), command, context)) {
                             final A executed = decorated.execute(command);
-                            traceAppender.append(new AggregateIdTraceable(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
+                            traceAppender.append(new AggregateIdTraceable<>(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
                                     From.from(command));
                             return executed;
                         }
                     }
-                    traceAppender.append(new AggregateIdTraceable(command.id()), Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED,
+                    traceAppender.append(new AggregateIdTraceable<>(command.id()), Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED,
                             From.from(command));
                     throw new UnauthorizedException();
                 } catch (final UseCaseException exception) {
                     if (UseCaseExceptionCode.BUSINESS_FAILURE.equals(exception.useCaseExceptionCode())) {
-                        traceAppender.append(new AggregateIdTraceable(command.id()), Source.COMMAND, ExecutionStatus.FAILED_BUSINESS,
+                        traceAppender.append(new AggregateIdTraceable<>(command.id()), Source.COMMAND, ExecutionStatus.FAILED_BUSINESS,
                                 From.from(command));
                     }
                     throw exception;
