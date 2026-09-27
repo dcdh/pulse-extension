@@ -3,9 +3,10 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.AbstractRegistrationDomainUseCase;
 import com.damdamdeo.pulse.extension.core.connecteduser.update.AbstractUpdateUserNameUseCase;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.usecase.AbstractCreationalDomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.AbstractDomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
@@ -80,7 +81,7 @@ public class CodeGenerationProcessor {
 
                                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
                                         ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class, ExecutedByResolver.class,
-                                        AggregateIdDecomposer.class, DomainUseCase.class)) {
+                                        AggregateIdDecomposer.class, DomainUseCase.class, TraceAppender.class)) {
                                     constructor
                                             .setSignature(SignatureBuilder.forMethod()
                                                     .addParameterType(Type.classType(ExecutionContextProvider.class))
@@ -92,6 +93,7 @@ public class CodeGenerationProcessor {
                                                             Type.classType(aggregateIdClass),
                                                             Type.classType(commandClass),
                                                             Type.classType(aggregateRootClass)))
+                                                    .addParameterType(Type.classType(TraceAppender.class))
                                                     .build());
                                     constructor.getParameterAnnotations(4).addAnnotation(Any.class);
                                     constructor.getParameterAnnotations(4).addAnnotation(Delegate.class);
@@ -99,13 +101,15 @@ public class CodeGenerationProcessor {
                                     constructor.invokeSpecialMethod(
                                             MethodDescriptor.ofConstructor(GuardDomainUseCase.class,
                                                     ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class,
-                                                    ExecutedByResolver.class, AggregateIdDecomposer.class, DomainUseCase.class),
+                                                    ExecutedByResolver.class, AggregateIdDecomposer.class, DomainUseCase.class,
+                                                    TraceAppender.class),
                                             constructor.getThis(),
                                             constructor.getMethodParam(0),
                                             constructor.getMethodParam(1),
                                             constructor.getMethodParam(2),
                                             constructor.getMethodParam(3),
-                                            constructor.getMethodParam(4)
+                                            constructor.getMethodParam(4),
+                                            constructor.getMethodParam(5)
                                     );
 
                                     constructor.returnValue(null);

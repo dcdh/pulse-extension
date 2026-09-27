@@ -49,7 +49,7 @@ public class CommandHandlersProcessor {
 
                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
                         CommandHandlerRegistry.class, EventRepository.class, Transaction.class, ExecutionContextProvider.class,
-                        List.class, AggregateIdGenerator.class, TraceAppender.class)) {
+                        List.class, AggregateIdGenerator.class)) {
                     constructor
                             .setSignature(SignatureBuilder.forMethod()
                                     .addParameterType(Type.classType(CommandHandlerRegistry.class))
@@ -70,7 +70,6 @@ public class CommandHandlersProcessor {
                                                     Type.classType(aggregateRootBuildItem.aggregateIdClazz()),
                                                     Type.wildcardTypeUnbounded())))
                                     .addParameterType(Type.classType(AggregateIdGenerator.class))
-                                    .addParameterType(Type.classType(TraceAppender.class))
                                     .build());
                     constructor.setModifiers(Modifier.PUBLIC);
                     constructor.getParameterAnnotations(4).addAnnotation(All.class);
@@ -82,16 +81,14 @@ public class CommandHandlersProcessor {
                                     Transaction.class,
                                     ExecutionContextProvider.class,
                                     List.class,
-                                    AggregateIdGenerator.class,
-                                    TraceAppender.class),
+                                    AggregateIdGenerator.class),
                             constructor.getThis(),
                             constructor.getMethodParam(0),
                             constructor.getMethodParam(1),
                             constructor.getMethodParam(2),
                             constructor.getMethodParam(3),
                             constructor.getMethodParam(4),
-                            constructor.getMethodParam(5),
-                            constructor.getMethodParam(6)
+                            constructor.getMethodParam(5)
                     );
 
                     constructor.returnValue(null);
