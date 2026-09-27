@@ -104,7 +104,7 @@ class E2ETest {
             public Set<AggregateId> aggregateIds() {
                 return Set.of(TodoId.USER_1_TODO_1);
             }
-        }, Source.COMMAND, new From("shouldStoreAndRetrieveTrace"));
+        }, Source.COMMAND, ExecutionStatus.SUCCESS, new From("shouldStoreAndRetrieveTrace"));
 
         // Then
         given()
@@ -134,7 +134,7 @@ class E2ETest {
              final PreparedStatement selectTraceabilityDetailsPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT trace_id, executed_at, source_value, from_value FROM todo_taking.traceability_details
+                             SELECT trace_id, executed_at, source_value, execution_status, from_value FROM todo_taking.traceability_details
                              """
              );
              final PreparedStatement selectExecutedByEncodedPreparedStatement = connection.prepareStatement(
@@ -157,7 +157,9 @@ class E2ETest {
             ResultSet resultSet = selectTraceabilityDetailsPreparedStatement.executeQuery();
             while (resultSet.next()) {
                 data.add(String.join("|", resultSet.getString("trace_id"), resultSet.getString("executed_at"),
-                        String.valueOf(resultSet.getInt("source_value")), resultSet.getString("from_value")));
+                        String.valueOf(resultSet.getInt("source_value")),
+                        String.valueOf(resultSet.getInt("execution_status")),
+                        resultSet.getString("from_value")));
             }
             resultSet = selectExecutedByEncodedPreparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -176,7 +178,7 @@ class E2ETest {
                 data.add(String.join("|", resultSet.getString("traceability_details_id"), resultSet.getString("traceability_aggregate_id")));
             }
         }
-        assertThat(data).containsExactly("1|2026-09-06 14:00:00+02|0|shouldStoreAndRetrieveTrace",
+        assertThat(data).containsExactly("1|2026-09-06 14:00:00+02|0|0|shouldStoreAndRetrieveTrace",
                 "1|EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4|EU:aliceEncoded",
                 "1|U000001-T000001|1|1|0",
                 "1|1");

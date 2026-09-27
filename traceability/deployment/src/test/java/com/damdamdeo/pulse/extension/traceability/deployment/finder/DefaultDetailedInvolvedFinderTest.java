@@ -43,6 +43,7 @@ class DefaultDetailedInvolvedFinderTest {
                         new TraceId(1L),
                         new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
                         Source.COMMAND,
+                        ExecutionStatus.SUCCESS,
                         new From("from"),
                         List.of(
                                 new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
@@ -63,9 +64,9 @@ class DefaultDetailedInvolvedFinderTest {
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
                         new DetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                Source.COMMAND, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
+                                Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
                         new DetailedInvolved(new TraceId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
-                                Source.COMMAND, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
+                                Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 2L));
     }
 
@@ -80,7 +81,7 @@ class DefaultDetailedInvolvedFinderTest {
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
                         new DetailedInvolved(new TraceId(1L), new AnyAggregateId("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                Source.COMMAND, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
+                                Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 1L));
     }
 }

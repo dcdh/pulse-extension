@@ -42,6 +42,7 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
                 new TraceId(0L),
                 new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
                 Source.COMMAND,
+                ExecutionStatus.SUCCESS,
                 new From("from"),
                 List.of(
                         new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),

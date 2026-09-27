@@ -3,7 +3,6 @@ package com.damdamdeo.pulse.extension.traceability.deployment.api;
 import io.quarkus.test.QuarkusUnitTest;
 import org.json.JSONException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -14,7 +13,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapWithSize.anEmptyMap;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TraceabilityFinderDetailedInvolvedEndpointTest {
 
     @RegisterExtension
@@ -28,7 +26,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
     void shouldFindInvolvedByAggregateId() {
         given()
                 .pathParam("aggregateId", "U000001-T000001")
-                .queryParam("includeUncompounded" , "true")
+                .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -52,7 +50,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
     void shouldFindDetailedByAggregateId() {
         given()
                 .pathParam("aggregateId", "U000001-T000001")
-                .queryParam("includeUncompounded" , "true")
+                .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -65,12 +63,16 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                 .body("listOfInvolved[0].aggregateId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
+                .body("listOfInvolved[0].source", equalTo("COMMAND"))
+                .body("listOfInvolved[0].executionStatus", equalTo("SUCCESS"))
                 .body("listOfInvolved[0].from", equalTo("from"))
                 .body("listOfInvolved[0].executedAt", equalTo("2026-09-06T12:00:00Z"))
                 .body("listOfInvolved[1].traceId", equalTo(1))
                 .body("listOfInvolved[1].aggregateId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[1].executedByHashed", equalTo("EU:bob-hashed"))
                 .body("listOfInvolved[1].executedBy", equalTo("EU:bob@mail.com"))
+                .body("listOfInvolved[1].source", equalTo("COMMAND"))
+                .body("listOfInvolved[1].executionStatus", equalTo("SUCCESS"))
                 .body("listOfInvolved[1].from", equalTo("from"))
                 .body("listOfInvolved[1].executedAt", equalTo("2026-09-06T12:00:00Z"))
                 .body("totalPages", equalTo(1))
@@ -82,7 +84,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
     void shouldFindByInvolvedMapOnException() {
         given()
                 .pathParam("aggregateId", "BOOM")
-                .queryParam("includeUncompounded" , "true")
+                .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -108,7 +110,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
     void shouldFindByDetailedMapOnException() {
         given()
                 .pathParam("aggregateId", "BOOM")
-                .queryParam("includeUncompounded" , "true")
+                .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
@@ -207,6 +209,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "executedByHashed",
                                     "executedBy",
                                     "source",
+                                    "executionStatus",
                                     "from",
                                     "executedAt"
                                 ],
@@ -234,7 +237,11 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     },
                                     "source": {
                                         "type": "string",
-                                        "description": "Kind"
+                                        "description": "Source"
+                                    },
+                                    "executionStatus": {
+                                        "type": "string",
+                                        "description": "ExecutionStatus"
                                     },
                                     "from": {
                                         "type": "string",

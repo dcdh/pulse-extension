@@ -1,10 +1,11 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
 
-import java.util.Optional;
+import java.util.Set;
 
 // define a priority to avoid unnecessary computing.
 // example: a Query has ROLE_RESTRICTED and PARTICIPANT role. ROLE_RESTRICATED is ultra-fast meanwhile IN_EXECUTED_BY
@@ -12,7 +13,5 @@ import java.util.Optional;
 public sealed interface Permission extends Prioritable permits Everyone, AnyEndUser, VisibilityRoleRestricted, InExecutedBy,
         ExecutedBySpecificServiceAccounts, ExecutedByHasAtLeastOneRole, ExecutedBySpecificEndUsers {
 
-    <I extends Input, P extends Projection> Optional<Result<P>> execute(I input, QueryUseCase<I, P> decorated,
-                                                                        PermissionExecutionContext permissionExecutionContext)
-            throws QueryException;
+    boolean allow(Set<AggregateId> aggregateIds, PermissionExecutionContext permissionExecutionContext) throws QueryException;
 }

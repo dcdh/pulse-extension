@@ -1,60 +1,49 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AnyEndUserTest {
 
     @Mock
-    Input input;
-
-    @Mock
-    Result<Projection> result;
-
-    @Mock
     PermissionExecutionContext permissionExecutionContext;
 
     @Test
-    void shouldReturnDecoratedResultWhenEndUserExecute() throws QueryException {
+    void shouldAllowWhenEndUserExecute() throws QueryException {
         // Given
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         when(permissionExecutionContext.isEndUser()).thenReturn(true);
-        when(decorated.execute(input)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = AnyEndUser.INSTANCE.execute(input, decorated, permissionExecutionContext);
+        final boolean allowed = AnyEndUser.INSTANCE.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.of(result), executed),
-                () -> verify(decorated).execute(input),
+                () -> assertTrue(allowed),
                 () -> verify(permissionExecutionContext).isEndUser());
     }
 
     @Test
-    void shouldReturnEmptyWhenNotAnEndUser() throws QueryException {
+    void shouldDisallowWhenNotAnEndUser() throws QueryException {
         // Given
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         when(permissionExecutionContext.isEndUser()).thenReturn(false);
 
         // When
-        final Optional<Result<Projection>> executed = AnyEndUser.INSTANCE.execute(input, decorated, permissionExecutionContext);
+        final boolean allowed = AnyEndUser.INSTANCE.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.empty(), executed),
-                () -> verify(decorated, never()).execute(input),
+                () -> assertFalse(allowed),
                 () -> verify(permissionExecutionContext).isEndUser());
     }
 

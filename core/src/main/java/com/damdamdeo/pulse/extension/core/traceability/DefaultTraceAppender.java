@@ -33,9 +33,11 @@ public final class DefaultTraceAppender implements TraceAppender {
     }
 
     @Override
-    public void append(final Traceable traceable, final Source source, final From from) throws TraceAppenderException {
+    public void append(final Traceable traceable, final Source source, final ExecutionStatus executionStatus,
+                       final From from) throws TraceAppenderException {
         Objects.requireNonNull(traceable);
         Objects.requireNonNull(source);
+        Objects.requireNonNull(executionStatus);
         Objects.requireNonNull(from);
         try {
             if (traceable.aggregateIds().isEmpty()) {
@@ -50,7 +52,7 @@ public final class DefaultTraceAppender implements TraceAppender {
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
             }
             traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(), executedAtProvider.now(),
-                    source, from, encodedTraceAggregateIds));
+                    source, executionStatus, from, encodedTraceAggregateIds));
         } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException exception) {
             throw new TraceAppenderException(exception);
         }

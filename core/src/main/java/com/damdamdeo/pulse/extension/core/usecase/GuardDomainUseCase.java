@@ -12,10 +12,7 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.Source;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
+import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
 import java.util.Comparator;
@@ -55,31 +52,40 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
         final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         // TODO avoid instanceof
-        boolean allowed = false;
-        if (command instanceof CreationalCommand<?>) {
-            for (final Permission<K, C> permission : permissions) {
-                if (permission.allow(command, context)) {
-                    allowed = true;
-                    break;
-                }
-            }
-        } else {
-            for (final Permission<K, C> permission : permissions) {
-                if (permission.allow(command.id(), command, context)) {
-                    allowed = true;
-                    break;
-                }
-            }
-        }
         try {
-            if (allowed) {
-                final A executed = decorated.execute(command);
-                traceAppender.append(new AggregateIdTraceable(executed.id()), Source.COMMAND, From.from(command));
-                return executed;
+            if (command instanceof CreationalCommand<?>) {
+                for (final Permission<K, C> permission : permissions) {
+                    if (permission.allow(command, context)) {
+                        final A executed = decorated.execute(command);
+                        traceAppender.append(new AggregateIdTraceable(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
+                                From.from(command));
+                        return executed;
+                    }
+                }
+                throw new UnauthorizedException();
             } else {
-                // TODO store unauthorized traceAppender
-                throw new UseCaseException(new UnauthorizedException());
+                try {
+                    for (final Permission<K, C> permission : permissions) {
+                        if (permission.allow(command.id(), command, context)) {
+                            final A executed = decorated.execute(command);
+                            traceAppender.append(new AggregateIdTraceable(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
+                                    From.from(command));
+                            return executed;
+                        }
+                    }
+                    traceAppender.append(new AggregateIdTraceable(command.id()), Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED,
+                            From.from(command));
+                    throw new UnauthorizedException();
+                } catch (final UseCaseException exception) {
+                    if (UseCaseExceptionCode.BUSINESS_FAILURE.equals(exception.useCaseExceptionCode())) {
+                        traceAppender.append(new AggregateIdTraceable(command.id()), Source.COMMAND, ExecutionStatus.FAILED_BUSINESS,
+                                From.from(command));
+                    }
+                    throw exception;
+                }
             }
+        } catch (final UnauthorizedException exception) {
+            throw new UseCaseException(new UnauthorizedException());
         } catch (final TraceAppenderException exception) {
             throw new UseCaseException(exception, UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
         }

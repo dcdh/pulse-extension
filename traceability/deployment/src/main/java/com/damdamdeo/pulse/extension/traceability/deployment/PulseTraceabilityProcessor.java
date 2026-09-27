@@ -60,9 +60,11 @@ public class PulseTraceabilityProcessor {
                               trace_id bigint not null,
                               executed_at timestamptz not null,
                               source_value int not null,
+                              execution_status int not null,
                               from_value character varying(255) not null,
                               CONSTRAINT traceability_details_pkey PRIMARY KEY (trace_id),
-                              CONSTRAINT traceability_details_source_check CHECK (source_value IN (0, 1))
+                              CONSTRAINT traceability_details_source_check CHECK (source_value IN (0, 1)),
+                              CONSTRAINT traceability_details_execution_status_check CHECK (execution_status IN (0, 1, 2))
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate (

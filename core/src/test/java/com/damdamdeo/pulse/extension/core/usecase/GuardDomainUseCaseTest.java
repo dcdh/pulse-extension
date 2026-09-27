@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
+import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.Source;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
@@ -122,7 +123,8 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT))
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                        ExecutionStatus.SUCCESS, From.from(INPUT))
         );
     }
 
@@ -143,7 +145,8 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT))
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                        ExecutionStatus.SUCCESS, From.from(INPUT))
         );
     }
 
@@ -164,7 +167,8 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT))
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                        ExecutionStatus.SUCCESS, From.from(INPUT))
         );
     }
 
@@ -184,14 +188,15 @@ class GuardDomainUseCaseTest {
         assertAll(
                 () -> assertEquals(new Todo(TodoId.USER_1_TODO_1), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
-                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND, From.from(INPUT)),
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                        ExecutionStatus.SUCCESS, From.from(INPUT)),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
                         executedByResolver)
         );
     }
 
     @Test
-    void shouldThrowUnauthorizedExceptionWhenNoAudienceAllowsAccess() {
+    void shouldThrowUseCaseExceptionWhenNoAudienceAllowsAccess() {
         // Given
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
@@ -209,7 +214,32 @@ class GuardDomainUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
                 () -> assertThat(decorated.called()).containsExactly("permissions"),
-                () -> verifyNoInteractions(traceAppender)
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                        ExecutionStatus.FAILED_UNAUTHORIZED, From.from(INPUT))
+        );
+    }
+
+    @Test
+    void shouldThrowUseCaseExceptionWhenUseCaseExceptionFromBusinessException() throws CommandException {
+        // Given
+        decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
+        doThrow(new CommandException(new BusinessException(new RuntimeException("BOOM"))))
+                .when(commandHandler).handle(INPUT, missingAggregateException);
+        guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
+                executedByResolver, aggregateIdDecomposer, decorated, traceAppender) {
+        };
+
+        // When / Then
+        assertAll(
+                () -> assertThatThrownBy(() -> guardDomainUseCase.execute(INPUT))
+                        .isExactlyInstanceOf(UseCaseException.class)
+                        .cause()
+                        .isExactlyInstanceOf(CommandException.class)
+                        .cause()
+                        .isExactlyInstanceOf(BusinessException.class),
+                () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore"),
+                () -> verify(traceAppender).append(new AggregateIdTraceable(TodoId.USER_1_TODO_1), Source.COMMAND,
+                        ExecutionStatus.FAILED_BUSINESS, From.from(INPUT))
         );
     }
 

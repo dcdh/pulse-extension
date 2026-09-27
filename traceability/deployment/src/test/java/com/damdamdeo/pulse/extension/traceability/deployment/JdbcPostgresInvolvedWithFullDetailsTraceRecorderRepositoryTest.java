@@ -43,6 +43,7 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
                 new TraceId(0L),
                 new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
                 Source.COMMAND,
+                ExecutionStatus.SUCCESS,
                 new From("from"),
                 List.of(
                         new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
@@ -58,7 +59,7 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
              final PreparedStatement selectTraceabilityDetailsPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT trace_id, executed_at, source_value, from_value FROM todo_taking.traceability_details
+                             SELECT trace_id, executed_at, source_value, execution_status, from_value FROM todo_taking.traceability_details
                              """
              );
              final PreparedStatement selectExecutedByEncodedPreparedStatement = connection.prepareStatement(
@@ -81,7 +82,8 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
             ResultSet resultSet = selectTraceabilityDetailsPreparedStatement.executeQuery();
             while (resultSet.next()) {
                 data.add(String.join("|", resultSet.getString("trace_id"), resultSet.getString("executed_at"),
-                        String.valueOf(resultSet.getInt("source_value")), resultSet.getString("from_value")));
+                        String.valueOf(resultSet.getInt("source_value")), String.valueOf(resultSet.getInt("execution_status")),
+                        resultSet.getString("from_value")));
             }
             resultSet = selectExecutedByEncodedPreparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -100,7 +102,7 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
                 data.add(String.join("|", resultSet.getString("traceability_details_id"), resultSet.getString("traceability_aggregate_id")));
             }
         }
-        assertThat(data).containsExactly("0|2026-09-06 14:00:00+02|0|from",
+        assertThat(data).containsExactly("0|2026-09-06 14:00:00+02|0|0|from",
                 "1|EU:alice-hashed|EU:aliceEncoded",
                 "3|EU:bob-hashed|EU:bobEncoded",
                 "1|U000001-T000001|1|2|0",

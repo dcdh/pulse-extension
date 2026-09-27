@@ -65,8 +65,10 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
                 return aggregate;
-            } catch (final SequenceGenerationException | DuplicateAggregateException | BusinessException
-                           | OnStoredEventListenerException exception) {
+            } catch (final BusinessException exception) {
+                throw new CommandException(exception);
+            } catch (final SequenceGenerationException | DuplicateAggregateException |
+                           OnStoredEventListenerException exception) {
                 throw new CommandException(exception);
             }
         });
@@ -94,7 +96,11 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
                 return aggregate;
-            } catch (final MissingAggregateException | BusinessException | OnStoredEventListenerException exception) {
+            } catch (final MissingAggregateException exception) {
+                throw new CommandException(exception);
+            } catch (final BusinessException exception) {
+                throw new CommandException(exception);
+            } catch (final OnStoredEventListenerException exception) {
                 throw new CommandException(exception);
             }
         });

@@ -1,43 +1,32 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class EveryoneTest {
 
     @Mock
-    Input input;
-
-    @Mock
-    Result<Projection> result;
-
-    @Mock
     PermissionExecutionContext permissionExecutionContext;
 
     @Test
-    void shouldReturnDecoratedResultWhenExecute() throws QueryException {
+    void shouldAllowWhenExecute() throws QueryException {
         // Given
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
-        when(decorated.execute(input)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = Everyone.INSTANCE.execute(input, decorated, permissionExecutionContext);
+        final boolean allowed = Everyone.INSTANCE.allow(Set.of(), permissionExecutionContext);
 
         // Then
-        assertAll(
-                () -> assertEquals(Optional.of(result), executed),
-                () -> verify(decorated).execute(input));
+        assertTrue(allowed);
     }
 
     @Test

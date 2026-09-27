@@ -64,6 +64,7 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
                                         .to(usernameDecoder, ownedByProvider.provide(encodedDetailedInvolved.aggregateId()))
                         ),
                         encodedDetailedInvolved.source(),
+                        encodedDetailedInvolved.executionStatus(),
                         encodedDetailedInvolved.from(),
                         encodedDetailedInvolved.executedAt()
                 );

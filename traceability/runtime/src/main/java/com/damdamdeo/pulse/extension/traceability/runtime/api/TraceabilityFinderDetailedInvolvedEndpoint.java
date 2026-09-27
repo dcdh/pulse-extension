@@ -67,6 +67,9 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
             @Schema(type = SchemaType.STRING, implementation = String.class, description = "Source", required = true)
             Source source,
 
+            @Schema(type = SchemaType.STRING, implementation = String.class, description = "ExecutionStatus", required = true)
+            ExecutionStatus executionStatus,
+
             @Schema(type = SchemaType.STRING, implementation = String.class, description = "From", required = true)
             From from,
 
@@ -78,6 +81,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
             Objects.requireNonNull(aggregateId);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
+            Objects.requireNonNull(executionStatus);
             Objects.requireNonNull(source);
             Objects.requireNonNull(from);
             Objects.requireNonNull(executedAt);
@@ -86,7 +90,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         public DetailedInvolvedDTO(final DetailedInvolved detailedInvolved) {
             this(detailedInvolved.traceId(), detailedInvolved.aggregateId(),
                     detailedInvolved.actor().executedByHashed(), detailedInvolved.actor().executedBy(),
-                    detailedInvolved.source(),
+                    detailedInvolved.source(), detailedInvolved.executionStatus(),
                     detailedInvolved.from(), detailedInvolved.executedAt());
         }
     }

@@ -69,13 +69,14 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class))
         );
     }
 
     @Test
     void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws QueryException {
         // Given
+        when(decorated.execute(INPUT)).thenReturn(result);
         final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
         when(decorated.permissions()).thenReturn(List.of(visibilityRoleRestricted, Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
@@ -87,13 +88,15 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class)),
+                () -> verify(decorated).execute(any())
         );
     }
 
     @Test
     void shouldExecutePermissionsInPriorityOrder() throws QueryException {
         // Given
+        when(decorated.execute(INPUT)).thenReturn(result);
         final VisibilityRoleRestricted visibilityRoleRestricted = VisibilityRoleRestricted.INSTANCE;
         when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE, visibilityRoleRestricted));
         when(decorated.execute(INPUT)).thenReturn(result);
@@ -105,7 +108,8 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class)),
+                () -> verify(decorated).execute(any())
         );
     }
 
@@ -128,8 +132,9 @@ class GuardQueryUseCaseTest {
     }
 
     @Test
-    void shouldThrowUnauthorizedExceptionWhenNoAudienceAllowsAccess() {
+    void shouldThrowUnauthorizedExceptionWhenNoAudienceAllowsAccess() throws QueryException {
         // Given
+        when(decorated.execute(INPUT)).thenReturn(result);
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
         when(decorated.permissions()).thenReturn(List.of(VisibilityRoleRestricted.INSTANCE));
@@ -143,7 +148,8 @@ class GuardQueryUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).permissions(),
-                () -> verifyNoInteractions(traceAppender)
+                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.FAILED_UNAUTHORIZED), any(From.class)),
+                () -> verify(decorated).execute(any())
         );
     }
 
@@ -157,7 +163,7 @@ class GuardQueryUseCaseTest {
         guardQuery.execute(INPUT);
 
         // Then
-        verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class));
+        verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class));
     }
 
     @Test
@@ -166,17 +172,15 @@ class GuardQueryUseCaseTest {
         when(decorated.permissions()).thenReturn(List.of(Everyone.INSTANCE));
         when(decorated.execute(INPUT)).thenReturn(result);
         doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
-                .when(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class));
+                .when(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class));
 
         // When / Then
-        final QueryException exception = assertThrows(
-                QueryException.class,
-                () -> guardQuery.execute(INPUT));
+        final QueryException exception = assertThrows(QueryException.class, () -> guardQuery.execute(INPUT));
 
         assertAll(
                 () -> assertEquals(QueryExceptionCode.INFRASTRUCTURE_FAILURE, exception.queryExceptionCode()),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), any(From.class))
+                () -> verify(traceAppender).append(any(), any(), any(), any())
         );
     }
 

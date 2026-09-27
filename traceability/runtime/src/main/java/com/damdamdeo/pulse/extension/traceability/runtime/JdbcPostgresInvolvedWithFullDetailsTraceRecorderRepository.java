@@ -25,9 +25,10 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                 trace_id,
                 executed_at,
                 source_value,
+                execution_status,
                 from_value
             )
-            VALUES (?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?);
             """;
 
     // language=sql
@@ -70,7 +71,8 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                 traceabilityDetailsPreparedStatement.setLong(1, traceRecorder.traceId().id());
                 traceabilityDetailsPreparedStatement.setTimestamp(2, Timestamp.from(traceRecorder.executedAt().at()));
                 traceabilityDetailsPreparedStatement.setInt(3, traceRecorder.source().ordinal());
-                traceabilityDetailsPreparedStatement.setString(4, traceRecorder.from().from());
+                traceabilityDetailsPreparedStatement.setInt(4, traceRecorder.executionStatus().ordinal());
+                traceabilityDetailsPreparedStatement.setString(5, traceRecorder.from().from());
                 traceabilityDetailsPreparedStatement.executeUpdate();
                 for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
                     executedByEncodedPreparedStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());

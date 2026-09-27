@@ -53,6 +53,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        ebe.executed_by_encoded AS executed_by_encoded,
                        td.trace_id AS trace_id,
                        td.source_value AS source_value,
+                       td.execution_status AS execution_status,
                        td.from_value AS from_value,
                        td.executed_at AS executed_at
                      FROM %1$s.traceability_aggregate ta
@@ -85,6 +86,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
                                 Source.values()[select.getInt("source_value")],
+                                ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));
@@ -115,6 +117,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
                                 Source.values()[select.getInt("source_value")],
+                                ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));
@@ -151,6 +154,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                          ebe.executed_by_encoded AS executed_by_encoded,
                          td.trace_id AS trace_id,
                          td.source_value AS source_value,
+                         td.execution_status AS execution_status,
                          td.from_value AS from_value,
                          td.executed_at AS executed_at
                      FROM %1$s.traceability_aggregate ta
@@ -179,6 +183,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
                                 Source.values()[select.getInt("source_value")],
+                                ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));
@@ -204,6 +209,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
                                 Source.values()[select.getInt("source_value")],
+                                ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
                                 new ExecutedAt(select.getTimestamp("executed_at").toInstant())
                         ));

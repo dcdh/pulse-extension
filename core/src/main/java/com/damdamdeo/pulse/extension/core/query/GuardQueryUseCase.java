@@ -7,15 +7,11 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
-import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.Source;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
+import com.damdamdeo.pulse.extension.core.traceability.*;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public abstract class GuardQueryUseCase<I extends Input, P extends Projection> implements QueryUseCase<I, P> {
 
@@ -49,14 +45,21 @@ public abstract class GuardQueryUseCase<I extends Input, P extends Projection> i
         final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         try {
+            final Result<P> result = decorated.execute(input);
+            boolean allow = false;
             for (final Permission permission : permissions) {
-                final Optional<Result<P>> result = permission.execute(input, decorated, context);
-                if (result.isPresent()) {
-                    traceAppender.append(result.get(), Source.QUERY, From.from(input));
-                    return result.get();
+                if (permission.allow(result.aggregateIds(), context)) {
+                    allow = true;
+                    break;
                 }
             }
-            throw new QueryException(new UnauthorizedException());
+            if (allow) {
+                traceAppender.append(result, Source.QUERY, ExecutionStatus.SUCCESS, From.from(input));
+                return result;
+            } else {
+                traceAppender.append(result, Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, From.from(input));
+                throw new QueryException(new UnauthorizedException());
+            }
         } catch (final TraceAppenderException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }

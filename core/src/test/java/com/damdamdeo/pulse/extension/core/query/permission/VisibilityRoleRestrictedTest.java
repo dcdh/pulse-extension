@@ -1,20 +1,22 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
-import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.Input;
+import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
+import com.damdamdeo.pulse.extension.core.query.Result;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,9 +41,8 @@ class VisibilityRoleRestrictedTest {
     PermissionExecutionContext permissionExecutionContext;
 
     @Test
-    void shouldReturnDecoratedResultWhenExecutedByHasOneOfVisibilityRoles() throws QueryException {
+    void shouldAllowWhenExecutedByHasOneOfVisibilityRoles() throws QueryException {
         // Given
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         final List<String> visibilityRoles = List.of("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.backendUserVisibilityRolesProvider()).thenReturn(backendUserVisibilityRolesProvider);
@@ -49,50 +50,46 @@ class VisibilityRoleRestrictedTest {
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(visibilityRoles);
         when(executionContext.hasRole("ADMIN")).thenReturn(false);
         when(executionContext.hasRole("USER")).thenReturn(true);
-        when(decorated.execute(mock)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
-                mock, decorated, permissionExecutionContext);
+        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.of(result), executed),
+                () -> assertTrue(allowed),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(executionContext).hasRole("ADMIN"),
-                () -> verify(executionContext).hasRole("USER"),
-                () -> verify(decorated).execute(mock)
+                () -> verify(executionContext).hasRole("USER")
         );
     }
 
     @Test
-    void shouldReturnDecoratedResultWhenExecutedByHasFirstVisibilityRole() throws QueryException {
+    void shouldAllowWhenExecutedByHasFirstVisibilityRole() throws QueryException {
         // Given
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         final List<String> visibilityRoles = List.of("ADMIN", "USER");
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.backendUserVisibilityRolesProvider()).thenReturn(backendUserVisibilityRolesProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(visibilityRoles);
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
-        when(decorated.execute(mock)).thenReturn(result);
 
         // When
-        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
-                mock, decorated, permissionExecutionContext);
+        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.of(result), executed),
+                () -> assertTrue(allowed),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(executionContext).hasRole("ADMIN"),
-                () -> verify(executionContext, never()).hasRole("USER"),
-                () -> verify(decorated).execute(mock)
+                () -> verify(executionContext, never()).hasRole("USER")
         );
     }
 
     @Test
-    void shouldReturnEmptyWhenExecutedByHasNoneOfVisibilityRoles() throws QueryException {
+    void shouldDisallowWhenExecutedByHasNoneOfVisibilityRoles() throws QueryException {
         // Given
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         final List<String> visibilityRoles = List.of("ADMIN", "USER");
 
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -103,36 +100,35 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
-                mock, decorated, permissionExecutionContext);
+        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.empty(), executed),
+                () -> assertFalse(allowed),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
                 () -> verify(executionContext).hasRole("ADMIN"),
-                () -> verify(executionContext).hasRole("USER"),
-                () -> verifyNoInteractions(decorated)
+                () -> verify(executionContext).hasRole("USER")
         );
     }
 
     @Test
-    void shouldReturnEmptyWhenVisibilityRolesAreEmpty() throws QueryException {
+    void shouldDisallowWhenVisibilityRolesAreEmpty() throws QueryException {
         // Given
-        final QueryUseCase<Input, Projection> decorated = mock(QueryUseCase.class);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.backendUserVisibilityRolesProvider()).thenReturn(backendUserVisibilityRolesProvider);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of());
 
         // When
-        final Optional<Result<Projection>> executed = VisibilityRoleRestricted.INSTANCE.execute(
-                mock, decorated, permissionExecutionContext);
+        final boolean allowed = VisibilityRoleRestricted.INSTANCE.allow(Set.of(), permissionExecutionContext);
 
         // Then
         assertAll(
-                () -> assertEquals(Optional.empty(), executed),
-                () -> verifyNoInteractions(executionContext),
-                () -> verifyNoInteractions(decorated)
+                () -> assertFalse(allowed),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(backendUserVisibilityRolesProvider).provide(),
+                () -> verifyNoInteractions(executionContext)
         );
     }
 

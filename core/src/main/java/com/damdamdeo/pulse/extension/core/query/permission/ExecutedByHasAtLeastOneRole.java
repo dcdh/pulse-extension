@@ -1,12 +1,13 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 
 public record ExecutedByHasAtLeastOneRole(String... roleNames) implements Permission {
 
@@ -15,18 +16,11 @@ public record ExecutedByHasAtLeastOneRole(String... roleNames) implements Permis
     }
 
     @Override
-    public <I extends Input, P extends Projection> Optional<Result<P>> execute(final I input, final QueryUseCase<I, P> decorated,
-                                                                               final PermissionExecutionContext permissionExecutionContext)
-            throws QueryException {
-        Objects.requireNonNull(input);
-        Objects.requireNonNull(decorated);
+    public boolean allow(final Set<AggregateId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+        Objects.requireNonNull(aggregateIds);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
-        if (Arrays.stream(roleNames).anyMatch(executionContext::hasRole)) {
-            return Optional.of(decorated.execute(input));
-        } else {
-            return Optional.empty();
-        }
+        return Arrays.stream(roleNames).anyMatch(executionContext::hasRole);
     }
 
     @Override

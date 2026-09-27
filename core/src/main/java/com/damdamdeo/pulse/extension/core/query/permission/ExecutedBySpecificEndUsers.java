@@ -1,12 +1,13 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.query.*;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public record ExecutedBySpecificEndUsers(ExecutedBy.EndUser... endUsers) implements Permission {
@@ -16,19 +17,12 @@ public record ExecutedBySpecificEndUsers(ExecutedBy.EndUser... endUsers) impleme
     }
 
     @Override
-    public <I extends Input, P extends Projection> Optional<Result<P>> execute(final I input, final QueryUseCase<I, P> decorated,
-                                                                               final PermissionExecutionContext permissionExecutionContext)
-            throws QueryException {
-        Objects.requireNonNull(input);
-        Objects.requireNonNull(decorated);
+    public boolean allow(final Set<AggregateId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+        Objects.requireNonNull(aggregateIds);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
         final ExecutedBy executedBy = executionContext.executedBy();
-        if (Stream.of(endUsers).anyMatch(endUser -> endUser.value().equals(executedBy.value()))) {
-            return Optional.of(decorated.execute(input));
-        } else {
-            return Optional.empty();
-        }
+        return Stream.of(endUsers).anyMatch(endUser -> endUser.value().equals(executedBy.value()));
     }
 
     @Override
