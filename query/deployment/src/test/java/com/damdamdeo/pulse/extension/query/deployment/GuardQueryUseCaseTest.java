@@ -42,7 +42,7 @@ class GuardQueryUseCaseTest {
 
         @Override
         public Result<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
-            return Result.of(List.of(), Set.of());
+            return Result.of(List.of());
         }
 
         @Override

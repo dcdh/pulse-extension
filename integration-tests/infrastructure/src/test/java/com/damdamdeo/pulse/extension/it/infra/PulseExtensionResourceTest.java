@@ -93,10 +93,7 @@ class PulseExtensionResourceTest {
                 .body("first.status", is("IN_PROGRESS"))
                 .body("first.important", is(false))
                 .body("first.checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
-                .body("first.checklist[0].description", is("Make it works !"))
-                .body("aggregateIds.size()", is(2))
-                .body("aggregateIds[0]", matchesPattern(UUID_PATTERN))
-                .body("aggregateIds[1]", matchesPattern(UUID_PATTERN));
+                .body("first.checklist[0].description", is("Make it works !"));
     }
 
     @Test

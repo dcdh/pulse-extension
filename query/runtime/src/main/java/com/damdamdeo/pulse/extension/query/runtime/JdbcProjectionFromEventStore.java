@@ -8,7 +8,6 @@ import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.OwnedByProvider;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.UnableToProvideOwnedByException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import jakarta.inject.Inject;
 
 import javax.sql.DataSource;
@@ -55,16 +54,14 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
             final OwnedBy ownedBy = ownedByProvider.getByAggregateId(aggregateId);
             final String query = singleResultAggregateIdProjectionQuery.query(passphraseProvider.provide(ownedBy), aggregateId);
             LOGGER.fine(query);
-            final AggregateIdCollector<A> collector = new AggregateIdCollector<>(getAggregateIdClass());
-            final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
                  final ResultSet projectionResultSet = findByPreparedStatement.executeQuery()) {
                 if (projectionResultSet.next()) {
                     final String response = projectionResultSet.getString("response");
                     LOGGER.fine(response);
-                    final P result = reader.readValue(response, getProjectionClass());
-                    return Optional.of(Result.of(result, collector.aggregateId()));
+                    final P result = objectMapper.readValue(response, getProjectionClass());
+                    return Optional.of(Result.of(result));
                 } else {
                     return Optional.empty();
                 }
@@ -84,8 +81,6 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
         try {
             final String query = multipleResultProjectionQuery.query(passphraseProvider.provide(ownedBy), ownedBy, input);
             LOGGER.fine(query);
-            final AggregateIdCollector<A> collector = new AggregateIdCollector<>(getAggregateIdClass());
-            final ObjectReader reader = objectMapper.reader().withAttribute(AggregateIdCollector.class, collector);
             final List<P> responses = new ArrayList<>();
             try (final Connection connection = dataSource.getConnection();
                  final PreparedStatement findByPreparedStatement = connection.prepareStatement(query);
@@ -94,12 +89,12 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
                     final String response = projectionResultSet.getString("response");
                     LOGGER.fine(response);
                     responses.add(
-                            reader.readValue(response, getProjectionClass()));
+                            objectMapper.readValue(response, getProjectionClass()));
                 }
             } catch (final IOException | SQLException e) {
                 throw new ProjectionException(ownedBy, e);
             }
-            return Result.of(responses, collector.aggregateId());
+            return Result.of(responses);
         } catch (UnableToProvidePassphraseException e) {
             throw new ProjectionException(ownedBy, e);
         }

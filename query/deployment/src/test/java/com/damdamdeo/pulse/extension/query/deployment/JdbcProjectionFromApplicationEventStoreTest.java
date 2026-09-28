@@ -232,8 +232,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                                                 "Implement Projection feature"
                                         )
                                 )
-                        ),
-                        Set.of(TodoId.USER_1_TODO_1))
+                        ))
         ));
     }
 
@@ -313,8 +312,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
                                         "Implement Projection feature"
                                 )
                         )
-                ),
-                Set.of(TodoId.USER_1_TODO_1))
+                ))
         );
     }
 

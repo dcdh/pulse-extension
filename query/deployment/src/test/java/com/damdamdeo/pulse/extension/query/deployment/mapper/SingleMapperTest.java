@@ -3,17 +3,14 @@ package com.damdamdeo.pulse.extension.query.deployment.mapper;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.query.Result;
-import com.damdamdeo.pulse.extension.query.runtime.AggregateIdDeserializer;
 import com.damdamdeo.pulse.extension.query.runtime.mapper.SingleMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,7 +18,7 @@ class SingleMapperTest {
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
-    private record TodoItem(@JsonDeserialize(using = AggregateIdDeserializer.class) TodoChecklistId id,
+    private record TodoItem(TodoChecklistId id,
                             String description) implements Projection<TodoChecklistId> {
 
         public TodoItem {
@@ -88,7 +85,6 @@ class SingleMapperTest {
         // Then
         assertThat(result).isEqualTo(
                 new Result<>(List.of(new TodoItem(
-                        TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development")),
-                        Set.of(TodoChecklistId.USER_1_TODO_1_1)));
+                        TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"))));
     }
 }

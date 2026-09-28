@@ -10,14 +10,13 @@ import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
-import java.util.Set;
 
 @ApplicationScoped
 public class FailingProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection> {
 
     @Override
     public Result<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
-        return Result.of(List.of(), Set.of());
+        return Result.of(List.of());
     }
 
     // By returning an empty list, we are telling the guard query that this query is not relevant for the current user

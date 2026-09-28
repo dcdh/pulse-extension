@@ -30,7 +30,6 @@ Multiple ways to do it.
 Accessing a cache (no matter the implementation) to retrieve a list or put a list of elements must be done in one query.
 
 The third solution **Projection returns the aggregateId with the version** will be implemented.
-The **AggregateIdDeserializer** is impacted to take into account **VersionizedAggregateIdObfuscatorSerializer** instead of **AggregateId**.
 The **obfuscator** will be impacted too. The Object **VersionizedAggregateIdObfuscatorSerializer** must return the UUID representation of AggregateId. The aggregate version is lost because it is unnecessary when calling rest api next.
 If the cache is down, it must not alter the user experience. It will be slower, but a response will be returned.
 
