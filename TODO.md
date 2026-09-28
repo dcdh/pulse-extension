@@ -1,8 +1,12 @@
 = TODO
 
 == Must have
-1. traceability store if unauthorized ok ko (unauthorized_query_nb_of_time, unauthorized_command_nb_of_time)
-4. OwnedByProvider replace by ExecutedByResolver
+1. audit: do the endpoint, use a cursor, use a way to customize message depending on the event, likes on aggregate
+2. sequence generator: synchronized, select for update ?
+3. Audit: front : avatar
+4. do a review command should be read commited, query not read commited
+5. feature flag basic: expose an interface and multiples implementation for traceability, audit ...
+6. OwnedByProvider replace by ExecutedByResolver
 == Nice to have
 1. propage traceId in CommandHandler on onStoredEventListener#execute
 2. split common module into separate sub modules
