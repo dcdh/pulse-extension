@@ -7,6 +7,8 @@ import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.pagination.Page;
+import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.query.runtime.EventCounterException;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.OwnedByProvider;
@@ -29,7 +31,10 @@ import org.postgresql.util.PSQLException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -383,34 +388,34 @@ class JdbcProjectionFromApplicationEventStoreTest {
 
         // Then
         assertAll(
-                () -> assertThat(todos.projections()).containsExactly(
-                        new TodoProjection(
-                                TodoId.USER_1_TODO_1,
-                                "IMPORTANT: pulse extension development",
-                                Status.IN_PROGRESS,
-                                true,
-                                List.of(
-                                        new TodoChecklistProjection(
-                                                TodoChecklistId.USER_1_TODO_1_1,
-                                                "Implement Projection feature"
+                () -> assertThat(todos.projections()).isEqualTo(
+                        new Page<>(List.of(
+                                new TodoProjection(
+                                        TodoId.USER_1_TODO_1,
+                                        "IMPORTANT: pulse extension development",
+                                        Status.IN_PROGRESS,
+                                        true,
+                                        List.of(
+                                                new TodoChecklistProjection(
+                                                        TodoChecklistId.USER_1_TODO_1_1,
+                                                        "Implement Projection feature"
+                                                )
+                                        )
+                                ),
+                                new TodoProjection(
+                                        TodoId.USER_1_TODO_2,
+                                        "Organization vacancies",
+                                        Status.IN_PROGRESS,
+                                        false,
+                                        List.of(
+                                                new TodoChecklistProjection(
+                                                        TodoChecklistId.USER_1_TODO_2_1,
+                                                        "Go see family"
+                                                )
                                         )
                                 )
-                        ),
-                        new TodoProjection(
-                                TodoId.USER_1_TODO_2,
-                                "Organization vacancies",
-                                Status.IN_PROGRESS,
-                                false,
-                                List.of(
-                                        new TodoChecklistProjection(
-                                                TodoChecklistId.USER_1_TODO_2_1,
-                                                "Go see family"
-                                        )
-                                )
-                        )
-                ),
-                () -> assertThat(todos.count()).isEqualTo(2),
-                () -> assertThat(todos.aggregateIds()).containsExactlyInAnyOrder(
+                        ), new Pagination(0, 2), 2L)),
+                () -> assertThat(todos.aggregateIds()).containsExactly(
                         TodoId.USER_1_TODO_1,
                         TodoId.USER_1_TODO_2
                 ),

@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.traceability;
+package com.damdamdeo.pulse.extension.core.pagination;
 
 import org.junit.jupiter.api.Test;
 

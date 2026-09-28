@@ -1,9 +1,11 @@
 package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
+import com.damdamdeo.pulse.extension.common.runtime.pagination.PaginationDTO;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
+import com.damdamdeo.pulse.extension.core.pagination.Page;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;

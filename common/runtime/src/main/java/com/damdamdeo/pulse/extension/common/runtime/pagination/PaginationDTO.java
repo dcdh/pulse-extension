@@ -1,6 +1,6 @@
-package com.damdamdeo.pulse.extension.traceability.runtime.api;
+package com.damdamdeo.pulse.extension.common.runtime.pagination;
 
-import com.damdamdeo.pulse.extension.core.traceability.Pagination;
+import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import jakarta.ws.rs.QueryParam;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;

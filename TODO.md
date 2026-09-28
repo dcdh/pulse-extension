@@ -1,7 +1,7 @@
 = TODO
 
 == Must have
-1. audit: do the endpoint, use a cursor, use a way to customize message depending on the event, likes on aggregate
+1. audit: do the endpoint, use a cursor pagination, use a way to customize message depending on the event, likes on aggregate
 2. Audit: front : avatar
 3. feature flag basic: expose an interface and multiples implementation for traceability, audit ...
 6. OwnedByProvider replace by ExecutedByResolver

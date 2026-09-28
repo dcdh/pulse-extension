@@ -87,7 +87,7 @@ public class MultipleMapperTest {
 
         // Then
         assertThat(result).isEqualTo(
-                new Result<>(List.of(new TodoItem(
+                Result.of(List.of(new TodoItem(
                         TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"))));
     }
 }

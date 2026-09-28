@@ -5,6 +5,8 @@ import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
+import com.damdamdeo.pulse.extension.core.pagination.Page;
+import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 
 import java.util.ArrayList;
 import java.util.List;
