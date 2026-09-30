@@ -3,7 +3,7 @@
 == Must have
 1. traceability: do the endpoint, use a cursor pagination, use a way to customize message depending on the event, likes on aggregate, link command with events produced, say if full details or not depending of configuration
 2. traceability: front : avatar
-4. job implementation associated to a use case with locking mechanism, locking should exit when processing
+4. job implementation associated to a use case with locking mechanism, locking should exit when processing, executedby job with jobname
 6. OwnedByProvider replace by ExecutedByResolver
 == Nice to have
 1. propage traceId in CommandHandler on onStoredEventListener#execute
