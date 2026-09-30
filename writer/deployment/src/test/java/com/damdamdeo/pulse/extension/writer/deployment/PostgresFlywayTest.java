@@ -74,8 +74,8 @@ class PostgresFlywayTest extends AbstractWriterTest {
                              """);
              final ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                String schema = rs.getString("table_schema");
-                String table = rs.getString("table_name");
+                final String schema = rs.getString("table_schema");
+                final String table = rs.getString("table_name");
                 tables.add(schema + "." + table);
             }
         } catch (final SQLException e) {

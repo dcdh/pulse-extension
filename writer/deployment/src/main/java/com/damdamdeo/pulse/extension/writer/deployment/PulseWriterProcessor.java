@@ -11,6 +11,7 @@ import com.damdamdeo.pulse.extension.writer.deployment.items.IdentifiableBuildIt
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultInstantProvider;
 import com.damdamdeo.pulse.extension.writer.runtime.DefaultQuarkusTransaction;
 import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresSequenceGenerator;
+import com.damdamdeo.pulse.extension.writer.runtime.JdbcPostgresDistributedLockManager;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -36,7 +37,8 @@ public class PulseWriterProcessor {
                 AdditionalBeanBuildItem.builder()
                         .addBeanClasses(DefaultQuarkusTransaction.class, DefaultInstantProvider.class,
                                 AggregateIdGenerator.class,
-                                JdbcPostgresSequenceGenerator.class)
+                                JdbcPostgresSequenceGenerator.class,
+                                JdbcPostgresDistributedLockManager.class)
                         .build(),
                 // TODO it is not possible to define the bean with @DefaultBean
                 // Should conditionally add it if no other implementation is present.

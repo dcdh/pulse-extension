@@ -26,6 +26,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
     private final ExecutedByResolver executedByResolver;
     private final AggregateIdDecomposer aggregateIdDecomposer;
     private final DomainUseCase<K, C, A> decorated;
+    private final DistributedLockManager distributedLockManager;
     private final TraceAppender traceAppender;
 
     public GuardDomainUseCase(final ExecutionContextProvider executionContextProvider,
@@ -33,12 +34,14 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                               final ExecutedByResolver executedByResolver,
                               final AggregateIdDecomposer aggregateIdDecomposer,
                               final DomainUseCase<K, C, A> decorated,
+                              final DistributedLockManager distributedLockManager,
                               final TraceAppender traceAppender) {
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.backendUserVisibilityRolesProvider = Objects.requireNonNull(backendUserVisibilityRolesProvider);
         this.executedByResolver = Objects.requireNonNull(executedByResolver);
         this.aggregateIdDecomposer = Objects.requireNonNull(aggregateIdDecomposer);
         this.decorated = Objects.requireNonNull(decorated);
+        this.distributedLockManager = Objects.requireNonNull(distributedLockManager);
         this.traceAppender = Objects.requireNonNull(traceAppender);
     }
 
@@ -67,10 +70,20 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                 try {
                     for (final Permission<K, C> permission : permissions) {
                         if (permission.allow(command.id(), command, context)) {
-                            final A executed = decorated.execute(command);
-                            traceAppender.append(new AggregateIdTraceable<>(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
-                                    From.from(command));
-                            return executed;
+                            try {
+                                final A executed = distributedLockManager.executeWithLock(command, new UseCaseExecutor<K, C, A>() {
+                                    @Override
+                                    public A execute(final C command) throws UseCaseException {
+                                        Objects.requireNonNull(command);
+                                        return decorated.execute(command);
+                                    }
+                                });
+                                traceAppender.append(new AggregateIdTraceable<>(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
+                                        From.from(command));
+                                return executed;
+                            } catch (final LockingException exception) {
+                                throw new UseCaseException(exception, UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
+                            }
                         }
                     }
                     traceAppender.append(new AggregateIdTraceable<>(command.id()), Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED,

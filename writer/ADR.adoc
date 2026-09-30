@@ -1,0 +1,155 @@
+= Writer
+
+== lock
+
+Postgres gives the ability to lock using an identifier.
+
+https://www.postgresql.org/docs/9.1/functions-admin.html
+
+Two ways to add lock mechanism using Postgres.
+
+. Globally during the transaction;
+. Lock at start, unlock at end - Session scoped lock.
+
+=== Globally during the transaction
+
+This is done by doing this kind of request:
+
+[source,sql]
+----
+SELECT pg_advisory_xact_lock(?)
+----
+
+By using **pg_advisory_xact_lock** the lock will be automatically release at the end of the transaction.
+It is possible to use another connection.
+
+=== Lock at start, unlock at end - Session scoped lock
+
+Two requests should be done.
+
+The first one at start:
+
+[source,sql]
+----
+SELECT pg_try_advisory_lock(?)
+----
+
+The second one at end:
+
+[source,sql]
+----
+SELECT pg_advisory_unlock(?)
+----
+
+[WARNING]
+====
+In this case the same connection must be used.
+====
+
+If you acquire a session-scoped lock on Connection A and try to unlock it on Connection B, two bad things happen simultaneously:
+
+. The unlock attempt fails (returning false in Postgres), because Connection B does not own that lock. You cannot release a lock belonging to another session.
+. The lock leaks permanently on Connection A. Because Connection A is returned to the Agroal pool still holding the lock, that exact 64-bit key remains blocked for your entire cluster until that specific physical TCP connection is destroyed, restarted, or cleared.
+This is the exact reason why frameworks using connection pools frequently break when developers try to abstract pg_try_advisory_lock and pg_advisory_unlock into separate, unlinked steps.
+
+So the Java code must be done this way
+
+[source,java]
+----
+// In the package : domaine.ports.output
+public interface DistributedLockManager {
+    // You pass a Runnable (or a Supplier<T>) containing the logic to be protected.
+    void executeWithLock(long lockKey, Runnable businessLogic);
+}
+----
+
+[source,java]
+----
+// In the package : domaine.usecases
+import java.util.Objects;
+public interface ProcessOrderUseCase {
+    void process(long orderId);
+}
+
+public class ProcessOrderUseCaseImpl implements ProcessOrderUseCase {
+    private final DistributedLockManager lockManager;
+    // ... Inject another ports (eg: OrderRepository)
+
+    public ProcessOrderUseCaseImpl(final DistributedLockManager lockManager) {
+        this.lockManager = Objects.requireNonNull(lockManager);
+    }
+
+    @Override
+    public void process(long orderId) {
+        // The domain ask the infrastructure to securise the execution
+        lockManager.executeWithLock(orderId, () -> {
+            // All of this bloc will be executed inside the lock
+            System.out.println("Logical business isolated here...");
+            // Eg: orderRepository.save(...);
+        });
+    }
+}
+----
+
+[source,java]
+----
+// In the package : infrastructure.adapters.output
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Objects;
+
+@ApplicationScoped
+public class PostgresLockManagerAdapter implements DistributedLockManager {
+
+    @Inject
+    DataSource dataSource; // Agroal pool
+
+    @Override
+    public void executeWithLock(long lockKey, Runnable businessLogic) {
+        // 1. Extract a UNIQUE connection from the pool.
+        try (final Connection connection = dataSource.getConnection()) {
+
+            // 2. We are attempting to place the session lock on *this* connection.
+            if (!acquireLock(connection, lockKey)) {
+                throw new RuntimeException("Impossible d'acquérir le verrou pour la clé : " + lockKey);
+            }
+
+            try {
+                // 3. The domain logic received as a parameter is executed.
+                businessLogic.run();
+            } finally {
+                // 4. The lock must be released on the SAME connection.
+                releaseLock(connection, lockKey);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur de connexion à la base de données", e);
+        } // The connection is automatically closed and cleaned up by Agroal here.
+    }
+
+    private boolean acquireLock(final Connection conn, final Long key) throws SQLException {
+        Objects.requireNonNull(conn);
+        Objects.requireNonNull(key);
+        try (final PreparedStatement ps = conn.prepareStatement("SELECT pg_try_advisory_lock(?)")) {
+            ps.setLong(1, key);
+            try (final ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getBoolean(1);
+            }
+        }
+    }
+
+    private void releaseLock(final Connection conn, final Long key) throws SQLException {
+        Objects.requireNonNull(conn);
+        Objects.requireNonNull(key);
+        try (final PreparedStatement ps = conn.prepareStatement("SELECT pg_advisory_unlock(?)")) {
+            ps.setLong(1, key);
+            ps.execute();
+        }
+    }
+}
+----

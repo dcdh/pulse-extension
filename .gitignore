@@ -137,3 +137,4 @@
 /query/deployment/todo_taking_aggregate_executed_by.sql
 /traceability/deployment/todo_taking_aggregate_executed_by.sql
 /integration-tests/infrastructure/todo_taking_aggregate_executed_by.sql
+/writer/deployment/todo_taking_aggregate_executed_by.sql
