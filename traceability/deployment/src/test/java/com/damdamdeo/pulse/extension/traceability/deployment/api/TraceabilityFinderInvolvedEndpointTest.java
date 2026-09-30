@@ -371,6 +371,35 @@ class TraceabilityFinderInvolvedEndpointTest {
                         }
                     },
                     "paths": {
+                        "/features": {
+                            "get": {
+                                "summary": "Enabled features",
+                                "description": "Returns enabled features.",
+                                "responses": {
+                                    "200": {
+                                        "description": "Enabled features list retrieved successfully",
+                                        "content": {
+                                            "application/json": {
+                                                "schema": {
+                                                    "type": "array",
+                                                    "examples": [
+                                                        [
+                                                            "TRACEABILITY"
+                                                        ]
+                                                    ],
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "tags": [
+                                    "Feature Endpoint"
+                                ]
+                            }
+                        },
                         "/traceability/finder/involved/byAggregateId/{aggregateId}": {
                             "get": {
                                 "parameters": [

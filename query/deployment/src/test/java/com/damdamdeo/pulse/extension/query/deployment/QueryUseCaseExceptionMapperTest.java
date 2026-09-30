@@ -518,6 +518,35 @@ class QueryUseCaseExceptionMapperTest {
                                 ]
                             }
                         },
+                        "/features": {
+                            "get": {
+                                "summary": "Enabled features",
+                                "description": "Returns enabled features.",
+                                "responses": {
+                                    "200": {
+                                        "description": "Enabled features list retrieved successfully",
+                                        "content": {
+                                            "application/json": {
+                                                "schema": {
+                                                    "type": "array",
+                                                    "examples": [
+                                                        [
+                                                            "TRACEABILITY"
+                                                        ]
+                                                    ],
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "tags": [
+                                    "Feature Endpoint"
+                                ]
+                            }
+                        },
                         "/file/{fileIdentifier}/download": {
                             "get": {
                                 "summary": "Download a file",

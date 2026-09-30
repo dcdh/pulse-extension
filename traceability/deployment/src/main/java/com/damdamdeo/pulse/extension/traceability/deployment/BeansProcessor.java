@@ -177,4 +177,11 @@ public class BeansProcessor {
         }
         return builder.build();
     }
+
+    @BuildStep
+    AdditionalBeanBuildItem registerTraceabilityFeature() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(TraceabilityFeature.class)
+                .setUnremovable()
+                .setDefaultScope(DotNames.APPLICATION_SCOPED).build();
+    }
 }
