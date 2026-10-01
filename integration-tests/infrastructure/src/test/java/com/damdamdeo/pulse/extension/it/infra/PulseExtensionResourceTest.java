@@ -87,13 +87,7 @@ class PulseExtensionResourceTest {
                 .body("projections[0].status", is("IN_PROGRESS"))
                 .body("projections[0].important", is(false))
                 .body("projections[0].checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
-                .body("projections[0].checklist[0].description", is("Make it works !"))
-                .body("first.todoId", matchesPattern(UUID_PATTERN))
-                .body("first.description", is("lorem ipsum"))
-                .body("first.status", is("IN_PROGRESS"))
-                .body("first.important", is(false))
-                .body("first.checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
-                .body("first.checklist[0].description", is("Make it works !"));
+                .body("projections[0].checklist[0].description", is("Make it works !"));
     }
 
     @Test

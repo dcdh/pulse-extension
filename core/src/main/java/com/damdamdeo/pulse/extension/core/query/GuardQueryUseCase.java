@@ -14,19 +14,19 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, P extends Projection<A>> implements QueryUseCase<A, I, P> {
+public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, P extends Projection<A>, R extends Result<A, P>> implements QueryUseCase<A, I, P, R> {
 
     private final ExecutionContextProvider executionContextProvider;
     private final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider;
     private final ExecutedByResolver executedByResolver;
     private final AggregateIdDecomposer aggregateIdDecomposer;
-    private final QueryUseCase<A, I, P> decorated;
+    private final QueryUseCase<A, I, P, R> decorated;
     private final TraceAppender traceAppender;
 
     public GuardQueryUseCase(final ExecutionContextProvider executionContextProvider,
                              final BackendUserVisibilityRolesProvider backendUserVisibilityRolesProvider,
                              final ExecutedByResolver executedByResolver,
-                             final QueryUseCase<A, I, P> decorated,
+                             final QueryUseCase<A, I, P, R> decorated,
                              final TraceAppender traceAppender) {
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.backendUserVisibilityRolesProvider = Objects.requireNonNull(backendUserVisibilityRolesProvider);
@@ -37,7 +37,7 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
     }
 
     @Override
-    public final Result<A, P> execute(final I input) throws QueryException {
+    public final R execute(final I input) throws QueryException {
         Objects.requireNonNull(input);
         final List<Permission<A>> permissions = decorated.permissions()
                 .stream()
@@ -46,7 +46,7 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
         final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         try {
-            final Result<A, P> result = decorated.execute(input);
+            final R result = decorated.execute(input);
             boolean allow = false;
             for (final Permission<A> permission : permissions) {
                 if (permission.allow(result.aggregateIds(), context)) {

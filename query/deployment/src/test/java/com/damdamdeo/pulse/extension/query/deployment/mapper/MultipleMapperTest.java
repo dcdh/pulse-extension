@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment.mapper;
 
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
+import com.damdamdeo.pulse.extension.core.query.MultipleResult;
 import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.query.runtime.mapper.MultipleMapper;
@@ -79,15 +80,15 @@ public class MultipleMapperTest {
                           }
                         ]
                         """;
-        final MultipleMapper<Result<TodoChecklistId, TodoItem>> resultSingleMapper = MultipleMapper.resultMultiple(TodoChecklistId.class, new TypeReference<>() {
+        final MultipleMapper<MultipleResult<TodoChecklistId, TodoItem>> resultMultipleMapper = MultipleMapper.resultMultiple(TodoChecklistId.class, new TypeReference<>() {
         });
 
         // When
-        final Result<TodoChecklistId, TodoItem> result = resultSingleMapper.map(givenTodos, objectMapper);
+        final Result<TodoChecklistId, TodoItem> result = resultMultipleMapper.map(givenTodos, objectMapper);
 
         // Then
         assertThat(result).isEqualTo(
-                Result.of(List.of(new TodoItem(
+                new MultipleResult<>(List.of(new TodoItem(
                         TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"))));
     }
 }

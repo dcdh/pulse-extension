@@ -39,7 +39,7 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
     OwnedByProvider ownedByProvider;
 
     @Override
-    public Result<A, P> getOneByAggregateId(final A aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+    public SingleResult<A, P> getOneByAggregateId(final A aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         return findOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery)
@@ -47,7 +47,7 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
     }
 
     @Override
-    public Optional<Result<A, P>> findOneByAggregateId(final A aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+    public Optional<SingleResult<A, P>> findOneByAggregateId(final A aggregateId, final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         try {
@@ -61,7 +61,7 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
                     final String response = projectionResultSet.getString("response");
                     LOGGER.fine(response);
                     final P result = objectMapper.readValue(response, getProjectionClass());
-                    return Optional.of(Result.of(result));
+                    return Optional.of(new SingleResult<>(result));
                 } else {
                     return Optional.empty();
                 }
@@ -74,7 +74,7 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
     }
 
     @Override
-    public <I extends Input> Result<A, P> findAllBy(final OwnedBy ownedBy, final I input, final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
+    public <I extends Input> MultipleResult<A, P> findAllBy(final OwnedBy ownedBy, final I input, final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(input);
         Objects.requireNonNull(multipleResultProjectionQuery);
@@ -94,7 +94,7 @@ public abstract class JdbcProjectionFromEventStore<A extends AggregateId, P exte
             } catch (final IOException | SQLException e) {
                 throw new ProjectionException(ownedBy, e);
             }
-            return Result.of(responses);
+            return new MultipleResult<>(responses);
         } catch (UnableToProvidePassphraseException e) {
             throw new ProjectionException(ownedBy, e);
         }

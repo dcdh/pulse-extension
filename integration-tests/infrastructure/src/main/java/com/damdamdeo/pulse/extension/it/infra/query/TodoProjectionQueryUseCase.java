@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @ApplicationScoped
-public class TodoProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection> {
+public class TodoProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
     @Inject
     ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore;
@@ -72,7 +72,7 @@ public class TodoProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodo
     };
 
     @Override
-    public Result<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
+    public MultipleResult<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
         Objects.requireNonNull(input);
         try {
             Optional<Identifiable> identifiable = connectionIdentifierRepository.find(connectionIdentifierProvider.provide());

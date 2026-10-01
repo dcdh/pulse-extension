@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.query.runtime.mapper;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
-import com.damdamdeo.pulse.extension.core.query.Result;
+import com.damdamdeo.pulse.extension.core.query.SingleResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +23,7 @@ public interface SingleMapper<P> {
         };
     }
 
-    static <A extends AggregateId, P extends Projection<A>> SingleMapper<Result<A, P>> resultSingle(final Class<A> clazz, final TypeReference<P> typeReference) {
+    static <A extends AggregateId, P extends Projection<A>> SingleMapper<SingleResult<A, P>> resultSingle(final Class<A> clazz, final TypeReference<P> typeReference) {
         Objects.requireNonNull(clazz);
         Objects.requireNonNull(typeReference);
         return (json, objectMapper) -> {
@@ -31,7 +31,7 @@ public interface SingleMapper<P> {
             Objects.requireNonNull(objectMapper);
             final JavaType javaType = objectMapper.getTypeFactory().constructType(typeReference);
             final P projection = objectMapper.readValue(json, javaType);
-            return Result.of(projection);
+            return new SingleResult<>(projection);
         };
     }
 }

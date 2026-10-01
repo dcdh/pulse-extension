@@ -20,8 +20,8 @@ import com.damdamdeo.pulse.extension.consumer.runtime.event.AsyncEventConsumerCh
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProviderException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
+import com.damdamdeo.pulse.extension.core.query.MultipleResult;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
-import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.it.domain.CreationalWorkflow;
@@ -228,13 +228,13 @@ public class PulseExtensionResource {
     @GET
     @Path("/listConnectedUserTodos")
     @Authenticated
-    public Result<TodoId, TodoProjection> listConnectedUserTodos() throws QueryException {
+    public MultipleResult<TodoId, TodoProjection> listConnectedUserTodos() throws QueryException {
         return todoProjectionQuery.execute(new ListTodos());
     }
 
     @GET
     @Path("/failingProjectionQuery")
-    public Result<TodoId, TodoProjection> failingProjectionQuery() throws QueryException {
+    public MultipleResult<TodoId, TodoProjection> failingProjectionQuery() throws QueryException {
         return failingProjectionQuery.execute(new ListTodos());
     }
 }

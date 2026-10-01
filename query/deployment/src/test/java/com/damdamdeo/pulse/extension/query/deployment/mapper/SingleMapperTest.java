@@ -3,13 +3,13 @@ package com.damdamdeo.pulse.extension.query.deployment.mapper;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.query.Result;
+import com.damdamdeo.pulse.extension.core.query.SingleResult;
 import com.damdamdeo.pulse.extension.query.runtime.mapper.SingleMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,7 +76,7 @@ class SingleMapperTest {
                           "description": "IMPORTANT: pulse extension development"
                         }
                         """;
-        final SingleMapper<Result<TodoChecklistId, TodoItem>> resultSingleMapper = SingleMapper.resultSingle(TodoChecklistId.class, new TypeReference<>() {
+        final SingleMapper<SingleResult<TodoChecklistId, TodoItem>> resultSingleMapper = SingleMapper.resultSingle(TodoChecklistId.class, new TypeReference<>() {
         });
 
         // When
@@ -84,7 +84,7 @@ class SingleMapperTest {
 
         // Then
         assertThat(result).isEqualTo(
-                Result.of(List.of(new TodoItem(
-                        TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"))));
+                new SingleResult<>(new TodoItem(
+                        TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development")));
     }
 }

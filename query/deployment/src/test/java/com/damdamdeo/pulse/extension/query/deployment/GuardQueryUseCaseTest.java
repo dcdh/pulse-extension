@@ -18,7 +18,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,11 +37,11 @@ class GuardQueryUseCaseTest {
     StubQueryUseCaseCaller stubQueryUseCaseCaller;
 
     @ApplicationScoped
-    static class NoAudienceQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection> {
+    static class NoAudienceQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
         @Override
-        public Result<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
-            return Result.of(List.of());
+        public MultipleResult<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
+            return new MultipleResult<>(List.of());
         }
 
         @Override
@@ -69,18 +68,18 @@ class GuardQueryUseCaseTest {
     @Unremovable
     @Priority(2)
     @Decorator
-    static class StubQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection> {
+    static class StubQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
         @Inject
         @Any
         @Delegate
-        QueryUseCase<TodoId, ListTodos, TodoProjection> delegate;
+        QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> delegate;
 
         @Inject
         StubQueryUseCaseCaller stubQueryUseCaseCaller;
 
         @Override
-        public Result<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
+        public MultipleResult<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
             Objects.requireNonNull(input);
             stubQueryUseCaseCaller.add("execute");
             return delegate.execute(input);

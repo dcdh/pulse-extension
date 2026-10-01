@@ -28,24 +28,24 @@ public abstract class CachedProjectionFromEventStore<A extends AggregateId, P ex
     }
 
     @Override
-    public Result<A, P> getOneByAggregateId(final A aggregateId,
-                                            final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+    public SingleResult<A, P> getOneByAggregateId(final A aggregateId,
+                                                  final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         try {
             final CaffeineCache caffeineCache = this.cache.as(CaffeineCache.class);
-            final CompletableFuture<CachedValue<A, P>> findFromCache = caffeineCache.getIfPresent(aggregateId);
+            final CompletableFuture<CachedValue<A, P, SingleResult<A, P>>> findFromCache = caffeineCache.getIfPresent(aggregateId);
             if (findFromCache == null) {
-                final Result<A, P> oneByAggregateId = this.delegate.getOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
+                final SingleResult<A, P> oneByAggregateId = this.delegate.getOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
                 final Integer count = eventCounter.byAggregateId(aggregateId);
                 caffeineCache.put(aggregateId, CompletableFuture.completedFuture(new CachedValue<>(count, oneByAggregateId)));
                 return oneByAggregateId;
             } else {
                 try {
-                    final CachedValue<A, P> cachedValue = findFromCache.get();
+                    final CachedValue<A, P, SingleResult<A, P>> cachedValue = findFromCache.get();
                     final Integer count = eventCounter.byAggregateId(aggregateId);
                     if (count > cachedValue.count()) {
-                        final Result<A, P> oneByAggregateId = this.delegate.getOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
+                        final SingleResult<A, P> oneByAggregateId = this.delegate.getOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
                         caffeineCache.put(aggregateId, CompletableFuture.completedFuture(new CachedValue<>(count, oneByAggregateId)));
                         return oneByAggregateId;
                     } else {
@@ -61,15 +61,15 @@ public abstract class CachedProjectionFromEventStore<A extends AggregateId, P ex
     }
 
     @Override
-    public Optional<Result<A, P>> findOneByAggregateId(final A aggregateId,
-                                                       final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
+    public Optional<SingleResult<A, P>> findOneByAggregateId(final A aggregateId,
+                                                             final SingleResultAggregateIdProjectionQuery singleResultAggregateIdProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(singleResultAggregateIdProjectionQuery);
         try {
             final CaffeineCache caffeineCache = this.cache.as(CaffeineCache.class);
-            final CompletableFuture<CachedValue<A, P>> findFromCache = caffeineCache.getIfPresent(aggregateId);
+            final CompletableFuture<CachedValue<A, P, SingleResult<A, P>>> findFromCache = caffeineCache.getIfPresent(aggregateId);
             if (findFromCache == null) {
-                final Optional<Result<A, P>> oneByAggregateId = this.delegate.findOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
+                final Optional<SingleResult<A, P>> oneByAggregateId = this.delegate.findOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
                 if (oneByAggregateId.isPresent()) {
                     final Integer count = eventCounter.byAggregateId(aggregateId);
                     caffeineCache.put(aggregateId, CompletableFuture.completedFuture(new CachedValue<>(count, oneByAggregateId.get())));
@@ -77,10 +77,10 @@ public abstract class CachedProjectionFromEventStore<A extends AggregateId, P ex
                 return oneByAggregateId;
             } else {
                 try {
-                    final CachedValue<A, P> cachedValue = findFromCache.get();
+                    final CachedValue<A, P, SingleResult<A, P>> cachedValue = findFromCache.get();
                     final Integer count = eventCounter.byAggregateId(aggregateId);
                     if (count > cachedValue.count()) {
-                        final Optional<Result<A, P>> oneByAggregateId = this.delegate.findOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
+                        final Optional<SingleResult<A, P>> oneByAggregateId = this.delegate.findOneByAggregateId(aggregateId, singleResultAggregateIdProjectionQuery);
                         oneByAggregateId.ifPresent(result -> caffeineCache.put(aggregateId, CompletableFuture.completedFuture(new CachedValue<>(count, result))));
                         return oneByAggregateId;
                     } else {
@@ -96,26 +96,26 @@ public abstract class CachedProjectionFromEventStore<A extends AggregateId, P ex
     }
 
     @Override
-    public <I extends Input> Result<A, P> findAllBy(final OwnedBy ownedBy,
-                                                    final I input,
-                                                    final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
+    public <I extends Input> MultipleResult<A, P> findAllBy(final OwnedBy ownedBy,
+                                                            final I input,
+                                                            final MultipleResultProjectionQuery<I> multipleResultProjectionQuery) throws ProjectionException {
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(input);
         Objects.requireNonNull(multipleResultProjectionQuery);
         try {
             final CaffeineCache caffeineCache = this.cache.as(CaffeineCache.class);
-            final CompletableFuture<CachedValue<A, P>> findFromCache = caffeineCache.getIfPresent(new Key<>(ownedBy, input));
+            final CompletableFuture<CachedValue<A, P, MultipleResult<A, P>>> findFromCache = caffeineCache.getIfPresent(new Key<>(ownedBy, input));
             if (findFromCache == null) {
-                final Result<A, P> oneByAggregateId = this.delegate.findAllBy(ownedBy, input, multipleResultProjectionQuery);
+                final MultipleResult<A, P> oneByAggregateId = this.delegate.findAllBy(ownedBy, input, multipleResultProjectionQuery);
                 final Integer count = eventCounter.byOwnedBy(ownedBy);
                 caffeineCache.put(new Key<>(ownedBy, input), CompletableFuture.completedFuture(new CachedValue<>(count, oneByAggregateId)));
                 return oneByAggregateId;
             } else {
                 try {
-                    final CachedValue<A, P> cachedValue = findFromCache.get();
+                    final CachedValue<A, P, MultipleResult<A, P>> cachedValue = findFromCache.get();
                     final Integer count = eventCounter.byOwnedBy(ownedBy);
                     if (count > cachedValue.count()) {
-                        final Result<A, P> oneByAggregateId = this.delegate.findAllBy(ownedBy, input, multipleResultProjectionQuery);
+                        final MultipleResult<A, P> oneByAggregateId = this.delegate.findAllBy(ownedBy, input, multipleResultProjectionQuery);
                         caffeineCache.put(new Key<>(ownedBy, input), CompletableFuture.completedFuture(new CachedValue<>(count, oneByAggregateId)));
                         return oneByAggregateId;
                     } else {
@@ -138,7 +138,8 @@ public abstract class CachedProjectionFromEventStore<A extends AggregateId, P ex
         }
     }
 
-    record CachedValue<A extends AggregateId, P extends Projection<A>>(Integer count, Result<A, P> result) {
+    record CachedValue<A extends AggregateId, P extends Projection<A>, R extends Result<A, P>>(Integer count,
+                                                                                               R result) {
 
         CachedValue {
             Objects.requireNonNull(count);

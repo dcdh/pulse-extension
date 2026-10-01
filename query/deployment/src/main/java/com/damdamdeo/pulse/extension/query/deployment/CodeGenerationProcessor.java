@@ -107,6 +107,9 @@ public class CodeGenerationProcessor {
                         final Class<?> projectionClass = classLoader.loadClass(
                                 parameterizedType.arguments().get(2).name().toString());
 
+                        final Class<?> resultClass = classLoader.loadClass(
+                                parameterizedType.arguments().get(3).name().toString());
+
                         final Class<?> queryClass = classLoader.loadClass(queryClassInfo.name().toString());
                         try (final ClassCreator beanClassCreator = ClassCreator.builder()
                                 .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
@@ -117,7 +120,10 @@ public class CodeGenerationProcessor {
                                                         Type.classType(GuardQueryUseCase.class),
                                                         Type.classType(aggregateIdClass),
                                                         Type.classType(inputClass),
-                                                        Type.classType(projectionClass))))
+                                                        Type.classType(projectionClass),
+                                                        Type.parameterizedType(Type.classType(resultClass),
+                                                                Type.classType(aggregateIdClass),
+                                                                Type.classType(projectionClass)))))
                                 .setFinal(true)
                                 .build()) {
                             beanClassCreator.addAnnotation(Unremovable.class);
@@ -141,7 +147,10 @@ public class CodeGenerationProcessor {
                                                         Type.classType(QueryUseCase.class),
                                                         Type.classType(aggregateIdClass),
                                                         Type.classType(inputClass),
-                                                        Type.classType(projectionClass)))
+                                                        Type.classType(projectionClass),
+                                                        Type.parameterizedType(Type.classType(resultClass),
+                                                                Type.classType(aggregateIdClass),
+                                                                Type.classType(projectionClass))))
                                                 .addParameterType(Type.classType(TraceAppender.class))
                                                 .build());
                                 constructor.getParameterAnnotations(3).addAnnotation(Any.class);

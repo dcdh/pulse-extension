@@ -7,8 +7,6 @@ import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.event.TodoItemAdded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
-import com.damdamdeo.pulse.extension.core.pagination.Page;
-import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.query.runtime.EventCounterException;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.OwnedByProvider;
@@ -220,12 +218,12 @@ class JdbcProjectionFromApplicationEventStoreTest {
         }
 
         // When
-        final Optional<Result<TodoId, TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_1_TODO_1,
+        final Optional<SingleResult<TodoId, TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_1_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
         assertThat(foundOneByAggregateId).isEqualTo(Optional.of(
-                Result.of(
+                new SingleResult<>(
                         new TodoProjection(
                                 TodoId.USER_1_TODO_1,
                                 "IMPORTANT: pulse extension development",
@@ -247,7 +245,7 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Optional<Result<TodoId, TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_3_TODO_1,
+        final Optional<SingleResult<TodoId, TodoProjection>> foundOneByAggregateId = todoProjectionProjectionFromEventStore.findOneByAggregateId(TodoId.USER_3_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
@@ -301,11 +299,11 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Result<TodoId, TodoProjection> getOneByAggregateId = todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_1_TODO_1,
+        final SingleResult<TodoId, TodoProjection> getOneByAggregateId = todoProjectionProjectionFromEventStore.getOneByAggregateId(TodoId.USER_1_TODO_1,
                 new TodoProjectionSingleResultAggregateIdProjectionQuery());
 
         // Then
-        assertThat(getOneByAggregateId).isEqualTo(Result.of(
+        assertThat(getOneByAggregateId).isEqualTo(new SingleResult<>(
                 new TodoProjection(
                         TodoId.USER_1_TODO_1,
                         "IMPORTANT: pulse extension development",
@@ -382,55 +380,41 @@ class JdbcProjectionFromApplicationEventStoreTest {
         // Given
 
         // When
-        final Result<TodoId, TodoProjection> todos = todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,
+        final MultipleResult<TodoId, TodoProjection> todos = todoProjectionProjectionFromEventStore.findAllBy(Todo.OWNED_BY_USER_1,
                 new SampleInput(),
                 new TodoProjectionMultipleResultProjectionQuery());
 
         // Then
         assertAll(
-                () -> assertThat(todos.projections()).isEqualTo(
-                        new Page<>(List.of(
-                                new TodoProjection(
-                                        TodoId.USER_1_TODO_1,
-                                        "IMPORTANT: pulse extension development",
-                                        Status.IN_PROGRESS,
-                                        true,
-                                        List.of(
-                                                new TodoChecklistProjection(
-                                                        TodoChecklistId.USER_1_TODO_1_1,
-                                                        "Implement Projection feature"
-                                                )
-                                        )
-                                ),
-                                new TodoProjection(
-                                        TodoId.USER_1_TODO_2,
-                                        "Organization vacancies",
-                                        Status.IN_PROGRESS,
-                                        false,
-                                        List.of(
-                                                new TodoChecklistProjection(
-                                                        TodoChecklistId.USER_1_TODO_2_1,
-                                                        "Go see family"
-                                                )
+                () -> assertThat(todos.projections()).containsExactly(
+                        new TodoProjection(
+                                TodoId.USER_1_TODO_1,
+                                "IMPORTANT: pulse extension development",
+                                Status.IN_PROGRESS,
+                                true,
+                                List.of(
+                                        new TodoChecklistProjection(
+                                                TodoChecklistId.USER_1_TODO_1_1,
+                                                "Implement Projection feature"
                                         )
                                 )
-                        ), new Pagination(0, 2), 2L)),
-                () -> assertThat(todos.aggregateIds()).containsExactly(
-                        TodoId.USER_1_TODO_1,
-                        TodoId.USER_1_TODO_2
-                ),
-                () -> assertThat(todos.getFirst()).isEqualTo(new TodoProjection(
-                        TodoId.USER_1_TODO_1,
-                        "IMPORTANT: pulse extension development",
-                        Status.IN_PROGRESS,
-                        true,
-                        List.of(
-                                new TodoChecklistProjection(
-                                        TodoChecklistId.USER_1_TODO_1_1,
-                                        "Implement Projection feature"
+                        ),
+                        new TodoProjection(
+                                TodoId.USER_1_TODO_2,
+                                "Organization vacancies",
+                                Status.IN_PROGRESS,
+                                false,
+                                List.of(
+                                        new TodoChecklistProjection(
+                                                TodoChecklistId.USER_1_TODO_2_1,
+                                                "Go see family"
+                                        )
                                 )
                         )
-                ))
+                ),
+                () -> assertThat(todos.aggregateIds()).containsExactly(
+                        TodoId.USER_1_TODO_1,
+                        TodoId.USER_1_TODO_2)
         );
     }
 

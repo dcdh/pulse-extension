@@ -31,7 +31,7 @@ class GuardQueryUseCaseTest {
     private static final Input INPUT = new SampleInput();
 
     @Mock
-    Result<TodoId, Projection<TodoId>> result;
+    SingleResult<TodoId, Projection<TodoId>> result;
 
     @Mock
     ExecutionContextProvider executionContextProvider;
@@ -43,12 +43,12 @@ class GuardQueryUseCaseTest {
     ExecutedByResolver executedByResolver;
 
     @Mock
-    QueryUseCase<TodoId, Input, Projection<TodoId>> decorated;
+    QueryUseCase<TodoId, Input, Projection<TodoId>, SingleResult<TodoId, Projection<TodoId>>> decorated;
 
     @Mock
     TraceAppender traceAppender;
 
-    private GuardQueryUseCase<TodoId, Input, Projection<TodoId>> guardQuery;
+    private GuardQueryUseCase<TodoId, Input, Projection<TodoId>, SingleResult<TodoId, Projection<TodoId>>> guardQuery;
 
     @BeforeEach
     void setUp() {
@@ -64,7 +64,7 @@ class GuardQueryUseCaseTest {
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
+        final SingleResult<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
@@ -103,7 +103,7 @@ class GuardQueryUseCaseTest {
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
+        final SingleResult<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
@@ -121,7 +121,7 @@ class GuardQueryUseCaseTest {
         when(decorated.execute(INPUT)).thenReturn(result);
 
         // When
-        final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
+        final SingleResult<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
 
         // Then
         assertAll(
