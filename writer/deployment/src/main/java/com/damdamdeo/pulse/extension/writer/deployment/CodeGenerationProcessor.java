@@ -7,10 +7,7 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import com.damdamdeo.pulse.extension.core.usecase.AbstractCreationalDomainUseCase;
-import com.damdamdeo.pulse.extension.core.usecase.AbstractDomainUseCase;
-import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
-import com.damdamdeo.pulse.extension.core.usecase.GuardDomainUseCase;
+import com.damdamdeo.pulse.extension.core.usecase.*;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
@@ -81,7 +78,7 @@ public class CodeGenerationProcessor {
 
                                 try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
                                         ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class, ExecutedByResolver.class,
-                                        AggregateIdDecomposer.class, DomainUseCase.class, TraceAppender.class)) {
+                                        AggregateIdDecomposer.class, DomainUseCase.class, DistributedLockManager.class, TraceAppender.class)) {
                                     constructor
                                             .setSignature(SignatureBuilder.forMethod()
                                                     .addParameterType(Type.classType(ExecutionContextProvider.class))
@@ -93,6 +90,7 @@ public class CodeGenerationProcessor {
                                                             Type.classType(aggregateIdClass),
                                                             Type.classType(commandClass),
                                                             Type.classType(aggregateRootClass)))
+                                                    .addParameterType(Type.classType(DistributedLockManager.class))
                                                     .addParameterType(Type.classType(TraceAppender.class))
                                                     .build());
                                     constructor.getParameterAnnotations(4).addAnnotation(Any.class);
@@ -102,14 +100,15 @@ public class CodeGenerationProcessor {
                                             MethodDescriptor.ofConstructor(GuardDomainUseCase.class,
                                                     ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class,
                                                     ExecutedByResolver.class, AggregateIdDecomposer.class, DomainUseCase.class,
-                                                    TraceAppender.class),
+                                                    DistributedLockManager.class, TraceAppender.class),
                                             constructor.getThis(),
                                             constructor.getMethodParam(0),
                                             constructor.getMethodParam(1),
                                             constructor.getMethodParam(2),
                                             constructor.getMethodParam(3),
                                             constructor.getMethodParam(4),
-                                            constructor.getMethodParam(5)
+                                            constructor.getMethodParam(5),
+                                            constructor.getMethodParam(6)
                                     );
 
                                     constructor.returnValue(null);
