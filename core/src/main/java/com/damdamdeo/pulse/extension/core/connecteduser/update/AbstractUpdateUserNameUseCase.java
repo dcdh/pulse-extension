@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
@@ -27,11 +28,11 @@ public abstract class AbstractUpdateUserNameUseCase<K extends AggregateId, C ext
     }
 
     @Override
-    public final A execute(final C updateUserNameCommand) throws UseCaseException {
+    public final Handled<A, K> execute(final C updateUserNameCommand) throws UseCaseException {
         Objects.requireNonNull(updateUserNameCommand);
         try {
             final ConnectionIdentifier connectionIdentifier = connectionIdentifierProvider.provide();
-            final A handled = commandHandler.handle(updateUserNameCommand, UnknownUserNameException::new);
+            final Handled<A, K> handled = commandHandler.handle(updateUserNameCommand, UnknownUserNameException::new);
             try {
                 connectionIdentifierRepository.store(connectionIdentifier, handled.id());
             } catch (final DuplicateConnectionIdentifierException e) {
@@ -50,5 +51,5 @@ public abstract class AbstractUpdateUserNameUseCase<K extends AggregateId, C ext
         }
     }
 
-    protected abstract void onUserNameUpdated(A aggregateRoot, C updateUserNameCommand) throws UseCaseException;
+    protected abstract void onUserNameUpdated(Handled<A, K> handled, C updateUserNameCommand) throws UseCaseException;
 }

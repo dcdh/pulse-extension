@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.writer.deployment.domainusecase;
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
@@ -41,7 +42,7 @@ class ShouldFailOnDirectImplementationOfDomainUseCaseTest {
     static class CreateTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
 
         @Override
-        public Todo execute(final CreateTodo command) throws UseCaseException {
+        public Handled<Todo, TodoId> execute(final CreateTodo command) throws UseCaseException {
             throw new IllegalStateException("Should not be called");
         }
 

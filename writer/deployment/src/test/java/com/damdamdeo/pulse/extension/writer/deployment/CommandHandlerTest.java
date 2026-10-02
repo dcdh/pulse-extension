@@ -4,6 +4,11 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.command.Handled;
+import com.damdamdeo.pulse.extension.core.event.ExecutedByEvent;
+import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.test.QuarkusUnitTest;
@@ -42,15 +47,18 @@ public class CommandHandlerTest extends AbstractWriterTest {
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
 
         // When
-        final Todo todoCreated = commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
+        final Handled<Todo, TodoId> todoCreated = commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
                 DuplicateTodoException::new);
 
         // Then
         assertAll(
                 () -> assertThat(todoCreated.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
-                () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
-                () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE)
+                () -> assertThat(todoCreated.aggregateRoot().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoCreated.aggregateRoot().status()).isEqualTo(Status.IN_PROGRESS),
+                () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.FALSE),
+                () -> assertThat(todoCreated.events()).containsExactly(
+                        new VersionizedEvent<>(new AggregateVersion(0),
+                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
         );
 
         final int count = countEventsInEventStore();

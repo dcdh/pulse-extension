@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.UserId;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.command.UserUpdateUsername;
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.UserRegistrationDomainUseCase;
@@ -63,16 +64,16 @@ class UserRegistrationUpdateLifecycleCaseTest extends AbstractWriterTest {
         @Path("register")
         @Produces(MediaType.APPLICATION_JSON)
         public UserDTO register() throws UseCaseException {
-            final User registered = userRegistrationDomainUseCase.execute(new RegisterUser());
-            return UserDTO.from(registered);
+            final Handled<User, UserId> registered = userRegistrationDomainUseCase.execute(new RegisterUser());
+            return UserDTO.from(registered.aggregateRoot());
         }
 
         @POST
         @Path("update")
         @Produces(MediaType.APPLICATION_JSON)
         public UserDTO update() throws UseCaseException {
-            final User updated = userUpdateUserNameUseCase.execute(new UserUpdateUsername(UserId.USER_1));
-            return UserDTO.from(updated);
+            final Handled<User, UserId> updated = userUpdateUserNameUseCase.execute(new UserUpdateUsername(UserId.USER_1));
+            return UserDTO.from(updated.aggregateRoot());
         }
     }
 

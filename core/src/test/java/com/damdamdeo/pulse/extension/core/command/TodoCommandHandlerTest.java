@@ -63,19 +63,23 @@ class TodoCommandHandlerTest {
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
-        final Todo todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
+        final Handled<Todo, TodoId> todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
                 () -> assertThat(todoCreated.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoCreated.description()).isEqualTo("lorem ipsum"),
-                () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
-                () -> assertThat(todoCreated.important()).isEqualTo(Boolean.FALSE),
+                () -> assertThat(todoCreated.aggregateRoot().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoCreated.aggregateRoot().status()).isEqualTo(Status.IN_PROGRESS),
+                () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.FALSE),
+                () -> assertThat(todoCreated.events()).containsExactly(
+                        new VersionizedEvent<>(
+                                new AggregateVersion(0),
+                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))),
                 () -> verify(todoEventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                 new AggregateVersion(0),
                                 new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))),
-                        todoCreated,
+                        todoCreated.aggregateRoot(),
                         ExecutedBy.NotAvailable.INSTANCE
                 ),
                 () -> verify(notAvailableExecutedByProvider, times(2)).provide()
@@ -93,17 +97,21 @@ class TodoCommandHandlerTest {
                 .when(aggregateIdGenerator).generate(new For<>(TodoChecklistId.class, belongsTo), creational);
 
         // When
-        final TodoChecklist todoChecklistCreated = todoChecklistCommandHandler.handle(creational, givenCreateTodoChecklist, DuplicateTodoChecklistException::new);
+        final Handled<TodoChecklist, TodoChecklistId> todoChecklistCreated = todoChecklistCommandHandler.handle(creational, givenCreateTodoChecklist, DuplicateTodoChecklistException::new);
 
         // Then
         assertAll(
                 () -> assertThat(todoChecklistCreated.id()).isEqualTo(TodoChecklistId.USER_1_TODO_1_1),
-                () -> assertThat(todoChecklistCreated.description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoChecklistCreated.aggregateRoot().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoChecklistCreated.events()).containsExactly(
+                        new VersionizedEvent<>(
+                                new AggregateVersion(0),
+                                new ExecutedByEvent<>(new TodoItemAdded("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))),
                 () -> verify(todoChecklistEventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                 new AggregateVersion(0),
                                 new ExecutedByEvent<>(new TodoItemAdded("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))),
-                        todoChecklistCreated,
+                        todoChecklistCreated.aggregateRoot(),
                         ExecutedBy.NotAvailable.INSTANCE
                 ),
                 () -> verify(notAvailableExecutedByProvider, times(2)).provide()
@@ -118,14 +126,22 @@ class TodoCommandHandlerTest {
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
-        final Todo todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
+        final Handled<Todo, TodoId> todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
                 () -> assertThat(todoCreated.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoCreated.description()).isEqualTo("IMPORTANT lorem ipsum"),
-                () -> assertThat(todoCreated.status()).isEqualTo(Status.IN_PROGRESS),
-                () -> assertThat(todoCreated.important()).isEqualTo(Boolean.TRUE),
+                () -> assertThat(todoCreated.aggregateRoot().description()).isEqualTo("IMPORTANT lorem ipsum"),
+                () -> assertThat(todoCreated.aggregateRoot().status()).isEqualTo(Status.IN_PROGRESS),
+                () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.TRUE),
+                () -> assertThat(todoCreated.events()).containsExactly(new VersionizedEvent<>(
+                                new AggregateVersion(0),
+                                new ExecutedByEvent<>(new NewTodoCreated("IMPORTANT lorem ipsum"),
+                                        ExecutedBy.NotAvailable.INSTANCE)),
+                        new VersionizedEvent<>(
+                                new AggregateVersion(1),
+                                new ExecutedByEvent<>(new ClassifiedAsImportant(),
+                                        ExecutedBy.NotAvailable.INSTANCE))),
                 () -> verify(todoEventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                         new AggregateVersion(0),
@@ -135,7 +151,7 @@ class TodoCommandHandlerTest {
                                         new AggregateVersion(1),
                                         new ExecutedByEvent<>(new ClassifiedAsImportant(),
                                                 ExecutedBy.NotAvailable.INSTANCE))),
-                        todoCreated,
+                        todoCreated.aggregateRoot(),
                         ExecutedBy.NotAvailable.INSTANCE)
         );
     }
@@ -148,19 +164,23 @@ class TodoCommandHandlerTest {
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When
-        final Todo todoMarkedAsDone = todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(TodoId.USER_1_TODO_1));
+        final Handled<Todo, TodoId> todoMarkedAsDone = todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(TodoId.USER_1_TODO_1));
 
         // Then
         assertAll(
                 () -> assertThat(todoMarkedAsDone.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoMarkedAsDone.description()).isEqualTo("lorem ipsum"),
-                () -> assertThat(todoMarkedAsDone.status()).isEqualTo(Status.DONE),
-                () -> assertThat(todoMarkedAsDone.important()).isEqualTo(Boolean.FALSE),
+                () -> assertThat(todoMarkedAsDone.aggregateRoot().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoMarkedAsDone.aggregateRoot().status()).isEqualTo(Status.DONE),
+                () -> assertThat(todoMarkedAsDone.aggregateRoot().important()).isEqualTo(Boolean.FALSE),
+                () -> assertThat(todoMarkedAsDone.events()).containsExactly(
+                        new VersionizedEvent<>(
+                                new AggregateVersion(1),
+                                new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE))),
                 () -> verify(todoEventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                 new AggregateVersion(1),
                                 new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE))),
-                        todoMarkedAsDone,
+                        todoMarkedAsDone.aggregateRoot(),
                         ExecutedBy.NotAvailable.INSTANCE
                 )
         );

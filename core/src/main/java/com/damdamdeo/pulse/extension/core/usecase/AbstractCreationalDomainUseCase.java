@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.SequenceNumber;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -21,11 +22,11 @@ public abstract class AbstractCreationalDomainUseCase<K extends AggregateId, C e
     }
 
     @Override
-    public final A execute(final C command) throws UseCaseException {
+    public final Handled<A, K> execute(final C command) throws UseCaseException {
         Objects.requireNonNull(command);
         try {
             final C processedCommand = onBefore(command);
-            final A handled = commandHandler.handle(creational(processedCommand), processedCommand, duplicateAggregateException());
+            final Handled<A, K> handled = commandHandler.handle(creational(processedCommand), processedCommand, duplicateAggregateException());
             return onAfter(command, handled);
         } catch (final UseCaseExecutionException useCaseExecutionException) {
             throw new UseCaseException(useCaseExecutionException, useCaseExecutionException.useCaseExceptionCode());
@@ -69,13 +70,13 @@ public abstract class AbstractCreationalDomainUseCase<K extends AggregateId, C e
      * Override this method to perform any post-processing after the command is handled.
      *
      * @param command
-     * @param aggregate
+     * @param handled
      * @return
      * @throws UseCaseExecutionException
      */
-    protected A onAfter(final C command, final A aggregate) throws UseCaseExecutionException {
+    protected Handled<A, K> onAfter(final C command, final Handled<A, K> handled) throws UseCaseExecutionException {
         Objects.requireNonNull(command);
-        Objects.requireNonNull(aggregate);
-        return aggregate;
+        Objects.requireNonNull(handled);
+        return handled;
     }
 }

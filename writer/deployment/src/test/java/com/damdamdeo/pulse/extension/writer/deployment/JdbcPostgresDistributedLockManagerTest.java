@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.usecase.LockingException;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
@@ -50,7 +51,7 @@ class JdbcPostgresDistributedLockManagerTest {
         final UseCaseExecutor<TodoId, MarkTodoAsDone, Todo> useCaseExecutor = new UseCaseExecutor<TodoId, MarkTodoAsDone, Todo>() {
 
             @Override
-            public Todo execute(final MarkTodoAsDone command) throws UseCaseException {
+            public Handled<Todo, TodoId> execute(final MarkTodoAsDone command) throws UseCaseException {
                 try {
                     LOGGER.info("Sleeping for 5 seconds");
                     TimeUnit.SECONDS.sleep(5);
@@ -91,7 +92,7 @@ class JdbcPostgresDistributedLockManagerTest {
         final UseCaseExecutor<TodoId, MarkTodoAsDone, Todo> useCaseExecutor = new UseCaseExecutor<TodoId, MarkTodoAsDone, Todo>() {
 
             @Override
-            public Todo execute(final MarkTodoAsDone command) throws UseCaseException {
+            public Handled<Todo, TodoId> execute(final MarkTodoAsDone command) throws UseCaseException {
                 locksInExecute.addAll(getLocks());
                 throw new UseCaseException(new RuntimeException("Something went wrong"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
             }

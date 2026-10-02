@@ -123,6 +123,6 @@ public final class StateApplier<A extends AggregateRoot<K>, K extends AggregateI
     }
 
     public List<VersionizedEvent<K>> getNewEvents() {
-        return newEvents;
+        return Collections.unmodifiableList(newEvents);
     }
 }

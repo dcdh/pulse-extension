@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.command.AggregateIdTraceable;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
@@ -46,7 +47,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
     }
 
     @Override
-    public final A execute(final C command) throws UseCaseException {
+    public final Handled<A, K> execute(final C command) throws UseCaseException {
         Objects.requireNonNull(command);
         final List<Permission<K, C>> permissions = decorated.permissions()
                 .stream()
@@ -59,7 +60,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
             if (command instanceof CreationalCommand<?>) {
                 for (final Permission<K, C> permission : permissions) {
                     if (permission.allow(command, context)) {
-                        final A executed = decorated.execute(command);
+                        final Handled<A, K> executed = decorated.execute(command);
                         traceAppender.append(new AggregateIdTraceable<>(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
                                 From.from(command));
                         return executed;
@@ -71,9 +72,9 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                     for (final Permission<K, C> permission : permissions) {
                         if (permission.allow(command.id(), command, context)) {
                             try {
-                                final A executed = distributedLockManager.executeWithLock(command, new UseCaseExecutor<K, C, A>() {
+                                final Handled<A, K> executed = distributedLockManager.executeWithLock(command, new UseCaseExecutor<K, C, A>() {
                                     @Override
-                                    public A execute(final C command) throws UseCaseException {
+                                    public Handled<A, K> execute(final C command) throws UseCaseException {
                                         Objects.requireNonNull(command);
                                         return decorated.execute(command);
                                     }

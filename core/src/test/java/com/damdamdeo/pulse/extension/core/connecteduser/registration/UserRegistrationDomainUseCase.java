@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.SequenceNumber;
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
@@ -28,8 +29,8 @@ public class UserRegistrationDomainUseCase extends AbstractRegistrationDomainUse
     }
 
     @Override
-    protected void onUserNameRegistered(final User user, final RegisterUser registrationCommand) throws UseCaseException {
-        Objects.requireNonNull(user);
+    protected void onUserNameRegistered(final Handled<User, UserId> handled, final RegisterUser registrationCommand) throws UseCaseException {
+        Objects.requireNonNull(handled);
         Objects.requireNonNull(registrationCommand);
     }
 

@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core.connecteduser.registration;
 import com.damdamdeo.pulse.extension.core.User;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,12 +43,12 @@ class AbstractRegistrationDomainUseCaseTest {
         final RegisterUser command = new RegisterUser();
         final ConnectionIdentifier connectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
 
-        final User user = new User(UserId.USER_1);
+        final Handled<User, UserId> user = new Handled<>(new User(UserId.USER_1), List.of());
         when(connectionIdentifierProvider.provide()).thenReturn(connectionIdentifier);
         when(commandHandler.handle(any(Function.class), eq(command), any())).thenReturn(user);
 
         // When
-        final User result = useCase.execute(command);
+        final Handled<User, UserId> result = useCase.execute(command);
 
         // Then
         assertAll(
@@ -82,7 +84,7 @@ class AbstractRegistrationDomainUseCaseTest {
         // Given
         final RegisterUser command = new RegisterUser();
         final ConnectionIdentifier connectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
-        final User user = new User(UserId.USER_1);
+        final Handled<User, UserId> user = new Handled<>(new User(UserId.USER_1), List.of());
         final ConnectionIdentifierRepositoryException cause = new ConnectionIdentifierRepositoryException("msg", new RuntimeException());
         when(connectionIdentifierProvider.provide()).thenReturn(connectionIdentifier);
         when(commandHandler.handle(any(Function.class), eq(command), any())).thenReturn(user);
@@ -106,7 +108,7 @@ class AbstractRegistrationDomainUseCaseTest {
         // Given
         final RegisterUser command = new RegisterUser();
         final ConnectionIdentifier connectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
-        final User user = new User(UserId.USER_1);
+        final Handled<User, UserId> user = new Handled<>(new User(UserId.USER_1), List.of());
         final DuplicateConnectionIdentifierException cause = new DuplicateConnectionIdentifierException("msg");
         when(connectionIdentifierProvider.provide()).thenReturn(connectionIdentifier);
         when(commandHandler.handle(any(Function.class), eq(command), any())).thenReturn(user);

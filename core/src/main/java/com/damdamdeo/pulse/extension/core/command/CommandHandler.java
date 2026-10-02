@@ -36,8 +36,8 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         this.aggregateIdGenerator = Objects.requireNonNull(aggregateIdGenerator);
     }
 
-    public final A handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
-                          final Function<K, DuplicateAggregateException> duplicateAggregateException) throws CommandException {
+    public final Handled<A, K> handle(final Function<SequenceNumber, K> creational, final CreationalCommand<K> creationalCommand,
+                                      final Function<K, DuplicateAggregateException> duplicateAggregateException) throws CommandException {
         Objects.requireNonNull(creational);
         Objects.requireNonNull(creationalCommand);
         Objects.requireNonNull(duplicateAggregateException);
@@ -64,7 +64,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-                return aggregate;
+                return new Handled<>(aggregate, newEvents);
             } catch (final BusinessException exception) {
                 throw new CommandException(exception);
             } catch (final SequenceGenerationException | DuplicateAggregateException |
@@ -74,7 +74,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         });
     }
 
-    public final A handle(final Command<K> command, final Supplier<MissingAggregateException> missingAggregateException) throws CommandException {
+    public final Handled<A, K> handle(final Command<K> command, final Supplier<MissingAggregateException> missingAggregateException) throws CommandException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(missingAggregateException);
         final ExecutionContext executionContext = executionContextProvider.provide();
@@ -95,7 +95,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
-                return aggregate;
+                return new Handled<>(aggregate, newEvents);
             } catch (final MissingAggregateException exception) {
                 throw new CommandException(exception);
             } catch (final BusinessException exception) {

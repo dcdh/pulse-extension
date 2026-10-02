@@ -1,10 +1,7 @@
 package com.damdamdeo.pulse.extension.it.domain;
 
 import com.damdamdeo.pulse.extension.core.*;
-import com.damdamdeo.pulse.extension.core.command.AddNewTodoItem;
-import com.damdamdeo.pulse.extension.core.command.CommandHandler;
-import com.damdamdeo.pulse.extension.core.command.CreateTodo;
-import com.damdamdeo.pulse.extension.core.command.RegisterUser;
+import com.damdamdeo.pulse.extension.core.command.*;
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.UserRegistrationDomainUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +10,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -46,13 +44,14 @@ class CreationalWorkflowTest {
 
         final UserId userId = UserId.USER_1;
 
-        final User user = new User(userId);
+        final Handled<User, UserId> user = new Handled<>(new User(userId), List.of());
 
         final TodoId todoId = new TodoId(userId, TodoId.SEQUENCE_NUMBER_1);
-        final Todo todo = new Todo(todoId);
+        final Handled<Todo, TodoId> todo = new Handled<>(new Todo(todoId), List.of());
 
         final TodoChecklistId todoChecklistId = new TodoChecklistId(todoId, TodoChecklistId.SEQUENCE_NUMBER_1);
-        final TodoChecklist todoChecklist = new TodoChecklist(todoChecklistId);
+        final Handled<TodoChecklist, TodoChecklistId> todoChecklist = new Handled<>(
+                new TodoChecklist(todoChecklistId), List.of());
 
         when(userRegistrationDomainUseCase.execute(new RegisterUser())).thenReturn(user);
         when(todoCommandHandler.handle(

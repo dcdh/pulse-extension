@@ -30,18 +30,18 @@ public class CreationalWorkflow {
 
     public Todo execute(final InitialiserCommand initialiserCommand) throws UseCaseException {
         Objects.requireNonNull(initialiserCommand);
-        final User user = userRegistrationDomainUseCase.execute(new RegisterUser());
+        final Handled<User, UserId> user = userRegistrationDomainUseCase.execute(new RegisterUser());
         LOGGER.info("User registered : {}", user);
 
         try {
-            final Todo todoCreated = todoCommandHandler.handle(sequenceNumber -> new TodoId(user.id(), sequenceNumber),
+            final Handled<Todo, TodoId> todoCreated = todoCommandHandler.handle(sequenceNumber -> new TodoId(user.id(), sequenceNumber),
                     new CreateTodo("lorem ipsum"), DuplicateTodoException::new);
             LOGGER.info("Todo created : {}", todoCreated);
 
-            final TodoChecklist todoChecklistAdded = todoChecklistCommandHandler.handle(sequenceNumber -> new TodoChecklistId(todoCreated.id(), sequenceNumber),
+            final Handled<TodoChecklist, TodoChecklistId> todoChecklistAdded = todoChecklistCommandHandler.handle(sequenceNumber -> new TodoChecklistId(todoCreated.id(), sequenceNumber),
                     new AddNewTodoItem(todoCreated.id(), "Make it works !"), DuplicateTodoChecklistException::new);
             LOGGER.info("TodoChecklist added : {}", todoChecklistAdded);
-            return todoCreated;
+            return todoCreated.aggregateRoot();
         } catch (final CommandException exception) {
             throw new UseCaseException(exception, UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
         }

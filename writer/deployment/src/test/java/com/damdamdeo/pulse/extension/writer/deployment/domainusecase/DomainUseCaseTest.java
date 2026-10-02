@@ -3,6 +3,11 @@ package com.damdamdeo.pulse.extension.writer.deployment.domainusecase;
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
+import com.damdamdeo.pulse.extension.core.command.Handled;
+import com.damdamdeo.pulse.extension.core.event.ExecutedByEvent;
+import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.usecase.*;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
@@ -90,11 +95,16 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        final Todo loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum"));
+        final Handled<Todo, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum"));
 
         // Then
         assertAll(
-                () -> assertThat(loremIpsum).isEqualTo(new Todo(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false)),
+                () -> assertThat(loremIpsum).isEqualTo(
+                        new Handled<>(
+                                new Todo(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false),
+                                List.of(new VersionizedEvent<>(
+                                        new AggregateVersion(0), new ExecutedByEvent<>(
+                                        new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))))),
                 () -> assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001")
         );
     }

@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.SequenceNumber;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
+import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
@@ -29,11 +30,11 @@ public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C
     }
 
     @Override
-    public final A execute(final C registrationCommand) throws UseCaseException {
+    public final Handled<A, K> execute(final C registrationCommand) throws UseCaseException {
         Objects.requireNonNull(registrationCommand);
         try {
             final ConnectionIdentifier connectionIdentifier = connectionIdentifierProvider.provide();
-            final A handled = commandHandler.handle(this::from, registrationCommand, k -> new ConnectedUserAlreadyRegisteredException());
+            final Handled<A,K> handled = commandHandler.handle(this::from, registrationCommand, k -> new ConnectedUserAlreadyRegisteredException());
             connectionIdentifierRepository.store(connectionIdentifier, handled.id());
             onUserNameRegistered(handled, registrationCommand);
             return handled;
@@ -52,5 +53,5 @@ public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C
 
     protected abstract K from(SequenceNumber sequenceNumber);
 
-    protected abstract void onUserNameRegistered(A aggregateRoot, C registrationCommand) throws UseCaseException;
+    protected abstract void onUserNameRegistered(Handled<A, K> handled, C registrationCommand) throws UseCaseException;
 }
