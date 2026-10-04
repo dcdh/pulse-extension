@@ -14,6 +14,7 @@ import com.damdamdeo.pulse.extension.traceability.deployment.finder.StubOwnedByP
 import com.damdamdeo.pulse.extension.traceability.deployment.finder.StubUsernameDecoder;
 import com.damdamdeo.pulse.extension.traceability.deployment.finder.StubUsernameEncoder;
 import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.vertx.RunOnVertxContext;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
@@ -92,6 +93,7 @@ class E2ETest {
     }
 
     @Test
+    @RunOnVertxContext
     void shouldStoreAndRetrieveTrace() throws TraceAppenderException, SQLException {
         // Given
         insertEvent(TodoId.USER_1_TODO_1.id(), "Todo", 0,

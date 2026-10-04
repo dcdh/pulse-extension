@@ -28,6 +28,22 @@ public class BeansProcessor {
     }
 
     @BuildStep
+    AdditionalBeanBuildItem registerCorrelationIdProvider(final TraceabilityConfiguration traceabilityConfiguration) {
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        switch (traceabilityConfiguration.tracingMode()) {
+            case DISABLED -> builder.addBeanClass(NoOpCorrelationIdProvider.class)
+                    .setUnremovable()
+                    .setDefaultScope(DotNames.APPLICATION_SCOPED);
+            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(DefaultCorrelationIdProvider.class)
+                    .setUnremovable()
+                    .setDefaultScope(DotNames.APPLICATION_SCOPED)
+                    .addBeanClass(JdbcPostgresCorrelationIdGenerator.class)
+                    .addBeanClass(ContextLocalsCorrelationIdProviderContextualStorage.class);
+        }
+        return builder.build();
+    }
+
+    @BuildStep
     AdditionalBeanBuildItem registerTraceRecorderRepository(final TraceabilityConfiguration traceabilityConfiguration) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
         switch (traceabilityConfiguration.tracingMode()) {

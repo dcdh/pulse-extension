@@ -42,6 +42,7 @@ class DiskUsageTest {
         for (long execution = 0; execution < 50000; execution++) {
             final TraceRecorder traceRecorder = new TraceRecorder(
                     new TraceId(execution),
+                    new CorrelationId(execution),
                     new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
                     Source.COMMAND,
                     ExecutionStatus.SUCCESS,

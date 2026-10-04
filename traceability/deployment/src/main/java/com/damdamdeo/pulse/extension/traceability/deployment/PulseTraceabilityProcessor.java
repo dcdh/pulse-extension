@@ -58,9 +58,11 @@ public class PulseTraceabilityProcessor {
                             );
                             
                             CREATE SEQUENCE IF NOT EXISTS %1$s.trace_id_seq START WITH 1 INCREMENT BY 1;
+                            CREATE SEQUENCE IF NOT EXISTS %1$s.correlation_id_seq START WITH 1 INCREMENT BY 1;
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details (
                               trace_id bigint not null,
+                              correlation_id bigint not null,
                               executed_at timestamptz not null,
                               source_value int not null,
                               execution_status int not null,

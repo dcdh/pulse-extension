@@ -41,6 +41,7 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
         // Given
         final TraceRecorder traceRecorder = new TraceRecorder(
                 new TraceId(0L),
+                new CorrelationId(0L),
                 new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
                 Source.COMMAND,
                 ExecutionStatus.SUCCESS,

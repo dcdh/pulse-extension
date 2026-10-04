@@ -54,6 +54,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded,
                        td.trace_id AS trace_id,
+                       td.correlation_id AS correlation_id,
                        td.source_value AS source_value,
                        td.execution_status AS execution_status,
                        td.from_value AS from_value,
@@ -82,6 +83,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                     while (select.next()) {
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
+                                new CorrelationId(select.getLong("correlation_id")),
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
@@ -113,6 +115,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                     while (select.next()) {
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
+                                new CorrelationId(select.getLong("correlation_id")),
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
@@ -155,6 +158,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                          ebe.executed_by_hashed AS executed_by_hashed,
                          ebe.executed_by_encoded AS executed_by_encoded,
                          td.trace_id AS trace_id,
+                         td.correlation_id AS correlation_id,
                          td.source_value AS source_value,
                          td.execution_status AS execution_status,
                          td.from_value AS from_value,
@@ -179,6 +183,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                     while (select.next()) {
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
+                                new CorrelationId(select.getLong("correlation_id")),
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
@@ -205,6 +210,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                     while (select.next()) {
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
+                                new CorrelationId(select.getLong("correlation_id")),
                                 new AnyAggregateId(select.getString("aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),

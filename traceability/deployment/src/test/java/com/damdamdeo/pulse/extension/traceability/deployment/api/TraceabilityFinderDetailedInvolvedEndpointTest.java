@@ -205,6 +205,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                 "type": "object",
                                 "required": [
                                     "traceId",
+                                    "correlationId",
                                     "aggregateId",
                                     "executedByHashed",
                                     "executedBy",
@@ -222,6 +223,14 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                         ],
                                         "format": "int64",
                                         "description": "Trace id."
+                                    },
+                                    "correlationId": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int64",
+                                        "description": "Correlation id."
                                     },
                                     "aggregateId": {
                                         "type": "string",

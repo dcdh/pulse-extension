@@ -49,6 +49,9 @@ class DefaultDetailedInvolvedFinderTest {
     private TraceId traceId;
 
     @Mock
+    private CorrelationId correlationId;
+
+    @Mock
     private Source source;
 
     @Mock
@@ -74,7 +77,7 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("EU:encoded");
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, executedByEncoded), source, ExecutionStatus.SUCCESS, from, executedAt);
         final Page<EncodedDetailedInvolved> encodedPage = new Page<>(List.of(encodedDetailedInvolved), pagination, 1);
         givenTraceabilityReadRole();
@@ -92,6 +95,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(result.pagination()).isSameAs(pagination),
                 () -> assertThat(result.totalElements()).isEqualTo(1),
                 () -> assertThat(detailedInvolved.traceId()).isSameAs(traceId),
+                () -> assertThat(detailedInvolved.correlationId()).isSameAs(correlationId),
                 () -> assertThat(detailedInvolved.source()).isSameAs(source),
                 () -> assertThat(detailedInvolved.from()).isSameAs(from),
                 () -> assertThat(detailedInvolved.executedAt()).isSameAs(executedAt),
@@ -108,7 +112,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(1, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")), source, ExecutionStatus.SUCCESS,
                 from, executedAt);
         final Page<EncodedDetailedInvolved> encodedPage = new Page<>(List.of(encodedDetailedInvolved), pagination, 11);
@@ -127,6 +131,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(result.pagination()).isSameAs(pagination),
                 () -> assertThat(result.totalElements()).isEqualTo(11),
                 () -> assertThat(detailedInvolved.traceId()).isSameAs(traceId),
+                () -> assertThat(detailedInvolved.correlationId()).isSameAs(correlationId),
                 () -> assertThat(detailedInvolved.source()).isSameAs(source),
                 () -> assertThat(detailedInvolved.from()).isSameAs(from),
                 () -> assertThat(detailedInvolved.executedAt()).isSameAs(executedAt),
@@ -164,7 +169,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Anonymous.DISCRIMINANT);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Anonymous.DISCRIMINANT)),
                 source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -187,7 +192,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.NotAvailable.DISCRIMINANT);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.NotAvailable.DISCRIMINANT)),
                 source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -211,7 +216,7 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final String serviceAccount = "my-service";
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("SA:" + serviceAccount);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded("SA:" + serviceAccount)), source,
                 ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -235,7 +240,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Banned.DISCRIMINANT);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Banned.DISCRIMINANT)), source,
                 ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -259,7 +264,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")), source,
                 ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -405,10 +410,10 @@ class DefaultDetailedInvolvedFinderTest {
         final ExecutedAt secondExecutedAt = mock(ExecutedAt.class);
         final ExecutedByHashed firstHash = new ExecutedByHashed("EU:first");
         final ExecutedByHashed secondHash = new ExecutedByHashed("SA:second");
-        final EncodedDetailedInvolved first = new EncodedDetailedInvolved(traceId, aggregateId,
+        final EncodedDetailedInvolved first = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(firstHash, new ExecutedByEncoded("EU:first")), source, ExecutionStatus.SUCCESS,
                 from, executedAt);
-        final EncodedDetailedInvolved second = new EncodedDetailedInvolved(secondTraceId, secondAggregateId,
+        final EncodedDetailedInvolved second = new EncodedDetailedInvolved(secondTraceId, correlationId, secondAggregateId,
                 new EncodedActor(secondHash, new ExecutedByEncoded("SA:second")), secondSource, ExecutionStatus.SUCCESS,
                 secondFrom, secondExecutedAt);
         givenTraceabilityReadRole();
@@ -428,6 +433,7 @@ class DefaultDetailedInvolvedFinderTest {
 
         assertAll(
                 () -> assertThat(firstResult.traceId()).isSameAs(traceId),
+                () -> assertThat(firstResult.correlationId()).isSameAs(correlationId),
                 () -> assertThat(firstResult.source()).isSameAs(source),
                 () -> assertThat(firstResult.from()).isSameAs(from),
                 () -> assertThat(firstResult.executedAt()).isSameAs(executedAt),
@@ -435,6 +441,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(firstResult.actor().executedByHashed()).isSameAs(firstHash),
                 () -> assertThat(firstResult.actor().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> assertThat(secondResult.traceId()).isSameAs(secondTraceId),
+                () -> assertThat(secondResult.correlationId()).isSameAs(correlationId),
                 () -> assertThat(secondResult.source()).isSameAs(secondSource),
                 () -> assertThat(secondResult.from()).isSameAs(secondFrom),
                 () -> assertThat(secondResult.executedAt()).isSameAs(secondExecutedAt),

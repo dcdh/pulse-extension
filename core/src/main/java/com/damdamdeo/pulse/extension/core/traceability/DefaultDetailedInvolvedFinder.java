@@ -59,6 +59,7 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
             for (final EncodedDetailedInvolved encodedDetailedInvolved : involvedPage.content()) {
                 final DetailedInvolved detailedInvolved = new DetailedInvolved(
                         encodedDetailedInvolved.traceId(),
+                        encodedDetailedInvolved.correlationId(),
                         encodedDetailedInvolved.aggregateId(),
                         new Actor(
                                 encodedDetailedInvolved.encodedActor().executedByHashed(),

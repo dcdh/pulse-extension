@@ -54,6 +54,10 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
                     description = "Trace id.", required = true)
             TraceId traceId,
 
+            @Schema(type = SchemaType.NUMBER, implementation = Long.class,
+                    description = "Correlation id.", required = true)
+            CorrelationId correlationId,
+
             @Schema(type = SchemaType.STRING, implementation = String.class,
                     description = "Identifier of the aggregate.", required = true)
             AggregateId aggregateId,
@@ -80,6 +84,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
 
         public DetailedInvolvedDTO {
             Objects.requireNonNull(traceId);
+            Objects.requireNonNull(correlationId);
             Objects.requireNonNull(aggregateId);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
@@ -90,7 +95,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         }
 
         public DetailedInvolvedDTO(final DetailedInvolved detailedInvolved) {
-            this(detailedInvolved.traceId(), detailedInvolved.aggregateId(),
+            this(detailedInvolved.traceId(), detailedInvolved.correlationId(), detailedInvolved.aggregateId(),
                     detailedInvolved.actor().executedByHashed(), detailedInvolved.actor().executedBy(),
                     detailedInvolved.source(), detailedInvolved.executionStatus(),
                     detailedInvolved.from(), detailedInvolved.executedAt());

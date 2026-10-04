@@ -25,12 +25,13 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     public static final String TRACEABILITY_DETAILS_SQL = """
             INSERT INTO %s.traceability_details (
                 trace_id,
+                correlation_id,
                 executed_at,
                 source_value,
                 execution_status,
                 from_value
             )
-            VALUES (?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?);
             """;
 
     // language=sql
@@ -79,10 +80,11 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                  final PreparedStatement traceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                          TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
                 traceabilityDetailsPreparedStatement.setLong(1, traceRecorder.traceId().id());
-                traceabilityDetailsPreparedStatement.setTimestamp(2, Timestamp.from(traceRecorder.executedAt().at()));
-                traceabilityDetailsPreparedStatement.setInt(3, traceRecorder.source().ordinal());
-                traceabilityDetailsPreparedStatement.setInt(4, traceRecorder.executionStatus().ordinal());
-                traceabilityDetailsPreparedStatement.setString(5, traceRecorder.from().from());
+                traceabilityDetailsPreparedStatement.setLong(2, traceRecorder.correlationId().id());
+                traceabilityDetailsPreparedStatement.setTimestamp(3, Timestamp.from(traceRecorder.executedAt().at()));
+                traceabilityDetailsPreparedStatement.setInt(4, traceRecorder.source().ordinal());
+                traceabilityDetailsPreparedStatement.setInt(5, traceRecorder.executionStatus().ordinal());
+                traceabilityDetailsPreparedStatement.setString(6, traceRecorder.from().from());
                 traceabilityDetailsPreparedStatement.executeUpdate();
                 for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
                     executedByEncodedPreparedStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());

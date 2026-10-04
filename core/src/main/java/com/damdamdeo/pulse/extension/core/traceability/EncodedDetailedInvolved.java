@@ -4,11 +4,12 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 
 import java.util.Objects;
 
-public record EncodedDetailedInvolved(TraceId traceId, AggregateId aggregateId, EncodedActor encodedActor,
+public record EncodedDetailedInvolved(TraceId traceId, CorrelationId correlationId, AggregateId aggregateId, EncodedActor encodedActor,
                                       Source source, ExecutionStatus executionStatus, From from, ExecutedAt executedAt) {
 
     public EncodedDetailedInvolved {
         Objects.requireNonNull(traceId);
+        Objects.requireNonNull(correlationId);
         Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(encodedActor);
         Objects.requireNonNull(source);

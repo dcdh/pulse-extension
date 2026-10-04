@@ -35,6 +35,9 @@ class DefaultTraceAppenderTest {
     private TraceIdGenerator traceIdGenerator;
 
     @Mock
+    private CorrelationIdProvider correlationIdProvider;
+
+    @Mock
     private UsernameHasher usernameHasher;
 
     @Mock
@@ -48,7 +51,7 @@ class DefaultTraceAppenderTest {
     @BeforeEach
     void setUp() {
         traceAppender = new DefaultTraceAppender(executionContextProvider, executedAtProvider, traceIdGenerator,
-                usernameHasher, executedByEncodedProvider, traceRecorderRepository);
+                correlationIdProvider, usernameHasher, executedByEncodedProvider, traceRecorderRepository);
     }
 
     @Test
@@ -56,7 +59,7 @@ class DefaultTraceAppenderTest {
         // Given
         final AggregateId firstAggregateId = mock(AggregateId.class);
         final AggregateId secondAggregateId = mock(AggregateId.class);
-        final Traceable traceable = new Traceable() {
+        final Traceable<AggregateId> traceable = new Traceable<>() {
             @Override
             public Set<AggregateId> aggregateIds() {
                 final LinkedHashSet<AggregateId> aggregateIds = new LinkedHashSet<>();
@@ -68,12 +71,14 @@ class DefaultTraceAppenderTest {
         final From from = new From("TestService");
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final TraceId traceId = new TraceId(123L);
+        final CorrelationId correlationId = new CorrelationId(125L);
         final ExecutedAt executedAt = new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"));
         final ExecutedByEncoded firstExecutedByEncoded = new ExecutedByEncoded("SA:encoded-1");
         final ExecutedByEncoded secondExecutedByEncoded = new ExecutedByEncoded("SA:encoded-2");
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(executedBy);
         when(traceIdGenerator.generate()).thenReturn(traceId);
+        when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
         when(executedByEncodedProvider.provide(firstAggregateId, executedBy)).thenReturn(firstExecutedByEncoded);
         when(executedByEncodedProvider.provide(secondAggregateId, executedBy)).thenReturn(secondExecutedByEncoded);
@@ -95,6 +100,7 @@ class DefaultTraceAppenderTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
+                () -> verify(correlationIdProvider).provide(),
                 () -> verify(executedAtProvider).now(),
                 () -> verify(executedByEncodedProvider).provide(firstAggregateId, executedBy),
                 () -> verify(executedByEncodedProvider).provide(secondAggregateId, executedBy)
@@ -104,7 +110,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldNotAppendTraceWhenThereAreNoAggregateIds() throws Exception {
         // Given
-        final Traceable traceable = new Traceable() {
+        final Traceable<AggregateId> traceable = new Traceable<>() {
         };
 
         // When
@@ -119,7 +125,7 @@ class DefaultTraceAppenderTest {
     void shouldThrowTraceAppenderExceptionWhenTraceIdCannotBeGenerated() throws Exception {
         // Given
         final AggregateId aggregateId = mock(AggregateId.class);
-        final Traceable traceable = new Traceable() {
+        final Traceable<AggregateId> traceable = new Traceable<>() {
             @Override
             public Set<AggregateId> aggregateIds() {
                 return Set.of(aggregateId);
@@ -145,6 +151,43 @@ class DefaultTraceAppenderTest {
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
                 () -> verify(executedByEncodedProvider).provide(any(), any()),
+                () -> verifyNoInteractions(correlationIdProvider, executedAtProvider, usernameHasher, traceRecorderRepository)
+        );
+    }
+
+    @Test
+    void shouldThrowTraceAppenderExceptionWhenCorrelationIdCannotBeGenerated() throws Exception {
+        // Given
+        final AggregateId aggregateId = mock(AggregateId.class);
+        final Traceable<AggregateId> traceable = new Traceable<>() {
+            @Override
+            public Set<AggregateId> aggregateIds() {
+                return Set.of(aggregateId);
+            }
+        };
+        final TraceId traceId = new TraceId(123L);
+        final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
+        final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("SA:encoded-1");
+        final CorrelationIdProviderException cause = new CorrelationIdProviderException(new RuntimeException("Unable to store trace"));
+        when(executionContextProvider.provide()).thenReturn(executionContext);
+        when(executionContext.executedBy()).thenReturn(executedBy);
+        when(traceIdGenerator.generate()).thenReturn(traceId);
+        when(correlationIdProvider.provide()).thenThrow(cause);
+        when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
+
+        // When
+        final TraceAppenderException exception = assertThrows(
+                TraceAppenderException.class,
+                () -> traceAppender.append(traceable, Source.COMMAND, ExecutionStatus.SUCCESS, new From("TestService")));
+
+        // Then
+        assertAll(
+                () -> assertSame(cause, exception.getCause()),
+                () -> verify(executionContextProvider).provide(),
+                () -> verify(executionContext).executedBy(),
+                () -> verify(traceIdGenerator).generate(),
+                () -> verify(correlationIdProvider).provide(),
+                () -> verify(executedByEncodedProvider).provide(any(), any()),
                 () -> verifyNoInteractions(executedAtProvider, usernameHasher, traceRecorderRepository)
         );
     }
@@ -153,13 +196,14 @@ class DefaultTraceAppenderTest {
     void shouldThrowTraceAppenderExceptionWhenTraceCannotBeStored() throws Exception {
         // Given
         final AggregateId aggregateId = mock(AggregateId.class);
-        final Traceable traceable = new Traceable() {
+        final Traceable<AggregateId> traceable = new Traceable<>() {
             @Override
             public Set<AggregateId> aggregateIds() {
                 return Set.of(aggregateId);
             }
         };
         final TraceId traceId = new TraceId(123L);
+        final CorrelationId correlationId = new CorrelationId(125L);
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final ExecutedAt executedAt = new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"));
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("SA:encoded-1");
@@ -167,6 +211,7 @@ class DefaultTraceAppenderTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(executedBy);
         when(traceIdGenerator.generate()).thenReturn(traceId);
+        when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
         when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
         doThrow(cause).when(traceRecorderRepository).store(any(TraceRecorder.class));
@@ -183,6 +228,7 @@ class DefaultTraceAppenderTest {
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
+                () -> verify(correlationIdProvider).provide(),
                 () -> verify(executedAtProvider).now(),
                 () -> verify(executedByEncodedProvider).provide(any(), any())
         );

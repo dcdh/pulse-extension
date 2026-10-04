@@ -43,6 +43,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
         for (final TraceRecorder traceRecorder : List.of(
                 new TraceRecorder(
                         new TraceId(1L),
+                        new CorrelationId(1L),
                         new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
                         Source.COMMAND,
                         ExecutionStatus.SUCCESS,
@@ -53,6 +54,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(2L),
+                        new CorrelationId(2L),
                         new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")),
                         Source.COMMAND,
                         ExecutionStatus.FAILED_UNAUTHORIZED,
@@ -61,6 +63,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(3L),
+                        new CorrelationId(3L),
                         new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")),
                         Source.COMMAND,
                         ExecutionStatus.FAILED_BUSINESS,
@@ -69,6 +72,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(4L),
+                        new CorrelationId(4L),
                         new ExecutedAt(Instant.parse("2026-09-06T15:00:00Z")),
                         Source.QUERY,
                         ExecutionStatus.SUCCESS,
@@ -77,6 +81,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_2), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(5L),
+                        new CorrelationId(5L),
                         new ExecutedAt(Instant.parse("2026-09-06T16:00:00Z")),
                         Source.QUERY,
                         ExecutionStatus.FAILED_UNAUTHORIZED,
@@ -85,6 +90,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(6L),
+                        new CorrelationId(6L),
                         new ExecutedAt(Instant.parse("2026-09-06T17:00:00Z")),
                         Source.QUERY,
                         ExecutionStatus.FAILED_UNAUTHORIZED,
