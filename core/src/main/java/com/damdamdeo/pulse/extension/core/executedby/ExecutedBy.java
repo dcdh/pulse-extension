@@ -2,11 +2,13 @@ package com.damdamdeo.pulse.extension.core.executedby;
 
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.job.JobName;
 
 import java.util.Objects;
 
 public sealed interface ExecutedBy
-        permits ExecutedBy.Anonymous, ExecutedBy.EndUser, ExecutedBy.ServiceAccount, ExecutedBy.NotAvailable, ExecutedBy.Banned {
+        permits ExecutedBy.Anonymous, ExecutedBy.EndUser, ExecutedBy.ServiceAccount, ExecutedBy.NotAvailable,
+        ExecutedBy.Banned, ExecutedBy.Job {
 
     String SEPARATOR = ":";
 
@@ -107,6 +109,40 @@ public sealed interface ExecutedBy
         @Override
         public String value() {
             return DISCRIMINANT + SEPARATOR + by;
+        }
+
+        @Override
+        public Username username() {
+            throw new UnsupportedOperationException("Service account does not have a username");
+        }
+
+        @Override
+        public boolean isEndUser() {
+            return false;
+        }
+    }
+
+    record Job(JobName jobName) implements ExecutedBy {
+
+        public static final String DISCRIMINANT = "JOB";
+
+        public Job {
+            Objects.requireNonNull(jobName);
+        }
+
+        @Override
+        public ExecutedByEncoded encode(final UsernameEncoder usernameEncoder, final OwnedBy ownedBy) throws UnableToEncodeException {
+            return new ExecutedByEncoded(DISCRIMINANT + SEPARATOR + jobName.name());
+        }
+
+        @Override
+        public ExecutedByHashed hash(final UsernameHasher usernameHasher) {
+            return new ExecutedByHashed(DISCRIMINANT + SEPARATOR + jobName.name());
+        }
+
+        @Override
+        public String value() {
+            return DISCRIMINANT + SEPARATOR + jobName.name();
         }
 
         @Override

@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
@@ -39,6 +40,35 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
     @Override
     public final R execute(final I input) throws QueryException {
         Objects.requireNonNull(input);
+        return internalExecution(new QueryCallable<R>() {
+            @Override
+            public R execute() throws QueryException {
+                return decorated.execute(input);
+            }
+        }, input);
+    }
+
+    @Override
+    public final R execute(final I input, final Pagination pagination) throws QueryException {
+        Objects.requireNonNull(input);
+        Objects.requireNonNull(pagination);
+        return internalExecution(new QueryCallable<R>() {
+            @Override
+            public R execute() throws QueryException {
+                return decorated.execute(input, pagination);
+            }
+        }, input);
+    }
+
+    @FunctionalInterface
+    public interface QueryCallable<T> {
+
+        T execute() throws QueryException;
+    }
+
+    private R internalExecution(final QueryCallable<R> queryCallable, final Input input) throws QueryException {
+        Objects.requireNonNull(queryCallable);
+        Objects.requireNonNull(input);
         final List<Permission<A>> permissions = decorated.permissions()
                 .stream()
                 .sorted(Comparator.comparing(Prioritable::priority))
@@ -46,7 +76,7 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
         final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         try {
-            final R result = decorated.execute(input);
+            final R result = queryCallable.execute();
             boolean allow = false;
             for (final Permission<A> permission : permissions) {
                 if (permission.allow(result.aggregateIds(), context)) {

@@ -24,6 +24,7 @@
         <module>bom</module>
         <module>query</module>
         <module>traceability</module>
+        <module>job</module>
         <module>integration-tests</module>
     </modules>
 

@@ -20,4 +20,16 @@ public final class UseCaseException extends Exception {
     public UseCaseExceptionCode useCaseExceptionCode() {
         return useCaseExceptionCode;
     }
+
+    public boolean isForbidden() {
+        return useCaseExceptionCode == UseCaseExceptionCode.FORBIDDEN;
+    }
+
+    public boolean isBusinessFailure() {
+        return useCaseExceptionCode == UseCaseExceptionCode.BUSINESS_FAILURE;
+    }
+
+    public boolean isInfrastructureFailure() {
+        return useCaseExceptionCode == UseCaseExceptionCode.INFRASTRUCTURE_FAILURE;
+    }
 }
