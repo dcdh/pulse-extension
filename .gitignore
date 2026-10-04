@@ -153,3 +153,5 @@
 /job/deployment/todo_taking_aggregate_executed_by.sql
 /job/deployment/todo_taking_aggregates.sql
 /job/deployment/todo_taking_query_event_counter.sql
+/job/deployment/target/
+/job/runtime/target/

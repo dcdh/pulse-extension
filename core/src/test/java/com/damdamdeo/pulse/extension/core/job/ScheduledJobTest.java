@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,6 +71,7 @@ class ScheduledJobTest {
         final TestCommand secondCommand = new TestCommand(new TestId("second"));
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size()))).willReturn(firstResult);
+        given(firstResult.aggregateIds()).willReturn(Set.of(firstCommand.id(), secondCommand.id()));
         given(resultProcessor.process(firstResult)).willReturn(List.of(firstCommand, secondCommand));
         given(firstResult.hasNext()).willReturn(false);
 
@@ -94,15 +96,15 @@ class ScheduledJobTest {
     }
 
     @Test
-    void shouldProcessEveryPageUntilThereIsNoNextPage() throws Exception {
+    void shouldKeepPageAtZeroWhenTwoExecutionsReturnDifferentAggregateIds() throws Exception {
         // given
         final TestCommand firstCommand = new TestCommand(new TestId("first"));
         final TestCommand secondCommand = new TestCommand(new TestId("second"));
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size())))
-                .willReturn(firstResult);
-        given(queryUseCase.execute(INPUT, new Pagination(1, CHUNK_SIZE.size())))
-                .willReturn(secondResult);
+                .willReturn(firstResult, secondResult);
+        given(firstResult.aggregateIds()).willReturn(Set.of(firstCommand.id()));
+        given(secondResult.aggregateIds()).willReturn(Set.of(secondCommand.id()));
         given(resultProcessor.process(firstResult)).willReturn(List.of(firstCommand));
         given(resultProcessor.process(secondResult)).willReturn(List.of(secondCommand));
         given(firstResult.hasNext()).willReturn(true);
@@ -115,7 +117,7 @@ class ScheduledJobTest {
         final InOrder inOrder = inOrder(queryUseCase, domainUseCase, executionContextOverloader);
         inOrder.verify(queryUseCase).execute(INPUT, new Pagination(0, CHUNK_SIZE.size()));
         inOrder.verify(domainUseCase).execute(firstCommand);
-        inOrder.verify(queryUseCase).execute(INPUT, new Pagination(1, CHUNK_SIZE.size()));
+        inOrder.verify(queryUseCase).execute(INPUT, new Pagination(0, CHUNK_SIZE.size()));
         inOrder.verify(domainUseCase).execute(secondCommand);
         inOrder.verify(executionContextOverloader).clean(JOB_NAME);
     }
@@ -155,6 +157,7 @@ class ScheduledJobTest {
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size())))
                 .willReturn(firstResult);
+        given(firstResult.aggregateIds()).willReturn(Set.of(failingCommand.id(), ignoredCommand.id()));
         given(resultProcessor.process(firstResult)).willReturn(List.of(failingCommand, ignoredCommand));
         given(domainUseCase.execute(failingCommand)).willThrow(useCaseException);
 

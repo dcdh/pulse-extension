@@ -8,8 +8,7 @@ import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
 
 public abstract class ScheduledJob<A extends AggregateId, I extends Input, P extends Projection<A>, R extends MultiplePageableResult<A, P>,
@@ -39,12 +38,34 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
                     () -> {
                         try {
                             LOGGER.info("Starting job %s".formatted(jobName));
+                            final Set<A> firstPageExecution = new HashSet<>();
+                            final Set<A> secondPageExecution = new HashSet<>();
                             executionContextOverloader.overload(jobName);
-                            boolean hasMore;
+                            IncrementStrategy incrementStrategy = IncrementStrategy.UNKNOWN;
+                            boolean hasMore = true;
                             int currentPage = 0;
                             do {
                                 final Pagination pagination = new Pagination(currentPage, chunkSize().size());
                                 final R executed = queryUseCase.execute(input(), pagination);
+                                if (!pagination.loadAll()) {
+                                    if (currentPage == 0 && firstPageExecution.isEmpty()) {
+                                        firstPageExecution.addAll(executed.aggregateIds());
+                                    } else if (currentPage == 0) {
+                                        secondPageExecution.addAll(executed.aggregateIds());
+                                        if (Collections.disjoint(firstPageExecution, secondPageExecution)) {
+                                            // two runs at page 0 do not return the same dataset, so pagination needs to be kept at 0 to process all the dataset until reaching the end
+                                            incrementStrategy = IncrementStrategy.KEEP_ZERO_PAGINATION;
+                                        } else {
+                                            // two runs at page 0 return the same dataset by aggregate identifier, so pagination needs to be incremented to avoid processing the same dataset twice
+                                            incrementStrategy = IncrementStrategy.INCREMENT_PAGINATION;
+                                            continue;// avoid processing the dataset twice
+                                        }
+                                    }
+                                }
+                                currentPage = switch (incrementStrategy) {
+                                    case UNKNOWN, KEEP_ZERO_PAGINATION -> 0;
+                                    case INCREMENT_PAGINATION -> currentPage + 1;
+                                };
                                 final List<C> commandsToExecute = process(executed);
                                 for (final C command : commandsToExecute) {
                                     try {
@@ -56,7 +77,6 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
                                         throw new JobExecutionException(exception);
                                     }
                                 }
-                                currentPage++;
                                 hasMore = executed.hasNext();
                             } while (hasMore);
                             LOGGER.info("Job %s finished".formatted(jobName));
@@ -69,6 +89,12 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
         } catch (final JobLockingException exception) {
             throw new JobExecutionException(exception);
         }
+    }
+
+    enum IncrementStrategy {
+        UNKNOWN,
+        INCREMENT_PAGINATION,
+        KEEP_ZERO_PAGINATION;
     }
 
     protected abstract I input();
