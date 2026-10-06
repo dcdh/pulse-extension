@@ -41,29 +41,31 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement(
                      """
-                             SELECT COUNT(ta.*) AS count
-                             FROM %1$s.traceability_aggregate ta
+                             SELECT COUNT(td.*) AS count
+                             FROM %1$s.traceability_details td
                              JOIN %1$s.traceability_details_traceability_aggregate tdta
-                               ON tdta.traceability_aggregate_id = ta.id
+                               ON tdta.traceability_details_id = td.trace_id
+                             JOIN %1$s.traceability_aggregate ta
+                               ON ta.id = tdta.traceability_aggregate_id
                              WHERE ta.aggregate_root_id LIKE ?
                              """.formatted(schemaName.name()));
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
-                       ta.aggregate_root_id as aggregate_root_id,
-                       ebe.executed_by_hashed AS executed_by_hashed,
-                       ebe.executed_by_encoded AS executed_by_encoded,
                        td.trace_id AS trace_id,
                        td.correlation_id AS correlation_id,
                        td.source_value AS source_value,
                        td.execution_status AS execution_status,
                        td.from_value AS from_value,
-                       td.executed_at AS executed_at
-                     FROM %1$s.traceability_aggregate ta
+                       td.executed_at AS executed_at,
+                       ta.aggregate_root_id as aggregate_root_id,
+                       ebe.executed_by_hashed AS executed_by_hashed,
+                       ebe.executed_by_encoded AS executed_by_encoded
+                     FROM %1$s.traceability_details td
                      JOIN %1$s.traceability_details_traceability_aggregate tdta
-                       ON tdta.traceability_aggregate_id = ta.id
-                     JOIN %1$s.traceability_details td
-                       ON td.trace_id = tdta.traceability_details_id
+                       ON tdta.traceability_details_id = td.trace_id
+                     JOIN %1$s.traceability_aggregate ta
+                       ON ta.id = tdta.traceability_aggregate_id
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
                      WHERE ta.aggregate_root_id LIKE ?
@@ -143,10 +145,12 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement(
                      """                     
-                             SELECT COUNT(ta.*) AS count
-                             FROM %1$s.traceability_aggregate ta
+                             SELECT COUNT(td.*) AS count
+                             FROM %1$s.traceability_details td
                              JOIN %1$s.traceability_details_traceability_aggregate tdta
-                               ON tdta.traceability_aggregate_id = ta.id
+                               ON tdta.traceability_details_id = td.trace_id
+                             JOIN %1$s.traceability_aggregate ta
+                               ON ta.id = tdta.traceability_aggregate_id
                              JOIN %1$s.executed_by_encoded ebe
                                ON ebe.id = ta.executed_by_encoded_id
                              WHERE ebe.executed_by_hashed = ?
@@ -154,20 +158,20 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
-                         ta.aggregate_root_id AS aggregate_root_id,
-                         ebe.executed_by_hashed AS executed_by_hashed,
-                         ebe.executed_by_encoded AS executed_by_encoded,
                          td.trace_id AS trace_id,
                          td.correlation_id AS correlation_id,
                          td.source_value AS source_value,
                          td.execution_status AS execution_status,
                          td.from_value AS from_value,
-                         td.executed_at AS executed_at
-                     FROM %1$s.traceability_aggregate ta
+                         td.executed_at AS executed_at,
+                         ta.aggregate_root_id AS aggregate_root_id,
+                         ebe.executed_by_hashed AS executed_by_hashed,
+                         ebe.executed_by_encoded AS executed_by_encoded
+                     FROM %1$s.traceability_details td
                      JOIN %1$s.traceability_details_traceability_aggregate tdta
-                       ON tdta.traceability_aggregate_id = ta.id
-                     JOIN %1$s.traceability_details td
-                       ON td.trace_id = tdta.traceability_details_id
+                       ON tdta.traceability_details_id = td.trace_id
+                     JOIN %1$s.traceability_aggregate ta
+                       ON ta.id = tdta.traceability_aggregate_id
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
                      WHERE ebe.executed_by_hashed = ?
