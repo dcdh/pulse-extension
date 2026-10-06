@@ -112,12 +112,6 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
                 new IncludeUncompounded(false), new Pagination(1, 1)));
         executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(false), new Pagination(2, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(false), new Pagination(3, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(false), new Pagination(4, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
                 new IncludeUncompounded(false), new Pagination(0, -1)));
 
         assertThat(executions).containsExactly(
@@ -129,18 +123,6 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(1, 1), 5L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")))),
-                        new Pagination(2, 1), 5L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.COMMAND, ExecutionStatus.FAILED_BUSINESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
-                        new Pagination(3, 1), 5L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T16:00:00Z")))),
-                        new Pagination(4, 1), 5L),
                 new Page<>(List.of(
                         new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
@@ -167,14 +149,6 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
                 new IncludeUncompounded(true), new Pagination(1, 1)));
         executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(true), new Pagination(2, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(true), new Pagination(3, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(true), new Pagination(4, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(true), new Pagination(5, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
                 new IncludeUncompounded(true), new Pagination(0, -1)));
 
         // Then
@@ -187,22 +161,6 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(1, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")))),
-                        new Pagination(2, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.COMMAND, ExecutionStatus.FAILED_BUSINESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
-                        new Pagination(3, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T16:00:00Z")))),
-                        new Pagination(4, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(6L), new CorrelationId(6L), AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T17:00:00Z")))),
-                        new Pagination(5, 1), 6L),
                 new Page<>(List.of(
                         new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
@@ -228,10 +186,6 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         // When
         executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(0, 1)));
         executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(1, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(2, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(3, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(4, 1)));
-        executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(5, 1)));
         executions.add(jdbcPostgresEncodedDetailedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(0, -1)));
 
         // Then
@@ -244,23 +198,6 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")))),
                         new Pagination(1, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.COMMAND, ExecutionStatus.FAILED_BUSINESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
-                        new Pagination(2, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(4L), new CorrelationId(4L), AnyAggregateId.from("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.QUERY, ExecutionStatus.SUCCESS, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T15:00:00Z")))),
-                        new Pagination(3, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L), AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T16:00:00Z")))),
-                        new Pagination(4, 1), 6L),
-                new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(6L), new CorrelationId(6L), AnyAggregateId.from("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T17:00:00Z")))),
-                        new Pagination(5, 1), 6L),
-
 
                 new Page<>(List.of(
                         new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),

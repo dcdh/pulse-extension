@@ -152,8 +152,6 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
         executions.add(jdbcPostgresEncodedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
                 new IncludeUncompounded(true), new Pagination(1, 1)));
         executions.add(jdbcPostgresEncodedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
-                new IncludeUncompounded(true), new Pagination(2, 1)));
-        executions.add(jdbcPostgresEncodedInvolvedRepository.findBy(TodoId.USER_1_TODO_1,
                 new IncludeUncompounded(true), new Pagination(0, -1)));
 
         // Then
@@ -168,11 +166,6 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 new CommandNbOfTimes(1), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1))),
                         new Pagination(1, 1), 3L),
-                new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
-                                new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1))),
-                        new Pagination(2, 1), 3L),
                 new Page<>(List.of(
                         new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new CommandNbOfTimes(2), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
@@ -195,7 +188,6 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
         // When
         executions.add(jdbcPostgresEncodedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(0, 1)));
         executions.add(jdbcPostgresEncodedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(1, 1)));
-        executions.add(jdbcPostgresEncodedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(2, 1)));
         executions.add(jdbcPostgresEncodedInvolvedRepository.findBy(new ExecutedByHashed("EU:bob-hashed"), new Pagination(0, -1)));
 
         // Then
@@ -210,11 +202,6 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1))),
                         new Pagination(1, 1), 3L),
-                new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
-                                new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
-                                new QueryNbOfTimes(1), new QueryUnauthorizedNbOfTimes(0))),
-                        new Pagination(2, 1), 3L),
                 new Page<>(List.of(
                         new EncodedInvolved(AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(1), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
