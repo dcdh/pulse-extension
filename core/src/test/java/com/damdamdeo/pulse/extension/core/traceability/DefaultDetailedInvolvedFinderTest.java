@@ -78,7 +78,8 @@ class DefaultDetailedInvolvedFinderTest {
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("EU:encoded");
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
-                new EncodedActor(executedByHashed, executedByEncoded), source, ExecutionStatus.SUCCESS, from, executedAt);
+                new EncodedActor(executedByHashed, executedByEncoded), null, null,
+                source, ExecutionStatus.SUCCESS, from, executedAt);
         final Page<EncodedDetailedInvolved> encodedPage = new Page<>(List.of(encodedDetailedInvolved), pagination, 1);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination)).willReturn(encodedPage);
@@ -113,8 +114,8 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination pagination = new Pagination(1, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
-                new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")), source, ExecutionStatus.SUCCESS,
-                from, executedAt);
+                new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")),
+                null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         final Page<EncodedDetailedInvolved> encodedPage = new Page<>(List.of(encodedDetailedInvolved), pagination, 11);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(executedByHashed, pagination)).willReturn(encodedPage);
@@ -171,7 +172,7 @@ class DefaultDetailedInvolvedFinderTest {
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Anonymous.DISCRIMINANT);
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Anonymous.DISCRIMINANT)),
-                source, ExecutionStatus.SUCCESS, from, executedAt);
+                null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
@@ -194,7 +195,7 @@ class DefaultDetailedInvolvedFinderTest {
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.NotAvailable.DISCRIMINANT);
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.NotAvailable.DISCRIMINANT)),
-                source, ExecutionStatus.SUCCESS, from, executedAt);
+                null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
@@ -217,8 +218,8 @@ class DefaultDetailedInvolvedFinderTest {
         final String serviceAccount = "my-service";
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("SA:" + serviceAccount);
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
-                new EncodedActor(executedByHashed, new ExecutedByEncoded("SA:" + serviceAccount)), source,
-                ExecutionStatus.SUCCESS, from, executedAt);
+                new EncodedActor(executedByHashed, new ExecutedByEncoded("SA:" + serviceAccount)),
+                null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
@@ -241,8 +242,8 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Banned.DISCRIMINANT);
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
-                new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Banned.DISCRIMINANT)), source,
-                ExecutionStatus.SUCCESS, from, executedAt);
+                new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Banned.DISCRIMINANT)),
+                null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
@@ -265,8 +266,8 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
-                new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")), source,
-                ExecutionStatus.SUCCESS, from, executedAt);
+                new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")),
+                null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
@@ -411,11 +412,11 @@ class DefaultDetailedInvolvedFinderTest {
         final ExecutedByHashed firstHash = new ExecutedByHashed("EU:first");
         final ExecutedByHashed secondHash = new ExecutedByHashed("SA:second");
         final EncodedDetailedInvolved first = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
-                new EncodedActor(firstHash, new ExecutedByEncoded("EU:first")), source, ExecutionStatus.SUCCESS,
-                from, executedAt);
+                new EncodedActor(firstHash, new ExecutedByEncoded("EU:first")), null, null,
+                source, ExecutionStatus.SUCCESS, from, executedAt);
         final EncodedDetailedInvolved second = new EncodedDetailedInvolved(secondTraceId, correlationId, secondAggregateId,
-                new EncodedActor(secondHash, new ExecutedByEncoded("SA:second")), secondSource, ExecutionStatus.SUCCESS,
-                secondFrom, secondExecutedAt);
+                new EncodedActor(secondHash, new ExecutedByEncoded("SA:second")), null, null,
+                secondSource, ExecutionStatus.SUCCESS, secondFrom, secondExecutedAt);
         givenTraceabilityReadRole();
         given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
                 .willReturn(new Page<>(List.of(first, second), pagination, 2));

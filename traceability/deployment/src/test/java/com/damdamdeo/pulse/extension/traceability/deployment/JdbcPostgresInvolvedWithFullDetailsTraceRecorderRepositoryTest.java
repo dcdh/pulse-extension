@@ -1,7 +1,8 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
@@ -47,9 +48,15 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
                 ExecutionStatus.SUCCESS,
                 new From("from"),
                 List.of(
-                        new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
-                        new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
-                        new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded"))));
+                        EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                new ExecutedByEncoded("EU:aliceEncoded"),
+                                new EventType("TodoCreated"), new AggregateVersion(0)),
+                        EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                new ExecutedByEncoded("EU:aliceEncoded"),
+                                new EventType("TodoUpdated"), new AggregateVersion(1)),
+                        EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"),
+                                new ExecutedByEncoded("EU:bobEncoded"),
+                                new EventType("TodoUpdated"), new AggregateVersion(2))));
 
         // When
         jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.store(traceRecorder);

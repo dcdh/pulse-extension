@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.*;
@@ -48,7 +47,7 @@ class DiskUsageTest {
                     ExecutionStatus.SUCCESS,
                     new From("from"),
                     List.of(
-                            new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded"))));
+                            EncodedTraceAggregateId.fromQuery(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded"))));
 
             // When
             jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.store(traceRecorder);

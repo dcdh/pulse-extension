@@ -1,9 +1,11 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
+import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
@@ -17,6 +19,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @ApplicationScoped
 @Unremovable
@@ -47,6 +50,8 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                ON tdta.traceability_details_id = td.trace_id
                              JOIN %1$s.traceability_aggregate ta
                                ON ta.id = tdta.traceability_aggregate_id
+                             LEFT JOIN %1$s.traceability_aggregate_events tae
+                               ON tae.traceability_trace_id = td.trace_id
                              WHERE ta.aggregate_root_id LIKE ?
                              """.formatted(schemaName.name()));
              // language=sql
@@ -60,7 +65,9 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        td.executed_at AS executed_at,
                        ta.aggregate_root_id as aggregate_root_id,
                        ebe.executed_by_hashed AS executed_by_hashed,
-                       ebe.executed_by_encoded AS executed_by_encoded
+                       ebe.executed_by_encoded AS executed_by_encoded,
+                       tae.event_type AS event_type,
+                       tae.aggregate_version AS aggregate_version
                      FROM %1$s.traceability_details td
                      JOIN %1$s.traceability_details_traceability_aggregate tdta
                        ON tdta.traceability_details_id = td.trace_id
@@ -68,8 +75,10 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        ON ta.id = tdta.traceability_aggregate_id
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
+                     LEFT JOIN %1$s.traceability_aggregate_events tae
+                       ON tae.traceability_trace_id = td.trace_id
                      WHERE ta.aggregate_root_id LIKE ?
-                     ORDER BY td.trace_id
+                     ORDER BY td.trace_id ASC, tae.aggregate_version ASC
                      LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
@@ -91,6 +100,9 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
+                                Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
+                                        .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
@@ -123,6 +135,9 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
+                                Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
+                                        .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
@@ -153,6 +168,8 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                ON ta.id = tdta.traceability_aggregate_id
                              JOIN %1$s.executed_by_encoded ebe
                                ON ebe.id = ta.executed_by_encoded_id
+                             LEFT JOIN %1$s.traceability_aggregate_events tae
+                               ON tae.traceability_trace_id = td.trace_id
                              WHERE ebe.executed_by_hashed = ?
                              """.formatted(schemaName.name()));
              // language=sql
@@ -166,7 +183,9 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                          td.executed_at AS executed_at,
                          ta.aggregate_root_id AS aggregate_root_id,
                          ebe.executed_by_hashed AS executed_by_hashed,
-                         ebe.executed_by_encoded AS executed_by_encoded
+                         ebe.executed_by_encoded AS executed_by_encoded,
+                         tae.event_type AS event_type,
+                         tae.aggregate_version AS aggregate_version
                      FROM %1$s.traceability_details td
                      JOIN %1$s.traceability_details_traceability_aggregate tdta
                        ON tdta.traceability_details_id = td.trace_id
@@ -174,8 +193,10 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        ON ta.id = tdta.traceability_aggregate_id
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
+                     LEFT JOIN %1$s.traceability_aggregate_events tae
+                       ON tae.traceability_trace_id = td.trace_id
                      WHERE ebe.executed_by_hashed = ?
-                     ORDER BY td.trace_id
+                     ORDER BY td.trace_id ASC, tae.aggregate_version ASC
                      LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
@@ -193,6 +214,9 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
+                                Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
+                                        .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
@@ -220,6 +244,9 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
                                 ),
+                                Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
+                                Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
+                                        .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),

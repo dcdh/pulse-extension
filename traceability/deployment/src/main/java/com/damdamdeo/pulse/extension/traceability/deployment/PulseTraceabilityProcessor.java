@@ -84,6 +84,17 @@ public class PulseTraceabilityProcessor {
                                   FOREIGN KEY (traceability_aggregate_id)
                                   REFERENCES %1$s.traceability_aggregate (id)
                             );
+                            
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events (
+                                id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+                                traceability_trace_id bigint NOT NULL,
+                                event_type character varying(255) NOT NULL,
+                                aggregate_version bigint NOT NULL,
+                                CONSTRAINT traceability_aggregate_events_pkey PRIMARY KEY (id),
+                                CONSTRAINT traceability_trace_fkey
+                                  FOREIGN KEY (traceability_trace_id)
+                                  REFERENCES %1$s.traceability_details (trace_id)
+                            );
                             """.formatted(schemaName);
         };
         if (tablesDefinition != null) {

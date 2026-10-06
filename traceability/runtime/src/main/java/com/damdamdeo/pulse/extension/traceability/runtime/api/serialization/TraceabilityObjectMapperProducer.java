@@ -2,6 +2,8 @@ package com.damdamdeo.pulse.extension.traceability.runtime.api.serialization;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.traceability.CorrelationId;
@@ -60,6 +62,8 @@ public class TraceabilityObjectMapperProducer {
         traceabilityMapperModule.addSerializer(TraceId.class, new TraceIdSerializer());
         traceabilityMapperModule.addSerializer(CorrelationId.class, new CorrelationIdSerializer());
         traceabilityMapperModule.addSerializer(NbOfTimes.class, new NbOfTimesSerializer());
+        traceabilityMapperModule.addSerializer(AggregateVersion.class, new AggregateVersionSerializer());
+        traceabilityMapperModule.addSerializer(EventType.class, new EventTypeSerializer());
         objectMapper.registerModule(traceabilityMapperModule);
         return objectMapper;
     }

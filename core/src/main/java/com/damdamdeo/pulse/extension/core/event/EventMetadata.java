@@ -1,14 +1,14 @@
 package com.damdamdeo.pulse.extension.core.event;
 
+import com.damdamdeo.pulse.extension.core.AggregateRootType;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.BelongsTo;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
-import java.sql.Timestamp;
 import java.util.Objects;
 
-public record EventMetadata(String aggregateRootType, String eventType, AggregateVersion aggregateVersion,
-                            Timestamp storedAt, OwnedBy ownedBy, BelongsTo belongsTo, ExecutedBy executedBy) {
+public record EventMetadata(AggregateRootType aggregateRootType, EventType eventType, AggregateVersion aggregateVersion,
+                            StoredAt storedAt, OwnedBy ownedBy, BelongsTo belongsTo, ExecutedBy executedBy) {
 
     public EventMetadata {
         Objects.requireNonNull(aggregateRootType);

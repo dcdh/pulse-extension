@@ -4,7 +4,6 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
 import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
-import com.damdamdeo.pulse.extension.core.command.AggregateIdTraceable;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
 import com.damdamdeo.pulse.extension.core.command.Handled;
@@ -13,7 +12,9 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
 import java.util.Comparator;
@@ -61,8 +62,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                 for (final Permission<K, C> permission : permissions) {
                     if (permission.allow(command, context)) {
                         final Handled<A, K> executed = decorated.execute(command);
-                        traceAppender.append(new AggregateIdTraceable<>(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
-                                From.from(command));
+                        traceAppender.append(command, List.of(), ExecutionStatus.SUCCESS);
                         return executed;
                     }
                 }
@@ -79,21 +79,18 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
                                         return decorated.execute(command);
                                     }
                                 });
-                                traceAppender.append(new AggregateIdTraceable<>(executed.id()), Source.COMMAND, ExecutionStatus.SUCCESS,
-                                        From.from(command));
+                                traceAppender.append(command, executed.events(), ExecutionStatus.SUCCESS);
                                 return executed;
                             } catch (final LockingException exception) {
                                 throw new UseCaseException(exception, UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
                             }
                         }
                     }
-                    traceAppender.append(new AggregateIdTraceable<>(command.id()), Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED,
-                            From.from(command));
+                    traceAppender.append(command, List.of(), ExecutionStatus.FAILED_UNAUTHORIZED);
                     throw new UnauthorizedException();
                 } catch (final UseCaseException exception) {
                     if (UseCaseExceptionCode.BUSINESS_FAILURE.equals(exception.useCaseExceptionCode())) {
-                        traceAppender.append(new AggregateIdTraceable<>(command.id()), Source.COMMAND, ExecutionStatus.FAILED_BUSINESS,
-                                From.from(command));
+                        traceAppender.append(command, List.of(), ExecutionStatus.FAILED_BUSINESS);
                     }
                     throw exception;
                 }

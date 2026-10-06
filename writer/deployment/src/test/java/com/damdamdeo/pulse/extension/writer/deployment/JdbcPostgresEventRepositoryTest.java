@@ -31,6 +31,7 @@ import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -722,12 +723,12 @@ class JdbcPostgresEventRepositoryTest {
         // Then
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(
                 new EventMetadata(
-                        "Todo", "NewTodoCreated", new AggregateVersion(0),
-                        Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
+                        new AggregateRootType("Todo"), new EventType("NewTodoCreated"), new AggregateVersion(0),
+                        new StoredAt(LocalDateTime.of(2025, Month.OCTOBER, 13, 18, 0, 0).toInstant(ZoneOffset.UTC)),
                         Todo.OWNED_BY_USER_1, Todo.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE),
                 new EventMetadata(
-                        "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
-                        Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
+                        new AggregateRootType("Todo"), new EventType("TodoMarkedAsDone"), new AggregateVersion(1),
+                        new StoredAt(LocalDateTime.of(2025, Month.OCTOBER, 13, 18, 0, 0).toInstant(ZoneOffset.UTC)),
                         Todo.OWNED_BY_USER_1, Todo.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE));
     }
 
@@ -753,8 +754,8 @@ class JdbcPostgresEventRepositoryTest {
 
         // Then
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(new EventMetadata(
-                "Todo", "TodoMarkedAsDone", new AggregateVersion(1),
-                Timestamp.valueOf(LocalDateTime.of(2025, Month.OCTOBER, 13, 20, 0, 0)),
+                new AggregateRootType("Todo"), new EventType("TodoMarkedAsDone"), new AggregateVersion(1),
+                new StoredAt(LocalDateTime.of(2025, Month.OCTOBER, 13, 18, 0, 0).toInstant(ZoneOffset.UTC)),
                 Todo.OWNED_BY_USER_1, Todo.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE));
     }
 

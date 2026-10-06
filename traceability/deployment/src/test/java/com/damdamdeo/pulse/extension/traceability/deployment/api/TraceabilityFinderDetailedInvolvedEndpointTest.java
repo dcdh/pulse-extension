@@ -244,6 +244,18 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                         "type": "string",
                                         "description": "Information identifying the actor who executed the operation."
                                     },
+                                    "eventType": {
+                                        "type": "string",
+                                        "description": "Event type."
+                                    },
+                                    "aggregateVersion": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Aggregate version."
+                                    },
                                     "source": {
                                         "type": "string",
                                         "description": "Source"

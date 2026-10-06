@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.traceability.deployment.finder;
 
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -49,8 +51,23 @@ class DefaultDetailedInvolvedFinderTest {
                         ExecutionStatus.SUCCESS,
                         new From("from"),
                         List.of(
-                                new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
-                                new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded"))))
+                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                        new ExecutedByEncoded("EU:aliceEncoded"),
+                                        new EventType("TodoCreated"), new AggregateVersion(0)),
+                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                        new ExecutedByEncoded("EU:aliceEncoded"),
+                                        new EventType("TodoUpdated"), new AggregateVersion(1)))),
+                new TraceRecorder(
+                        new TraceId(2L),
+                        new CorrelationId(2L),
+                        new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")),
+                        Source.COMMAND,
+                        ExecutionStatus.SUCCESS,
+                        new From("from"),
+                        List.of(
+                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
+                                        new ExecutedByEncoded("EU:bobEncoded"),
+                                        new EventType("TodoCreated"), new AggregateVersion(0))))
         )) {
             jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.store(traceRecorder);
         }
@@ -67,9 +84,9 @@ class DefaultDetailedInvolvedFinderTest {
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
                         new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
-                                Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
+                                new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
+                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                                new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 2L));
     }
 
@@ -83,8 +100,10 @@ class DefaultDetailedInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), new AnyAggregateId("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
-                new Pagination(0, 10), 1L));
+                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                                new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
+                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                                new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
+                new Pagination(0, 10), 2L));
     }
 }

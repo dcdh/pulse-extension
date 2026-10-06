@@ -8,8 +8,6 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
-import com.damdamdeo.pulse.extension.core.traceability.From;
-import com.damdamdeo.pulse.extension.core.traceability.Source;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
@@ -134,8 +132,7 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
-                        ExecutionStatus.SUCCESS, From.from(INPUT)),
+                () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS),
                 () -> verify(distributedLockManager).executeWithLock(eq(INPUT), any(UseCaseExecutor.class))
         );
     }
@@ -157,8 +154,7 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
-                        ExecutionStatus.SUCCESS, From.from(INPUT)),
+                () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS),
                 () -> verify(distributedLockManager).executeWithLock(eq(INPUT), any(UseCaseExecutor.class))
         );
     }
@@ -180,8 +176,7 @@ class GuardDomainUseCaseTest {
                 () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
-                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
-                        ExecutionStatus.SUCCESS, From.from(INPUT))
+                () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS)
         );
     }
 
@@ -201,8 +196,7 @@ class GuardDomainUseCaseTest {
         assertAll(
                 () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
-                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
-                        ExecutionStatus.SUCCESS, From.from(INPUT)),
+                () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,
                         executedByResolver),
                 () -> verify(distributedLockManager).executeWithLock(eq(INPUT), any(UseCaseExecutor.class))
@@ -228,8 +222,7 @@ class GuardDomainUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
                 () -> assertThat(decorated.called()).containsExactly("permissions"),
-                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
-                        ExecutionStatus.FAILED_UNAUTHORIZED, From.from(INPUT)),
+                () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.FAILED_UNAUTHORIZED),
                 () -> verifyNoInteractions(distributedLockManager)
         );
     }
@@ -253,8 +246,7 @@ class GuardDomainUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(BusinessException.class),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore"),
-                () -> verify(traceAppender).append(new AggregateIdTraceable<>(TodoId.USER_1_TODO_1), Source.COMMAND,
-                        ExecutionStatus.FAILED_BUSINESS, From.from(INPUT)),
+                () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.FAILED_BUSINESS),
                 () -> verify(distributedLockManager).executeWithLock(eq(INPUT), any(UseCaseExecutor.class))
         );
     }

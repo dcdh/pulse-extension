@@ -9,7 +9,9 @@ import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesP
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
-import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 
 import java.util.Comparator;
 import java.util.List;
@@ -85,10 +87,10 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
                 }
             }
             if (allow) {
-                traceAppender.append(result, Source.QUERY, ExecutionStatus.SUCCESS, From.from(input));
+                traceAppender.append(input, result.aggregateIds(), ExecutionStatus.SUCCESS);
                 return result;
             } else {
-                traceAppender.append(result, Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, From.from(input));
+                traceAppender.append(input, result.aggregateIds(), ExecutionStatus.FAILED_UNAUTHORIZED);
                 throw new QueryException(new UnauthorizedException());
             }
         } catch (final TraceAppenderException exception) {

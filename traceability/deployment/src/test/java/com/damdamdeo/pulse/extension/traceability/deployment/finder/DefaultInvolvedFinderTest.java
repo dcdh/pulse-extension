@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.traceability.deployment.finder;
 
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -50,8 +52,12 @@ class DefaultInvolvedFinderTest {
                         ExecutionStatus.SUCCESS,
                         new From("from"),
                         List.of(
-                                new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
-                                new EncodedTraceAggregateId(AnyAggregateId.from(TodoId.USER_1_TODO_1), new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded"))))
+                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                        new ExecutedByEncoded("EU:aliceEncoded"),
+                                        new EventType("TodoCreated"), new AggregateVersion(0)),
+                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"),
+                                        new ExecutedByEncoded("EU:bobEncoded"),
+                                        new EventType("TodoUpdated"), new AggregateVersion(2))))
         )) {
             jdbcPostgresInvolvedTraceRecorderRepository.store(traceRecorder);
         }
@@ -86,7 +92,7 @@ class DefaultInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new Involved(AnyAggregateId.from("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
                                 QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L));

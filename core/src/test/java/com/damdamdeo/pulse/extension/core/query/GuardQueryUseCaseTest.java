@@ -70,7 +70,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class))
+                () -> verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS)
         );
     }
 
@@ -89,7 +89,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class)),
+                () -> verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS),
                 () -> verify(decorated).execute(any())
         );
     }
@@ -109,7 +109,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class)),
+                () -> verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS),
                 () -> verify(decorated).execute(any())
         );
     }
@@ -149,7 +149,11 @@ class GuardQueryUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).permissions(),
-                () -> verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.FAILED_UNAUTHORIZED), any(From.class)),
+                () -> verify(traceAppender).append(
+                        INPUT,
+                        result.aggregateIds(),
+                        ExecutionStatus.FAILED_UNAUTHORIZED
+                ),
                 () -> verify(decorated).execute(any())
         );
     }
@@ -164,16 +168,18 @@ class GuardQueryUseCaseTest {
         guardQuery.execute(INPUT);
 
         // Then
-        verify(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class));
+        verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS);
     }
 
     @Test
     void shouldThrowInfrastructureFailureWhenTraceAppendingFails() throws QueryException, TraceAppenderException {
         // Given
+        final Set<TodoId> aggregateIds = Set.of();
         when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
+        when(result.aggregateIds()).thenReturn(aggregateIds);
         doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
-                .when(traceAppender).append(eq(result), eq(Source.QUERY), eq(ExecutionStatus.SUCCESS), any(From.class));
+                .when(traceAppender).append(INPUT, aggregateIds, ExecutionStatus.SUCCESS);
 
         // When / Then
         final QueryException exception = assertThrows(QueryException.class, () -> guardQuery.execute(INPUT));
@@ -181,7 +187,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertEquals(QueryExceptionCode.INFRASTRUCTURE_FAILURE, exception.queryExceptionCode()),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(any(), any(), any(), any())
+                () -> verify(traceAppender).append(any(Input.class), any(), any())
         );
     }
 

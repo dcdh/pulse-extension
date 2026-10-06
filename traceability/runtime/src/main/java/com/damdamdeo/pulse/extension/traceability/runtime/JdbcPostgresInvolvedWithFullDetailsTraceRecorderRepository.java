@@ -22,7 +22,7 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     // executed_by_hashed is determinist
     // executed_by_encoded is non-deterministic even on the same username
     // language=sql
-    public static final String TRACEABILITY_DETAILS_SQL = """
+    public static final String INSERT_TRACEABILITY_DETAILS_SQL = """
             INSERT INTO %s.traceability_details (
                 trace_id,
                 correlation_id,
@@ -35,7 +35,7 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             """;
 
     // language=sql
-    public static final String TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL = """
+    public static final String INSERT_TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_details_traceability_aggregate (
                 traceability_details_id,
                 traceability_aggregate_id
@@ -43,6 +43,16 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             VALUES (?, ?)
             ON CONFLICT (traceability_details_id, traceability_aggregate_id)
             DO NOTHING
+            """;
+
+    // language=sql
+    public static final String INSERT_TRACEABILITY_AGGREGATE_EVENT_SQL = """
+            INSERT INTO %s.traceability_aggregate_events (
+                traceability_trace_id,
+                event_type,
+                aggregate_version
+            )
+            VALUES (?, ?, ?)
             """;
 
     private final DataSource dataSource;
@@ -72,13 +82,15 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try (final PreparedStatement traceabilityDetailsPreparedStatement = connection.prepareStatement(
-                    TRACEABILITY_DETAILS_SQL.formatted(schemaName.name()));
-                 final PreparedStatement executedByEncodedPreparedStatement = connection.prepareStatement(
+                    INSERT_TRACEABILITY_DETAILS_SQL.formatted(schemaName.name()));
+                 final PreparedStatement insertExecutedByEncodedPreparedStatement = connection.prepareStatement(
                          JdbcPostgresInvolvedTraceRecorderRepository.INSERT_EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
-                 final PreparedStatement traceabilityAggregatePreparedStatement = connection.prepareStatement(
+                 final PreparedStatement insertTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                          traceabilityAggregateSQL.formatted(schemaName.name()));
-                 final PreparedStatement traceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
-                         TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()))) {
+                 final PreparedStatement insertTraceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
+                         INSERT_TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()));
+                 final PreparedStatement insertTraceabilityAggregateEventPreparedStatement = connection.prepareStatement(
+                         INSERT_TRACEABILITY_AGGREGATE_EVENT_SQL.formatted(schemaName.name()))) {
                 traceabilityDetailsPreparedStatement.setLong(1, traceRecorder.traceId().id());
                 traceabilityDetailsPreparedStatement.setLong(2, traceRecorder.correlationId().id());
                 traceabilityDetailsPreparedStatement.setTimestamp(3, Timestamp.from(traceRecorder.executedAt().at()));
@@ -87,28 +99,34 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                 traceabilityDetailsPreparedStatement.setString(6, traceRecorder.from().from());
                 traceabilityDetailsPreparedStatement.executeUpdate();
                 for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
-                    executedByEncodedPreparedStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
-                    executedByEncodedPreparedStatement.setString(2, encodedTraceAggregateId.executedByEncoded().encoded());
-                    executedByEncodedPreparedStatement.setString(3, encodedTraceAggregateId.executedByHashed().hashed());
+                    insertExecutedByEncodedPreparedStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
+                    insertExecutedByEncodedPreparedStatement.setString(2, encodedTraceAggregateId.executedByEncoded().encoded());
+                    insertExecutedByEncodedPreparedStatement.setString(3, encodedTraceAggregateId.executedByHashed().hashed());
                     final long executedByEncodedId;
-                    try (final ResultSet resultSet = executedByEncodedPreparedStatement.executeQuery()) {
+                    try (final ResultSet resultSet = insertExecutedByEncodedPreparedStatement.executeQuery()) {
                         if (!resultSet.next()) {
                             throw new SQLException("Unable to retrieve executed_by_encoded id");
                         }
                         executedByEncodedId = resultSet.getLong(1);
                     }
-                    traceabilityAggregatePreparedStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
-                    traceabilityAggregatePreparedStatement.setLong(2, executedByEncodedId);
+                    insertTraceabilityAggregatePreparedStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
+                    insertTraceabilityAggregatePreparedStatement.setLong(2, executedByEncodedId);
                     final long traceabilityAggregateId;
-                    try (final ResultSet resultSet = traceabilityAggregatePreparedStatement.executeQuery()) {
+                    try (final ResultSet resultSet = insertTraceabilityAggregatePreparedStatement.executeQuery()) {
                         if (!resultSet.next()) {
                             throw new SQLException("Unable to retrieve traceability_aggregate id");
                         }
                         traceabilityAggregateId = resultSet.getLong(1);
                     }
-                    traceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(1, traceRecorder.traceId().id());
-                    traceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(2, traceabilityAggregateId);
-                    traceabilityDetailsTraceabilityAggregatePreparedStatement.executeUpdate();
+                    if (encodedTraceAggregateId.hasEvent()) {
+                        insertTraceabilityAggregateEventPreparedStatement.setLong(1, traceRecorder.traceId().id());
+                        insertTraceabilityAggregateEventPreparedStatement.setString(2, encodedTraceAggregateId.eventType().type());
+                        insertTraceabilityAggregateEventPreparedStatement.setInt(3, encodedTraceAggregateId.aggregateVersion().version());
+                        insertTraceabilityAggregateEventPreparedStatement.executeUpdate();
+                    }
+                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(1, traceRecorder.traceId().id());
+                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(2, traceabilityAggregateId);
+                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeUpdate();
                 }
                 connection.commit();
             } catch (final SQLException exception) {

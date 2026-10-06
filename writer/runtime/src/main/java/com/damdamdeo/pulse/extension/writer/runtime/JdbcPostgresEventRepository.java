@@ -267,10 +267,10 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                     final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
                     final ExecutedBy executedBy = new ExecutedByEncoded(resultSet.getString("executed_by")).to(usernameDecoder, ownedBy);
                     eventsMetadata.add(new EventMetadata(
-                            resultSet.getString("aggregate_root_type"),
-                            resultSet.getString("event_type"),
+                            new AggregateRootType(resultSet.getString("aggregate_root_type")),
+                            new EventType(resultSet.getString("event_type")),
                             new AggregateVersion(resultSet.getInt("version")),
-                            Timestamp.from(resultSet.getTimestamp("stored_at").toInstant()),
+                            new StoredAt(resultSet.getTimestamp("stored_at").toInstant()),
                             ownedBy,
                             new BelongsTo(resultSet.getString("belongs_to")),
                             executedBy
@@ -309,10 +309,10 @@ public abstract class JdbcPostgresEventRepository<A extends AggregateRoot<K>, K 
                         final OwnedBy ownedBy = new OwnedBy(resultSet.getString("owned_by"));
                         final ExecutedBy executedBy = new ExecutedByEncoded(resultSet.getString("executed_by")).to(usernameDecoder, ownedBy);
                         eventsMetadata.add(new EventMetadata(
-                                resultSet.getString("aggregate_root_type"),
-                                resultSet.getString("event_type"),
+                                new AggregateRootType(resultSet.getString("aggregate_root_type")),
+                                new EventType(resultSet.getString("event_type")),
                                 new AggregateVersion(resultSet.getInt("version")),
-                                Timestamp.from(resultSet.getTimestamp("stored_at").toInstant()),
+                                new StoredAt(resultSet.getTimestamp("stored_at").toInstant()),
                                 ownedBy,
                                 new BelongsTo(resultSet.getString("belongs_to")),
                                 executedBy

@@ -2,7 +2,9 @@ package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
 import com.damdamdeo.pulse.extension.common.runtime.pagination.PaginationDTO;
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
@@ -70,6 +72,14 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
                     description = "Information identifying the actor who executed the operation.", required = true)
             ExecutedBy executedBy,
 
+            @Schema(type = SchemaType.STRING, implementation = String.class,
+                    description = "Event type.", required = false)
+            EventType eventType,
+
+            @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
+                    description = "Aggregate version.", required = false)
+            AggregateVersion aggregateVersion,
+
             @Schema(type = SchemaType.STRING, implementation = String.class, description = "Source", required = true)
             Source source,
 
@@ -97,6 +107,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         public DetailedInvolvedDTO(final DetailedInvolved detailedInvolved) {
             this(detailedInvolved.traceId(), detailedInvolved.correlationId(), detailedInvolved.aggregateId(),
                     detailedInvolved.actor().executedByHashed(), detailedInvolved.actor().executedBy(),
+                    detailedInvolved.eventType(), detailedInvolved.aggregateVersion(),
                     detailedInvolved.source(), detailedInvolved.executionStatus(),
                     detailedInvolved.from(), detailedInvolved.executedAt());
         }

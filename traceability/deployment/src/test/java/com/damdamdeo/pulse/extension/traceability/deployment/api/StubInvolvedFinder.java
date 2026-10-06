@@ -47,7 +47,7 @@ public class StubInvolvedFinder implements InvolvedFinder {
         Objects.requireNonNull(pagination);
         return new Page<>(
                 List.of(
-                        new Involved(AnyAggregateId.from("U000001-T000001"), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L);
     }
