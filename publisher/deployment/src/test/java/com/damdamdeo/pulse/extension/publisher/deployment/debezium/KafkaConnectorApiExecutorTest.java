@@ -20,7 +20,9 @@ class KafkaConnectorApiExecutorTest extends AbstractPublisherTest {
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withConfigurationResource("application.properties")
-            .overrideConfigKey("quarkus.arc.exclude-types", DebeziumConfigurator.class.getName());
+            .overrideConfigKey("quarkus.arc.exclude-types",
+                    "com.damdamdeo.pulse.extension.core.usecase.GuardDomainUseCaseTest$StubDomainUseCase,"
+                            + DebeziumConfigurator.class.getName());
 
     @Inject
     KafkaConnectorApiExecutor kafkaConnectorApiExecutor;
