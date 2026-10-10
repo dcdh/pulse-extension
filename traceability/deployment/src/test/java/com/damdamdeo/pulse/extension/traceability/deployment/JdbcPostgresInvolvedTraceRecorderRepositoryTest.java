@@ -72,7 +72,7 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
              final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times FROM todo_taking.traceability_aggregate
+                             SELECT aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_aggregate
                              """)) {
             ResultSet resultSet = selectExecutedByEncodedPreparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -85,12 +85,13 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
                         String.valueOf(resultSet.getLong("command_unauthorized_nb_of_times")),
                         String.valueOf(resultSet.getLong("command_business_failed_nb_of_times")),
                         String.valueOf(resultSet.getLong("query_nb_of_times")),
-                        String.valueOf(resultSet.getLong("query_unauthorized_nb_of_times"))));
+                        String.valueOf(resultSet.getLong("query_unauthorized_nb_of_times")),
+                        String.valueOf(resultSet.getLong("traceability_nb_of_times"))));
             }
         }
         assertThat(data).containsExactly("1|EU:alice-hashed|EU:aliceEncoded",
                 "3|EU:bob-hashed|EU:bobEncoded",
-                "U000001-T000001|1|2|0|0|0|0",
-                "U000001-T000001|3|1|0|0|0|0");
+                "U000001-T000001|1|2|0|0|0|0|0",
+                "U000001-T000001|3|1|0|0|0|0|0");
     }
 }

@@ -429,7 +429,8 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "commandUnauthorizedNbOfTimes",
                                     "commandBusinessFailedNbOfTimes",
                                     "queryNbOfTimes",
-                                    "queryUnauthorizedNbOfTimes"
+                                    "queryUnauthorizedNbOfTimes",
+                                    "traceabilityNbOfTimes"
                                 ],
                                 "description": "Actor involved in the execution of an aggregate.",
                                 "properties": {
@@ -451,7 +452,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                              "number"
                                          ],
                                          "format": "int32",
-                                         "description": "Nombre of times the actor has been involved on executing successfully a command."
+                                         "description": "Number of times the actor has been involved on executing successfully a command."
                                     },
                                     "commandUnauthorizedNbOfTimes": {
                                         "type": [
@@ -459,7 +460,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                             "number"
                                         ],
                                         "format": "int32",
-                                         "description": "Nombre of times the actor has been involved on an unauthorize execution of a command."
+                                         "description": "Number of times the actor has been involved on an unauthorize execution of a command."
                                     },
                                     "commandBusinessFailedNbOfTimes": {
                                         "type": [
@@ -467,7 +468,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                             "number"
                                         ],
                                         "format": "int32",
-                                        "description": "Nombre of times the actor has been involved on a business failing execution of a command."
+                                        "description": "Number of times the actor has been involved on a business failing execution of a command."
                                     },
                                     "queryNbOfTimes": {
                                         "type": [
@@ -475,7 +476,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                             "number"
                                         ],
                                         "format": "int32",
-                                        "description": "Nombre of times the actor has been involved on executing a query."
+                                        "description": "Number of times the actor has been involved on executing a query."
                                     },
                                     "queryUnauthorizedNbOfTimes": {
                                         "type": [
@@ -483,7 +484,15 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                             "number"
                                         ],
                                         "format": "int32",
-                                        "description": "Nombre of times the actor has been involved on an unauthorized execution of a query."
+                                        "description": "Number of times the actor has been involved on an unauthorized execution of a query."
+                                    },
+                                    "traceabilityNbOfTimes": {
+                                        "type": [
+                                            "integer",
+                                            "number"
+                                        ],
+                                        "format": "int32",
+                                        "description": "Number of times the actor has been involved on accessing an aggregate from the traceability."
                                     }
                                 }
                             },

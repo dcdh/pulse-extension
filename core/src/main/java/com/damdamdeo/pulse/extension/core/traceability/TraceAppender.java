@@ -15,4 +15,6 @@ public interface TraceAppender {
 
     <K extends AggregateId> void append(Input input, Set<K> aggregateIds, ExecutionStatus executionStatus)
             throws TraceAppenderException;
+
+    void append(Set<AggregateId> aggregateIds) throws TraceAppenderException;
 }

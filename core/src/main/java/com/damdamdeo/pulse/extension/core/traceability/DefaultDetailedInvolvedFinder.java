@@ -11,6 +11,7 @@ import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.damdamdeo.pulse.extension.core.traceability.Finder.ROLE_TRACEABILITY_READ;
 
@@ -20,15 +21,18 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
     private final OwnedByProvider ownedByProvider;
     private final UsernameDecoder usernameDecoder;
     private final ExecutionContextProvider executionContextProvider;
+    private final TraceAppender traceAppender;
 
     public DefaultDetailedInvolvedFinder(final EncodedDetailedInvolvedRepository encodedDetailedInvolvedRepository,
                                          final OwnedByProvider ownedByProvider,
                                          final UsernameDecoder usernameDecoder,
-                                         final ExecutionContextProvider executionContextProvider) {
+                                         final ExecutionContextProvider executionContextProvider,
+                                         final TraceAppender traceAppender) {
         this.encodedDetailedInvolvedRepository = Objects.requireNonNull(encodedDetailedInvolvedRepository);
         this.ownedByProvider = Objects.requireNonNull(ownedByProvider);
         this.usernameDecoder = Objects.requireNonNull(usernameDecoder);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
+        this.traceAppender = Objects.requireNonNull(traceAppender);
     }
 
     @Override
@@ -55,7 +59,7 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
                 throw new UnauthorizedException();
             }
             final Page<EncodedDetailedInvolved> involvedPage = supplier.get();
-            final List<DetailedInvolved> list = new ArrayList<>(involvedPage.content().size());
+            final List<DetailedInvolved> listOfInvolved = new ArrayList<>(involvedPage.content().size());
             for (final EncodedDetailedInvolved encodedDetailedInvolved : involvedPage.content()) {
                 final DetailedInvolved detailedInvolved = new DetailedInvolved(
                         encodedDetailedInvolved.traceId(),
@@ -73,10 +77,12 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
                         encodedDetailedInvolved.from(),
                         encodedDetailedInvolved.executedAt()
                 );
-                list.add(detailedInvolved);
+                listOfInvolved.add(detailedInvolved);
             }
-            return new Page<>(list, involvedPage.pagination(), involvedPage.totalElements());
-        } catch (final TraceRepositoryException | OwnedByProviderException | UnauthorizedException exception) {
+            traceAppender.append(listOfInvolved.stream().map(DetailedInvolved::aggregateId).collect(Collectors.toSet()));
+            return new Page<>(listOfInvolved, involvedPage.pagination(), involvedPage.totalElements());
+        } catch (final TraceRepositoryException | OwnedByProviderException | UnauthorizedException
+                       | TraceAppenderException exception) {
             throw new FinderException(exception);
         }
     }

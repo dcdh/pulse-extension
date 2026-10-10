@@ -64,24 +64,28 @@ public class TraceabilityFinderInvolvedEndpoint {
             ExecutedBy executedBy,
 
             @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
-                    description = "Nombre of times the actor has been involved on executing successfully a command.", required = true)
+                    description = "Number of times the actor has been involved on executing successfully a command.", required = true)
             CommandNbOfTimes commandNbOfTimes,
 
             @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
-                    description = "Nombre of times the actor has been involved on an unauthorize execution of a command.", required = true)
+                    description = "Number of times the actor has been involved on an unauthorize execution of a command.", required = true)
             CommandUnauthorizedNbOfTimes commandUnauthorizedNbOfTimes,
 
             @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
-                    description = "Nombre of times the actor has been involved on a business failing execution of a command.", required = true)
+                    description = "Number of times the actor has been involved on a business failing execution of a command.", required = true)
             CommandBusinessFailedNbOfTimes commandBusinessFailedNbOfTimes,
 
             @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
-                    description = "Nombre of times the actor has been involved on executing a query.", required = true)
+                    description = "Number of times the actor has been involved on executing a query.", required = true)
             QueryNbOfTimes queryNbOfTimes,
 
             @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
-                    description = "Nombre of times the actor has been involved on an unauthorized execution of a query.", required = true)
-            QueryUnauthorizedNbOfTimes queryUnauthorizedNbOfTimes) {
+                    description = "Number of times the actor has been involved on an unauthorized execution of a query.", required = true)
+            QueryUnauthorizedNbOfTimes queryUnauthorizedNbOfTimes,
+
+            @Schema(type = SchemaType.NUMBER, implementation = Integer.class,
+                    description = "Number of times the actor has been involved on accessing an aggregate from the traceability.", required = true)
+            TraceabilityNbOfTimes traceabilityNbOfTimes) {
 
         public InvolvedDTO {
             Objects.requireNonNull(aggregateId);
@@ -92,6 +96,7 @@ public class TraceabilityFinderInvolvedEndpoint {
             Objects.requireNonNull(commandBusinessFailedNbOfTimes);
             Objects.requireNonNull(queryNbOfTimes);
             Objects.requireNonNull(queryUnauthorizedNbOfTimes);
+            Objects.requireNonNull(traceabilityNbOfTimes);
         }
 
         public InvolvedDTO(final Involved involved) {
@@ -100,7 +105,8 @@ public class TraceabilityFinderInvolvedEndpoint {
                     involved.commandUnauthorizedNbOfTimes(),
                     involved.commandBusinessFailedNbOfTimes(),
                     involved.queryNbOfTimes(),
-                    involved.queryUnauthorizedNbOfTimes());
+                    involved.queryUnauthorizedNbOfTimes(),
+                    involved.traceabilityNbOfTimes());
         }
     }
 

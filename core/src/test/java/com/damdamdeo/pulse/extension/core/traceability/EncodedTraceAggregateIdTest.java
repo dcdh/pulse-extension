@@ -41,6 +41,27 @@ class EncodedTraceAggregateIdTest {
     }
 
     @Test
+    void shouldCreateTraceabilityTraceWithoutEvent() {
+        // given
+        final TodoId aggregateId = TodoId.USER_1_TODO_1;
+
+        // when
+        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.fromTraceability(
+                aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
+
+        // then
+        assertAll(
+                () -> assertEquals(Source.TRACEABILITY, trace.source()),
+                () -> assertEquals(aggregateId, trace.aggregateId()),
+                () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
+                () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
+                () -> assertNull(trace.eventType()),
+                () -> assertNull(trace.aggregateVersion()),
+                () -> assertFalse(trace.hasEvent())
+        );
+    }
+
+    @Test
     void shouldCreateCommandTraceWithEvent() {
         // given
         final TodoId aggregateId = TodoId.USER_1_TODO_1;

@@ -23,7 +23,7 @@ public record EncodedTraceAggregateId(Source source, AggregateId aggregateId, Ex
                 Validate.isTrue(eventType == null, "eventType must be null for QUERY");
                 Validate.isTrue(aggregateVersion == null, "aggregateVersion must be null for QUERY");
             }
-            case COMMAND -> {
+            case COMMAND, TRACEABILITY -> {
             }
         }
     }
@@ -45,5 +45,10 @@ public record EncodedTraceAggregateId(Source source, AggregateId aggregateId, Ex
     public static EncodedTraceAggregateId fromCommand(final AggregateId aggregateId, final ExecutedByHashed executedByHashed,
                                                       final ExecutedByEncoded executedByEncoded) {
         return new EncodedTraceAggregateId(Source.COMMAND, aggregateId, executedByHashed, executedByEncoded, null, null);
+    }
+
+    public static EncodedTraceAggregateId fromTraceability(final AggregateId aggregateId, final ExecutedByHashed executedByHashed,
+                                                           final ExecutedByEncoded executedByEncoded) {
+        return new EncodedTraceAggregateId(Source.TRACEABILITY, aggregateId, executedByHashed, executedByEncoded, null, null);
     }
 }

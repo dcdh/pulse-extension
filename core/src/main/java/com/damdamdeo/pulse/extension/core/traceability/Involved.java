@@ -10,7 +10,8 @@ public record Involved(AggregateId aggregateId, Actor actor,
                        CommandUnauthorizedNbOfTimes commandUnauthorizedNbOfTimes,
                        CommandBusinessFailedNbOfTimes commandBusinessFailedNbOfTimes,
                        QueryNbOfTimes queryNbOfTimes,
-                       QueryUnauthorizedNbOfTimes queryUnauthorizedNbOfTimes) {
+                       QueryUnauthorizedNbOfTimes queryUnauthorizedNbOfTimes,
+                       TraceabilityNbOfTimes traceabilityNbOfTimes) {
 
     public Involved {
         Objects.requireNonNull(aggregateId);
@@ -20,5 +21,6 @@ public record Involved(AggregateId aggregateId, Actor actor,
         Objects.requireNonNull(commandBusinessFailedNbOfTimes);
         Objects.requireNonNull(queryNbOfTimes);
         Objects.requireNonNull(queryUnauthorizedNbOfTimes);
+        Objects.requireNonNull(traceabilityNbOfTimes);
     }
 }

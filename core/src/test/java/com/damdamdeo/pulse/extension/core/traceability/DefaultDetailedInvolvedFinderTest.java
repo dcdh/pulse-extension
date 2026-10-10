@@ -40,6 +40,9 @@ class DefaultDetailedInvolvedFinderTest {
     private ExecutionContextProvider executionContextProvider;
 
     @Mock
+    private TraceAppender traceAppender;
+
+    @Mock
     private OwnedBy ownedBy;
 
     @Mock
@@ -68,7 +71,7 @@ class DefaultDetailedInvolvedFinderTest {
     @BeforeEach
     void setUp() {
         finder = new DefaultDetailedInvolvedFinder(encodedDetailedInvolvedRepository, ownedByProvider, usernameDecoder,
-                executionContextProvider);
+                executionContextProvider, traceAppender);
     }
 
     @Test
@@ -104,7 +107,8 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(detailedInvolved.actor().executedByHashed()).isSameAs(executedByHashed),
                 () -> assertThat(detailedInvolved.actor().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, new IncludeUncompounded(false), pagination),
-                () -> verify(ownedByProvider).provide(aggregateId)
+                () -> verify(ownedByProvider).provide(aggregateId),
+                () -> verify(traceAppender).append(Set.of(aggregateId))
         );
     }
 
@@ -140,7 +144,8 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(detailedInvolved.actor().executedByHashed()).isSameAs(executedByHashed),
                 () -> assertThat(detailedInvolved.actor().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(executedByHashed, pagination),
-                () -> verify(ownedByProvider).provide(aggregateId)
+                () -> verify(ownedByProvider).provide(aggregateId),
+                () -> verify(traceAppender).append(Set.of(aggregateId))
         );
     }
 
@@ -161,6 +166,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(result.pagination()).isSameAs(pagination),
                 () -> assertThat(result.totalElements()).isZero(),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(aggregateId, new IncludeUncompounded(false), pagination),
+                () -> verify(traceAppender).append(Set.of()),
                 () -> verifyNoInteractions(ownedByProvider, usernameDecoder)
         );
     }
@@ -320,6 +326,27 @@ class DefaultDetailedInvolvedFinderTest {
                         .hasCauseInstanceOf(UnauthorizedException.class),
                 () -> verifyNoInteractions(encodedDetailedInvolvedRepository, ownedByProvider, usernameDecoder)
         );
+    }
+
+    @Test
+    void shouldWrapTraceAppenderExceptionWhenFindingByAggregateId() throws Exception {
+        // given
+        final Pagination pagination = new Pagination(0, 10);
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, aggregateId,
+                new EncodedActor(new ExecutedByHashed("EU:hashed"), new ExecutedByEncoded("EU:encoded")),
+                null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
+        final TraceAppenderException exception = new TraceAppenderException(new RuntimeException("Unable to append trace"));
+        givenTraceabilityReadRole();
+        given(encodedDetailedInvolvedRepository.findBy(aggregateId, new IncludeUncompounded(false), pagination))
+                .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
+        given(ownedByProvider.provide(aggregateId)).willReturn(ownedBy);
+        given(usernameDecoder.decode(any(), same(ownedBy))).willReturn(username);
+        doThrow(exception).when(traceAppender).append(Set.of(aggregateId));
+
+        // when / then
+        assertThatThrownBy(() -> finder.findBy(aggregateId, new IncludeUncompounded(false), pagination))
+                .isInstanceOf(FinderException.class)
+                .cause().isSameAs(exception);
     }
 
     @Test

@@ -35,9 +35,9 @@ public class StubInvolvedFinder implements InvolvedFinder {
         return new Page<>(
                 List.of(
                         new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER),
                         new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
-                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 2L);
     }
 
@@ -48,7 +48,7 @@ public class StubInvolvedFinder implements InvolvedFinder {
         return new Page<>(
                 List.of(
                         new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
-                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
+                                CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L);
     }
 }

@@ -101,4 +101,29 @@ public final class DefaultTraceAppender implements TraceAppender {
             throw new TraceAppenderException(exception);
         }
     }
+
+    @Override
+    public void append(final Set<AggregateId> aggregateIds) throws TraceAppenderException {
+        Objects.requireNonNull(aggregateIds);
+        if (aggregateIds.isEmpty()) {
+            return;
+        }
+        try {
+            final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
+            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(aggregateIds.size());
+            for (final AggregateId aggregateId : aggregateIds) {
+                EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.fromTraceability(aggregateId,
+                        executedBy.hash(usernameHasher),
+                        executedByEncodedProvider.provide(aggregateId, executedBy));
+                encodedTraceAggregateIds.add(encodedTraceAggregateId);
+            }
+            traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(),
+                    correlationIdProvider.provide(),
+                    executedAtProvider.now(),
+                    Source.TRACEABILITY, ExecutionStatus.SUCCESS, new From("TRACEABILITY"), encodedTraceAggregateIds));
+        } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException |
+                       CorrelationIdProviderException exception) {
+            throw new TraceAppenderException(exception);
+        }
+    }
 }

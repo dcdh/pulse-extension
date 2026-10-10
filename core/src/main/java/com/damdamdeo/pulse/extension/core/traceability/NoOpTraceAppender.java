@@ -28,4 +28,10 @@ public final class NoOpTraceAppender implements TraceAppender {
         Objects.requireNonNull(executionStatus);
         // no-op
     }
+
+    @Override
+    public void append(final Set<AggregateId> aggregateIds) throws TraceAppenderException {
+        Objects.requireNonNull(aggregateIds);
+        // no-op
+    }
 }

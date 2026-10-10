@@ -116,6 +116,20 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             RETURNING id;
             """;
 
+    // language=sql
+    public static final String SOURCE_TRACEABILITY_AGGREGATE_SQL = """
+            INSERT INTO %s.traceability_aggregate (
+                aggregate_root_id,
+                executed_by_encoded_id,
+                traceability_nb_of_times
+            )
+            VALUES (?, ?, 1)
+            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            DO UPDATE
+            SET traceability_nb_of_times = %1$s.traceability_aggregate.traceability_nb_of_times + 1
+            RETURNING id;
+            """;
+
     private final DataSource dataSource;
     private final SchemaName schemaName;
 
@@ -138,6 +152,10 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
                 case SUCCESS -> SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
                 case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
                 case FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
+            };
+            case TRACEABILITY -> switch (traceRecorder.executionStatus()) {
+                case SUCCESS -> SOURCE_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_UNAUTHORIZED, FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
             };
         };
         try (final Connection connection = dataSource.getConnection()) {

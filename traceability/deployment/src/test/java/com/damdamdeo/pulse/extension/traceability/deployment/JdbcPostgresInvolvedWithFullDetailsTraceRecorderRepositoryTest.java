@@ -79,7 +79,7 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
              final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT id, aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times FROM todo_taking.traceability_aggregate
+                             SELECT id, aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_aggregate
                              """);
              final PreparedStatement selectTraceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
@@ -106,7 +106,8 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
                         String.valueOf(resultSet.getLong("command_unauthorized_nb_of_times")),
                         String.valueOf(resultSet.getLong("command_business_failed_nb_of_times")),
                         String.valueOf(resultSet.getLong("query_nb_of_times")),
-                        String.valueOf(resultSet.getLong("query_unauthorized_nb_of_times"))));
+                        String.valueOf(resultSet.getLong("query_unauthorized_nb_of_times")),
+                        String.valueOf(resultSet.getLong("traceability_nb_of_times"))));
             }
             resultSet = selectTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -116,8 +117,8 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
         assertThat(data).containsExactly("0|2026-09-06 14:00:00+02|0|0|from",
                 "1|EU:alice-hashed|EU:aliceEncoded",
                 "3|EU:bob-hashed|EU:bobEncoded",
-                "1|U000001-T000001|1|2|0|0|0|0",
-                "3|U000001-T000001|3|1|0|0|0|0",
+                "1|U000001-T000001|1|2|0|0|0|0|0",
+                "3|U000001-T000001|3|1|0|0|0|0|0",
                 "0|1",
                 "0|3");
     }

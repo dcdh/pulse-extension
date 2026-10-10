@@ -11,6 +11,7 @@ import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public final class DefaultInvolvedFinder implements InvolvedFinder {
 
@@ -18,15 +19,18 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
     private final OwnedByProvider ownedByProvider;
     private final UsernameDecoder usernameDecoder;
     private final ExecutionContextProvider executionContextProvider;
+    private final TraceAppender traceAppender;
 
     public DefaultInvolvedFinder(final EncodedInvolvedRepository encodedInvolvedRepository,
                                  final OwnedByProvider ownedByProvider,
                                  final UsernameDecoder usernameDecoder,
-                                 final ExecutionContextProvider executionContextProvider) {
+                                 final ExecutionContextProvider executionContextProvider,
+                                 final TraceAppender traceAppender) {
         this.encodedInvolvedRepository = Objects.requireNonNull(encodedInvolvedRepository);
         this.ownedByProvider = Objects.requireNonNull(ownedByProvider);
         this.usernameDecoder = Objects.requireNonNull(usernameDecoder);
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
+        this.traceAppender = Objects.requireNonNull(traceAppender);
     }
 
     @Override
@@ -52,7 +56,7 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
                 throw new UnauthorizedException();
             }
             final Page<EncodedInvolved> involvedPage = supplier.get();
-            final List<Involved> list = new ArrayList<>(involvedPage.content().size());
+            final List<Involved> listOfInvolved = new ArrayList<>(involvedPage.content().size());
             for (final EncodedInvolved encodedInvolved : involvedPage.content()) {
                 final Involved involved = new Involved(
                         encodedInvolved.aggregateId(),
@@ -64,11 +68,14 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
                         encodedInvolved.commandUnauthorizedNbOfTimes(),
                         encodedInvolved.commandBusinessFailedNbOfTimes(),
                         encodedInvolved.queryNbOfTimes(),
-                        encodedInvolved.queryUnauthorizedNbOfTimes());
-                list.add(involved);
+                        encodedInvolved.queryUnauthorizedNbOfTimes(),
+                        encodedInvolved.traceabilityNbOfTimes());
+                listOfInvolved.add(involved);
             }
-            return new Page<>(list, involvedPage.pagination(), involvedPage.totalElements());
-        } catch (final TraceRepositoryException | OwnedByProviderException | UnauthorizedException exception) {
+            traceAppender.append(listOfInvolved.stream().map(Involved::aggregateId).collect(Collectors.toSet()));
+            return new Page<>(listOfInvolved, involvedPage.pagination(), involvedPage.totalElements());
+        } catch (final TraceRepositoryException | OwnedByProviderException | UnauthorizedException
+                       | TraceAppenderException exception) {
             throw new FinderException(exception);
         }
     }

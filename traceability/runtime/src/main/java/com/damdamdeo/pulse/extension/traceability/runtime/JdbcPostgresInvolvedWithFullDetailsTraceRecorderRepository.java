@@ -78,6 +78,10 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                 case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
                 case FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
             };
+            case TRACEABILITY -> switch (traceRecorder.executionStatus()) {
+                case SUCCESS -> SOURCE_TRACEABILITY_AGGREGATE_SQL;
+                case FAILED_UNAUTHORIZED, FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
+            };
         };
         try (final Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);

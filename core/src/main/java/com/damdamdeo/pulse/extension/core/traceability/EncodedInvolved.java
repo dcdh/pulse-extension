@@ -10,7 +10,8 @@ public record EncodedInvolved(AggregateId aggregateId, EncodedActor encodedActor
                               CommandUnauthorizedNbOfTimes commandUnauthorizedNbOfTimes,
                               CommandBusinessFailedNbOfTimes commandBusinessFailedNbOfTimes,
                               QueryNbOfTimes queryNbOfTimes,
-                              QueryUnauthorizedNbOfTimes queryUnauthorizedNbOfTimes) {
+                              QueryUnauthorizedNbOfTimes queryUnauthorizedNbOfTimes,
+                              TraceabilityNbOfTimes traceabilityNbOfTimes) {
 
     public EncodedInvolved {
         Objects.requireNonNull(aggregateId);
@@ -20,5 +21,6 @@ public record EncodedInvolved(AggregateId aggregateId, EncodedActor encodedActor
         Objects.requireNonNull(commandBusinessFailedNbOfTimes);
         Objects.requireNonNull(queryNbOfTimes);
         Objects.requireNonNull(queryUnauthorizedNbOfTimes);
+        Objects.requireNonNull(traceabilityNbOfTimes);
     }
 }

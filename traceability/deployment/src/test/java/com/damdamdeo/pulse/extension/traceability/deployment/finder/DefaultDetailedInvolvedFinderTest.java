@@ -13,6 +13,7 @@ import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
 import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.vertx.RunOnVertxContext;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -40,11 +41,14 @@ class DefaultDetailedInvolvedFinderTest {
     @Inject
     JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
 
+    @Inject
+    TraceIdGenerator traceIdGenerator;
+
     @BeforeAll
-    void prepare() throws TraceRepositoryException {
+    void prepare() throws TraceRepositoryException, TraceIdGeneratorException {
         for (final TraceRecorder traceRecorder : List.of(
                 new TraceRecorder(
-                        new TraceId(1L),
+                        traceIdGenerator.generate(),
                         new CorrelationId(1L),
                         new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
                         Source.COMMAND,
@@ -58,7 +62,7 @@ class DefaultDetailedInvolvedFinderTest {
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoUpdated"), new AggregateVersion(1)))),
                 new TraceRecorder(
-                        new TraceId(2L),
+                        traceIdGenerator.generate(),
                         new CorrelationId(2L),
                         new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")),
                         Source.COMMAND,
@@ -74,6 +78,7 @@ class DefaultDetailedInvolvedFinderTest {
     }
 
     @Test
+    @RunOnVertxContext
     void shouldFindByAggregateId() throws FinderException {
         // Given
 
@@ -91,6 +96,7 @@ class DefaultDetailedInvolvedFinderTest {
     }
 
     @Test
+    @RunOnVertxContext
     void shouldFindByExecutedByHashed() throws FinderException {
         // Given
 

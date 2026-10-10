@@ -14,6 +14,7 @@ import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedTraceRecorderRepository;
 import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.vertx.RunOnVertxContext;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,7 @@ class DefaultInvolvedFinderTest {
     }
 
     @Test
+    @RunOnVertxContext
     void shouldFindByAggregateId() throws FinderException {
         // Given
 
@@ -75,14 +77,15 @@ class DefaultInvolvedFinderTest {
                 List.of(
                         new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
-                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER),
+                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER),
                         new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
-                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
+                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 2L));
     }
 
     @Test
+    @RunOnVertxContext
     void shouldFindByExecutedByHashed() throws FinderException {
         // Given
 
@@ -94,7 +97,7 @@ class DefaultInvolvedFinderTest {
                 List.of(
                         new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
-                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER)),
+                                QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L));
     }
 }

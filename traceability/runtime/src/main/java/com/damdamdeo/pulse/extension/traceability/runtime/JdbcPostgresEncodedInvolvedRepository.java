@@ -52,6 +52,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                        ta.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
                        ta.query_nb_of_times AS query_nb_of_times,
                        ta.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
+                       ta.traceability_nb_of_times AS traceability_nb_of_times,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded
                      FROM %1$s.traceability_aggregate ta
@@ -79,7 +80,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                 new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
                                 new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
                                 new QueryNbOfTimes(select.getInt("query_nb_of_times")),
-                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -108,7 +110,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                 new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
                                 new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
                                 new QueryNbOfTimes(select.getInt("query_nb_of_times")),
-                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }
@@ -140,6 +143,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                        ta.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
                        ta.query_nb_of_times AS query_nb_of_times,
                        ta.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
+                       ta.traceability_nb_of_times AS traceability_nb_of_times,
                        ebe.executed_by_encoded AS executed_by_encoded
                      FROM %1$s.traceability_aggregate ta
                      JOIN %1$s.executed_by_encoded ebe
@@ -165,7 +169,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                 new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
                                 new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
                                 new QueryNbOfTimes(select.getInt("query_nb_of_times")),
-                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))));
                     }
                 }
                 return new Page<>(content, pagination, content.size());
@@ -190,7 +195,8 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                                 new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
                                 new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
                                 new QueryNbOfTimes(select.getInt("query_nb_of_times")),
-                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times"))));
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))));
                     }
                     return new Page<>(content, pagination, totalElements);
                 }
