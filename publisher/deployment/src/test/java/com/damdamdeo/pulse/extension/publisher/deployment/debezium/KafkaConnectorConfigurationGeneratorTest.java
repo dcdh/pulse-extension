@@ -93,6 +93,7 @@ class KafkaConnectorConfigurationGeneratorTest extends AbstractPublisherTest {
                             "value.converter.schemas.enable": "false",
                             "topic.prefix": "pulse",
                             "plugin.name": "pgoutput",
+                            "publish.via.partition.root": "true",
                             "transforms": "partitioner,unwrap,filterFields",
                             "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
                             "transforms.unwrap.drop.tombstones": "false",

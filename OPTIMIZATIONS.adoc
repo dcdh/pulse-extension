@@ -1,0 +1,20 @@
+= Optimizations
+
+== Postgres
+
+Use partitioning for event store table.
+
+Debezium will be impacted too.
+
+https://www.postgresql.org/docs/18/ddl-partitioning.html
+
+Use a hash compound of aggregate_root_type + aggregate_root_id of 32 partitions.
+
+https://medium.com/@x0goe/postgresql-partitioning-4-strategies-for-managing-large-tables-452d62db212a
+
+To make it work, the debezium connector must be configured with this option
+
+[source,json]
+----
+                            "publish.via.partition.root": "true",
+----

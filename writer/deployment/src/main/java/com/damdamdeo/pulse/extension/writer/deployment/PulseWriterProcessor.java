@@ -173,7 +173,24 @@ public class PulseWriterProcessor {
                             CONSTRAINT event_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type, version),
                             CONSTRAINT event_unique UNIQUE (aggregate_root_id, aggregate_root_type, version),
                             CONSTRAINT executed_by_format_chk CHECK (executed_by = 'A' OR executed_by LIKE 'EU:%%' OR executed_by LIKE 'SA:%%' OR executed_by = 'NA')
-                          );
+                          ) PARTITION BY HASH (aggregate_root_type, aggregate_root_id);
+                        
+                          CREATE TABLE IF NOT EXISTS %1$s.event_00 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 0);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_01 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 1);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_02 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 2);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_03 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 3);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_04 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 4);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_05 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 5);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_06 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 6);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_07 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 7);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_08 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 8);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_09 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 9);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_10 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 10);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_11 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 11);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_12 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 12);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_13 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 13);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_14 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 14);
+                          CREATE TABLE IF NOT EXISTS %1$s.event_15 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 16, REMAINDER 15);
                         
                           CREATE INDEX IF NOT EXISTS idx_event_aggregate_root_identifier
                             ON %1$s.event USING BTREE (aggregate_root_id, aggregate_root_type);

@@ -166,6 +166,11 @@ public record kafkaConnectorConfigurationConfigDTO(String schema,
         return "pgoutput";
     }
 
+    @JsonProperty("publish.via.partition.root")
+    public String getPublishViaPartitionRoot() {
+        return "true";
+    }
+
     @JsonProperty("transforms")
     public String getTransforms() {
         return "partitioner,unwrap,filterFields";
