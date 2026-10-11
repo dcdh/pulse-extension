@@ -58,7 +58,9 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                      FROM %1$s.traceability_aggregate ta
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
-                     WHERE ta.aggregate_root_id LIKE ? LIMIT ? OFFSET ?
+                     WHERE ta.aggregate_root_id LIKE ?
+                     ORDER BY aggregate_root_id ASC, executed_by_hashed ASC, executed_by_encoded ASC
+                     LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
                 if (!includeUncompounded.included()) {
@@ -149,7 +151,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
                      WHERE ebe.executed_by_hashed = ?
-                     ORDER BY aggregate_root_id ASC
+                     ORDER BY aggregate_root_id ASC, executed_by_hashed ASC, executed_by_encoded ASC
                      LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {

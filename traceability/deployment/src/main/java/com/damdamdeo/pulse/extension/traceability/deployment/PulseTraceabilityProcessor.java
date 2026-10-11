@@ -53,7 +53,24 @@ public class PulseTraceabilityProcessor {
                               CONSTRAINT ta_ebe_fkey
                                 FOREIGN KEY (executed_by_encoded_id)
                                 REFERENCES %1$s.executed_by_encoded (id)
-                            );
+                            ) PARTITION BY HASH (aggregate_root_id, executed_by_encoded_id);
+                            
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_00 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 0);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_01 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 1);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_02 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 2);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_03 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 3);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_04 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 4);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_05 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 5);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_06 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 6);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_07 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 7);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_08 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 8);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_09 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 9);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_10 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 10);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_11 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 11);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_12 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 12);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_13 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 13);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_14 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 14);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_15 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 15);
                             
                             CREATE SEQUENCE IF NOT EXISTS %1$s.trace_id_seq START WITH 1 INCREMENT BY 1;
                             CREATE SEQUENCE IF NOT EXISTS %1$s.correlation_id_seq START WITH 1 INCREMENT BY 1;
