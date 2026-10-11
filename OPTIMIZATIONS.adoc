@@ -12,6 +12,8 @@ Use a hash compound of aggregate_root_type + aggregate_root_id of 32 partitions.
 
 https://medium.com/@x0goe/postgresql-partitioning-4-strategies-for-managing-large-tables-452d62db212a
 
+=== Debezium
+
 To make it work, the debezium connector must be configured with this option
 
 [source,json]
@@ -19,9 +21,30 @@ To make it work, the debezium connector must be configured with this option
                             "publish.via.partition.root": "true",
 ----
 
+=== Primary key
+
 https://medium.com/@dfs.techblog/the-challenge-of-primary-keys-in-partitioned-tables-in-postgresql-1b61b6f237d6
 
 [quote, https://medium.com/@dfs.techblog/the-challenge-of-primary-keys-in-partitioned-tables-in-postgresql-1b61b6f237d6]
 ____
 PostgreSQL does not allow defining a primary key on the partitioned table directly.
 ____
+
+=== Unique constraint on partitioned table must include all partitioning columns
+
+----
+2026-10-11 20:32:03.298 UTC [64] STATEMENT:  CREATE TABLE IF NOT EXISTS todo_taking.traceability_aggregate_events (
+	    id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+	    traceability_trace_id bigint NOT NULL,
+	    aggregate_root_id varchar(255) NOT NULL,
+	    event_type character varying(255) NOT NULL,
+	    aggregate_version bigint NOT NULL,
+	    CONSTRAINT tae_pkey PRIMARY KEY (id),
+	    CONSTRAINT tt_fkey
+	      FOREIGN KEY (traceability_trace_id)
+	      REFERENCES todo_taking.traceability_details (trace_id)
+	) PARTITION BY HASH (aggregate_root_id);
+psql:/docker-entrypoint-initdb.d/pulse_traceability_tables.sql:83: ERROR:  unique constraint on partitioned table must include all partitioning columns
+----
+
+The key used in PARTITION BY HASH must be a component of the primary key.

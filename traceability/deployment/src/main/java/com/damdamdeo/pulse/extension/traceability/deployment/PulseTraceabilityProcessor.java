@@ -105,13 +105,31 @@ public class PulseTraceabilityProcessor {
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events (
                                 id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                                 traceability_trace_id bigint NOT NULL,
+                                aggregate_root_id varchar(255) NOT NULL,
                                 event_type character varying(255) NOT NULL,
                                 aggregate_version bigint NOT NULL,
-                                CONSTRAINT tae_pkey PRIMARY KEY (id),
+                                CONSTRAINT tae_pkey PRIMARY KEY (aggregate_root_id, id),
                                 CONSTRAINT tt_fkey
                                   FOREIGN KEY (traceability_trace_id)
                                   REFERENCES %1$s.traceability_details (trace_id)
-                            );
+                            ) PARTITION BY HASH (aggregate_root_id);
+                            
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_00 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 0);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_01 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 1);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_02 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 2);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_03 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 3);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_04 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 4);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_05 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 5);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_06 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 6);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_07 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 7);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_08 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 8);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_09 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 9);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_10 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 10);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_11 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 11);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_12 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 12);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_13 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 13);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_14 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 14);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_15 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 16, REMAINDER 15);
                             """.formatted(schemaName);
         };
         if (tablesDefinition != null) {

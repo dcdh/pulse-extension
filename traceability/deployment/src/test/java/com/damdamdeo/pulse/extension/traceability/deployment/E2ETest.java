@@ -311,7 +311,7 @@ class E2ETest {
              final PreparedStatement selectTraceabilityAggregateEventsPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT id, traceability_trace_id, event_type, aggregate_version FROM todo_taking.traceability_aggregate_events
+                             SELECT id, traceability_trace_id, aggregate_root_id, event_type, aggregate_version FROM todo_taking.traceability_aggregate_events
                              """
              )) {
             ResultSet resultSet = selectTraceabilityDetailsPreparedStatement.executeQuery();
@@ -358,6 +358,7 @@ class E2ETest {
                         "traceability_aggregate_events",
                         resultSet.getString("id"),
                         resultSet.getString("traceability_trace_id"),
+                        resultSet.getString("aggregate_root_id"),
                         resultSet.getString("event_type"),
                         String.valueOf(resultSet.getLong("aggregate_version"))));
             }
@@ -382,10 +383,10 @@ class E2ETest {
                 "traceability_details_traceability_aggregate|4|5",
                 "traceability_details_traceability_aggregate|5|5",
                 "traceability_details_traceability_aggregate|1|1",
-                "traceability_aggregate_events|1|1|NewTodoCreated|0",
-                "traceability_aggregate_events|2|1|TodoDescriptionUpdated|1",
-                "traceability_aggregate_events|3|2|TodoMarkedAsDone|2",
-                "traceability_aggregate_events|4|4|NewTodoCreated|0");
+                "traceability_aggregate_events|4|4|U000001-T000002|NewTodoCreated|0",
+                "traceability_aggregate_events|1|1|U000001-T000001|NewTodoCreated|0",
+                "traceability_aggregate_events|2|1|U000001-T000001|TodoDescriptionUpdated|1",
+                "traceability_aggregate_events|3|2|U000001-T000001|TodoMarkedAsDone|2");
     }
 
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,
