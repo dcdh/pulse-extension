@@ -38,10 +38,11 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     public static final String INSERT_TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL = """
             INSERT INTO %s.traceability_details_traceability_aggregate (
                 traceability_details_id,
-                traceability_aggregate_id
+                traceability_aggregate_aggregate_root_id,
+                traceability_aggregate_executed_by_encoded_id
             )
-            VALUES (?, ?)
-            ON CONFLICT (traceability_details_id, traceability_aggregate_id)
+            VALUES (?, ?, ?)
+            ON CONFLICT (traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id)
             DO NOTHING
             """;
 
@@ -116,13 +117,7 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                     }
                     insertTraceabilityAggregatePreparedStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
                     insertTraceabilityAggregatePreparedStatement.setLong(2, executedByEncodedId);
-                    final long traceabilityAggregateId;
-                    try (final ResultSet resultSet = insertTraceabilityAggregatePreparedStatement.executeQuery()) {
-                        if (!resultSet.next()) {
-                            throw new SQLException("Unable to retrieve traceability_aggregate id");
-                        }
-                        traceabilityAggregateId = resultSet.getLong(1);
-                    }
+                    insertTraceabilityAggregatePreparedStatement.executeUpdate();
                     if (encodedTraceAggregateId.hasEvent()) {
                         insertTraceabilityAggregateEventPreparedStatement.setLong(1, traceRecorder.traceId().id());
                         insertTraceabilityAggregateEventPreparedStatement.setString(2, encodedTraceAggregateId.aggregateId().id());
@@ -131,7 +126,8 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                         insertTraceabilityAggregateEventPreparedStatement.executeUpdate();
                     }
                     insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(1, traceRecorder.traceId().id());
-                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(2, traceabilityAggregateId);
+                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setString(2, encodedTraceAggregateId.aggregateId().id());
+                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(3, executedByEncodedId);
                     insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeUpdate();
                 }
                 connection.commit();

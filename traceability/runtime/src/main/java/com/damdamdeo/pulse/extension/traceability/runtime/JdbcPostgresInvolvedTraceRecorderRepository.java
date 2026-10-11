@@ -56,8 +56,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
             DO UPDATE
-            SET command_nb_of_times = %1$s.traceability_aggregate.command_nb_of_times + 1
-            RETURNING id;
+            SET command_nb_of_times = %1$s.traceability_aggregate.command_nb_of_times + 1;
             """;
 
     // language=sql
@@ -70,8 +69,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
             DO UPDATE
-            SET command_unauthorized_nb_of_times = %1$s.traceability_aggregate.command_unauthorized_nb_of_times + 1
-            RETURNING id;
+            SET command_unauthorized_nb_of_times = %1$s.traceability_aggregate.command_unauthorized_nb_of_times + 1;
             """;
 
     // language=sql
@@ -84,8 +82,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
             DO UPDATE
-            SET command_business_failed_nb_of_times = %1$s.traceability_aggregate.command_business_failed_nb_of_times + 1
-            RETURNING id;
+            SET command_business_failed_nb_of_times = %1$s.traceability_aggregate.command_business_failed_nb_of_times + 1;
             """;
 
     // language=sql
@@ -98,8 +95,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
             DO UPDATE
-            SET query_nb_of_times = %1$s.traceability_aggregate.query_nb_of_times + 1
-            RETURNING id;
+            SET query_nb_of_times = %1$s.traceability_aggregate.query_nb_of_times + 1;
             """;
 
     // language=sql
@@ -112,8 +108,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
             DO UPDATE
-            SET query_unauthorized_nb_of_times = %1$s.traceability_aggregate.query_unauthorized_nb_of_times + 1
-            RETURNING id;
+            SET query_unauthorized_nb_of_times = %1$s.traceability_aggregate.query_unauthorized_nb_of_times + 1;
             """;
 
     // language=sql
@@ -126,8 +121,7 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             VALUES (?, ?, 1)
             ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
             DO UPDATE
-            SET traceability_nb_of_times = %1$s.traceability_aggregate.traceability_nb_of_times + 1
-            RETURNING id;
+            SET traceability_nb_of_times = %1$s.traceability_aggregate.traceability_nb_of_times + 1;
             """;
 
     private final DataSource dataSource;

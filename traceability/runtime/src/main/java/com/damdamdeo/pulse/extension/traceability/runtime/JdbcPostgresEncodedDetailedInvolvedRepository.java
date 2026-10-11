@@ -49,7 +49,8 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                              JOIN %1$s.traceability_details_traceability_aggregate tdta
                                ON tdta.traceability_details_id = td.trace_id
                              JOIN %1$s.traceability_aggregate ta
-                               ON ta.id = tdta.traceability_aggregate_id
+                               ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
+                               AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
                              LEFT JOIN %1$s.traceability_aggregate_events tae
                                ON tae.traceability_trace_id = td.trace_id
                              WHERE ta.aggregate_root_id LIKE ?
@@ -72,7 +73,8 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                      JOIN %1$s.traceability_details_traceability_aggregate tdta
                        ON tdta.traceability_details_id = td.trace_id
                      JOIN %1$s.traceability_aggregate ta
-                       ON ta.id = tdta.traceability_aggregate_id
+                       ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
+                       AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
                      LEFT JOIN %1$s.traceability_aggregate_events tae
@@ -165,7 +167,8 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                              JOIN %1$s.traceability_details_traceability_aggregate tdta
                                ON tdta.traceability_details_id = td.trace_id
                              JOIN %1$s.traceability_aggregate ta
-                               ON ta.id = tdta.traceability_aggregate_id
+                               ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
+                               AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
                              JOIN %1$s.executed_by_encoded ebe
                                ON ebe.id = ta.executed_by_encoded_id
                              LEFT JOIN %1$s.traceability_aggregate_events tae
@@ -190,7 +193,8 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                      JOIN %1$s.traceability_details_traceability_aggregate tdta
                        ON tdta.traceability_details_id = td.trace_id
                      JOIN %1$s.traceability_aggregate ta
-                       ON ta.id = tdta.traceability_aggregate_id
+                       ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
+                       AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
                      JOIN %1$s.executed_by_encoded ebe
                        ON ebe.id = ta.executed_by_encoded_id
                      LEFT JOIN %1$s.traceability_aggregate_events tae

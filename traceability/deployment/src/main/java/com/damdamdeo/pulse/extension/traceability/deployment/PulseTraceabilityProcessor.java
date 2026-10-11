@@ -41,7 +41,6 @@ public class PulseTraceabilityProcessor {
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
-                              id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                               aggregate_root_id character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
                               command_nb_of_times bigint DEFAULT 0,
@@ -50,9 +49,7 @@ public class PulseTraceabilityProcessor {
                               query_nb_of_times bigint DEFAULT 0,
                               query_unauthorized_nb_of_times bigint DEFAULT 0,
                               traceability_nb_of_times bigint DEFAULT 0,
-                              CONSTRAINT ta_pkey PRIMARY KEY (id),
-                              CONSTRAINT ta_unique
-                                UNIQUE (aggregate_root_id, executed_by_encoded_id),
+                              CONSTRAINT ta_pkey PRIMARY KEY (aggregate_root_id, executed_by_encoded_id),
                               CONSTRAINT ta_ebe_fkey
                                 FOREIGN KEY (executed_by_encoded_id)
                                 REFERENCES %1$s.executed_by_encoded (id)
@@ -75,15 +72,16 @@ public class PulseTraceabilityProcessor {
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate (
                                 traceability_details_id bigint not null,
-                                traceability_aggregate_id bigint not null,
-                                CONSTRAINT tdta_pkey PRIMARY KEY (traceability_details_id, traceability_aggregate_id),
+                                traceability_aggregate_aggregate_root_id character varying(255) NOT NULL,
+                                traceability_aggregate_executed_by_encoded_id bigint NOT NULL,
+                                CONSTRAINT tdta_pkey PRIMARY KEY (traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id),
                                 CONSTRAINT tdta_td_id_fkey
                                   FOREIGN KEY (traceability_details_id)
                                   REFERENCES %1$s.traceability_details (trace_id),
                                 CONSTRAINT tdta_ta_id_fkey
-                                  FOREIGN KEY (traceability_aggregate_id)
-                                  REFERENCES %1$s.traceability_aggregate (id)
-                            ) PARTITION BY HASH (traceability_details_id, traceability_aggregate_id);
+                                  FOREIGN KEY (traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id)
+                                  REFERENCES %1$s.traceability_aggregate (aggregate_root_id, executed_by_encoded_id)
+                            ) PARTITION BY HASH (traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id);
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_00 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 0);
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_01 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 16, REMAINDER 1);
