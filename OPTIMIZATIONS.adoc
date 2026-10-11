@@ -18,3 +18,10 @@ To make it work, the debezium connector must be configured with this option
 ----
                             "publish.via.partition.root": "true",
 ----
+
+https://medium.com/@dfs.techblog/the-challenge-of-primary-keys-in-partitioned-tables-in-postgresql-1b61b6f237d6
+
+[quote, https://medium.com/@dfs.techblog/the-challenge-of-primary-keys-in-partitioned-tables-in-postgresql-1b61b6f237d6]
+____
+PostgreSQL does not allow defining a primary key on the partitioned table directly.
+____
