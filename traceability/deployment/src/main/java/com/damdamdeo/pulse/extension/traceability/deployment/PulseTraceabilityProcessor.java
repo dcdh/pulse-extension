@@ -36,8 +36,8 @@ public class PulseTraceabilityProcessor {
                               id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                               executed_by_hashed character varying(255) NOT NULL,
                               executed_by_encoded character varying(255) NOT NULL,
-                              CONSTRAINT executed_by_encoded_pkey PRIMARY KEY (id),
-                              CONSTRAINT executed_by_encoded_unique UNIQUE (executed_by_hashed)
+                              CONSTRAINT ebe_pkey PRIMARY KEY (id),
+                              CONSTRAINT ebe_unique UNIQUE (executed_by_hashed)
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
@@ -50,10 +50,10 @@ public class PulseTraceabilityProcessor {
                               query_nb_of_times bigint DEFAULT 0,
                               query_unauthorized_nb_of_times bigint DEFAULT 0,
                               traceability_nb_of_times bigint DEFAULT 0,
-                              CONSTRAINT traceability_aggregate_pkey PRIMARY KEY (id),
-                              CONSTRAINT traceability_aggregate_unique
+                              CONSTRAINT ta_pkey PRIMARY KEY (id),
+                              CONSTRAINT ta_unique
                                 UNIQUE (aggregate_root_id, executed_by_encoded_id),
-                              CONSTRAINT traceability_aggregate_executed_by_encoded_fkey
+                              CONSTRAINT ta_ebe_fkey
                                 FOREIGN KEY (executed_by_encoded_id)
                                 REFERENCES %1$s.executed_by_encoded (id)
                             );
@@ -68,20 +68,19 @@ public class PulseTraceabilityProcessor {
                               source_value int not null,
                               execution_status int not null,
                               from_value character varying(255) not null,
-                              CONSTRAINT traceability_details_pkey PRIMARY KEY (trace_id),
-                              CONSTRAINT traceability_details_source_check CHECK (source_value IN (0, 1, 2)),
-                              CONSTRAINT traceability_details_execution_status_check CHECK (execution_status IN (0, 1, 2))
+                              CONSTRAINT td_pkey PRIMARY KEY (trace_id),
+                              CONSTRAINT td_source_check CHECK (source_value IN (0, 1, 2)),
+                              CONSTRAINT td_execution_status_check CHECK (execution_status IN (0, 1, 2))
                             );
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate (
                                 traceability_details_id bigint not null,
                                 traceability_aggregate_id bigint not null,
-                                CONSTRAINT traceability_details_traceability_aggregate_unique
-                                  UNIQUE (traceability_details_id, traceability_aggregate_id),
-                                CONSTRAINT traceability_details_traceability_aggregate_traceability_details_id_fkey
+                                CONSTRAINT tdta_pkey PRIMARY KEY (traceability_details_id, traceability_aggregate_id),
+                                CONSTRAINT tdta_td_id_fkey
                                   FOREIGN KEY (traceability_details_id)
                                   REFERENCES %1$s.traceability_details (trace_id),
-                                CONSTRAINT traceability_details_traceability_aggregate_traceability_aggregate_id_fkey
+                                CONSTRAINT tdta_ta_id_fkey
                                   FOREIGN KEY (traceability_aggregate_id)
                                   REFERENCES %1$s.traceability_aggregate (id)
                             );
@@ -91,8 +90,8 @@ public class PulseTraceabilityProcessor {
                                 traceability_trace_id bigint NOT NULL,
                                 event_type character varying(255) NOT NULL,
                                 aggregate_version bigint NOT NULL,
-                                CONSTRAINT traceability_aggregate_events_pkey PRIMARY KEY (id),
-                                CONSTRAINT traceability_trace_fkey
+                                CONSTRAINT tae_pkey PRIMARY KEY (id),
+                                CONSTRAINT tt_fkey
                                   FOREIGN KEY (traceability_trace_id)
                                   REFERENCES %1$s.traceability_details (trace_id)
                             );
