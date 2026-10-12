@@ -8,7 +8,8 @@ import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
-import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.listener.AbstractOnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.listener.OnStoredEventListener;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.arc.All;
@@ -50,7 +51,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
     record On(TodoId id, NewTodoCreated event) {
     }
 
-    static class OnNewTodoCreated implements OnStoredEventListener<TodoId, NewTodoCreated> {
+    static class OnNewTodoCreated extends AbstractOnStoredEventListener<TodoId, NewTodoCreated> {
 
         final List<On> events = new ArrayList<>();
 

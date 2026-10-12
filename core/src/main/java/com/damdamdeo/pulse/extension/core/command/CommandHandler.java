@@ -4,8 +4,8 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
-import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListenerException;
+import com.damdamdeo.pulse.extension.core.listener.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.listener.OnStoredEventListenerException;
 import org.apache.commons.lang3.Validate;
 
 import java.util.List;

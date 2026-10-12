@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.listener.OnStoredEventListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

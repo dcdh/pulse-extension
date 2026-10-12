@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.saga.OnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.listener.OnStoredEventListener;
 
 import java.util.List;
 

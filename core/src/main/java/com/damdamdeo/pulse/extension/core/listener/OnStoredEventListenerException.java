@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.core.saga;
+package com.damdamdeo.pulse.extension.core.listener;
 
 public final class OnStoredEventListenerException extends Exception {
 
