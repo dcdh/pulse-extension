@@ -60,7 +60,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                 final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
                 for (final VersionizedEvent<K> newEvent : newEvents) {
                     for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
-                        onStoredEventListener.execute(id, newEvent.event());
+                        onStoredEventListener.execute(id, newEvent.version(), newEvent.event());
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());
@@ -91,7 +91,7 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
                 final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
                 for (final VersionizedEvent<K> newEvent : newEvents) {
                     for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
-                        onStoredEventListener.execute(command.id(), newEvent.event());
+                        onStoredEventListener.execute(command.id(), newEvent.version(), newEvent.event());
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());

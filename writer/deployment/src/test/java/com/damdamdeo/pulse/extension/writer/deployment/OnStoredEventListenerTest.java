@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.SequenceNumber;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.UserId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.CommandException;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
@@ -48,7 +45,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
     @Inject
     OnNewTodoCreated onNewTodoCreated;
 
-    record On(TodoId id, NewTodoCreated event) {
+    record On(TodoId id, AggregateVersion aggregateVersion, NewTodoCreated event) {
     }
 
     static class OnNewTodoCreated extends AbstractOnStoredEventListener<TodoId, NewTodoCreated> {
@@ -56,11 +53,12 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
         final List<On> events = new ArrayList<>();
 
         @Override
-        public void on(final TodoId id, final NewTodoCreated event) {
+        public void on(final TodoId id, final AggregateVersion aggregateVersion, final NewTodoCreated event) {
             Objects.requireNonNull(id);
+            Objects.requireNonNull(aggregateVersion);
             Objects.requireNonNull(event);
             // On a real sample it should call a ComandHandler
-            events.add(new On(id, event));
+            events.add(new On(id, aggregateVersion, event));
         }
 
         @Override
@@ -82,6 +80,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
                 () -> assertThat(onStoredEventListeners.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(TodoId.USER_1_TODO_1),
+                () -> assertThat(onNewTodoCreated.events.getFirst().aggregateVersion()).isEqualTo(new AggregateVersion(0)),
                 () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))
         );
     }
