@@ -32,18 +32,18 @@ class GdprJacksonSerializationTest {
             .withConfigurationResource("application.properties");
 
     record GdprTodo(TodoId todoId,
-                    @Sensitive(Sensitive.Mode.ENCRYPT)
+                    @Sensitive
                     LocalDateTime createdAt,
                     @Sensitive(Sensitive.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
                     String username,
-                    @Sensitive(Sensitive.Mode.ENCRYPT)
+                    @Sensitive
                     String description,
                     Status status,
                     boolean important,
                     List<GdprChecklist> gdprChecklists,
                     @Sensitive(Sensitive.Mode.ENCRYPT_AND_SEARCH_BY_HASH)
                     OwnedBy ownedBy,
-                    @Sensitive(Sensitive.Mode.ENCRYPT)
+                    @Sensitive
                     Long version) {
 
         GdprTodo {
@@ -57,7 +57,7 @@ class GdprJacksonSerializationTest {
     }
 
     record GdprChecklist(TodoChecklistId todoChecklistId,
-                         @Sensitive(Sensitive.Mode.ENCRYPT)
+                         @Sensitive
                          String description) {
 
         GdprChecklist {

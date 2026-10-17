@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @JacksonAnnotation
 public @interface Sensitive {
 
-    Mode value();
+    Mode value() default Mode.ENCRYPT;
 
     enum Mode {
         ENCRYPT,
