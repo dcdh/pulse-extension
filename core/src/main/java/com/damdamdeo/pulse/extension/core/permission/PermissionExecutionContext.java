@@ -1,5 +1,6 @@
 package com.damdamdeo.pulse.extension.core.permission;
 
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
 
@@ -19,5 +20,9 @@ public record PermissionExecutionContext(ExecutionContextProvider executionConte
 
     public boolean isEndUser() {
         return executionContextProvider().provide().executedBy().isEndUser();
+    }
+
+    public ExecutedBy executedBy() {
+        return executionContextProvider().provide().executedBy();
     }
 }
