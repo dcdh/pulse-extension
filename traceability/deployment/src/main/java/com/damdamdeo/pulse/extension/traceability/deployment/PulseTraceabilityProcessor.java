@@ -153,8 +153,9 @@ public class PulseTraceabilityProcessor {
                                 id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                                 traceability_trace_id bigint NOT NULL,
                                 aggregate_root_id varchar(255) NOT NULL,
-                                event_type character varying(255) NOT NULL,
-                                aggregate_version bigint NOT NULL,
+                                projection_id varchar(255),
+                                event_type character varying(255),
+                                aggregate_version bigint,
                                 CONSTRAINT tae_pkey PRIMARY KEY (aggregate_root_id, id),
                                 CONSTRAINT tt_fkey
                                   FOREIGN KEY (traceability_trace_id)

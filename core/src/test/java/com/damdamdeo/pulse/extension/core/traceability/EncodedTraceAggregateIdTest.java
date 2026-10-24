@@ -11,12 +11,7 @@ import com.damdamdeo.pulse.extension.core.query.Projection;
 import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -153,10 +148,10 @@ class EncodedTraceAggregateIdTest {
         // when / then
         assertAll(
                 () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceAggregateId(
-                        Source.QUERY, aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
+                        Source.QUERY, aggregateId, ProjectionId.from(aggregateId), EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                         eventType, null)),
                 () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceAggregateId(
-                        Source.QUERY, aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
+                        Source.QUERY, aggregateId, ProjectionId.from(aggregateId), EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                         null, aggregateVersion))
         );
     }
@@ -169,13 +164,13 @@ class EncodedTraceAggregateIdTest {
         // when / then
         assertAll(
                 () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
-                        null, aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, null, null)),
+                        null, aggregateId, null, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, null, null)),
                 () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
-                        Source.COMMAND, null, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, null, null)),
+                        Source.COMMAND, null, null, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, null, null)),
                 () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
-                        Source.COMMAND, aggregateId, null, EXECUTED_BY_ENCODED, null, null)),
+                        Source.COMMAND, aggregateId, null, null, EXECUTED_BY_ENCODED, null, null)),
                 () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
-                        Source.COMMAND, aggregateId, EXECUTED_BY_HASHED, null, null, null))
+                        Source.COMMAND, aggregateId, null, EXECUTED_BY_HASHED, null, null, null))
         );
     }
 }

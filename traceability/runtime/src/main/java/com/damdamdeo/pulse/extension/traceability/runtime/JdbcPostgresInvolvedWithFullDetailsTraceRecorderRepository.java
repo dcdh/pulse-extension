@@ -51,10 +51,11 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             INSERT INTO %s.traceability_aggregate_events (
                 traceability_trace_id,
                 aggregate_root_id,
+                projection_id,
                 event_type,
                 aggregate_version
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
             """;
 
     private final DataSource dataSource;
@@ -121,8 +122,9 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                     if (encodedTraceAggregateId.hasEvent()) {
                         insertTraceabilityAggregateEventPreparedStatement.setLong(1, traceRecorder.traceId().id());
                         insertTraceabilityAggregateEventPreparedStatement.setString(2, encodedTraceAggregateId.aggregateId().id());
-                        insertTraceabilityAggregateEventPreparedStatement.setString(3, encodedTraceAggregateId.eventType().type());
-                        insertTraceabilityAggregateEventPreparedStatement.setInt(4, encodedTraceAggregateId.aggregateVersion().version());
+                        insertTraceabilityAggregateEventPreparedStatement.setString(3, encodedTraceAggregateId.projectionId() != null ? encodedTraceAggregateId.projectionId().id() : null);
+                        insertTraceabilityAggregateEventPreparedStatement.setString(4, encodedTraceAggregateId.eventType().type());
+                        insertTraceabilityAggregateEventPreparedStatement.setInt(5, encodedTraceAggregateId.aggregateVersion().version());
                         insertTraceabilityAggregateEventPreparedStatement.executeUpdate();
                     }
                     insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(1, traceRecorder.traceId().id());

@@ -7,11 +7,13 @@ import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Objects;
 
-public record EncodedTraceAggregateId(Source source, AggregateId aggregateId, ExecutedByHashed executedByHashed,
+public record EncodedTraceAggregateId(Source source, AggregateId aggregateId, ProjectionId<?> projectionId,
+                                      ExecutedByHashed executedByHashed,
                                       ExecutedByEncoded executedByEncoded,
                                       EventType eventType, AggregateVersion aggregateVersion) {
 
@@ -24,8 +26,11 @@ public record EncodedTraceAggregateId(Source source, AggregateId aggregateId, Ex
             case QUERY -> {
                 Validate.isTrue(eventType == null, "eventType must be null for QUERY");
                 Validate.isTrue(aggregateVersion == null, "aggregateVersion must be null for QUERY");
+                Objects.requireNonNull(projectionId);
+                Validate.validState(projectionId.linkTo().equals(aggregateId));
             }
             case COMMAND, TRACEABILITY -> {
+                Validate.isTrue(projectionId == null);
             }
         }
     }
@@ -36,21 +41,23 @@ public record EncodedTraceAggregateId(Source source, AggregateId aggregateId, Ex
 
     public static EncodedTraceAggregateId from(final Projection<?> projection, final ExecutedByHashed executedByHashed,
                                                final ExecutedByEncoded executedByEncoded) {
-        return new EncodedTraceAggregateId(Source.QUERY, projection.id().linkTo(), executedByHashed, executedByEncoded, null, null);
+        return new EncodedTraceAggregateId(Source.QUERY, projection.id().linkTo(), projection.id(), executedByHashed,
+                executedByEncoded, null, null);
     }
 
     public static EncodedTraceAggregateId from(final Command<?> command, final ExecutedByHashed executedByHashed,
                                                final ExecutedByEncoded executedByEncoded, final EventType eventType, final AggregateVersion aggregateVersion) {
-        return new EncodedTraceAggregateId(Source.COMMAND, command.id(), executedByHashed, executedByEncoded, eventType, aggregateVersion);
+        return new EncodedTraceAggregateId(Source.COMMAND, command.id(), null, executedByHashed, executedByEncoded, eventType, aggregateVersion);
     }
 
+    // Command without event
     public static EncodedTraceAggregateId from(final Command<?> command, final ExecutedByHashed executedByHashed,
                                                final ExecutedByEncoded executedByEncoded) {
-        return new EncodedTraceAggregateId(Source.COMMAND, command.id(), executedByHashed, executedByEncoded, null, null);
+        return new EncodedTraceAggregateId(Source.COMMAND, command.id(), null, executedByHashed, executedByEncoded, null, null);
     }
 
     public static EncodedTraceAggregateId fromTraceability(final AggregateId aggregateId, final ExecutedByHashed executedByHashed,
                                                            final ExecutedByEncoded executedByEncoded) {
-        return new EncodedTraceAggregateId(Source.TRACEABILITY, aggregateId, executedByHashed, executedByEncoded, null, null);
+        return new EncodedTraceAggregateId(Source.TRACEABILITY, aggregateId, null, executedByHashed, executedByEncoded, null, null);
     }
 }
