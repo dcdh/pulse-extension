@@ -1,14 +1,18 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
 import com.damdamdeo.pulse.extension.core.pagination.Pagination;
+import com.damdamdeo.pulse.extension.core.query.TodoChecklistProjection;
+import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresEncodedInvolvedRepository;
@@ -51,13 +55,16 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                        new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoCreated"), new AggregateVersion(0)),
-                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                        new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoUpdated"), new AggregateVersion(1)),
-                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"),
+                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                        new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"),
                                         new EventType("TodoUpdated"), new AggregateVersion(2)))),
                 new TraceRecorder(
@@ -68,7 +75,8 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_UNAUTHORIZED,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(3L),
@@ -78,7 +86,8 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_BUSINESS,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(4L),
@@ -88,7 +97,10 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("fromQuery"),
                         List.of(
-                                EncodedTraceAggregateId.fromQuery(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceAggregateId.from(
+                                        new TodoProjection(TodoId.USER_1_TODO_2, "lorem ipsum",
+                                                Status.IN_PROGRESS, false, List.of()),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(5L),
@@ -98,7 +110,10 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_UNAUTHORIZED,
                         new From("fromQuery"),
                         List.of(
-                                EncodedTraceAggregateId.fromQuery(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceAggregateId.from(
+                                        new TodoProjection(TodoId.USER_1_TODO_1, "lorem ipsum",
+                                                Status.IN_PROGRESS, false, List.of()),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(6L),
@@ -108,7 +123,11 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_UNAUTHORIZED,
                         new From("fromQuery"),
                         List.of(
-                                EncodedTraceAggregateId.fromQuery(TodoChecklistId.USER_1_TODO_1_1, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceAggregateId.from(
+                                        new TodoChecklistProjection(
+                                                TodoChecklistId.USER_1_TODO_1_1,
+                                                "Implement Projection feature"),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(7L),
@@ -118,7 +137,8 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.fromCommand(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_2),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"),
                                         new EventType("TodoCreated"), new AggregateVersion(0)))),
                 new TraceRecorder(

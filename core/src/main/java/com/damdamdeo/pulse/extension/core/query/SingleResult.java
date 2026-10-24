@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -14,5 +15,10 @@ public record SingleResult<A extends AggregateId, P extends Projection<A>>(P pro
     @Override
     public Set<A> aggregateIds() {
         return Set.of(projection.id());
+    }
+
+    @Override
+    public List<P> projections() {
+        return List.of(projection);
     }
 }

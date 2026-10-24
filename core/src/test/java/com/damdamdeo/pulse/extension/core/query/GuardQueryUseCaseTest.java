@@ -10,7 +10,9 @@ import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.query.permission.Everyone;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.core.query.permission.VisibilityRoleRestricted;
-import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
+import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,7 +72,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS)
+                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS)
         );
     }
 
@@ -89,7 +91,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS),
+                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS),
                 () -> verify(decorated).execute(any())
         );
     }
@@ -109,7 +111,7 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS),
+                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS),
                 () -> verify(decorated).execute(any())
         );
     }
@@ -152,11 +154,11 @@ class GuardQueryUseCaseTest {
                 () -> verify(decorated).permissions(),
                 () -> verify(traceAppender).append(
                         INPUT,
-                        result.aggregateIds(),
+                        result.projections(),
                         ExecutionStatus.FAILED_UNAUTHORIZED
                 ),
                 () -> verify(decorated).execute(any()),
-                () -> verify(result, times(3)).aggregateIds()
+                () -> verify(result, times(1)).aggregateIds()
         );
     }
 
@@ -170,18 +172,16 @@ class GuardQueryUseCaseTest {
         guardQuery.execute(INPUT);
 
         // Then
-        verify(traceAppender).append(INPUT, result.aggregateIds(), ExecutionStatus.SUCCESS);
+        verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS);
     }
 
     @Test
     void shouldThrowInfrastructureFailureWhenTraceAppendingFails() throws QueryException, TraceAppenderException {
         // Given
-        final Set<TodoId> aggregateIds = Set.of();
         when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
-        when(result.aggregateIds()).thenReturn(aggregateIds);
         doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
-                .when(traceAppender).append(INPUT, aggregateIds, ExecutionStatus.SUCCESS);
+                .when(traceAppender).append(eq(INPUT), any(), eq(ExecutionStatus.SUCCESS));
 
         // When / Then
         final QueryException exception = assertThrows(QueryException.class, () -> guardQuery.execute(INPUT));

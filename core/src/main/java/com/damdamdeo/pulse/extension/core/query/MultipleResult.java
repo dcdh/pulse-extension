@@ -16,6 +16,8 @@ public record MultipleResult<A extends AggregateId, P extends Projection<A>>(Lis
 
     @Override
     public Set<A> aggregateIds() {
-        return projections.stream().map(Projection::id).collect(Collectors.toSet());
+        return projections.stream()
+                .map(Projection::id)
+                .collect(Collectors.toSet());
     }
 }

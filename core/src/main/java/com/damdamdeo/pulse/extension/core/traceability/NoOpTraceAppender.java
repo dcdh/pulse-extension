@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
 import com.damdamdeo.pulse.extension.core.query.Input;
+import com.damdamdeo.pulse.extension.core.query.Projection;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +13,7 @@ import java.util.Set;
 public final class NoOpTraceAppender implements TraceAppender {
 
     @Override
-    public <K extends AggregateId> void append(final Command<K> command, final List<VersionizedEvent<K>> versionizedEvents,
+    public <A extends AggregateId> void append(final Command<A> command, final List<VersionizedEvent<A>> versionizedEvents,
                                                final ExecutionStatus executionStatus) throws TraceAppenderException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(versionizedEvents);
@@ -21,10 +22,11 @@ public final class NoOpTraceAppender implements TraceAppender {
     }
 
     @Override
-    public <K extends AggregateId> void append(final Input input, final Set<K> aggregateIds, final ExecutionStatus executionStatus)
+    public <A extends AggregateId, P extends Projection<A>> void append(final Input input, final List<P> projections,
+                                                                        final ExecutionStatus executionStatus)
             throws TraceAppenderException {
         Objects.requireNonNull(input);
-        Objects.requireNonNull(aggregateIds);
+        Objects.requireNonNull(projections);
         Objects.requireNonNull(executionStatus);
         // no-op
     }

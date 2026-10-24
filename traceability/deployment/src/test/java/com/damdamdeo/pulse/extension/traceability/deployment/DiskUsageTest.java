@@ -1,8 +1,10 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
+import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
+import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
 import io.quarkus.test.QuarkusUnitTest;
@@ -47,7 +49,11 @@ class DiskUsageTest {
                     ExecutionStatus.SUCCESS,
                     new From("from"),
                     List.of(
-                            EncodedTraceAggregateId.fromQuery(TodoId.USER_1_TODO_1, new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded"))));
+                            EncodedTraceAggregateId.from(
+                                    new TodoProjection(TodoId.USER_1_TODO_1, "lorem ipsum",
+                                            Status.IN_PROGRESS, false, List.of()),
+                                    new ExecutedByHashed("EU:alice-hashed"),
+                                    new ExecutedByEncoded("EU:aliceEncoded"))));
 
             // When
             jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.store(traceRecorder);

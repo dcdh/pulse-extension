@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.TestUsernameEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.damdamdeo.pulse.extension.core.query.SampleInput;
+import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.deployment.finder.StubOwnedByProvider;
 import com.damdamdeo.pulse.extension.traceability.deployment.finder.StubUsernameDecoder;
@@ -161,7 +162,10 @@ class E2ETest {
                 new VersionizedEvent<>(new AggregateVersion(2),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), BOB))
         ), ExecutionStatus.SUCCESS);
-        traceAppender.append(new SampleInput(), Set.of(TodoId.USER_1_TODO_1), ExecutionStatus.FAILED_UNAUTHORIZED);
+        traceAppender.append(new SampleInput(),
+                List.of(new TodoProjection(TodoId.USER_1_TODO_1, "lorem ipsum",
+                        Status.IN_PROGRESS, false, List.of())),
+                ExecutionStatus.FAILED_UNAUTHORIZED);
         // Alice
         stubExecutionContextProvider.set(new ExecutedBy.EndUser(new Username("alice@mail.com")));
         traceAppender.append(new SimpleCommand(TodoId.USER_1_TODO_2), List.of(

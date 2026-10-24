@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameHasher;
 import com.damdamdeo.pulse.extension.core.query.Input;
+import com.damdamdeo.pulse.extension.core.query.Projection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,17 +42,17 @@ public final class DefaultTraceAppender implements TraceAppender {
     }
 
     @Override
-    public <K extends AggregateId> void append(final Command<K> command, final List<VersionizedEvent<K>> versionizedEvents,
+    public <A extends AggregateId> void append(final Command<A> command, final List<VersionizedEvent<A>> versionizedEvents,
                                                final ExecutionStatus executionStatus) throws TraceAppenderException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(versionizedEvents);
         Objects.requireNonNull(executionStatus);
         try {
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final K aggregateId = command.id();
+            final A aggregateId = command.id();
             final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(versionizedEvents.isEmpty() ? 1 : versionizedEvents.size());
-            for (final VersionizedEvent<K> versionizedEvent : versionizedEvents) {
-                final EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.fromCommand(aggregateId,
+            for (final VersionizedEvent<A> versionizedEvent : versionizedEvents) {
+                final EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.from(command,
                         executedBy.hash(usernameHasher),
                         executedByEncodedProvider.provide(aggregateId, executedBy),
                         EventType.from(versionizedEvent.event().getClass()),
@@ -59,7 +60,7 @@ public final class DefaultTraceAppender implements TraceAppender {
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
             }
             if (versionizedEvents.isEmpty()) {
-                final EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.fromCommand(aggregateId,
+                final EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.from(command,
                         executedBy.hash(usernameHasher),
                         executedByEncodedProvider.provide(aggregateId, executedBy));
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
@@ -75,21 +76,22 @@ public final class DefaultTraceAppender implements TraceAppender {
     }
 
     @Override
-    public <K extends AggregateId> void append(final Input input, final Set<K> aggregateIds, final ExecutionStatus executionStatus)
+    public <A extends AggregateId, P extends Projection<A>> void append(final Input input, final List<P> projections,
+                                                                        final ExecutionStatus executionStatus)
             throws TraceAppenderException {
         Objects.requireNonNull(input);
-        Objects.requireNonNull(aggregateIds);
+        Objects.requireNonNull(projections);
         Objects.requireNonNull(executionStatus);
-        if (aggregateIds.isEmpty()) {
+        if (projections.isEmpty()) {
             return;
         }
         try {
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(aggregateIds.size());
-            for (final AggregateId aggregateId : aggregateIds) {
-                EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.fromQuery(aggregateId,
+            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(projections.size());
+            for (final Projection<A> projection : projections) {
+                EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.from(projection,
                         executedBy.hash(usernameHasher),
-                        executedByEncodedProvider.provide(aggregateId, executedBy));
+                        executedByEncodedProvider.provide(projection.id(), executedBy));
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
             }
             traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(),

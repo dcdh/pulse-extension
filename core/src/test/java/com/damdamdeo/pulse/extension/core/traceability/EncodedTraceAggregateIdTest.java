@@ -2,9 +2,12 @@ package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
+import com.damdamdeo.pulse.extension.core.query.Projection;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -13,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class EncodedTraceAggregateIdTest {
 
@@ -22,11 +27,13 @@ class EncodedTraceAggregateIdTest {
     @Test
     void shouldCreateQueryTraceWithoutEvent() {
         // given
+        final Projection<TodoId> projection = mock(Projection.class);
         final TodoId aggregateId = TodoId.USER_1_TODO_1;
+        when(projection.id()).thenReturn(aggregateId);
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.fromQuery(
-                aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
+        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+                projection, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
 
         // then
         assertAll(
@@ -64,18 +71,18 @@ class EncodedTraceAggregateIdTest {
     @Test
     void shouldCreateCommandTraceWithEvent() {
         // given
-        final TodoId aggregateId = TodoId.USER_1_TODO_1;
+        final Command<TodoId> command = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
         final EventType eventType = new EventType("TodoCreated");
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.fromCommand(
-                aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, eventType, aggregateVersion);
+        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+                command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, eventType, aggregateVersion);
 
         // then
         assertAll(
                 () -> assertEquals(Source.COMMAND, trace.source()),
-                () -> assertEquals(aggregateId, trace.aggregateId()),
+                () -> assertEquals(command.id(), trace.aggregateId()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertEquals(eventType, trace.eventType()),
@@ -87,16 +94,16 @@ class EncodedTraceAggregateIdTest {
     @Test
     void shouldCreateCommandTraceWithoutEvent() {
         // given
-        final TodoId aggregateId = TodoId.USER_1_TODO_1;
+        final Command<TodoId> command = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.fromCommand(
-                aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
+        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+                command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
 
         // then
         assertAll(
                 () -> assertEquals(Source.COMMAND, trace.source()),
-                () -> assertEquals(aggregateId, trace.aggregateId()),
+                () -> assertEquals(command.id(), trace.aggregateId()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertNull(trace.eventType()),
@@ -108,11 +115,12 @@ class EncodedTraceAggregateIdTest {
     @Test
     void shouldReportNoEventWhenOnlyEventTypeIsPresent() {
         // given
+        final Command<TodoId> command = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
         final EventType eventType = new EventType("TodoCreated");
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.fromCommand(
-                TodoId.USER_1_TODO_1, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
+        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+                command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                 eventType, null);
 
         // then
@@ -122,11 +130,12 @@ class EncodedTraceAggregateIdTest {
     @Test
     void shouldReportNoEventWhenOnlyAggregateVersionIsPresent() {
         // given
+        final Command<TodoId> command = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.fromCommand(
-                TodoId.USER_1_TODO_1, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
+        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+                command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                 null, aggregateVersion);
 
         // then

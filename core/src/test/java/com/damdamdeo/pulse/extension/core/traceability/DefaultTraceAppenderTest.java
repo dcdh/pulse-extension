@@ -10,6 +10,7 @@ import com.damdamdeo.pulse.extension.core.event.ExecutedByEvent;
 import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.damdamdeo.pulse.extension.core.query.Input;
+import com.damdamdeo.pulse.extension.core.query.Projection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -68,9 +69,7 @@ class DefaultTraceAppenderTest {
         final AggregateId firstAggregateId = mock(AggregateId.class);
         final AggregateId secondAggregateId = mock(AggregateId.class);
         final TestInput input = new TestInput();
-        final LinkedHashSet<AggregateId> aggregateIds = new LinkedHashSet<>();
-        aggregateIds.add(firstAggregateId);
-        aggregateIds.add(secondAggregateId);
+        final List<TestProjection> projections = List.of(new TestProjection(firstAggregateId), new TestProjection(secondAggregateId));
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final TraceId traceId = new TraceId(123L);
         final CorrelationId correlationId = new CorrelationId(125L);
@@ -86,7 +85,7 @@ class DefaultTraceAppenderTest {
         when(executedByEncodedProvider.provide(secondAggregateId, executedBy)).thenReturn(secondExecutedByEncoded);
 
         // When
-        traceAppender.append(input, aggregateIds, ExecutionStatus.SUCCESS);
+        traceAppender.append(input, projections, ExecutionStatus.SUCCESS);
 
         // Then
         final ArgumentCaptor<TraceRecorder> traceRecorderCaptor = ArgumentCaptor.forClass(TraceRecorder.class);
@@ -100,8 +99,8 @@ class DefaultTraceAppenderTest {
                 () -> assertEquals(ExecutionStatus.SUCCESS, traceRecorder.executionStatus()),
                 () -> assertEquals(From.from(input), traceRecorder.from()),
                 () -> assertThat(traceRecorder.encodedTraceAggregateIds()).containsExactly(
-                        EncodedTraceAggregateId.fromQuery(firstAggregateId, new ExecutedByHashed("A"), firstExecutedByEncoded),
-                        EncodedTraceAggregateId.fromQuery(secondAggregateId, new ExecutedByHashed("A"), secondExecutedByEncoded)),
+                        EncodedTraceAggregateId.from(projections.get(0), new ExecutedByHashed("A"), firstExecutedByEncoded),
+                        EncodedTraceAggregateId.from(projections.get(1), new ExecutedByHashed("A"), secondExecutedByEncoded)),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
@@ -250,15 +249,15 @@ class DefaultTraceAppenderTest {
                 () -> assertEquals(ExecutionStatus.FAILED_BUSINESS, traceRecorder.executionStatus()),
                 () -> assertEquals(From.from(command), traceRecorder.from()),
                 () -> assertThat(traceRecorder.encodedTraceAggregateIds()).containsExactly(
-                        EncodedTraceAggregateId.fromCommand(
-                                aggregateId,
+                        EncodedTraceAggregateId.from(
+                                command,
                                 new ExecutedByHashed("A"),
                                 executedByEncoded,
                                 EventType.from(FirstTestEvent.class),
                                 firstVersion
                         ),
-                        EncodedTraceAggregateId.fromCommand(
-                                aggregateId,
+                        EncodedTraceAggregateId.from(
+                                command,
                                 new ExecutedByHashed("A"),
                                 executedByEncoded,
                                 EventType.from(SecondTestEvent.class),
@@ -301,7 +300,7 @@ class DefaultTraceAppenderTest {
                 () -> assertEquals(ExecutionStatus.SUCCESS, traceRecorder.executionStatus()),
                 () -> assertEquals(From.from(command), traceRecorder.from()),
                 () -> assertThat(traceRecorder.encodedTraceAggregateIds()).containsExactly(
-                        EncodedTraceAggregateId.fromCommand(aggregateId, new ExecutedByHashed("A"),
+                        EncodedTraceAggregateId.from(command, new ExecutedByHashed("A"),
                                 executedByEncoded)),
                 () -> verify(executedByEncodedProvider).provide(aggregateId, executedBy)
         );
@@ -313,7 +312,7 @@ class DefaultTraceAppenderTest {
         final TestInput input = new TestInput();
 
         // When
-        traceAppender.append(input, Set.of(), ExecutionStatus.SUCCESS);
+        traceAppender.append(input, List.of(), ExecutionStatus.SUCCESS);
 
         // Then
         verifyNoInteractions(executionContextProvider, executedAtProvider, traceIdGenerator, usernameHasher,
@@ -336,7 +335,7 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(input, Set.of(aggregateId), ExecutionStatus.SUCCESS));
+                () -> traceAppender.append(input, List.of(new TestProjection(aggregateId)), ExecutionStatus.SUCCESS));
 
         // Then
         assertAll(
@@ -367,7 +366,7 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(input, Set.of(aggregateId), ExecutionStatus.SUCCESS));
+                () -> traceAppender.append(input, List.of(new TestProjection(aggregateId)), ExecutionStatus.SUCCESS));
 
         // Then
         assertAll(
@@ -403,7 +402,7 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(input, Set.of(aggregateId), ExecutionStatus.SUCCESS));
+                () -> traceAppender.append(input, List.of(new TestProjection(aggregateId)), ExecutionStatus.SUCCESS));
 
         // Then
         assertAll(
@@ -425,6 +424,9 @@ class DefaultTraceAppenderTest {
     }
 
     private record TestInput() implements Input {
+    }
+
+    private record TestProjection(AggregateId id) implements Projection<AggregateId> {
     }
 
     private record FirstTestEvent() implements Event<TestId> {

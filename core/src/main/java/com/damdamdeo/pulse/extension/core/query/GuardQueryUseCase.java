@@ -12,7 +12,6 @@ import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -90,10 +89,10 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
                 }
             }
             if (allow) {
-                traceAppender.append(input, result.aggregateIds(), ExecutionStatus.SUCCESS);
+                traceAppender.append(input, result.projections(), ExecutionStatus.SUCCESS);
                 return result;
             } else {
-                traceAppender.append(input, result.aggregateIds(), ExecutionStatus.FAILED_UNAUTHORIZED);
+                traceAppender.append(input, result.projections(), ExecutionStatus.FAILED_UNAUTHORIZED);
                 throw new QueryException(new UnauthorizedException());
             }
         } catch (final TraceAppenderException exception) {
