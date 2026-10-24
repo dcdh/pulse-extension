@@ -18,8 +18,8 @@ public record ExecutedBySpecificServiceAccounts<K extends AggregateId>(String...
     }
 
     @Override
-    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
-        Objects.requireNonNull(aggregateIds);
+    public boolean allow(final K aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+        Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
         final Set<String> candidates = Stream.of(names).map(name -> ExecutedBy.ServiceAccount.DISCRIMINANT + ExecutedBy.SEPARATOR + name)

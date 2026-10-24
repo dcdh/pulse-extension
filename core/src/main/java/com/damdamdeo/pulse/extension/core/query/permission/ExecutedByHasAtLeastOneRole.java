@@ -7,7 +7,6 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Set;
 
 public record ExecutedByHasAtLeastOneRole<K extends AggregateId>(String... roleNames) implements Permission<K> {
 
@@ -16,8 +15,8 @@ public record ExecutedByHasAtLeastOneRole<K extends AggregateId>(String... roleN
     }
 
     @Override
-    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
-        Objects.requireNonNull(aggregateIds);
+    public boolean allow(final K aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+        Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
         return Arrays.stream(roleNames).anyMatch(executionContext::hasRole);

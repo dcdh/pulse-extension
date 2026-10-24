@@ -23,7 +23,7 @@ class SpecificQueryPermissionTest {
     static class SampleSpecificQuery extends SpecificQuery<TodoId> {
 
         @Override
-        public boolean allow(final Set<TodoId> aggregateIds,
+        public boolean allow(final TodoId aggregateId,
                              final PermissionExecutionContext permissionExecutionContext) throws QueryException {
             return false;
         }

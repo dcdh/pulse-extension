@@ -14,12 +14,12 @@ import java.util.Set;
 public final class InExecutedBy<K extends AggregateId> implements Permission<K> {
 
     @Override
-    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
-        Objects.requireNonNull(aggregateIds);
+    public boolean allow(final K aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+        Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(permissionExecutionContext);
         try {
             final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
-            final Set<AggregateId> uncompounded = permissionExecutionContext.aggregateIdDecomposer().unCompound(aggregateIds);
+            final Set<AggregateId> uncompounded = permissionExecutionContext.aggregateIdDecomposer().unCompound(aggregateId);
             final Set<ExecutedBy> executedByEligibles = permissionExecutionContext.executedByResolver().resolve(uncompounded);
             return executedByEligibles.contains(executionContext.executedBy());
         } catch (final UnableToResolveException exception) {

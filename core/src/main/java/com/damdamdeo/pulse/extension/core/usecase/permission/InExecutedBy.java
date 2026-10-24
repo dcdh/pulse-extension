@@ -21,7 +21,7 @@ public final class InExecutedBy<K extends AggregateId, C extends Command<K>> imp
         Objects.requireNonNull(permissionExecutionContext);
         try {
             final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
-            final Set<AggregateId> uncompounded = permissionExecutionContext.aggregateIdDecomposer().unCompound(Set.of(aggregateId));
+            final Set<AggregateId> uncompounded = permissionExecutionContext.aggregateIdDecomposer().unCompound(aggregateId);
             final Set<ExecutedBy> executedByEligibles = permissionExecutionContext.executedByResolver().resolve(uncompounded);
             return executedByEligibles.contains(executionContext.executedBy());
         } catch (final UnableToResolveException exception) {

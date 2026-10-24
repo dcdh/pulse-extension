@@ -81,7 +81,14 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
             final R result = queryCallable.execute();
             boolean allow = false;
             for (final Permission<A> permission : permissions) {
-                if (permission.allow(result.aggregateIds(), context)) {
+                boolean matchOnAllAggregates = true;
+                for (final A aggregateId : result.aggregateIds()) {
+                    if (!permission.allow(aggregateId, context)) {
+                        matchOnAllAggregates = false;
+                        break;
+                    }
+                }
+                if (matchOnAllAggregates) {
                     allow = true;
                     break;
                 }

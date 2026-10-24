@@ -8,8 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,7 +25,7 @@ class AnyEndUserTest {
         when(permissionExecutionContext.isEndUser()).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -42,7 +40,7 @@ class AnyEndUserTest {
         when(permissionExecutionContext.isEndUser()).thenReturn(false);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(

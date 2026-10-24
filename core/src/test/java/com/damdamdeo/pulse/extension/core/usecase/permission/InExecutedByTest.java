@@ -45,7 +45,7 @@ class InExecutedByTest {
     @Test
     void shouldAllowWhenExecutedByIsEligible() throws UseCaseException, UnableToResolveException {
         // Given
-        final Set<AggregateId> aggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1);
+        final AggregateId aggregateId = TodoChecklistId.USER_1_TODO_1_1;
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final Set<ExecutedBy> executedByEligibles = Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com")));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -53,7 +53,7 @@ class InExecutedByTest {
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(aggregateIds)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(aggregateId)).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
@@ -63,7 +63,7 @@ class InExecutedByTest {
         // Then
         assertAll(
                 () -> assertTrue(allowed),
-                () -> verify(aggregateIdDecomposer).unCompound(aggregateIds),
+                () -> verify(aggregateIdDecomposer).unCompound(aggregateId),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds),
                 () -> verify(executionContext).executedBy()
         );
@@ -73,7 +73,7 @@ class InExecutedByTest {
     void shouldReturnFalseWhenExecutedByIsNotEligible() throws UseCaseException, UnableToResolveException {
         // Given
         final ExecutedBy anotherExecutedBy = new ExecutedBy.EndUser(new Username("bob@mail.com"));
-        final Set<AggregateId> aggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1);
+        final AggregateId aggregateId = TodoChecklistId.USER_1_TODO_1_1;
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final Set<ExecutedBy> executedByEligibles = Set.of(anotherExecutedBy);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -81,7 +81,7 @@ class InExecutedByTest {
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(aggregateIds)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(aggregateId)).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
@@ -91,7 +91,7 @@ class InExecutedByTest {
         // Then
         assertAll(
                 () -> assertFalse(allowed),
-                () -> verify(aggregateIdDecomposer).unCompound(aggregateIds),
+                () -> verify(aggregateIdDecomposer).unCompound(aggregateId),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds),
                 () -> verify(executionContext).executedBy()
         );
@@ -100,14 +100,14 @@ class InExecutedByTest {
     @Test
     void shouldResolveUncompoundedAggregateIds() throws UseCaseException, UnableToResolveException {
         // Given
-        final Set<AggregateId> aggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1);
+        final AggregateId aggregateId = TodoChecklistId.USER_1_TODO_1_1;
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.aggregateIdDecomposer()).thenReturn(aggregateIdDecomposer);
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(aggregateIds)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(aggregateId)).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
 
         // When
@@ -116,7 +116,7 @@ class InExecutedByTest {
 
         // Then
         assertAll(
-                () -> verify(aggregateIdDecomposer).unCompound(aggregateIds),
+                () -> verify(aggregateIdDecomposer).unCompound(aggregateId),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds)
         );
     }
@@ -124,14 +124,14 @@ class InExecutedByTest {
     @Test
     void shouldThrowQueryExceptionWhenExecutedByCannotBeResolved() throws UnableToResolveException {
         // Given
-        final Set<AggregateId> aggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1);
+        final AggregateId aggregateId = TodoChecklistId.USER_1_TODO_1_1;
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final UnableToResolveException cause = new UnableToResolveException(new RuntimeException("Unable to resolve executed by"));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.aggregateIdDecomposer()).thenReturn(aggregateIdDecomposer);
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
-        when(aggregateIdDecomposer.unCompound(aggregateIds)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(aggregateId)).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenThrow(cause);
 
         // When

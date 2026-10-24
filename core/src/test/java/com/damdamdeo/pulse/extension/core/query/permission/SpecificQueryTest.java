@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,7 +20,7 @@ class SpecificQueryTest {
         permission = new SpecificQuery<>() {
 
             @Override
-            public boolean allow(final Set<TodoId> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+            public boolean allow(final TodoId aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
                 return false;
             }
         };

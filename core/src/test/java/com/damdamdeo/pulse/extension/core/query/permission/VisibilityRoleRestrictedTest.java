@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -49,7 +48,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -73,7 +72,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -99,7 +98,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -121,7 +120,7 @@ class VisibilityRoleRestrictedTest {
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of());
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(

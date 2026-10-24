@@ -7,13 +7,12 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public final class VisibilityRoleRestricted<K extends AggregateId> implements Permission<K> {
 
     @Override
-    public boolean allow(final Set<K> aggregateIds, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
-        Objects.requireNonNull(aggregateIds);
+    public boolean allow(final K aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+        Objects.requireNonNull(aggregateId);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
         final List<String> visibilityRoles = permissionExecutionContext.backendUserVisibilityRolesProvider().provide();

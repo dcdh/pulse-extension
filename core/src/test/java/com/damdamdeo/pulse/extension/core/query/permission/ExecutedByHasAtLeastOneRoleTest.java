@@ -11,8 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -41,7 +39,7 @@ class ExecutedByHasAtLeastOneRoleTest {
         when(executionContext.hasRole("USER")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -61,7 +59,7 @@ class ExecutedByHasAtLeastOneRoleTest {
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -82,7 +80,7 @@ class ExecutedByHasAtLeastOneRoleTest {
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -101,7 +99,7 @@ class ExecutedByHasAtLeastOneRoleTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertAll(

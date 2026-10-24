@@ -8,8 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,7 +23,7 @@ class EveryoneTest {
         final Everyone<TodoId> permission = new Everyone<>();
 
         // When
-        final boolean allowed = permission.allow(Set.of(), permissionExecutionContext);
+        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
 
         // Then
         assertTrue(allowed);
