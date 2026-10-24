@@ -4,10 +4,8 @@ import com.damdamdeo.pulse.extension.core.UserId;
 
 public record TestProjection(UserId userId) implements Projection<UserId> {
 
-    public static TestProjection PROJECTION_USER_1 = new TestProjection(UserId.USER_1);
-
     @Override
-    public UserId id() {
-        return userId;
+    public ProjectionId<UserId> id() {
+        return ProjectionId.from(userId);
     }
 }

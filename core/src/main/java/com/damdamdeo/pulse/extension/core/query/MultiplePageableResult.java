@@ -16,7 +16,7 @@ public record MultiplePageableResult<A extends AggregateId, P extends Projection
     }
 
     @Override
-    public Set<A> aggregateIds() {
+    public Set<ProjectionId<A>> projectionIds() {
         return projectionsParPage.content()
                 .stream()
                 .map(Projection::id)

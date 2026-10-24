@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core.query.permission;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.usecase.permission.UserValidity;
 
@@ -19,8 +20,8 @@ public final class IsUserValidePermission extends SpecificQuery<TodoId> {
     }
 
     @Override
-    public boolean allow(final TodoId aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
-        Objects.requireNonNull(aggregateId);
+    public boolean allow(final ProjectionId<TodoId> projectionId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
+        Objects.requireNonNull(projectionId);
         Objects.requireNonNull(permissionExecutionContext);
         return userValidity.isValid(userId);
     }

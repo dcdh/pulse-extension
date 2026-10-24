@@ -38,8 +38,8 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
                     () -> {
                         try {
                             LOGGER.info("Starting job %s".formatted(jobName));
-                            final Set<A> firstPageExecution = new HashSet<>();
-                            final Set<A> secondPageExecution = new HashSet<>();
+                            final Set<ProjectionId<A>> firstPageExecution = new HashSet<>();
+                            final Set<ProjectionId<A>> secondPageExecution = new HashSet<>();
                             executionContextOverloader.overload(jobName);
                             IncrementStrategy incrementStrategy = IncrementStrategy.UNKNOWN;
                             boolean hasMore = true;
@@ -49,9 +49,9 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
                                 final R executed = queryUseCase.execute(input(), pagination);
                                 if (!pagination.loadAll()) {
                                     if (currentPage == 0 && firstPageExecution.isEmpty()) {
-                                        firstPageExecution.addAll(executed.aggregateIds());
+                                        firstPageExecution.addAll(executed.projectionIds());
                                     } else if (currentPage == 0) {
-                                        secondPageExecution.addAll(executed.aggregateIds());
+                                        secondPageExecution.addAll(executed.projectionIds());
                                         if (Collections.disjoint(firstPageExecution, secondPageExecution)) {
                                             // two runs at page 0 do not return the same dataset, so pagination needs to be kept at 0 to process all the dataset until reaching the end
                                             incrementStrategy = IncrementStrategy.KEEP_ZERO_PAGINATION;

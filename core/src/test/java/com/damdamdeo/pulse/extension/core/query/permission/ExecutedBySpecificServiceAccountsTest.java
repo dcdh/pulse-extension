@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +41,7 @@ class ExecutedBySpecificServiceAccountsTest {
         when(executionContext.executedBy()).thenReturn(CHECKOUT);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -59,7 +60,7 @@ class ExecutedBySpecificServiceAccountsTest {
         when(executionContext.executedBy()).thenReturn(PAYMENT);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -79,7 +80,7 @@ class ExecutedBySpecificServiceAccountsTest {
         when(executionContext.executedBy()).thenReturn(charlie);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -98,7 +99,7 @@ class ExecutedBySpecificServiceAccountsTest {
         when(executionContext.executedBy()).thenReturn(CHECKOUT);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -119,7 +120,7 @@ class ExecutedBySpecificServiceAccountsTest {
         when(executionContext.executedBy()).thenReturn(endUser);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(

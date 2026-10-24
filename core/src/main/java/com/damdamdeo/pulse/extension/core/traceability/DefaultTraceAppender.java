@@ -91,7 +91,7 @@ public final class DefaultTraceAppender implements TraceAppender {
             for (final Projection<A> projection : projections) {
                 EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.from(projection,
                         executedBy.hash(usernameHasher),
-                        executedByEncodedProvider.provide(projection.id(), executedBy));
+                        executedByEncodedProvider.provide(projection.id().linkTo(), executedBy));
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
             }
             traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(),

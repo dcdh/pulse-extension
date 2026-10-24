@@ -36,7 +36,7 @@ public record EncodedTraceAggregateId(Source source, AggregateId aggregateId, Ex
 
     public static EncodedTraceAggregateId from(final Projection<?> projection, final ExecutedByHashed executedByHashed,
                                                final ExecutedByEncoded executedByEncoded) {
-        return new EncodedTraceAggregateId(Source.QUERY, projection.id(), executedByHashed, executedByEncoded, null, null);
+        return new EncodedTraceAggregateId(Source.QUERY, projection.id().linkTo(), executedByHashed, executedByEncoded, null, null);
     }
 
     public static EncodedTraceAggregateId from(final Command<?> command, final ExecutedByHashed executedByHashed,

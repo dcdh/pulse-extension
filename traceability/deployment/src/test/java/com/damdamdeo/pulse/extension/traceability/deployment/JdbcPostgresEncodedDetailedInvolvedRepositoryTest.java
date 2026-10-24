@@ -11,6 +11,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
 import com.damdamdeo.pulse.extension.core.pagination.Pagination;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.TodoChecklistProjection;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
@@ -97,7 +98,9 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         new From("fromQuery"),
                         List.of(
                                 EncodedTraceAggregateId.from(
-                                        new TodoProjection(TodoId.USER_1_TODO_2, "lorem ipsum",
+                                        new TodoProjection(
+                                                ProjectionId.from(TodoId.USER_1_TODO_2),
+                                                "lorem ipsum",
                                                 Status.IN_PROGRESS, false, List.of()),
                                         new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
@@ -109,7 +112,9 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         new From("fromQuery"),
                         List.of(
                                 EncodedTraceAggregateId.from(
-                                        new TodoProjection(TodoId.USER_1_TODO_1, "lorem ipsum",
+                                        new TodoProjection(
+                                                ProjectionId.from(TodoId.USER_1_TODO_1),
+                                                "lorem ipsum",
                                                 Status.IN_PROGRESS, false, List.of()),
                                         new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
@@ -122,7 +127,7 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         List.of(
                                 EncodedTraceAggregateId.from(
                                         new TodoChecklistProjection(
-                                                TodoChecklistId.USER_1_TODO_1_1,
+                                                ProjectionId.from(TodoChecklistId.USER_1_TODO_1_1),
                                                 "Implement Projection feature"),
                                         new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(

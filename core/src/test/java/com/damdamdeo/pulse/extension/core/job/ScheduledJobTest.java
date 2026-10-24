@@ -71,7 +71,9 @@ class ScheduledJobTest {
         final TestCommand secondCommand = new TestCommand(new TestId("second"));
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size()))).willReturn(firstResult);
-        given(firstResult.aggregateIds()).willReturn(Set.of(firstCommand.id(), secondCommand.id()));
+        given(firstResult.projectionIds()).willReturn(Set.of(
+                ProjectionId.from(firstCommand.id()),
+                ProjectionId.from(secondCommand.id())));
         given(resultProcessor.process(firstResult)).willReturn(List.of(firstCommand, secondCommand));
         given(firstResult.hasNext()).willReturn(false);
 
@@ -103,8 +105,10 @@ class ScheduledJobTest {
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size())))
                 .willReturn(firstResult, secondResult);
-        given(firstResult.aggregateIds()).willReturn(Set.of(firstCommand.id()));
-        given(secondResult.aggregateIds()).willReturn(Set.of(secondCommand.id()));
+        given(firstResult.projectionIds()).willReturn(Set.of(
+                ProjectionId.from(firstCommand.id())));
+        given(secondResult.projectionIds()).willReturn(Set.of(
+                ProjectionId.from(secondCommand.id())));
         given(resultProcessor.process(firstResult)).willReturn(List.of(firstCommand));
         given(resultProcessor.process(secondResult)).willReturn(List.of(secondCommand));
         given(firstResult.hasNext()).willReturn(true);
@@ -157,7 +161,9 @@ class ScheduledJobTest {
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size())))
                 .willReturn(firstResult);
-        given(firstResult.aggregateIds()).willReturn(Set.of(failingCommand.id(), ignoredCommand.id()));
+        given(firstResult.projectionIds()).willReturn(Set.of(
+                ProjectionId.from(failingCommand.id()),
+                ProjectionId.from(ignoredCommand.id())));
         given(resultProcessor.process(firstResult)).willReturn(List.of(failingCommand, ignoredCommand));
         given(domainUseCase.execute(failingCommand)).willThrow(useCaseException);
 
@@ -222,7 +228,7 @@ class ScheduledJobTest {
     public record TestInput() implements Input {
     }
 
-    public record TestProjection(TestId id) implements Projection<TestId> {
+    public record TestProjection(ProjectionId<TestId> id) implements Projection<TestId> {
     }
 
     public record TestCommand(TestId id) implements Command<TestId> {

@@ -13,7 +13,7 @@ public record SingleResult<A extends AggregateId, P extends Projection<A>>(P pro
     }
 
     @Override
-    public Set<A> aggregateIds() {
+    public Set<ProjectionId<A>> projectionIds() {
         return Set.of(projection.id());
     }
 

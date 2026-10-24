@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import java.util.List;
 import java.util.Objects;
 
-public record TodoProjection(TodoId todoId,
+public record TodoProjection(ProjectionId<TodoId> todoId,
                              String description,
                              Status status,
                              Boolean important,
@@ -21,7 +21,7 @@ public record TodoProjection(TodoId todoId,
     }
 
     @Override
-    public TodoId id() {
+    public ProjectionId<TodoId> id() {
         return todoId;
     }
 }

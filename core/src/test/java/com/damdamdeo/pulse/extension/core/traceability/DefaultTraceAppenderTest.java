@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core.traceability;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.EventType;
@@ -11,6 +12,7 @@ import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.damdamdeo.pulse.extension.core.query.Input;
 import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,10 +68,12 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldAppendQueryTrace() throws Exception {
         // Given
-        final AggregateId firstAggregateId = mock(AggregateId.class);
-        final AggregateId secondAggregateId = mock(AggregateId.class);
+        final AggregateId firstAggregateId = TodoId.USER_1_TODO_1;
+        final AggregateId secondAggregateId = TodoId.USER_1_TODO_2;
         final TestInput input = new TestInput();
-        final List<TestProjection> projections = List.of(new TestProjection(firstAggregateId), new TestProjection(secondAggregateId));
+        final List<TestProjection> projections = List.of(
+                new TestProjection(ProjectionId.from(firstAggregateId)),
+                new TestProjection(ProjectionId.from(secondAggregateId)));
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final TraceId traceId = new TraceId(123L);
         final CorrelationId correlationId = new CorrelationId(125L);
@@ -322,7 +326,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldThrowTraceAppenderExceptionWhenTraceIdCannotBeGenerated() throws Exception {
         // Given
-        final AggregateId aggregateId = mock(AggregateId.class);
+        final AggregateId aggregateId = TodoId.USER_1_TODO_1;
         final TestInput input = new TestInput();
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("SA:encoded-1");
@@ -335,7 +339,8 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(input, List.of(new TestProjection(aggregateId)), ExecutionStatus.SUCCESS));
+                () -> traceAppender.append(input, List.of(
+                        new TestProjection(ProjectionId.from(aggregateId))), ExecutionStatus.SUCCESS));
 
         // Then
         assertAll(
@@ -351,7 +356,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldThrowTraceAppenderExceptionWhenCorrelationIdCannotBeGenerated() throws Exception {
         // Given
-        final AggregateId aggregateId = mock(AggregateId.class);
+        final AggregateId aggregateId = TodoId.USER_1_TODO_1;
         final TestInput input = new TestInput();
         final TraceId traceId = new TraceId(123L);
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
@@ -366,7 +371,8 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(input, List.of(new TestProjection(aggregateId)), ExecutionStatus.SUCCESS));
+                () -> traceAppender.append(input, List.of(
+                        new TestProjection(ProjectionId.from(aggregateId))), ExecutionStatus.SUCCESS));
 
         // Then
         assertAll(
@@ -383,7 +389,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldThrowTraceAppenderExceptionWhenTraceCannotBeStored() throws Exception {
         // Given
-        final AggregateId aggregateId = mock(AggregateId.class);
+        final AggregateId aggregateId = TodoId.USER_1_TODO_1;
         final TestInput input = new TestInput();
         final TraceId traceId = new TraceId(123L);
         final CorrelationId correlationId = new CorrelationId(125L);
@@ -402,7 +408,8 @@ class DefaultTraceAppenderTest {
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
-                () -> traceAppender.append(input, List.of(new TestProjection(aggregateId)), ExecutionStatus.SUCCESS));
+                () -> traceAppender.append(input, List.of(
+                        new TestProjection(ProjectionId.from(aggregateId))), ExecutionStatus.SUCCESS));
 
         // Then
         assertAll(
@@ -426,7 +433,7 @@ class DefaultTraceAppenderTest {
     private record TestInput() implements Input {
     }
 
-    private record TestProjection(AggregateId id) implements Projection<AggregateId> {
+    private record TestProjection(ProjectionId<AggregateId> id) implements Projection<AggregateId> {
     }
 
     private record FirstTestEvent() implements Event<TestId> {

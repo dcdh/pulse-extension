@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
@@ -50,7 +51,9 @@ class DiskUsageTest {
                     new From("from"),
                     List.of(
                             EncodedTraceAggregateId.from(
-                                    new TodoProjection(TodoId.USER_1_TODO_1, "lorem ipsum",
+                                    new TodoProjection(
+                                            ProjectionId.from(TodoId.USER_1_TODO_1),
+                                            "lorem ipsum",
                                             Status.IN_PROGRESS, false, List.of()),
                                     new ExecutedByHashed("EU:alice-hashed"),
                                     new ExecutedByEncoded("EU:aliceEncoded"))));

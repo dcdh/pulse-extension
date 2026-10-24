@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.TestUsernameEncoder;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.SampleInput;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
@@ -163,7 +164,9 @@ class E2ETest {
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), BOB))
         ), ExecutionStatus.SUCCESS);
         traceAppender.append(new SampleInput(),
-                List.of(new TodoProjection(TodoId.USER_1_TODO_1, "lorem ipsum",
+                List.of(new TodoProjection(
+                                ProjectionId.from(TodoId.USER_1_TODO_1),
+                        "lorem ipsum",
                         Status.IN_PROGRESS, false, List.of())),
                 ExecutionStatus.FAILED_UNAUTHORIZED);
         // Alice

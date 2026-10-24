@@ -8,7 +8,7 @@ import java.util.Set;
 public sealed interface Result<A extends AggregateId, P extends Projection<A>>
         permits SingleResult, MultipleResult, MultiplePageableResult {
 
-    Set<A> aggregateIds();
+    Set<ProjectionId<A>> projectionIds();
 
     List<P> projections();
 }

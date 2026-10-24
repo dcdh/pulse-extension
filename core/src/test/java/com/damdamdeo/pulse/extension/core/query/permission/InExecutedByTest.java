@@ -9,10 +9,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
-import com.damdamdeo.pulse.extension.core.query.AggregateIdDecomposer;
-import com.damdamdeo.pulse.extension.core.query.QueryException;
-import com.damdamdeo.pulse.extension.core.query.QueryExceptionCode;
-import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
+import com.damdamdeo.pulse.extension.core.query.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +44,7 @@ class InExecutedByTest {
     void shouldAllowWhenExecutedByIsEligible() throws QueryException, UnableToResolveException {
         // Given
         final InExecutedBy<TodoId> permission = new InExecutedBy<>();
-        final TodoId aggregateIds = TodoId.USER_1_TODO_1;
+        final ProjectionId<TodoId> projectionId = ProjectionId.from(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final Set<ExecutedBy> executedByEligibles = Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com")));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -55,11 +52,11 @@ class InExecutedByTest {
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(aggregateIds)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
-        final boolean allowed = permission.allow(aggregateIds, permissionExecutionContext);
+        final boolean allowed = permission.allow(projectionId, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -69,7 +66,7 @@ class InExecutedByTest {
                 () -> verify(permissionExecutionContext).executedByResolver(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(aggregateIdDecomposer).unCompound(aggregateIds),
+                () -> verify(aggregateIdDecomposer).unCompound(projectionId.linkTo()),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds)
 
         );
@@ -80,7 +77,7 @@ class InExecutedByTest {
         // Given
         final InExecutedBy<TodoId> permission = new InExecutedBy<>();
         final ExecutedBy anotherExecutedBy = new ExecutedBy.EndUser(new Username("bob@mail.com"));
-        final TodoId aggregateId = TodoId.USER_1_TODO_1;
+        final ProjectionId<TodoId> projectionId = ProjectionId.from(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final Set<ExecutedBy> executedByEligibles = Set.of(anotherExecutedBy);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
@@ -88,11 +85,11 @@ class InExecutedByTest {
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(aggregateId)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
-        final boolean allowed = permission.allow(aggregateId, permissionExecutionContext);
+        final boolean allowed = permission.allow(projectionId, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -102,7 +99,7 @@ class InExecutedByTest {
                 () -> verify(permissionExecutionContext).executedByResolver(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(aggregateIdDecomposer).unCompound(aggregateId),
+                () -> verify(aggregateIdDecomposer).unCompound(projectionId.linkTo()),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds)
         );
     }
@@ -111,18 +108,18 @@ class InExecutedByTest {
     void shouldResolveUncompoundedAggregateIds() throws QueryException, UnableToResolveException {
         // Given
         final InExecutedBy<TodoId> permission = new InExecutedBy<>();
-        final TodoId aggregateId = TodoId.USER_1_TODO_1;
+        final ProjectionId<TodoId> projectionId = ProjectionId.from(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.aggregateIdDecomposer()).thenReturn(aggregateIdDecomposer);
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(aggregateId)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
 
         // When
-        permission.allow(aggregateId, permissionExecutionContext);
+        permission.allow(projectionId, permissionExecutionContext);
 
         // Then
         assertAll(
@@ -131,7 +128,7 @@ class InExecutedByTest {
                 () -> verify(permissionExecutionContext).executedByResolver(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(aggregateIdDecomposer).unCompound(aggregateId),
+                () -> verify(aggregateIdDecomposer).unCompound(projectionId.linkTo()),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds)
         );
     }
@@ -140,19 +137,19 @@ class InExecutedByTest {
     void shouldThrowQueryExceptionWhenExecutedByCannotBeResolved() throws QueryException, UnableToResolveException {
         // Given
         final InExecutedBy<TodoId> permission = new InExecutedBy<>();
-        final TodoId aggregateId = TodoId.USER_1_TODO_1;
+        final ProjectionId<TodoId> projectionId = ProjectionId.from(TodoId.USER_1_TODO_1);
         final Set<AggregateId> uncompoundedAggregateIds = Set.of(TodoChecklistId.USER_1_TODO_1_1, TodoId.USER_1_TODO_1);
         final UnableToResolveException cause = new UnableToResolveException(new RuntimeException("Unable to resolve executed by"));
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.aggregateIdDecomposer()).thenReturn(aggregateIdDecomposer);
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
-        when(aggregateIdDecomposer.unCompound(aggregateId)).thenReturn(uncompoundedAggregateIds);
+        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenThrow(cause);
 
         // When
         final QueryException exception = Assertions.assertThrows(
                 QueryException.class,
-                () -> permission.allow(aggregateId, permissionExecutionContext));
+                () -> permission.allow(projectionId, permissionExecutionContext));
 
         // Then
         assertAll(

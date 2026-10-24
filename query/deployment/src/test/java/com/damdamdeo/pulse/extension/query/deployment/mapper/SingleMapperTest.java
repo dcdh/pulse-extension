@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.query.deployment.mapper;
 
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.Result;
 import com.damdamdeo.pulse.extension.core.query.SingleResult;
 import com.damdamdeo.pulse.extension.query.runtime.mapper.SingleMapper;
@@ -18,7 +19,7 @@ class SingleMapperTest {
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
-    private record TodoItem(TodoChecklistId id,
+    private record TodoItem(ProjectionId<TodoChecklistId> id,
                             String description) implements Projection<TodoChecklistId> {
 
         public TodoItem {
@@ -54,7 +55,7 @@ class SingleMapperTest {
 
         // Then
         assertThat(todoItem).isEqualTo(new TodoItem(
-                TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development"));
+                ProjectionId.from(TodoChecklistId.USER_1_TODO_1_1), "IMPORTANT: pulse extension development"));
     }
 
     @Test
@@ -85,6 +86,6 @@ class SingleMapperTest {
         // Then
         assertThat(result).isEqualTo(
                 new SingleResult<>(new TodoItem(
-                        TodoChecklistId.USER_1_TODO_1_1, "IMPORTANT: pulse extension development")));
+                        ProjectionId.from(TodoChecklistId.USER_1_TODO_1_1), "IMPORTANT: pulse extension development")));
     }
 }

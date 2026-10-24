@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.OwnerQuery;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Objects;
@@ -19,10 +20,10 @@ public final class IsOwnerPermission extends SpecificQuery<TodoId> {
     }
 
     @Override
-    public boolean allow(final TodoId aggregateId, final PermissionExecutionContext permissionExecutionContext)
+    public boolean allow(final ProjectionId<TodoId> projectionId, final PermissionExecutionContext permissionExecutionContext)
             throws QueryException {
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(projectionId);
         Objects.requireNonNull(permissionExecutionContext);
-        return ownerQuery.getByTodoId(aggregateId).id().equals(userId);
+        return ownerQuery.getByTodoId(projectionId.linkTo()).id().equals(userId);
     }
 }

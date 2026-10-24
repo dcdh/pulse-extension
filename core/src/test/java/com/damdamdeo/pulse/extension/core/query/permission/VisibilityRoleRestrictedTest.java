@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.Input;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +49,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -72,7 +73,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("ADMIN")).thenReturn(true);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -98,7 +99,7 @@ class VisibilityRoleRestrictedTest {
         when(executionContext.hasRole("USER")).thenReturn(false);
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(
@@ -120,7 +121,7 @@ class VisibilityRoleRestrictedTest {
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of());
 
         // When
-        final boolean allowed = permission.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean allowed = permission.allow(ProjectionId.from(TodoId.USER_1_TODO_1), permissionExecutionContext);
 
         // Then
         assertAll(

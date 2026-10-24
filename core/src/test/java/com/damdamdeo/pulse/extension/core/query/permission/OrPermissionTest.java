@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.OwnerQuery;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 import com.damdamdeo.pulse.extension.core.usecase.permission.UserValidity;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +53,8 @@ public class OrPermissionTest {
         doReturn(givenUserValidity).when(userValidity).isValid(userId);
 
         // When
-        final boolean isSatisfiedBy = userIsOwnerOrValid.allow(TodoId.USER_1_TODO_1, permissionExecutionContext);
+        final boolean isSatisfiedBy = userIsOwnerOrValid.allow(ProjectionId.from(TodoId.USER_1_TODO_1),
+                permissionExecutionContext);
 
         // Then
         assertThat(isSatisfiedBy).isEqualTo(expected);

@@ -77,8 +77,8 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
             boolean allow = false;
             for (final Permission<A> permission : permissions) {
                 boolean matchOnAllAggregates = true;
-                for (final A aggregateId : result.aggregateIds()) {
-                    if (!permission.allow(aggregateId, context)) {
+                for (final ProjectionId<A> projectionId : result.projectionIds()) {
+                    if (!permission.allow(projectionId, context)) {
                         matchOnAllAggregates = false;
                         break;
                     }

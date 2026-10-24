@@ -137,7 +137,7 @@ class GuardQueryUseCaseTest {
     @Test
     void shouldThrowUnauthorizedExceptionWhenNoAudienceAllowsAccess() throws QueryException {
         // Given
-        doReturn(Set.of(TodoId.USER_1_TODO_1)).when(result).aggregateIds();
+        doReturn(Set.of(ProjectionId.from(TodoId.USER_1_TODO_1))).when(result).projectionIds();
         when(decorated.execute(INPUT)).thenReturn(result);
         final ExecutionContext executionContext = new ExecutionContext(
                 new ExecutedBy.ServiceAccount("backend"), Set.of("reader"));
@@ -158,7 +158,7 @@ class GuardQueryUseCaseTest {
                         ExecutionStatus.FAILED_UNAUTHORIZED
                 ),
                 () -> verify(decorated).execute(any()),
-                () -> verify(result, times(1)).aggregateIds()
+                () -> verify(result, times(1)).projectionIds()
         );
     }
 

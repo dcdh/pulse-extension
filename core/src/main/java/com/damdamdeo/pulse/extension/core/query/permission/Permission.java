@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 // define a priority to avoid unnecessary computing.
@@ -9,5 +10,5 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 // will do a lot of processing, so ROLE-based must be checked first.
 public sealed interface Permission<K extends AggregateId> permits CompositePermission {
 
-    boolean allow(K aggregateId, PermissionExecutionContext permissionExecutionContext) throws QueryException;
+    boolean allow(ProjectionId<K> projectionId, PermissionExecutionContext permissionExecutionContext) throws QueryException;
 }

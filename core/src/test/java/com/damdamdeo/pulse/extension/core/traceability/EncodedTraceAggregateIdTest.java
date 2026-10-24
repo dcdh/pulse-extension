@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -29,7 +30,7 @@ class EncodedTraceAggregateIdTest {
         // given
         final Projection<TodoId> projection = mock(Projection.class);
         final TodoId aggregateId = TodoId.USER_1_TODO_1;
-        when(projection.id()).thenReturn(aggregateId);
+        when(projection.id()).thenReturn(ProjectionId.from(aggregateId));
 
         // when
         final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(

@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.query.permission;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.ArrayList;
@@ -22,11 +23,12 @@ public final class AndPermission<K extends AggregateId> implements CompositePerm
     }
 
     @Override
-    public boolean allow(final K aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {
-        Objects.requireNonNull(aggregateId);
+    public boolean allow(final ProjectionId<K> projectionId, final PermissionExecutionContext permissionExecutionContext)
+            throws QueryException {
+        Objects.requireNonNull(projectionId);
         Objects.requireNonNull(permissionExecutionContext);
         for (final Permission<K> Permission : Permissions) {
-            if (!Permission.allow(aggregateId, permissionExecutionContext)) {
+            if (!Permission.allow(projectionId, permissionExecutionContext)) {
                 return false;
             }
         }

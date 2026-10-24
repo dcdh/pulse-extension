@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 
 import java.util.Objects;
 
-public record TodoChecklistProjection(TodoChecklistId todoChecklistId,
+public record TodoChecklistProjection(ProjectionId<TodoChecklistId> todoChecklistId,
                                       String description) implements Projection<TodoChecklistId> {
 
     public TodoChecklistProjection {
@@ -13,7 +13,7 @@ public record TodoChecklistProjection(TodoChecklistId todoChecklistId,
     }
 
     @Override
-    public TodoChecklistId id() {
+    public ProjectionId<TodoChecklistId> id() {
         return todoChecklistId;
     }
 }

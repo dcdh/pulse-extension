@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.query.Projection;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.inject.spi.DeploymentException;
 import org.junit.jupiter.api.Assertions;
@@ -26,7 +27,7 @@ class ShouldFailWhenProjectionPropertyDoesNotImplementProjection {
                             "[1] Invalid projection property 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoProjection.checklist'. Type 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoChecklistProjection' must implement Projection or AggregateId.\n" +
                             "[2] Invalid projection property 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoProjection.checklists'. Type 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoChecklistProjection' must implement Projection or AggregateId."));
 
-    public record TodoProjection(TodoId todoId,
+    public record TodoProjection(ProjectionId<TodoId> todoId,
                                  String description,
                                  Status status,
                                  Boolean important,
@@ -34,7 +35,7 @@ class ShouldFailWhenProjectionPropertyDoesNotImplementProjection {
                                  List<TodoChecklistProjection> checklists) implements Projection<TodoId> {
 
         @Override
-        public TodoId id() {
+        public ProjectionId<TodoId> id() {
             throw new IllegalStateException("Should not be called");
         }
     }
