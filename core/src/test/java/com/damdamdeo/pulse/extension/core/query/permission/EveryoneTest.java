@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,17 +26,5 @@ class EveryoneTest {
 
         // Then
         assertTrue(allowed);
-    }
-
-    @Test
-    void shouldHaveHighestVisibilityPriority() {
-        // Given
-        final Everyone<TodoId> permission = new Everyone<>();
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(0, priority);
     }
 }

@@ -164,16 +164,4 @@ class InExecutedByTest {
                 () -> verify(executionContextProvider).provide()
         );
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final InExecutedBy<TodoId> permission = new InExecutedBy<>();
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(3, priority);
-    }
 }

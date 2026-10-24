@@ -3,8 +3,8 @@ package com.damdamdeo.pulse.extension.core.usecase.permission;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,17 +104,5 @@ class ExecutedByHasAtLeastOneRoleTest {
                 () -> assertFalse(allowed),
                 () -> verifyNoInteractions(executionContext)
         );
-    }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final ExecutedByHasAtLeastOneRole<TodoId, MarkTodoAsDone> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN");
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(5, priority);
     }
 }

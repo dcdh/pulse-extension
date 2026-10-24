@@ -18,9 +18,4 @@ public final class VisibilityRoleRestricted<K extends AggregateId> implements Pe
         final List<String> visibilityRoles = permissionExecutionContext.backendUserVisibilityRolesProvider().provide();
         return visibilityRoles.stream().anyMatch(executionContext::hasRole);
     }
-
-    @Override
-    public int priority() {
-        return 2;
-    }
 }

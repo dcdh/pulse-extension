@@ -26,9 +26,4 @@ public final class InExecutedBy<K extends AggregateId> implements Permission<K> 
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);
         }
     }
-
-    @Override
-    public int priority() {
-        return 3;
-    }
 }

@@ -132,16 +132,4 @@ class ExecutedBySpecificEndUsersTest {
                 () -> verify(executionContext).executedBy()
         );
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final ExecutedBySpecificEndUsers<TodoId> permission = new ExecutedBySpecificEndUsers<>(ALICE);
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(6, priority);
-    }
 }

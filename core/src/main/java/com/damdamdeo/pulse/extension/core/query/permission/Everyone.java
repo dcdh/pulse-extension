@@ -14,9 +14,4 @@ public final class Everyone<K extends AggregateId> implements Permission<K> {
         Objects.requireNonNull(permissionExecutionContext);
         return true;
     }
-
-    @Override
-    public int priority() {
-        return 0;
-    }
 }

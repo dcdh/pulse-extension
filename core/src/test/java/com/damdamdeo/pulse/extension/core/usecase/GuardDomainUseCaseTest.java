@@ -140,7 +140,7 @@ class GuardDomainUseCaseTest {
     @Test
     void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws UseCaseException, CommandException {
         // Given
-        decorated = new StubDomainUseCase(commandHandler, List.of(new VisibilityRoleRestricted<>(), new Everyone<>()), missingAggregateException);
+        decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
         when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated, distributedLockManager, traceAppender) {

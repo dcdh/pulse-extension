@@ -108,16 +108,4 @@ class ExecutedByHasAtLeastOneRoleTest {
                 () -> verify(executionContextProvider).provide()
         );
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final ExecutedByHasAtLeastOneRole<TodoId> permission = new ExecutedByHasAtLeastOneRole<>("ADMIN");
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(5, priority);
-    }
 }

@@ -36,9 +36,4 @@ public record ExecutedBySpecificServiceAccounts<K extends AggregateId, C extends
                 .collect(Collectors.toSet());
         return candidates.contains(executionContext.executedBy().value());
     }
-
-    @Override
-    public int priority() {
-        return 4;
-    }
 }

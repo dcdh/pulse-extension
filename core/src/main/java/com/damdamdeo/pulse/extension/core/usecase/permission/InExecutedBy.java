@@ -35,9 +35,4 @@ public final class InExecutedBy<K extends AggregateId, C extends Command<K>> imp
         Objects.requireNonNull(permissionExecutionContext);
         return false;
     }
-
-    @Override
-    public int priority() {
-        return 3;
-    }
 }

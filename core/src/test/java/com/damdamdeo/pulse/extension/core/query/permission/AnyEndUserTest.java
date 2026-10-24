@@ -47,16 +47,4 @@ class AnyEndUserTest {
                 () -> assertFalse(allowed),
                 () -> verify(permissionExecutionContext).isEndUser());
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final AnyEndUser<TodoId> permission = new AnyEndUser<>();
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(1, priority);
-    }
 }

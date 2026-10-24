@@ -21,9 +21,4 @@ public record ExecutedByHasAtLeastOneRole<K extends AggregateId>(String... roleN
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
         return Arrays.stream(roleNames).anyMatch(executionContext::hasRole);
     }
-
-    @Override
-    public int priority() {
-        return 5;
-    }
 }

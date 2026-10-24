@@ -23,9 +23,4 @@ public final class Everyone<K extends AggregateId, C extends Command<K>> impleme
         Objects.requireNonNull(permissionExecutionContext);
         return true;
     }
-
-    @Override
-    public int priority() {
-        return 0;
-    }
 }

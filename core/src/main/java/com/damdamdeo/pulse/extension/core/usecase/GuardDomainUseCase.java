@@ -2,7 +2,6 @@ package com.damdamdeo.pulse.extension.core.usecase;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateRoot;
-import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CreationalCommand;
@@ -50,10 +49,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
     @Override
     public final Handled<A, K> execute(final C command) throws UseCaseException {
         Objects.requireNonNull(command);
-        final List<Permission<K, C>> permissions = decorated.permissions()
-                .stream()
-                .sorted(Comparator.comparing(Prioritable::priority))
-                .toList();
+        final List<Permission<K, C>> permissions = decorated.permissions();
         final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         // TODO avoid instanceof

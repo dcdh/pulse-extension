@@ -126,16 +126,4 @@ class ExecutedBySpecificEndUsersTest {
         // Then
         assertTrue(allowed);
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final ExecutedBySpecificEndUsers<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificEndUsers<>(ALICE);
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(6, priority);
-    }
 }

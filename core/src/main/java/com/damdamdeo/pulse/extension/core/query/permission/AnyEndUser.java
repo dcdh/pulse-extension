@@ -14,9 +14,4 @@ public final class AnyEndUser<K extends AggregateId> implements Permission<K> {
         Objects.requireNonNull(permissionExecutionContext);
         return permissionExecutionContext.isEndUser();
     }
-
-    @Override
-    public int priority() {
-        return 1;
-    }
 }

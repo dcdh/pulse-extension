@@ -24,9 +24,4 @@ public record ExecutedBySpecificEndUsers<K extends AggregateId>(
         final ExecutedBy executedBy = executionContext.executedBy();
         return Stream.of(endUsers).anyMatch(endUser -> endUser.value().equals(executedBy.value()));
     }
-
-    @Override
-    public int priority() {
-        return 6;
-    }
 }

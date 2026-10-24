@@ -22,9 +22,4 @@ public record ExecutedBySpecificJob<K extends AggregateId>(JobName jobName) impl
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
         return executionContext.executedBy().equals(new ExecutedBy.Job(jobName));
     }
-
-    @Override
-    public int priority() {
-        return 8;
-    }
 }

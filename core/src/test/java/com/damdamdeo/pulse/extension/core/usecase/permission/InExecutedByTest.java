@@ -143,15 +143,4 @@ class InExecutedByTest {
         // Then
         assertSame(cause, exception.getCause());
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-
-        // When
-        final int priority = new InExecutedBy<TodoChecklistId, AddNewTodoItem>().priority();
-
-        // Then
-        assertEquals(3, priority);
-    }
 }

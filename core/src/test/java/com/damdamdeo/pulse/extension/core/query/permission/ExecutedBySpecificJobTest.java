@@ -65,16 +65,4 @@ class ExecutedBySpecificJobTest {
                 () -> verify(executionContext).executedBy()
         );
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final ExecutedBySpecificJob<TodoId> permission = new ExecutedBySpecificJob<>(new JobName("SampleJob"));
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(8, priority);
-    }
 }

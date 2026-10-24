@@ -118,15 +118,4 @@ class VisibilityRoleRestrictedTest {
                 () -> verifyNoInteractions(executionContext)
         );
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-
-        // When
-        final int priority = new VisibilityRoleRestricted<TodoId, MarkTodoAsDone>().priority();
-
-        // Then
-        assertEquals(2, priority);
-    }
 }

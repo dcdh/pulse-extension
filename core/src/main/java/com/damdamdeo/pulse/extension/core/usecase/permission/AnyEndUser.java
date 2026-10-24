@@ -23,9 +23,4 @@ public final class AnyEndUser<K extends AggregateId, C extends Command<K>> imple
         Objects.requireNonNull(permissionExecutionContext);
         return permissionExecutionContext.isEndUser();
     }
-
-    @Override
-    public int priority() {
-        return 1;
-    }
 }

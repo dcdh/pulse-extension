@@ -3,10 +3,10 @@ package com.damdamdeo.pulse.extension.core.usecase.permission;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
-import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
+import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -128,17 +128,5 @@ class ExecutedBySpecificServiceAccountsTest {
                 () -> assertFalse(allowed),
                 () -> verify(executionContext).executedBy()
         );
-    }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final ExecutedBySpecificServiceAccounts<TodoId, MarkTodoAsDone> permission = new ExecutedBySpecificServiceAccounts<>("checkout");
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(4, priority);
     }
 }

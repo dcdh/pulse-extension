@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.Prioritable;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.pagination.Pagination;
@@ -71,10 +70,7 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
     private R internalExecution(final QueryCallable<R> queryCallable, final Input input) throws QueryException {
         Objects.requireNonNull(queryCallable);
         Objects.requireNonNull(input);
-        final List<Permission<A>> permissions = decorated.permissions()
-                .stream()
-                .sorted(Comparator.comparing(Prioritable::priority))
-                .toList();
+        final List<Permission<A>> permissions = decorated.permissions();
         final PermissionExecutionContext context = new PermissionExecutionContext(executionContextProvider,
                 backendUserVisibilityRolesProvider, executedByResolver, aggregateIdDecomposer);
         try {

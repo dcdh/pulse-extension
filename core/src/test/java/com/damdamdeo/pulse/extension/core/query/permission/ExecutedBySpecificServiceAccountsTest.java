@@ -128,16 +128,4 @@ class ExecutedBySpecificServiceAccountsTest {
                 () -> verify(executionContext).executedBy()
         );
     }
-
-    @Test
-    void shouldHaveExpectedPriority() {
-        // Given
-        final ExecutedBySpecificServiceAccounts<TodoId> permission = new ExecutedBySpecificServiceAccounts<>("checkout");
-
-        // When
-        final int priority = permission.priority();
-
-        // Then
-        assertEquals(4, priority);
-    }
 }
