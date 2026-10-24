@@ -159,8 +159,8 @@ class PerformanceTest {
                     givenTodoId,
                     LOREM_IPSUM,
                     Status.IN_PROGRESS,
-                    false);
-            eventTestRepository.insert(new NewTodoCreated(LOREM_IPSUM), todo, todo.ownedBy(), BOB);
+                    false, Owner.USER_1);
+            eventTestRepository.insert(new NewTodoCreated(LOREM_IPSUM, Owner.USER_1), todo, todo.ownedBy(), BOB);
         }
         watch.stop();
         LOGGER.info("30.000 of NewTodoCreated events created in %d ms".formatted(watch.getTime(TimeUnit.MILLISECONDS)));

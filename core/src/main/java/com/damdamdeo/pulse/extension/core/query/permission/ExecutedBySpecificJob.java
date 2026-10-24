@@ -9,7 +9,7 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Objects;
 
-public record ExecutedBySpecificJob<K extends AggregateId>(JobName jobName) implements Permission<K> {
+public record ExecutedBySpecificJob<K extends AggregateId>(JobName jobName) implements CompositePermission<K> {
 
     public ExecutedBySpecificJob {
         Objects.requireNonNull(jobName);

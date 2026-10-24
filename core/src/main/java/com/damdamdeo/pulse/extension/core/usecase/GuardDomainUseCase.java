@@ -16,7 +16,6 @@ import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 

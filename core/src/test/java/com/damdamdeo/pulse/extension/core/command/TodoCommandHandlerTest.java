@@ -58,7 +58,7 @@ class TodoCommandHandlerTest {
     @Test
     void shouldCreateTodoUsingExecutedByProvider() throws CommandException, SequenceGenerationException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum", Owner.USER_1);
         doReturn(false).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
@@ -74,11 +74,13 @@ class TodoCommandHandlerTest {
                 () -> assertThat(todoCreated.events()).containsExactly(
                         new VersionizedEvent<>(
                                 new AggregateVersion(0),
-                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))),
+                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                                        ExecutedBy.NotAvailable.INSTANCE))),
                 () -> verify(todoEventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                 new AggregateVersion(0),
-                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))),
+                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                                        ExecutedBy.NotAvailable.INSTANCE))),
                         todoCreated.aggregateRoot(),
                         ExecutedBy.NotAvailable.INSTANCE
                 ),
@@ -121,7 +123,8 @@ class TodoCommandHandlerTest {
     @Test
     void shouldClassifieAsImportant() throws CommandException, SequenceGenerationException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum",
+                Owner.USER_1);
         doReturn(false).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
@@ -136,7 +139,8 @@ class TodoCommandHandlerTest {
                 () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.TRUE),
                 () -> assertThat(todoCreated.events()).containsExactly(new VersionizedEvent<>(
                                 new AggregateVersion(0),
-                                new ExecutedByEvent<>(new NewTodoCreated("IMPORTANT lorem ipsum"),
+                                new ExecutedByEvent<>(new NewTodoCreated("IMPORTANT lorem ipsum",
+                                        Owner.USER_1),
                                         ExecutedBy.NotAvailable.INSTANCE)),
                         new VersionizedEvent<>(
                                 new AggregateVersion(1),
@@ -145,7 +149,8 @@ class TodoCommandHandlerTest {
                 () -> verify(todoEventRepository, times(1)).save(
                         List.of(new VersionizedEvent<>(
                                         new AggregateVersion(0),
-                                        new ExecutedByEvent<>(new NewTodoCreated("IMPORTANT lorem ipsum"),
+                                        new ExecutedByEvent<>(new NewTodoCreated("IMPORTANT lorem ipsum",
+                                                Owner.USER_1),
                                                 ExecutedBy.NotAvailable.INSTANCE)),
                                 new VersionizedEvent<>(
                                         new AggregateVersion(1),
@@ -160,7 +165,8 @@ class TodoCommandHandlerTest {
     void shouldMarkTodoAsDone() throws CommandException {
         // Given
         final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
-        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                ExecutedBy.NotAvailable.INSTANCE)))
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When
@@ -191,7 +197,8 @@ class TodoCommandHandlerTest {
         // Given
         final MarkTodoAsDone givenMarkTodoAsDone = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
         doReturn(List.of(
-                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE),
+                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                        ExecutedBy.NotAvailable.INSTANCE),
                 new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)))
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
@@ -208,7 +215,8 @@ class TodoCommandHandlerTest {
     void shouldThrowCommandException() {
         // Given
         final FailTodo failTodo = new FailTodo(TodoId.USER_1_TODO_1);
-        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                ExecutedBy.NotAvailable.INSTANCE)))
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
@@ -224,7 +232,8 @@ class TodoCommandHandlerTest {
     void shouldFailWhenCommandIsNotHandled() {
         // Given
         final UnhandledTodo unhandledTodo = new UnhandledTodo(TodoId.USER_1_TODO_1);
-        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                ExecutedBy.NotAvailable.INSTANCE)))
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
@@ -237,7 +246,8 @@ class TodoCommandHandlerTest {
     void shouldFailWhenEventIsNotHandled() {
         // Given
         final CommandWithoutOnEvent commandWithoutOnEvent = new CommandWithoutOnEvent(TodoId.USER_1_TODO_1);
-        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+        doReturn(List.of(new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                ExecutedBy.NotAvailable.INSTANCE)))
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When && Then
@@ -291,7 +301,7 @@ class TodoCommandHandlerTest {
     void shouldThrowCommandExceptionHavingDuplicateTodoExceptionWhenDuplicate() throws SequenceGenerationException {
         // Given
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
-        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum", Owner.USER_1);
         doReturn(true).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
 
         // When && Then
@@ -305,7 +315,7 @@ class TodoCommandHandlerTest {
     @Test
     void shouldFailFastWhenCreationalCommandCallByCommandHandler() {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum", Owner.USER_1);
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(givenCreateTodo, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))

@@ -1,9 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment.serialization;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,6 +46,11 @@ class AggregateRootSerDeTest {
               "description": "lorem ipsum",
               "status": "IN_PROGRESS",
               "important": false,
+              "owner": {
+                "id": {
+                  "sequence": "000001"
+                }
+              },
               "nullableField": null,
               "belongsTo": "U000001",
               "ownedBy": "U000001"
@@ -61,7 +64,7 @@ class AggregateRootSerDeTest {
                 TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.IN_PROGRESS,
-                false
+                false, Owner.USER_1
         );
 
         // When
@@ -85,6 +88,6 @@ class AggregateRootSerDeTest {
                         TodoId.USER_1_TODO_1,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
-                        false));
+                        false, Owner.USER_1));
     }
 }

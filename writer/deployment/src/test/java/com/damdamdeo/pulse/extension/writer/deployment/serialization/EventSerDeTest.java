@@ -1,7 +1,9 @@
 package com.damdamdeo.pulse.extension.writer.deployment.serialization;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
+import com.damdamdeo.pulse.extension.core.Owner;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.command.TodoItem;
 import com.damdamdeo.pulse.extension.core.event.MultipleTodoItemsAdded;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -23,10 +25,13 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EventSerDeTest extends AbstractWriterTest {
+
+    final Logger LOGGER = Logger.getLogger(EventSerDeTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -124,7 +129,7 @@ class EventSerDeTest extends AbstractWriterTest {
     @Test
     void shouldSerializeSimpleTypes() throws JsonProcessingException, JSONException {
         // Given
-        final NewTodoCreated givenNewTodoCreated = new NewTodoCreated("lorem ipsum");
+        final NewTodoCreated givenNewTodoCreated = new NewTodoCreated("lorem ipsum", Owner.USER_1);
 
         // When
         final String serialized = objectMapper.writeValueAsString(givenNewTodoCreated);
@@ -133,9 +138,15 @@ class EventSerDeTest extends AbstractWriterTest {
         // language=json
         final String expected = """
                 {
-                  "description":"lorem ipsum"
+                  "description":"lorem ipsum",
+                  "owner": {
+                    "id": {
+                      "sequence": "000001"
+                    }
+                  }
                 }
                 """;
+        LOGGER.info(serialized);
         JSONAssert.assertEquals(expected, serialized, JSONCompareMode.STRICT);
     }
 
@@ -145,7 +156,12 @@ class EventSerDeTest extends AbstractWriterTest {
         // language=json
         final String given = """
                 {
-                  "description":"lorem ipsum"
+                  "description":"lorem ipsum",
+                  "owner": {
+                    "id": {
+                      "sequence": "000001"
+                    }
+                  }
                 }
                 """;
 
@@ -153,7 +169,7 @@ class EventSerDeTest extends AbstractWriterTest {
         final NewTodoCreated newTodoCreated = objectMapper.readValue(given, NewTodoCreated.class);
 
         // Then
-        assertThat(newTodoCreated).isEqualTo(new NewTodoCreated("lorem ipsum"));
+        assertThat(newTodoCreated).isEqualTo(new NewTodoCreated("lorem ipsum", Owner.USER_1));
     }
 
     @Test

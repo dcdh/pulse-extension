@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public record ExecutedBySpecificServiceAccounts<K extends AggregateId, C extends Command<K>>(
-        String... names) implements Permission<K, C> {
+        String... names) implements CompositePermission<K, C> {
 
     public ExecutedBySpecificServiceAccounts {
         Objects.requireNonNull(names);

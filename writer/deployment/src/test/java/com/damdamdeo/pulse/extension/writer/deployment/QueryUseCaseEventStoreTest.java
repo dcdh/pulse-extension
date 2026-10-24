@@ -91,13 +91,13 @@ class QueryUseCaseEventStoreTest {
         final TodoId givenTodoId = TodoId.USER_1_TODO_10;
         final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)));
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
                 new Todo(
                         givenTodoId,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
-                        false
+                        false, Owner.USER_1
                 ), BOB);
 
         // When
@@ -108,7 +108,7 @@ class QueryUseCaseEventStoreTest {
                 givenTodoId,
                 "lorem ipsum",
                 Status.IN_PROGRESS,
-                false
+                false, Owner.USER_1
         )));
     }
 
@@ -144,7 +144,7 @@ class QueryUseCaseEventStoreTest {
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
         final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE)),
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
@@ -152,7 +152,7 @@ class QueryUseCaseEventStoreTest {
                         givenTodoId,
                         "lorem ipsum",
                         Status.DONE,
-                        false
+                        false, Owner.USER_1
                 ), BOB);
 
         // When
@@ -164,7 +164,7 @@ class QueryUseCaseEventStoreTest {
                         TodoId.USER_1_TODO_13,
                         "lorem ipsum",
                         Status.DONE,
-                        false
+                        false, Owner.USER_1
                 )
         ));
     }
@@ -176,7 +176,7 @@ class QueryUseCaseEventStoreTest {
         final AggregateVersion aggregateVersion = new AggregateVersion(0);
         final List<VersionizedEvent<TodoId>> givenTodoEvents = List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE)),
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
@@ -184,7 +184,7 @@ class QueryUseCaseEventStoreTest {
                         givenTodoId,
                         "lorem ipsum",
                         Status.DONE,
-                        false
+                        false, Owner.USER_1
                 ), BOB);
 
         // When
@@ -197,7 +197,7 @@ class QueryUseCaseEventStoreTest {
                         TodoId.USER_1_TODO_14,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
-                        false
+                        false, Owner.USER_1
                 )
         ));
     }

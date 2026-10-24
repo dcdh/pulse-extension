@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public record ExecutedByHasAtLeastOneRole<K extends AggregateId, C extends Command<K>>(
-        String... roleNames) implements Permission<K, C> {
+        String... roleNames) implements CompositePermission<K, C> {
 
     public ExecutedByHasAtLeastOneRole {
         Objects.requireNonNull(roleNames);

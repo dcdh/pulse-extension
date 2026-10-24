@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Objects;
 
-public final class AnyEndUser<K extends AggregateId> implements Permission<K> {
+public final class AnyEndUser<K extends AggregateId> implements CompositePermission<K> {
 
     @Override
     public boolean allow(final K aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {

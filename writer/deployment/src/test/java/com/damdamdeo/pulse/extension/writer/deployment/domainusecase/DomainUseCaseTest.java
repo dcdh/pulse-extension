@@ -82,7 +82,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
 
     @Test
     void shouldFailWhenNoAudienceIsDefined() {
-        assertThatThrownBy(() -> noAudienceCreateTodoDomainUseCase.execute(new CreateTodo("lorem ipsum")))
+        assertThatThrownBy(() -> noAudienceCreateTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1)))
                 .isExactlyInstanceOf(UseCaseException.class)
                 .hasFieldOrPropertyWithValue("useCaseExceptionCode", UseCaseExceptionCode.FORBIDDEN)
                 .cause()
@@ -95,16 +95,16 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        final Handled<Todo, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum"));
+        final Handled<Todo, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1));
 
         // Then
         assertAll(
                 () -> assertThat(loremIpsum).isEqualTo(
                         new Handled<>(
-                                new Todo(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false),
+                                new Todo(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false, Owner.USER_1),
                                 List.of(new VersionizedEvent<>(
                                         new AggregateVersion(0), new ExecutedByEvent<>(
-                                        new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE))))),
+                                        new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE))))),
                 () -> assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001")
         );
     }
@@ -115,7 +115,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        assertThatThrownBy(() -> useCaseExceptionTodoDomainUseCase.execute(new CreateTodo("lorem ipsum")))
+        assertThatThrownBy(() -> useCaseExceptionTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1)))
                 .isInstanceOf(UseCaseException.class)
                 .hasRootCauseInstanceOf(RuntimeException.class)
                 .hasRootCauseMessage("Something wrong happened");

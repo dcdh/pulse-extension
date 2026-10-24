@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
+import com.damdamdeo.pulse.extension.core.Owner;
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
@@ -71,10 +73,10 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
         final Audience audienceBob = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser(new Username("bob@mail.com"))));
         final Audience audienceDuke = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser(new Username("duke@mail.com"))));
         final Audience audienceAlice = new Audience.FromListOfEligibility(List.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum"), Todo.OWNED_BY_USER_1, audienceBob);
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum"), Todo.OWNED_BY_USER_2, audienceAlice);
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum"), Todo.OWNED_BY_USER_3, audienceDuke);
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob another lorem ipsum"), Todo.OWNED_BY_USER_1, audienceBob);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob lorem ipsum", Owner.USER_1), Todo.OWNED_BY_USER_1, audienceBob);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("alice lorem ipsum", Owner.USER_1), Todo.OWNED_BY_USER_2, audienceAlice);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("duke lorem ipsum", Owner.USER_1), Todo.OWNED_BY_USER_3, audienceDuke);
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("bob another lorem ipsum", Owner.USER_1), Todo.OWNED_BY_USER_1, audienceBob);
 
         // Then
         final List<String> ssePayload = receivedEvents.get(12, TimeUnit.SECONDS);
@@ -83,12 +85,12 @@ class LiveConnectedConsumerTest extends AbstractMessagingTest {
                 """
                         content-type:application/json
                         event:TodoEvents
-                        data:{"description":"bob lorem ipsum"}
+                        data:{"description":"bob lorem ipsum","owner":{"id":{"sequence":"000001"}}}
                         """,
                 """
                         content-type:application/json
                         event:TodoEvents
-                        data:{"description":"bob another lorem ipsum"}
+                        data:{"description":"bob another lorem ipsum","owner":{"id":{"sequence":"000001"}}}
                         """);
     }
 }

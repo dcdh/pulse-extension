@@ -44,7 +44,7 @@ public class CommandHandlerTest extends AbstractWriterTest {
     @Test
     void shouldExecuteCommand() throws CommandException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum", Owner.USER_1);
 
         // When
         final Handled<Todo, TodoId> todoCreated = commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
@@ -58,7 +58,7 @@ public class CommandHandlerTest extends AbstractWriterTest {
                 () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.FALSE),
                 () -> assertThat(todoCreated.events()).containsExactly(
                         new VersionizedEvent<>(new AggregateVersion(0),
-                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ExecutedBy.NotAvailable.INSTANCE)))
+                                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE)))
         );
 
         final int count = countEventsInEventStore();

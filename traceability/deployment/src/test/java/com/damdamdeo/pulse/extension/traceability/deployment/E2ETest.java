@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.*;
@@ -154,7 +151,7 @@ class E2ETest {
         stubExecutionContextProvider.set(new ExecutedBy.EndUser(new Username("alice@mail.com")));
         traceAppender.append(new SimpleCommand(TodoId.USER_1_TODO_1), List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ALICE)),
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ALICE)),
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoDescriptionUpdated("lorem ipsum"), ALICE))
         ), ExecutionStatus.SUCCESS);
@@ -169,7 +166,7 @@ class E2ETest {
         stubExecutionContextProvider.set(new ExecutedBy.EndUser(new Username("alice@mail.com")));
         traceAppender.append(new SimpleCommand(TodoId.USER_1_TODO_2), List.of(
                 new VersionizedEvent<>(new AggregateVersion(0),
-                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), ALICE))
+                        new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ALICE))
         ), ExecutionStatus.SUCCESS);
         traceAppender.append(Set.of(TodoId.USER_1_TODO_2));
 

@@ -7,7 +7,7 @@ import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
 import java.util.Objects;
 
-public final class AnyEndUser<K extends AggregateId, C extends Command<K>> implements Permission<K, C> {
+public final class AnyEndUser<K extends AggregateId, C extends Command<K>> implements CompositePermission<K, C> {
 
     @Override
     public boolean allow(final K aggregateId, final C command, final PermissionExecutionContext permissionExecutionContext) throws UseCaseException {

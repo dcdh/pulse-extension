@@ -12,7 +12,7 @@ import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
 import java.util.Objects;
 import java.util.Set;
 
-public final class InExecutedBy<K extends AggregateId, C extends Command<K>> implements Permission<K, C> {
+public final class InExecutedBy<K extends AggregateId, C extends Command<K>> implements CompositePermission<K, C> {
 
     @Override
     public boolean allow(final K aggregateId, final C command, final PermissionExecutionContext permissionExecutionContext) throws UseCaseException {

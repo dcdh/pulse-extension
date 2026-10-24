@@ -1,6 +1,8 @@
 package com.damdamdeo.pulse.extension.livenotifier.deployment.consumer;
 
+import com.damdamdeo.pulse.extension.core.Owner;
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.livenotifier.SseConsumer;
 import com.damdamdeo.pulse.extension.livenotifier.deployment.AbstractMessagingTest;
@@ -39,7 +41,8 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
         final CompletableFuture<List<String>> receivedEvents = sseConsumer.consume(null, Duration.ofSeconds(10));
 
         // When
-        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("another lorem ipsum"),
+        messagingLiveNotifierPublisher.publish("TodoEvents", new NewTodoCreated("another lorem ipsum",
+                        Owner.USER_1),
                 Todo.OWNED_BY_USER_4, Audience.AllConnected.INSTANCE);
 
         // Then
@@ -49,7 +52,7 @@ class LiveNotifierConsumerTest extends AbstractMessagingTest {
                 """
                         content-type:application/json
                         event:TodoEvents
-                        data:{"description":"another lorem ipsum"}
+                        data:{"description":"another lorem ipsum","owner":{"id":{"sequence":"000001"}}}
                         """);
     }
 

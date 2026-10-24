@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.core.spec;
 
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.executedby.NotAvailableExecutionContextProvider;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -25,7 +23,8 @@ class OrSpecificationTest {
     )
     void shouldValidateSpecification(final Status givenStatus, final boolean givenImportant, final boolean expected) {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", givenStatus, givenImportant);
+        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", givenStatus, givenImportant,
+                Owner.USER_1);
 
         // When
         final boolean isSatisfiedBy = IMPORTANT_OR_IN_PROGRESS.isSatisfiedBy(givenTodo, new NotAvailableExecutionContextProvider().provide());

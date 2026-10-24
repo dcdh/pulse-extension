@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public record ExecutedBySpecificEndUsers<K extends AggregateId>(
-        ExecutedBy.EndUser... endUsers) implements Permission<K> {
+        ExecutedBy.EndUser... endUsers) implements CompositePermission<K> {
 
     public ExecutedBySpecificEndUsers {
         Objects.requireNonNull(endUsers);

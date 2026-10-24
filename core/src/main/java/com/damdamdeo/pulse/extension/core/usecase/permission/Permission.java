@@ -5,8 +5,7 @@ import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 
-public sealed interface Permission<K extends AggregateId, C extends Command<K>> permits Everyone, AnyEndUser, VisibilityRoleRestricted, InExecutedBy, ExecutedBySpecificServiceAccounts,
-        ExecutedByHasAtLeastOneRole, ExecutedBySpecificEndUsers, SpecificDomain {
+public sealed interface Permission<K extends AggregateId, C extends Command<K>> permits CompositePermission {
 
     boolean allow(K aggregateId, C command, PermissionExecutionContext permissionExecutionContext) throws UseCaseException;
 

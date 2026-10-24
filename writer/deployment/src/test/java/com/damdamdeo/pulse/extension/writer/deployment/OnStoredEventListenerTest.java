@@ -70,7 +70,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
     @Test
     void shouldListenToEvent() throws CommandException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum");
+        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum", Owner.USER_1);
 
         // When
         commandHandler.handle(creational, givenCreateTodo, CommandHandlerTest.DuplicateTodoException::new);
@@ -81,7 +81,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(TodoId.USER_1_TODO_1),
                 () -> assertThat(onNewTodoCreated.events.getFirst().aggregateVersion()).isEqualTo(new AggregateVersion(0)),
-                () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum"))
+                () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum", Owner.USER_1))
         );
     }
 }

@@ -28,7 +28,8 @@ class SerializerTest {
                 @JsonProperty("id") TodoId var1,
                 @JsonProperty("description") String var2,
                 @JsonProperty("status") Status var3,
-                @JsonProperty("important") boolean var4
+                @JsonProperty("important") boolean var4,
+                @JsonProperty("owner") Owner var5
         ) {
         }
     }
@@ -59,6 +60,15 @@ class SerializerTest {
         public TodoChecklistIdMixin(
                 @JsonProperty("todoId") TodoId var1,
                 @JsonProperty("index") Long var2
+        ) {
+        }
+    }
+
+    static class OwnerMixin {
+
+        @JsonCreator
+        public OwnerMixin(
+                @JsonProperty("user") String var1
         ) {
         }
     }
@@ -145,6 +155,7 @@ class SerializerTest {
         OBJECT_MAPPER.addMixIn(TodoId.class, TodoIdMixin.class);
         OBJECT_MAPPER.addMixIn(TodoChecklist.class, TodoChecklistMixin.class);
         OBJECT_MAPPER.addMixIn(TodoChecklistId.class, TodoChecklistIdMixin.class);
+        OBJECT_MAPPER.addMixIn(Owner.class, OwnerMixin.class);
         OBJECT_MAPPER.addMixIn(FullTodo.class, FullTodoMixin.class);
         OBJECT_MAPPER.addMixIn(NombreDeConvives.class, NombreDeConvivesMixIn.class);
         OBJECT_MAPPER.addMixIn(CommandeEnCoursDePrise.class, CommandeEnCoursDePriseMixIn.class);
@@ -164,6 +175,11 @@ class SerializerTest {
                        "description": "lorem ipsum",
                        "status": "DONE",
                        "important": false,
+                       "owner": {
+                         "id": {
+                           "sequence": "000001"
+                         }
+                       },
                        "nullableField": null,
                        "ownedBy" : "U000001",
                        "belongsTo" : "U000001"
@@ -224,12 +240,14 @@ class SerializerTest {
         final Todo given = new Todo(TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,
-                false);
+                false,
+                Owner.USER_1);
 
         // When
         final String serialized = OBJECT_MAPPER.writeValueAsString(given);
 
         // Then
+        System.out.println(serialized);
         JSONAssert.assertEquals(TODO, serialized, JSONCompareMode.STRICT);
     }
 
@@ -245,7 +263,8 @@ class SerializerTest {
                 TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,
-                false
+                false,
+                Owner.USER_1
         ));
     }
 

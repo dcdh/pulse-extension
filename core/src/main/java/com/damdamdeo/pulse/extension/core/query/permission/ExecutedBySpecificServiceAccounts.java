@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record ExecutedBySpecificServiceAccounts<K extends AggregateId>(String... names) implements Permission<K> {
+public record ExecutedBySpecificServiceAccounts<K extends AggregateId>(String... names) implements CompositePermission<K> {
 
     public ExecutedBySpecificServiceAccounts {
         Objects.requireNonNull(names);

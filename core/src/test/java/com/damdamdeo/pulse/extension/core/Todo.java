@@ -27,6 +27,7 @@ public final class Todo extends AggregateRoot<TodoId> {
     private String description;
     private Status status;
     private boolean important = false;
+    private Owner owner;
 
     @Nullable
     private String nullableField;
@@ -38,18 +39,20 @@ public final class Todo extends AggregateRoot<TodoId> {
     public Todo(final TodoId id,
                 final String description,
                 final Status status,
-                boolean important) {
+                boolean important,
+                Owner owner) {
         super(id);
         this.description = Objects.requireNonNull(description);
         this.status = Objects.requireNonNull(status);
         this.important = important;
+        this.owner = Objects.requireNonNull(owner);
     }
 
     public void handle(final CreateTodo createTodo, final ExecutionContext executionContext, final EventAppender<TodoId> eventAppender) throws BusinessException {
         Objects.requireNonNull(createTodo);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
-        eventAppender.append(new NewTodoCreated(createTodo.description()));
+        eventAppender.append(new NewTodoCreated(createTodo.description(), createTodo.owner()));
         if (description.startsWith(IMPORTANT)) {
             eventAppender.append(new ClassifiedAsImportant());
         }
@@ -81,6 +84,7 @@ public final class Todo extends AggregateRoot<TodoId> {
         Objects.requireNonNull(newTodoCreated);
         Objects.requireNonNull(executedBy);
         this.description = newTodoCreated.description();
+        this.owner = newTodoCreated.owner();
         this.status = Status.IN_PROGRESS;
     }
 
@@ -120,6 +124,10 @@ public final class Todo extends AggregateRoot<TodoId> {
         return Status.IN_PROGRESS.equals(status);
     }
 
+    public Owner owner() {
+        return owner;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -127,12 +135,14 @@ public final class Todo extends AggregateRoot<TodoId> {
         Todo todo = (Todo) o;
         return important == todo.important
                 && Objects.equals(description, todo.description)
-                && status == todo.status;
+                && status == todo.status
+                && Objects.equals(owner, todo.owner)
+                && Objects.equals(nullableField, todo.nullableField);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), description, status, important);
+        return Objects.hash(super.hashCode(), description, status, important, owner, nullableField);
     }
 
     @Override
@@ -141,7 +151,8 @@ public final class Todo extends AggregateRoot<TodoId> {
                 "description='" + description + '\'' +
                 ", status=" + status +
                 ", important=" + important +
-                ", id=" + id +
+                ", owner=" + owner +
+                ", nullableField='" + nullableField + '\'' +
                 '}';
     }
 }

@@ -1,8 +1,6 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
-import com.damdamdeo.pulse.extension.core.Status;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -68,9 +66,9 @@ class JdbcPostgresOwnedByProviderTest {
                     TodoId.USER_1_TODO_1,
                     "IMPORTANT: pulse extension development",
                     Status.IN_PROGRESS,
-                    true);
+                    true, Owner.USER_1);
             eventTestRepository.insert(
-                    new NewTodoCreated("IMPORTANT: pulse extension development"),
+                    new NewTodoCreated("IMPORTANT: pulse extension development", Owner.USER_1),
                     todo,
                     todo.ownedBy(),
                     BOB);

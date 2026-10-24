@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.AbstractRegistrationDomainUseCase;
-import com.damdamdeo.pulse.extension.core.usecase.permission.SpecificDomain;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.Capabilities;
@@ -40,18 +39,6 @@ public class RegistrationDomainUseCaseProcessor {
                         .setUnremovable()
                         .build()
                 )
-                .toList();
-    }
-
-    @BuildStep
-    List<AdditionalBeanBuildItem> registerSpecificDomain(final CombinedIndexBuildItem combinedIndexBuildItem) {
-        return combinedIndexBuildItem.getIndex().getAllKnownSubclasses(SpecificDomain.class)
-                .stream()
-                .map(specificDomain -> AdditionalBeanBuildItem.builder()
-                        .addBeanClass(specificDomain.name().toString())
-                        .setDefaultScope(DotNames.APPLICATION_SCOPED)
-                        .setUnremovable()
-                        .build())
                 .toList();
     }
 }

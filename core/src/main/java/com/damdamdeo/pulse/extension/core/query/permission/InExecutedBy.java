@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import java.util.Objects;
 import java.util.Set;
 
-public final class InExecutedBy<K extends AggregateId> implements Permission<K> {
+public final class InExecutedBy<K extends AggregateId> implements CompositePermission<K> {
 
     @Override
     public boolean allow(final K aggregateId, final PermissionExecutionContext permissionExecutionContext) throws QueryException {

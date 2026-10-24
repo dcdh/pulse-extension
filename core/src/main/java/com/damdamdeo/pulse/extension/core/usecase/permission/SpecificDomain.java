@@ -9,6 +9,6 @@ import com.damdamdeo.pulse.extension.core.command.Command;
  * @param <K>
  * @param <C>
  */
-public abstract non-sealed class SpecificDomain<K extends AggregateId, C extends Command<K>> implements Permission<K, C> {
+public abstract non-sealed class SpecificDomain<K extends AggregateId, C extends Command<K>> implements CompositePermission<K, C> {
 
 }

@@ -8,7 +8,7 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 import java.util.Arrays;
 import java.util.Objects;
 
-public record ExecutedByHasAtLeastOneRole<K extends AggregateId>(String... roleNames) implements Permission<K> {
+public record ExecutedByHasAtLeastOneRole<K extends AggregateId>(String... roleNames) implements CompositePermission<K> {
 
     public ExecutedByHasAtLeastOneRole {
         Objects.requireNonNull(roleNames);

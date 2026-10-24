@@ -18,7 +18,8 @@ class StateApplierTest {
     void shouldApplyEvents() {
         // Given
         final List<ExecutedByEvent<TodoId>> givenExecutedByEvents = List.of(
-                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), executionContextProvider.provide().executedBy()),
+                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                        executionContextProvider.provide().executedBy()),
                 new ExecutedByEvent<>(new TodoMarkedAsDone(), executionContextProvider.provide().executedBy()));
 
         // When
@@ -37,7 +38,8 @@ class StateApplierTest {
     void shouldNewVersionizedEventsIsEmptyWhenCommandsNotCalled() {
         // Given
         final List<ExecutedByEvent<TodoId>> givenExecutedByEvents = List.of(
-                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), executionContextProvider.provide().executedBy()),
+                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                        executionContextProvider.provide().executedBy()),
                 new ExecutedByEvent<>(new TodoMarkedAsDone(), executionContextProvider.provide().executedBy()));
 
         // When
@@ -53,7 +55,8 @@ class StateApplierTest {
     void shouldIncrementOnAppendANewEvent() {
         // Given
         final List<ExecutedByEvent<TodoId>> givenEvents = List.of(
-                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum"), executionContextProvider.provide().executedBy())
+                new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
+                        executionContextProvider.provide().executedBy())
         );
         final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
                 new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenEvents, Todo.class,

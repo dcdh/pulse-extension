@@ -53,9 +53,9 @@ class JdbcEventCounterTest {
                     TodoId.USER_1_TODO_1,
                     "IMPORTANT: pulse extension development",
                     Status.IN_PROGRESS,
-                    true);
+                    true, Owner.USER_1);
             eventTestRepository.insert(
-                    new NewTodoCreated("IMPORTANT: pulse extension development"),
+                    new NewTodoCreated("IMPORTANT: pulse extension development", Owner.USER_1),
                     todo,
                     todo.ownedBy(),
                     BOB);
@@ -75,9 +75,9 @@ class JdbcEventCounterTest {
                     TodoId.USER_1_TODO_2,
                     "Organization vacancies",
                     Status.IN_PROGRESS,
-                    false);
+                    false, Owner.USER_1);
             eventTestRepository.insert(
-                    new NewTodoCreated("Organization vacancies"),
+                    new NewTodoCreated("Organization vacancies", Owner.USER_1),
                     todo,
                     todo.ownedBy(),
                     BOB);
@@ -96,9 +96,9 @@ class JdbcEventCounterTest {
                 TodoId.USER_2_TODO_1,
                 "Bob vacancies",
                 Status.IN_PROGRESS,
-                false);
+                false, Owner.USER_1);
         eventTestRepository.insert(
-                new NewTodoCreated("Bob vacancies"),
+                new NewTodoCreated("Bob vacancies", Owner.USER_1),
                 todo,
                 todo.ownedBy(),
                 BOB);

@@ -56,7 +56,7 @@ class CreationalWorkflowTest {
         when(userRegistrationDomainUseCase.execute(new RegisterUser())).thenReturn(user);
         when(todoCommandHandler.handle(
                 ArgumentMatchers.<Function<SequenceNumber, TodoId>>any(),
-                eq(new CreateTodo("lorem ipsum")),
+                eq(new CreateTodo("lorem ipsum", Owner.USER_1)),
                 ArgumentMatchers.<Function<TodoId, DuplicateAggregateException>>any())).thenReturn(todo);
         when(todoChecklistCommandHandler.handle(
                 ArgumentMatchers.<Function<SequenceNumber, TodoChecklistId>>any(),

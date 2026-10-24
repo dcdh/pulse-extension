@@ -7,6 +7,6 @@ import com.damdamdeo.pulse.extension.core.AggregateId;
  *
  * @param <K>
  */
-public abstract non-sealed class SpecificQuery<K extends AggregateId> implements Permission<K> {
+public abstract non-sealed class SpecificQuery<K extends AggregateId> implements CompositePermission<K> {
 
 }
