@@ -156,3 +156,4 @@
 /job/deployment/target/
 /job/runtime/target/
 /publisher/deployment/todo_taking_aggregate_executed_by.sql
+/live-notifier/deployment/todo_taking_aggregate_executed_by.sql
