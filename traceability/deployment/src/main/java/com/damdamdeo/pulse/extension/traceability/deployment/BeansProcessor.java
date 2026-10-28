@@ -44,14 +44,25 @@ public class BeansProcessor {
     }
 
     @BuildStep
+    AdditionalBeanBuildItem registerTraceRecorderRepositoryProvider(final TraceabilityConfiguration traceabilityConfiguration) {
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        switch (traceabilityConfiguration.tracingMode()) {
+            case DISABLED -> {
+            }
+            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(ArcTraceRecorderRepositoryProvider.class);
+        }
+        return builder.build();
+    }
+
+    @BuildStep
     AdditionalBeanBuildItem registerTraceRecorderRepository(final TraceabilityConfiguration traceabilityConfiguration) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
         switch (traceabilityConfiguration.tracingMode()) {
             case DISABLED -> {
             }
             case INVOLVED -> builder.addBeanClass(JdbcPostgresInvolvedTraceRecorderRepository.class);
-            case INVOLVED_WITH_FULL_DETAILS ->
-                    builder.addBeanClass(JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.class);
+            case INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClasses(JdbcPostgresInvolvedTraceRecorderRepository.class,
+                    JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.class);
         }
         return builder.build();
     }

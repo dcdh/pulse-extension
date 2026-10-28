@@ -17,6 +17,7 @@ import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresEncodedDetailedInvolvedRepository;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
+import com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorderQualifier;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorder.INVOLVED_WITH_FULL_DETAILS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -42,6 +44,7 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
     JdbcPostgresEncodedDetailedInvolvedRepository jdbcPostgresEncodedDetailedInvolvedRepository;
 
     @Inject
+    @TraceRecorderQualifier(value = INVOLVED_WITH_FULL_DETAILS)
     JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
 
     @BeforeAll

@@ -13,6 +13,7 @@ import com.damdamdeo.pulse.extension.core.query.permission.VisibilityRoleRestric
 import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
+import com.damdamdeo.pulse.extension.core.traceability.TraceabilityDetails;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,6 +65,7 @@ class GuardQueryUseCaseTest {
         // Given
         when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
+        when(decorated.traceabilityDetails()).thenReturn(TraceabilityDetails.INVOLVED_ONLY);
 
         // When
         final SingleResult<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
@@ -72,7 +74,9 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS)
+                () -> verify(decorated).traceabilityDetails(),
+                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS,
+                        TraceabilityDetails.INVOLVED_ONLY)
         );
     }
 
@@ -83,6 +87,7 @@ class GuardQueryUseCaseTest {
         final VisibilityRoleRestricted<TodoId> visibilityRoleRestricted = new VisibilityRoleRestricted<>();
         when(decorated.permissions()).thenReturn(List.of(visibilityRoleRestricted, new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
+        when(decorated.traceabilityDetails()).thenReturn(TraceabilityDetails.INVOLVED_ONLY);
 
         // When
         final Result<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
@@ -91,7 +96,9 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS),
+                () -> verify(decorated).traceabilityDetails(),
+                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS,
+                        TraceabilityDetails.INVOLVED_ONLY),
                 () -> verify(decorated).execute(any())
         );
     }
@@ -103,6 +110,7 @@ class GuardQueryUseCaseTest {
         final VisibilityRoleRestricted<TodoId> visibilityRoleRestricted = new VisibilityRoleRestricted<>();
         when(decorated.permissions()).thenReturn(List.of(new Everyone<>(), visibilityRoleRestricted));
         when(decorated.execute(INPUT)).thenReturn(result);
+        when(decorated.traceabilityDetails()).thenReturn(TraceabilityDetails.INVOLVED_ONLY);
 
         // When
         final SingleResult<TodoId, Projection<TodoId>> executed = guardQuery.execute(INPUT);
@@ -111,7 +119,9 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertSame(result, executed),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS),
+                () -> verify(decorated).traceabilityDetails(),
+                () -> verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS,
+                        TraceabilityDetails.INVOLVED_ONLY),
                 () -> verify(decorated).execute(any())
         );
     }
@@ -144,6 +154,7 @@ class GuardQueryUseCaseTest {
         when(decorated.permissions()).thenReturn(List.of(new VisibilityRoleRestricted<>()));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(backendUserVisibilityRolesProvider.provide()).thenReturn(List.of("admin"));
+        when(decorated.traceabilityDetails()).thenReturn(TraceabilityDetails.INVOLVED_ONLY);
 
         // When / Then
         assertAll(
@@ -152,10 +163,12 @@ class GuardQueryUseCaseTest {
                         .cause()
                         .isExactlyInstanceOf(UnauthorizedException.class),
                 () -> verify(decorated).permissions(),
+                () -> verify(decorated).traceabilityDetails(),
                 () -> verify(traceAppender).append(
                         INPUT,
                         result.projections(),
-                        ExecutionStatus.FAILED_UNAUTHORIZED
+                        ExecutionStatus.FAILED_UNAUTHORIZED,
+                        TraceabilityDetails.INVOLVED_ONLY
                 ),
                 () -> verify(decorated).execute(any()),
                 () -> verify(result, times(1)).projectionIds()
@@ -167,12 +180,14 @@ class GuardQueryUseCaseTest {
         // Given
         when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
+        when(decorated.traceabilityDetails()).thenReturn(TraceabilityDetails.INVOLVED_ONLY);
 
         // When
         guardQuery.execute(INPUT);
 
         // Then
-        verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS);
+        verify(traceAppender).append(INPUT, result.projections(), ExecutionStatus.SUCCESS,
+                TraceabilityDetails.INVOLVED_ONLY);
     }
 
     @Test
@@ -180,8 +195,10 @@ class GuardQueryUseCaseTest {
         // Given
         when(decorated.permissions()).thenReturn(List.of(new Everyone<>()));
         when(decorated.execute(INPUT)).thenReturn(result);
+        when(decorated.traceabilityDetails()).thenReturn(TraceabilityDetails.INVOLVED_ONLY);
         doThrow(new TraceAppenderException(new RuntimeException("Something wrong happened")))
-                .when(traceAppender).append(eq(INPUT), any(), eq(ExecutionStatus.SUCCESS));
+                .when(traceAppender).append(eq(INPUT), any(), eq(ExecutionStatus.SUCCESS),
+                        eq(TraceabilityDetails.INVOLVED_ONLY));
 
         // When / Then
         final QueryException exception = assertThrows(QueryException.class, () -> guardQuery.execute(INPUT));
@@ -189,7 +206,8 @@ class GuardQueryUseCaseTest {
         assertAll(
                 () -> assertEquals(QueryExceptionCode.INFRASTRUCTURE_FAILURE, exception.queryExceptionCode()),
                 () -> verify(decorated).execute(INPUT),
-                () -> verify(traceAppender).append(any(Input.class), any(), any())
+                () -> verify(decorated).traceabilityDetails(),
+                () -> verify(traceAppender).append(any(Input.class), any(), any(), any())
         );
     }
 

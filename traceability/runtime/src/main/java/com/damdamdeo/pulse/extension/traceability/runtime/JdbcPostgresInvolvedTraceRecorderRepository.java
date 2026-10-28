@@ -16,8 +16,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 
+import static com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorder.INVOLVED;
+
 @ApplicationScoped
 @Unremovable
+@TraceRecorderQualifier(value = INVOLVED)
 public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorderRepository {
 
     // executed_by_hashed is determinist

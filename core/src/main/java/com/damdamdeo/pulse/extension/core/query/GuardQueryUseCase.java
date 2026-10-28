@@ -9,6 +9,7 @@ import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
+import com.damdamdeo.pulse.extension.core.traceability.TraceabilityDetails;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
 
@@ -89,10 +90,12 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
                 }
             }
             if (allow) {
-                traceAppender.append(input, result.projections(), ExecutionStatus.SUCCESS);
+                traceAppender.append(input, result.projections(), ExecutionStatus.SUCCESS,
+                        decorated.traceabilityDetails());
                 return result;
             } else {
-                traceAppender.append(input, result.projections(), ExecutionStatus.FAILED_UNAUTHORIZED);
+                traceAppender.append(input, result.projections(), ExecutionStatus.FAILED_UNAUTHORIZED,
+                        decorated.traceabilityDetails());
                 throw new QueryException(new UnauthorizedException());
             }
         } catch (final TraceAppenderException exception) {
@@ -103,5 +106,10 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
     @Override
     public List<Permission<A>> permissions() {
         return decorated.permissions();
+    }
+
+    @Override
+    public TraceabilityDetails traceabilityDetails() {
+        return decorated.traceabilityDetails();
     }
 }

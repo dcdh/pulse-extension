@@ -168,7 +168,8 @@ class E2ETest {
                                 ProjectionId.from(TodoId.USER_1_TODO_1),
                         "lorem ipsum",
                         Status.IN_PROGRESS, false, List.of())),
-                ExecutionStatus.FAILED_UNAUTHORIZED);
+                ExecutionStatus.FAILED_UNAUTHORIZED,
+                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
         // Alice
         stubExecutionContextProvider.set(new ExecutedBy.EndUser(new Username("alice@mail.com")));
         traceAppender.append(new SimpleCommand(TodoId.USER_1_TODO_2), List.of(

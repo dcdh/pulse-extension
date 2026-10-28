@@ -1,10 +1,10 @@
 = TODO
 
 == Must have
-1. add traceability per use case : INVOLVED_ONLY, DETAILS_WHEN_AVAILABLE, default DETAILS_WHEN_AVAILABLE
-2. Quarkus batchlet with reader as a projection reader and writer as a domain use case
+2. Quarkus batchlet with reader as a projection reader and writer as a domain use case - Add a simple test - create a specific extension
+   https://docs.quarkiverse.io/quarkus-jberet/dev/chunk-processing.html
 3. rewrite the integration test to reflect the reality, same package than facturation, remove creational part, need two command, creational and mark as done, do the query, use DTO whit domain object and openapi, dot the tests
-
+batch must be locked and schedulable
 2. traceability: front : avatar
 5. faire les skills
 7. OwnedByProvider replace by ExecutedByResolver

@@ -23,11 +23,13 @@ public final class NoOpTraceAppender implements TraceAppender {
 
     @Override
     public <A extends AggregateId, P extends Projection<A>> void append(final Input input, final List<P> projections,
-                                                                        final ExecutionStatus executionStatus)
+                                                                        final ExecutionStatus executionStatus,
+                                                                        final TraceabilityDetails traceabilityDetails)
             throws TraceAppenderException {
         Objects.requireNonNull(input);
         Objects.requireNonNull(projections);
         Objects.requireNonNull(executionStatus);
+        Objects.requireNonNull(traceabilityDetails);
         // no-op
     }
 

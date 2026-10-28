@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
+import com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorderQualifier;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Disabled;
@@ -23,6 +24,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorder.INVOLVED_WITH_FULL_DETAILS;
+
 class DiskUsageTest {
 
     @RegisterExtension
@@ -35,6 +38,7 @@ class DiskUsageTest {
     DataSource dataSource;
 
     @Inject
+    @TraceRecorderQualifier(value = INVOLVED_WITH_FULL_DETAILS)
     JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
 
     @Test

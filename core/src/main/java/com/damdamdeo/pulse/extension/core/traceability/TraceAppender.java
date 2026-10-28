@@ -14,7 +14,8 @@ public interface TraceAppender {
     <A extends AggregateId> void append(Command<A> command, List<VersionizedEvent<A>> versionizedEvents,
                                         ExecutionStatus executionStatus) throws TraceAppenderException;
 
-    <A extends AggregateId, P extends Projection<A>> void append(Input input, List<P> projections, ExecutionStatus executionStatus)
+    <A extends AggregateId, P extends Projection<A>> void append(Input input, List<P> projections, ExecutionStatus executionStatus,
+                                                                 TraceabilityDetails traceabilityDetails)
             throws TraceAppenderException;
 
     void append(Set<AggregateId> aggregateIds) throws TraceAppenderException;

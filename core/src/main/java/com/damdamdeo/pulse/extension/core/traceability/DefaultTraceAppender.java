@@ -23,7 +23,7 @@ public final class DefaultTraceAppender implements TraceAppender {
     private final CorrelationIdProvider correlationIdProvider;
     private final UsernameHasher usernameHasher;
     private final ExecutedByEncodedProvider executedByEncodedProvider;
-    private final TraceRecorderRepository traceRecorderRepository;
+    private final TraceRecorderRepositoryProvider traceRecorderRepositoryProvider;
 
     public DefaultTraceAppender(final ExecutionContextProvider executionContextProvider,
                                 final ExecutedAtProvider executedAtProvider,
@@ -31,14 +31,14 @@ public final class DefaultTraceAppender implements TraceAppender {
                                 final CorrelationIdProvider correlationIdProvider,
                                 final UsernameHasher usernameHasher,
                                 final ExecutedByEncodedProvider executedByEncodedProvider,
-                                final TraceRecorderRepository traceRecorderRepository) {
+                                final TraceRecorderRepositoryProvider traceRecorderRepositoryProvider) {
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
         this.executedAtProvider = Objects.requireNonNull(executedAtProvider);
         this.traceIdGenerator = Objects.requireNonNull(traceIdGenerator);
         this.correlationIdProvider = Objects.requireNonNull(correlationIdProvider);
         this.usernameHasher = Objects.requireNonNull(usernameHasher);
         this.executedByEncodedProvider = Objects.requireNonNull(executedByEncodedProvider);
-        this.traceRecorderRepository = Objects.requireNonNull(traceRecorderRepository);
+        this.traceRecorderRepositoryProvider = Objects.requireNonNull(traceRecorderRepositoryProvider);
     }
 
     @Override
@@ -65,6 +65,8 @@ public final class DefaultTraceAppender implements TraceAppender {
                         executedByEncodedProvider.provide(aggregateId, executedBy));
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
             }
+            final TraceRecorderRepository traceRecorderRepository = traceRecorderRepositoryProvider
+                    .provide(TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
             traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(),
                     correlationIdProvider.provide(),
                     executedAtProvider.now(),
@@ -77,11 +79,13 @@ public final class DefaultTraceAppender implements TraceAppender {
 
     @Override
     public <A extends AggregateId, P extends Projection<A>> void append(final Input input, final List<P> projections,
-                                                                        final ExecutionStatus executionStatus)
+                                                                        final ExecutionStatus executionStatus,
+                                                                        final TraceabilityDetails traceabilityDetails)
             throws TraceAppenderException {
         Objects.requireNonNull(input);
         Objects.requireNonNull(projections);
         Objects.requireNonNull(executionStatus);
+        Objects.requireNonNull(traceabilityDetails);
         if (projections.isEmpty()) {
             return;
         }
@@ -94,10 +98,13 @@ public final class DefaultTraceAppender implements TraceAppender {
                         executedByEncodedProvider.provide(projection.id().linkTo(), executedBy));
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
             }
+            final TraceRecorderRepository traceRecorderRepository = traceRecorderRepositoryProvider
+                    .provide(TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
             traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(),
                     correlationIdProvider.provide(),
                     executedAtProvider.now(),
-                    Source.QUERY, executionStatus, From.from(input), encodedTraceAggregateIds));
+                    Source.QUERY,
+                    executionStatus, From.from(input), encodedTraceAggregateIds));
         } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException |
                        CorrelationIdProviderException exception) {
             throw new TraceAppenderException(exception);
@@ -119,10 +126,13 @@ public final class DefaultTraceAppender implements TraceAppender {
                         executedByEncodedProvider.provide(aggregateId, executedBy));
                 encodedTraceAggregateIds.add(encodedTraceAggregateId);
             }
+            final TraceRecorderRepository traceRecorderRepository = traceRecorderRepositoryProvider
+                    .provide(TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
             traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(),
                     correlationIdProvider.provide(),
                     executedAtProvider.now(),
-                    Source.TRACEABILITY, ExecutionStatus.SUCCESS, new From("TRACEABILITY"), encodedTraceAggregateIds));
+                    Source.TRACEABILITY,
+                    ExecutionStatus.SUCCESS, new From("TRACEABILITY"), encodedTraceAggregateIds));
         } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException |
                        CorrelationIdProviderException exception) {
             throw new TraceAppenderException(exception);

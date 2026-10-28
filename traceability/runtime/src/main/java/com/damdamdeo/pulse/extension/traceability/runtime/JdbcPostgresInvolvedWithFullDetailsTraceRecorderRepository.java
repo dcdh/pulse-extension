@@ -14,9 +14,11 @@ import java.sql.*;
 import java.util.Objects;
 
 import static com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedTraceRecorderRepository.*;
+import static com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorder.INVOLVED_WITH_FULL_DETAILS;
 
 @ApplicationScoped
 @Unremovable
+@TraceRecorderQualifier(value = INVOLVED_WITH_FULL_DETAILS)
 public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implements TraceRecorderRepository {
 
     // executed_by_hashed is determinist
