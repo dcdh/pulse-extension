@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,12 +70,16 @@ class ScheduledJobTest {
         // given
         final TestCommand firstCommand = new TestCommand(new TestId("first"));
         final TestCommand secondCommand = new TestCommand(new TestId("second"));
+        final TestProjection firstProjection = new TestProjection(ProjectionId.from(firstCommand.id()));
+        final TestProjection secondProjection = new TestProjection(ProjectionId.from(secondCommand.id()));
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size()))).willReturn(firstResult);
         given(firstResult.projectionIds()).willReturn(Set.of(
                 ProjectionId.from(firstCommand.id()),
                 ProjectionId.from(secondCommand.id())));
-        given(resultProcessor.process(firstResult)).willReturn(List.of(firstCommand, secondCommand));
+        given(firstResult.projections()).willReturn(List.of(firstProjection, secondProjection));
+        given(resultProcessor.process(firstProjection)).willReturn(firstCommand);
+        given(resultProcessor.process(secondProjection)).willReturn(secondCommand);
         given(firstResult.hasNext()).willReturn(false);
 
         // when
@@ -91,8 +96,9 @@ class ScheduledJobTest {
         );
         inOrder.verify(executionContextOverloader).overload(JOB_NAME);
         inOrder.verify(queryUseCase).execute(INPUT, new Pagination(0, CHUNK_SIZE.size()));
-        inOrder.verify(resultProcessor).process(firstResult);
+        inOrder.verify(resultProcessor).process(firstProjection);
         inOrder.verify(domainUseCase).execute(firstCommand);
+        inOrder.verify(resultProcessor).process(secondProjection);
         inOrder.verify(domainUseCase).execute(secondCommand);
         inOrder.verify(executionContextOverloader).clean(JOB_NAME);
     }
@@ -102,6 +108,8 @@ class ScheduledJobTest {
         // given
         final TestCommand firstCommand = new TestCommand(new TestId("first"));
         final TestCommand secondCommand = new TestCommand(new TestId("second"));
+        final TestProjection firstProjection = new TestProjection(ProjectionId.from(firstCommand.id()));
+        final TestProjection secondProjection = new TestProjection(ProjectionId.from(secondCommand.id()));
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size())))
                 .willReturn(firstResult, secondResult);
@@ -109,8 +117,10 @@ class ScheduledJobTest {
                 ProjectionId.from(firstCommand.id())));
         given(secondResult.projectionIds()).willReturn(Set.of(
                 ProjectionId.from(secondCommand.id())));
-        given(resultProcessor.process(firstResult)).willReturn(List.of(firstCommand));
-        given(resultProcessor.process(secondResult)).willReturn(List.of(secondCommand));
+        given(firstResult.projections()).willReturn(List.of(firstProjection));
+        given(secondResult.projections()).willReturn(List.of(secondProjection));
+        given(resultProcessor.process(firstProjection)).willReturn(firstCommand);
+        given(resultProcessor.process(secondProjection)).willReturn(secondCommand);
         given(firstResult.hasNext()).willReturn(true);
         given(secondResult.hasNext()).willReturn(false);
 
@@ -154,6 +164,8 @@ class ScheduledJobTest {
         // given
         final TestCommand failingCommand = new TestCommand(new TestId("failing"));
         final TestCommand ignoredCommand = new TestCommand(new TestId("ignored"));
+        final TestProjection failingProjection = new TestProjection(ProjectionId.from(failingCommand.id()));
+        final TestProjection ignoredProjection = new TestProjection(ProjectionId.from(ignoredCommand.id()));
         final UseCaseException useCaseException = new UseCaseException(
                 new RuntimeException("domain failure"),
                 UseCaseExceptionCode.BUSINESS_FAILURE
@@ -164,7 +176,8 @@ class ScheduledJobTest {
         given(firstResult.projectionIds()).willReturn(Set.of(
                 ProjectionId.from(failingCommand.id()),
                 ProjectionId.from(ignoredCommand.id())));
-        given(resultProcessor.process(firstResult)).willReturn(List.of(failingCommand, ignoredCommand));
+        given(firstResult.projections()).willReturn(List.of(failingProjection, ignoredProjection));
+        given(resultProcessor.process(failingProjection)).willReturn(failingCommand);
         given(domainUseCase.execute(failingCommand)).willThrow(useCaseException);
 
         // when
@@ -253,10 +266,10 @@ class ScheduledJobTest {
 
     public interface ResultProcessor {
 
-        List<TestCommand> process(MultiplePageableResult<TestId, TestProjection> result);
+        TestCommand process(TestProjection result);
     }
 
-    public static final class TestScheduledJob extends ScheduledJob<
+    public static final class TestScheduledJob extends SimpleScheduledJob<
             TestId,
             TestInput,
             TestProjection,
@@ -283,9 +296,9 @@ class ScheduledJobTest {
         }
 
         @Override
-        protected List<TestCommand> process(
-                final MultiplePageableResult<TestId, TestProjection> result) {
-            return resultProcessor.process(result);
+        protected TestCommand process(final TestProjection projection) {
+            Objects.requireNonNull(projection);
+            return resultProcessor.process(projection);
         }
 
         @Override

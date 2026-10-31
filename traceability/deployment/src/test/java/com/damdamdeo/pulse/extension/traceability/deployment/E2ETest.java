@@ -113,7 +113,7 @@ class E2ETest {
                   executed_by character varying(255) not null,
                   CONSTRAINT event_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type, version),
                   CONSTRAINT event_unique UNIQUE (aggregate_root_id, aggregate_root_type, version),
-                  CONSTRAINT executed_by_format_chk CHECK (executed_by = 'A' OR executed_by LIKE 'EU:%' OR executed_by LIKE 'SA:%' OR executed_by = 'NA')
+                  CONSTRAINT executed_by_format_chk CHECK (executed_by = 'A' OR executed_by LIKE 'EU:%' OR executed_by LIKE 'SA:%' OR executed_by = 'NA' OR executed_by LIKE 'JOB:%')
                 );
                 """;
         try (final Connection connection = dataSource.getConnection();

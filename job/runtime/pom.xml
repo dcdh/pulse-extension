@@ -49,6 +49,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>io.quarkiverse.jberet</groupId>
+            <artifactId>quarkus-jberet</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-devtools-testing</artifactId>
             <scope>test</scope>

@@ -1,6 +1,5 @@
 package com.damdamdeo.pulse.extension.job.deployment;
 
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.job.JobName;
 import com.damdamdeo.pulse.extension.job.runtime.executedby.ContextLocalsExecutionContextOverloader;
 import io.quarkus.test.QuarkusUnitTest;

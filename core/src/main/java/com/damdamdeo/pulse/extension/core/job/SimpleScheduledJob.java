@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import java.util.*;
 import java.util.logging.Logger;
 
-public abstract class ScheduledJob<A extends AggregateId, I extends Input, P extends Projection<A>, R extends MultiplePageableResult<A, P>,
+public abstract class SimpleScheduledJob<A extends AggregateId, I extends Input, P extends Projection<A>, R extends MultiplePageableResult<A, P>,
         C extends Command<A>, AR extends AggregateRoot<A>> {
 
     final Logger LOGGER = Logger.getLogger(this.getClass().getName());
@@ -21,10 +21,10 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
     private final QueryUseCase<A, I, P, R> queryUseCase;
     private final DomainUseCase<A, C, AR> domainUseCase;
 
-    protected ScheduledJob(final JobUnblockingLockManager jobUnblockingLockManager,
-                           final ExecutionContextOverloader executionContextOverloader,
-                           final QueryUseCase<A, I, P, R> queryUseCase,
-                           final DomainUseCase<A, C, AR> domainUseCase) {
+    protected SimpleScheduledJob(final JobUnblockingLockManager jobUnblockingLockManager,
+                                 final ExecutionContextOverloader executionContextOverloader,
+                                 final QueryUseCase<A, I, P, R> queryUseCase,
+                                 final DomainUseCase<A, C, AR> domainUseCase) {
         this.jobUnblockingLockManager = Objects.requireNonNull(jobUnblockingLockManager);
         this.executionContextOverloader = Objects.requireNonNull(executionContextOverloader);
         this.queryUseCase = Objects.requireNonNull(queryUseCase);
@@ -66,8 +66,8 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
                                     case UNKNOWN, KEEP_ZERO_PAGINATION -> 0;
                                     case INCREMENT_PAGINATION -> currentPage + 1;
                                 };
-                                final List<C> commandsToExecute = process(executed);
-                                for (final C command : commandsToExecute) {
+                                for (final P projection : executed.projections()) {
+                                    final C command = process(projection);
                                     try {
                                         domainUseCase.execute(command);
                                     } catch (final UseCaseException exception) {
@@ -91,15 +91,9 @@ public abstract class ScheduledJob<A extends AggregateId, I extends Input, P ext
         }
     }
 
-    enum IncrementStrategy {
-        UNKNOWN,
-        INCREMENT_PAGINATION,
-        KEEP_ZERO_PAGINATION;
-    }
-
     protected abstract I input();
 
-    protected abstract List<C> process(R result);
+    protected abstract C process(P projection);
 
     protected abstract ChunkSize chunkSize();
 

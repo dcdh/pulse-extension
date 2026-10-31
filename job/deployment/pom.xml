@@ -50,6 +50,12 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>io.quarkiverse.jberet</groupId>
+            <artifactId>quarkus-jberet-deployment</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>pulse-core</artifactId>
             <version>${project.version}</version>

@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.core;
 
-import com.damdamdeo.pulse.extension.core.command.CommandWithoutOnEvent;
-import com.damdamdeo.pulse.extension.core.command.CreateTodo;
-import com.damdamdeo.pulse.extension.core.command.FailTodo;
-import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
+import com.damdamdeo.pulse.extension.core.command.*;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
@@ -48,6 +45,8 @@ public final class Todo extends AggregateRoot<TodoId> {
         this.owner = Objects.requireNonNull(owner);
     }
 
+    // handle
+
     public void handle(final CreateTodo createTodo, final ExecutionContext executionContext, final EventAppender<TodoId> eventAppender) throws BusinessException {
         Objects.requireNonNull(createTodo);
         Objects.requireNonNull(eventAppender);
@@ -80,6 +79,15 @@ public final class Todo extends AggregateRoot<TodoId> {
         eventAppender.append(new Missing());
     }
 
+    public void handle(final ArchiveTodo commandWithoutOnEvent, final ExecutionContext executionContext, final EventAppender<TodoId> eventAppender) throws BusinessException {
+        Objects.requireNonNull(commandWithoutOnEvent);
+        Objects.requireNonNull(eventAppender);
+        Objects.requireNonNull(executionContext);
+        eventAppender.append(new TodoArchived());
+    }
+
+    // on
+
     public void on(final NewTodoCreated newTodoCreated, final ExecutedBy executedBy) {
         Objects.requireNonNull(newTodoCreated);
         Objects.requireNonNull(executedBy);
@@ -96,6 +104,10 @@ public final class Todo extends AggregateRoot<TodoId> {
 
     public void on(final ClassifiedAsImportant classifiedAsImportant, final ExecutedBy executedBy) {
         this.important = true;
+    }
+
+    public void on(final TodoArchived todoArchived, final ExecutedBy executedBy) {
+        this.status = Status.ARCHIVED;
     }
 
     @Override

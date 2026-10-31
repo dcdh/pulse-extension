@@ -20,6 +20,10 @@ public record TodoProjection(ProjectionId<TodoId> todoId,
         Objects.requireNonNull(checklist);
     }
 
+    public TodoProjection withStatus(final Status status) {
+        return new TodoProjection(todoId, description, status, important, checklist);
+    }
+
     @Override
     public ProjectionId<TodoId> id() {
         return todoId;

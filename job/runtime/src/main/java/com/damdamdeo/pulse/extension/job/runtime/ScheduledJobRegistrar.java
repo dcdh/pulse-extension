@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.job.runtime;
 
 import com.damdamdeo.pulse.extension.core.job.JobExecutionException;
-import com.damdamdeo.pulse.extension.core.job.ScheduledJob;
+import com.damdamdeo.pulse.extension.core.job.SimpleScheduledJob;
 import io.quarkus.arc.All;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.runtime.StartupEvent;
@@ -23,15 +23,16 @@ public class ScheduledJobRegistrar {
 
     @Inject
     @All
-    List<ScheduledJob<?, ?, ?, ?, ?, ?>> scheduledJobs;
+    List<SimpleScheduledJob<?, ?, ?, ?, ?, ?>> simpleScheduledJobs;
 
     @Inject
     Scheduler scheduler;
 
     void onStart(@Observes final StartupEvent startupEvent) {
-        LOGGER.info("Registering {} scheduled jobs", scheduledJobs.size());
-        scheduledJobs.forEach(scheduledJob ->
+        LOGGER.info("Registering {} scheduled jobs", simpleScheduledJobs.size());
+        simpleScheduledJobs.forEach(scheduledJob ->
                 scheduler.newJob(scheduledJob.jobName().name())
+                        .setDelayed("2s")
                         .setCron(scheduledJob.cron().cron())
                         .setConcurrentExecution(Scheduled.ConcurrentExecution.SKIP)
                         .setTask(task -> {

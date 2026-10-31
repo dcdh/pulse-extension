@@ -1,8 +1,9 @@
 package com.damdamdeo.pulse.extension.job.deployment;
 
-import com.damdamdeo.pulse.extension.core.job.ScheduledJob;
+import com.damdamdeo.pulse.extension.core.job.SimpleScheduledJob;
 import com.damdamdeo.pulse.extension.job.runtime.JdbcPostgresJobUnblockingLockManager;
 import com.damdamdeo.pulse.extension.job.runtime.ScheduledJobRegistrar;
+import com.damdamdeo.pulse.extension.job.runtime.batch.RegisterExecutedByJobName;
 import com.damdamdeo.pulse.extension.job.runtime.executedby.ContextLocalsExecutionContextOverloader;
 import com.damdamdeo.pulse.extension.job.runtime.executedby.JobExecutionContextProviderDecorator;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -12,6 +13,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 
 import java.util.List;
 
@@ -47,8 +49,23 @@ public class JobProcessor {
     }
 
     @BuildStep
+    AdditionalBeanBuildItem registerRegisterExecutedByJobName(final CurateOutcomeBuildItem curateOutcomeBuildItem) {
+        // io.quarkiverse.jberet:quarkus-jberet does not expose a Capability :/
+        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
+        final boolean isPresent = curateOutcomeBuildItem.getApplicationModel()
+                .getDependencies().stream()
+                .anyMatch(dep -> "io.quarkiverse.jberet".equals(dep.getGroupId())
+                        && "quarkus-jberet".equals(dep.getArtifactId()));
+
+        if (isPresent) {
+            builder.addBeanClass(RegisterExecutedByJobName.class);
+        }
+        return builder.build();
+    }
+
+    @BuildStep
     List<AdditionalBeanBuildItem> registerScheduledJob(final CombinedIndexBuildItem combinedIndexBuildItem) {
-        return combinedIndexBuildItem.getIndex().getAllKnownSubclasses(ScheduledJob.class)
+        return combinedIndexBuildItem.getIndex().getAllKnownSubclasses(SimpleScheduledJob.class)
                 .stream()
                 .map(scheduledJob -> AdditionalBeanBuildItem.builder()
                         .addBeanClass(scheduledJob.name().toString())

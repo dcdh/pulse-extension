@@ -5,13 +5,11 @@ import com.damdamdeo.pulse.extension.core.command.*;
 import com.damdamdeo.pulse.extension.core.connecteduser.registration.UserRegistrationDomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
-import jakarta.enterprise.context.ApplicationScoped;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
-@ApplicationScoped
 public class CreationalWorkflow {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreationalWorkflow.class);

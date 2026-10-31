@@ -1,0 +1,15 @@
+= job
+
+https://docs.quarkiverse.io/quarkus-jberet/dev/chunk-processing.html
+
+== Default implementation
+
+- use Postgres lock mechanism to avoid multiple executions on a single node or multiple nodes;
+- lock must try to acquire and not be blocking.
+
+== Jberet
+
+- make jberet optional;
+- jberet supports single execution on multiple nodes.
+
+https://docs.quarkiverse.io/quarkus-jberet/dev/index.html#_example_applications

@@ -14,7 +14,8 @@ public record ExecutedByEncoded(String encoded) {
                 || encoded.startsWith(ExecutedBy.EndUser.DISCRIMINANT + ExecutedBy.EndUser.SEPARATOR)
                 || encoded.startsWith(ExecutedBy.ServiceAccount.DISCRIMINANT + ExecutedBy.ServiceAccount.SEPARATOR)
                 || ExecutedBy.NotAvailable.DISCRIMINANT.equals(encoded)
-                || ExecutedBy.Banned.DISCRIMINANT.equals(encoded));
+                || ExecutedBy.Banned.DISCRIMINANT.equals(encoded)
+                || encoded.startsWith(ExecutedBy.Job.DISCRIMINANT + ExecutedBy.Job.SEPARATOR));
     }
 
     public ExecutedBy to(final UsernameDecoder usernameDecoder, final OwnedBy ownedBy) {

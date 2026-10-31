@@ -9,8 +9,11 @@ import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 public record ExecutedBySpecificJob<K extends AggregateId>(JobName jobName) implements CompositePermission<K> {
+
+    static final Logger LOGGER = Logger.getLogger(ExecutedBySpecificJob.class.getName());
 
     public ExecutedBySpecificJob {
         Objects.requireNonNull(jobName);
@@ -21,6 +24,11 @@ public record ExecutedBySpecificJob<K extends AggregateId>(JobName jobName) impl
         Objects.requireNonNull(projectionId);
         Objects.requireNonNull(permissionExecutionContext);
         final ExecutionContext executionContext = permissionExecutionContext.executionContextProvider().provide();
-        return executionContext.executedBy().equals(new ExecutedBy.Job(jobName));
+        final boolean allow = executionContext.executedBy().equals(new ExecutedBy.Job(jobName));
+        if (!allow) {
+            LOGGER.warning(String.format("Job %s is not allowed to access projection %s", jobName.name(),
+                    projectionId.id()));
+        }
+        return allow;
     }
 }

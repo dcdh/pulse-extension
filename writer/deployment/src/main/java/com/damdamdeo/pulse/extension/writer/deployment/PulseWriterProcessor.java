@@ -171,7 +171,7 @@ public class PulseWriterProcessor {
                             belongs_to character varying(255) not null,
                             executed_by character varying(255) not null,
                             CONSTRAINT event_pkey PRIMARY KEY (aggregate_root_id, aggregate_root_type, version),
-                            CONSTRAINT executed_by_format_chk CHECK (executed_by = 'A' OR executed_by LIKE 'EU:%%' OR executed_by LIKE 'SA:%%' OR executed_by = 'NA')
+                            CONSTRAINT executed_by_format_chk CHECK (executed_by = 'A' OR executed_by LIKE 'EU:%%' OR executed_by LIKE 'SA:%%' OR executed_by = 'NA' OR executed_by LIKE 'JOB:%%')
                           ) PARTITION BY HASH (aggregate_root_type, aggregate_root_id);
                         
                           CREATE TABLE IF NOT EXISTS %1$s.event_00 PARTITION OF %1$s.event FOR VALUES WITH (MODULUS 32, REMAINDER 0);

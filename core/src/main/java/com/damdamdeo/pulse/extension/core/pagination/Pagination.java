@@ -16,4 +16,8 @@ public record Pagination(int page, int size) {
     public boolean loadAll() {
         return size == -1;
     }
+
+    public static Pagination all() {
+        return new Pagination(0, -1);
+    }
 }

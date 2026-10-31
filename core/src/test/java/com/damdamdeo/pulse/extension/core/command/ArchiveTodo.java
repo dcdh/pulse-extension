@@ -4,9 +4,9 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 
 import java.util.Objects;
 
-public record CloseTodo(TodoId id) implements Command<TodoId> {
+public record ArchiveTodo(TodoId id) implements Command<TodoId> {
 
-    public CloseTodo {
+    public ArchiveTodo {
         Objects.requireNonNull(id);
     }
 }
