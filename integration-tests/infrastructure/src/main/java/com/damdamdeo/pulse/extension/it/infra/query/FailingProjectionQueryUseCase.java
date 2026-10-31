@@ -7,11 +7,9 @@ import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
-import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
 
-@ApplicationScoped
 public class FailingProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
     @Override

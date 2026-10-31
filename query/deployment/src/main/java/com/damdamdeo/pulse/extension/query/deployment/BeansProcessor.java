@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.query.GenericQuery;
+import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.file.DefaultUploadedAtProvider;
 import com.damdamdeo.pulse.extension.core.query.file.FileSizeLimitedCopier;
 import com.damdamdeo.pulse.extension.core.query.file.query.DownloadQuery;
@@ -185,5 +186,18 @@ public class BeansProcessor {
     @BuildStep
     AdditionalBeanBuildItem registerDefaultCustomMetadataEncryption() {
         return new AdditionalBeanBuildItem(DefaultCustomMetadataEncryption.class);
+    }
+
+    @BuildStep
+    List<AdditionalBeanBuildItem> registerQueryUseCase(final CombinedIndexBuildItem combinedIndexBuildItem) {
+        return combinedIndexBuildItem.getIndex().getAllKnownImplementations(QueryUseCase.class)
+                .stream()
+                .filter(queryUseCase -> !queryUseCase.hasAnnotation(DotNames.DECORATOR))
+                .map(scheduledJob -> AdditionalBeanBuildItem.builder()
+                        .addBeanClass(scheduledJob.name().toString())
+                        .setDefaultScope(DotNames.SINGLETON)
+                        .setUnremovable()
+                        .build())
+                .toList();
     }
 }

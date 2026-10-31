@@ -49,8 +49,6 @@ class ScheduledJobRegistrarTest {
     public record ListTodos() implements Input {
     }
 
-    @ApplicationScoped
-    @Unremovable
     public static class ListTodosQueryUsecase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultiplePageableResult<TodoId, TodoProjection>> {
 
         private boolean called = false;

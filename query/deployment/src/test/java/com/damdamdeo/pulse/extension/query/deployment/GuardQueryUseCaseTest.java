@@ -22,6 +22,7 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+// FCK PRIO 1
 class GuardQueryUseCaseTest {
 
     @RegisterExtension
@@ -36,7 +37,6 @@ class GuardQueryUseCaseTest {
     @Inject
     StubQueryUseCaseCaller stubQueryUseCaseCaller;
 
-    @ApplicationScoped
     static class NoAudienceQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
         @Override
