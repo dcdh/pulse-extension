@@ -7,11 +7,7 @@ import com.damdamdeo.pulse.extension.core.job.ExecutionContextOverloader;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.job.runtime.batch.UseCaseWriter;
 import jakarta.batch.runtime.context.JobContext;
-import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Named;
 
-@Dependent
-@Named
 public class ArchiveTodoDomainUseCaseWriter extends UseCaseWriter<TodoId, ArchiveTodo, Todo> {
 
     protected ArchiveTodoDomainUseCaseWriter(final DomainUseCase<TodoId, ArchiveTodo, Todo> domainUseCase,

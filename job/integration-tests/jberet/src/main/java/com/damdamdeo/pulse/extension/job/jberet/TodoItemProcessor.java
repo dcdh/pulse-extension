@@ -4,13 +4,9 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.ArchiveTodo;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.job.runtime.batch.QueryToCommandProcessor;
-import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Named;
 
 import java.util.Objects;
 
-@Dependent
-@Named
 public class TodoItemProcessor extends QueryToCommandProcessor<TodoId, ArchiveTodo, TodoProjection> {
 
     @Override
