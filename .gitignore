@@ -176,3 +176,4 @@
 /job/integration-tests/simple/todo_taking_query_event_counter.sql
 /job/integration-tests/jberet/quarkus-pulse-extension-job-integration-tests-jberet.iml
 /job/integration-tests/simple/quarkus-pulse-extension-job-integration-tests-simple.iml
+/job/integration-tests/simple/target/
