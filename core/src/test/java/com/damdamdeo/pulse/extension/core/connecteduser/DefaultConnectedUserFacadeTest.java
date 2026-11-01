@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.connecteduser;
 
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -25,79 +26,161 @@ class DefaultConnectedUserFacadeTest {
     @InjectMocks
     DefaultConnectedUserFacade facade;
 
-    @Test
-    void shouldReturnTrueWhenUserIsRegistered() throws Exception {
-        // Given
-        final ConnectionIdentifier givenConnectionIdentifier =
-                ConnectionIdentifier.from("abcdef123456");
-        final Identifiable givenIdentifiable = mock(Identifiable.class);
-        when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
-        when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.of(givenIdentifiable));
+    @Nested
+    class IsRegistered {
 
-        // When
-        final Optional<Identifiable> connected = facade.isRegistered();
+        @Test
+        void shouldReturnTrueWhenUserIsRegistered() throws Exception {
+            // Given
+            final ConnectionIdentifier givenConnectionIdentifier =
+                    ConnectionIdentifier.from("abcdef123456");
+            final AnyIdentifiable givenIdentifiable = mock(AnyIdentifiable.class);
+            when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.of(givenIdentifiable));
 
-        // Then
-        assertAll(
-                () -> assertEquals(Optional.of(givenIdentifiable), connected),
-                () -> verify(connectionIdentifierProvider).provide(),
-                () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
-        );
+            // When
+            final Optional<AnyIdentifiable> connected = facade.isRegistered();
+
+            // Then
+            assertAll(
+                    () -> assertEquals(Optional.of(givenIdentifiable), connected),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
+            );
+        }
+
+        @Test
+        void shouldReturnFalseWhenUserIsNotRegistered() throws Exception {
+            // Given
+            final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("0000000000000000000000000000000000000000000000000000000000000000");
+            when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.empty());
+
+            // When
+            final Optional<AnyIdentifiable> connected = facade.isRegistered();
+
+            // Then
+            assertAll(
+                    () -> assertEquals(Optional.empty(), connected),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
+            );
+        }
+
+        @Test
+        void shouldThrowTechnicalExceptionWhenConnectionIdentifierProviderFails() throws Exception {
+            // Given
+            final ConnectionIdentifierProviderException cause = new ConnectionIdentifierProviderException(new RuntimeException());
+            when(connectionIdentifierProvider.provide()).thenThrow(cause);
+
+            // When
+            final RegistrationCheckerException exception = assertThrows(
+                    RegistrationCheckerException.class, () -> facade.isRegistered());
+
+            // Then
+            assertAll(
+                    () -> assertSame(cause, exception.getCause()),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verifyNoInteractions(connectionIdentifierRepository)
+            );
+        }
+
+        @Test
+        void shouldThrowTechnicalExceptionWhenConnectionIdentifierRepositoryFails() throws Exception {
+            // Given
+            final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("0000000000000000000000000000000000000000000000000000000000000000");
+            final ConnectionIdentifierRepositoryException cause = new ConnectionIdentifierRepositoryException("msg", new RuntimeException());
+            when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenThrow(cause);
+
+            // When
+            final RegistrationCheckerException exception = assertThrows(
+                    RegistrationCheckerException.class, () -> facade.isRegistered());
+
+            // Then
+            assertAll(
+                    () -> assertSame(cause, exception.getCause()),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
+            );
+        }
     }
 
-    @Test
-    void shouldReturnFalseWhenUserIsNotRegistered() throws Exception {
-        // Given
-        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("0000000000000000000000000000000000000000000000000000000000000000");
-        when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
-        when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.empty());
+    @Nested
+    class GetConnectionIdentifier {
 
-        // When
-        final Optional<Identifiable> connected = facade.isRegistered();
+        @Test
+        void shouldReturnConnectedUserWhenUserIsRegistered() throws Exception {
+            // Given
+            final ConnectionIdentifier givenConnectionIdentifier =
+                    ConnectionIdentifier.from("abcdef123456");
+            final AnyIdentifiable givenIdentifiable = mock(AnyIdentifiable.class);
+            when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.of(givenIdentifiable));
 
-        // Then
-        assertAll(
-                () -> assertEquals(Optional.empty(), connected),
-                () -> verify(connectionIdentifierProvider).provide(),
-                () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
-        );
-    }
+            // When
+            final AnyIdentifiable connected = facade.getConnectedUser();
 
-    @Test
-    void shouldThrowTechnicalExceptionWhenConnectionIdentifierProviderFails() throws Exception {
-        // Given
-        final ConnectionIdentifierProviderException cause = new ConnectionIdentifierProviderException(new RuntimeException());
-        when(connectionIdentifierProvider.provide()).thenThrow(cause);
+            // Then
+            assertAll(
+                    () -> assertEquals(givenIdentifiable, connected),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
+            );
+        }
 
-        // When
-        final RegistrationCheckerException exception = assertThrows(
-                RegistrationCheckerException.class, () -> facade.isRegistered());
+        @Test
+        void shouldThrowConnectedUserNotRegisteredExceptionWhenUserIsNotRegistered() throws Exception {
+            // Given
+            final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("0000000000000000000000000000000000000000000000000000000000000000");
+            when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.empty());
 
-        // Then
-        assertAll(
-                () -> assertSame(cause, exception.getCause()),
-                () -> verify(connectionIdentifierProvider).provide(),
-                () -> verifyNoInteractions(connectionIdentifierRepository)
-        );
-    }
+            // When / Then
+            assertAll(
+                    () -> assertThatThrownBy(() -> facade.getConnectedUser())
+                            .isExactlyInstanceOf(ConnectedUserNotRegisteredException.class),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
+            );
+        }
 
-    @Test
-    void shouldThrowTechnicalExceptionWhenConnectionIdentifierRepositoryFails() throws Exception {
-        // Given
-        final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("0000000000000000000000000000000000000000000000000000000000000000");
-        final ConnectionIdentifierRepositoryException cause = new ConnectionIdentifierRepositoryException("msg", new RuntimeException());
-        when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
-        when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenThrow(cause);
+        @Test
+        void shouldThrowTechnicalExceptionWhenConnectionIdentifierProviderFails() throws Exception {
+            // Given
+            final ConnectionIdentifierProviderException cause = new ConnectionIdentifierProviderException(new RuntimeException());
+            when(connectionIdentifierProvider.provide()).thenThrow(cause);
 
-        // When
-        final RegistrationCheckerException exception = assertThrows(
-                RegistrationCheckerException.class, () -> facade.isRegistered());
+            // When
+            final RegistrationCheckerException exception = assertThrows(
+                    RegistrationCheckerException.class, () -> facade.getConnectedUser());
 
-        // Then
-        assertAll(
-                () -> assertSame(cause, exception.getCause()),
-                () -> verify(connectionIdentifierProvider).provide(),
-                () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
-        );
+            // Then
+            assertAll(
+                    () -> assertSame(cause, exception.getCause()),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verifyNoInteractions(connectionIdentifierRepository)
+            );
+        }
+
+        @Test
+        void shouldThrowTechnicalExceptionWhenConnectionIdentifierRepositoryFails() throws Exception {
+            // Given
+            final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("0000000000000000000000000000000000000000000000000000000000000000");
+            final ConnectionIdentifierRepositoryException cause = new ConnectionIdentifierRepositoryException("msg", new RuntimeException());
+            when(connectionIdentifierProvider.provide()).thenReturn(givenConnectionIdentifier);
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenThrow(cause);
+
+            // When
+            final RegistrationCheckerException exception = assertThrows(
+                    RegistrationCheckerException.class, () -> facade.getConnectedUser());
+
+            // Then
+            assertAll(
+                    () -> assertSame(cause, exception.getCause()),
+                    () -> verify(connectionIdentifierProvider).provide(),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
+            );
+        }
     }
 }

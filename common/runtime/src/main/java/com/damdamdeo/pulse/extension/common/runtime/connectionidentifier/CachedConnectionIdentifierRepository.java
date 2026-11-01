@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentif
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnectionIdentifierException;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.cache.Cache;
 import io.quarkus.cache.CacheName;
@@ -44,17 +45,17 @@ public class CachedConnectionIdentifierRepository implements ConnectionIdentifie
         Objects.requireNonNull(identifiable);
         final ConnectionIdentifier stored = delegate.store(connectionIdentifier, identifiable);
         final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
-        caffeineCache.put(connectionIdentifier, CompletableFuture.completedFuture(identifiable));
+        caffeineCache.put(connectionIdentifier, CompletableFuture.completedFuture(AnyIdentifiable.from(identifiable)));
         return stored;
     }
 
     @Override
-    public Optional<Identifiable> find(final ConnectionIdentifier connectionIdentifier) throws ConnectionIdentifierRepositoryException {
+    public Optional<AnyIdentifiable> find(final ConnectionIdentifier connectionIdentifier) throws ConnectionIdentifierRepositoryException {
         Objects.requireNonNull(connectionIdentifier);
         final CaffeineCache caffeineCache = cache.as(CaffeineCache.class);
         final CompletableFuture<AnyIdentifiable> findFromCache = caffeineCache.getIfPresent(connectionIdentifier);
         if (findFromCache == null) {
-            final Optional<Identifiable> identifiable = delegate.find(connectionIdentifier);
+            final Optional<AnyIdentifiable> identifiable = delegate.find(connectionIdentifier);
             if (identifiable.isEmpty()) {
                 return Optional.empty();
             }

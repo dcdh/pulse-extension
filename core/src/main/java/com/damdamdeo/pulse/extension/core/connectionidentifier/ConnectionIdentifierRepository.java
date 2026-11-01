@@ -9,6 +9,6 @@ public interface ConnectionIdentifierRepository {
     ConnectionIdentifier store(ConnectionIdentifier connectionIdentifier, Identifiable identifiable)
             throws ConnectionIdentifierRepositoryException, DuplicateConnectionIdentifierException;
 
-    Optional<Identifiable> find(final ConnectionIdentifier connectionIdentifier)
+    Optional<AnyIdentifiable> find(final ConnectionIdentifier connectionIdentifier)
             throws ConnectionIdentifierRepositoryException;
 }

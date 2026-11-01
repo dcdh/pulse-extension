@@ -4,10 +4,10 @@ import com.damdamdeo.pulse.extension.common.deployment.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.common.runtime.connectionidentifier.CachedConnectionIdentifierRepository;
 import com.damdamdeo.pulse.extension.common.runtime.connectionidentifier.JdbcPostgresConnectionIdentifierRepository;
 import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifier;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnectionIdentifierException;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hash;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
@@ -196,7 +196,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
                 .call(() -> jdbcPostgresConnectionIdentifierRepository.store(givenConnectionIdentifier, new UserAggregateId("U-000001")));
 
         // When
-        final Optional<Identifiable> byHash = jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
+        final Optional<AnyIdentifiable> byHash = jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
 
         // Then
         assertAll(
@@ -210,7 +210,7 @@ class JdbcPostgresConnectionIdentifierRepositoryTest {
         final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from(new Hash<>("0000000000000000000000000000000000000000000000000000000000000000"));
 
         // When
-        final Optional<Identifiable> byHash = jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
+        final Optional<AnyIdentifiable> byHash = jdbcPostgresConnectionIdentifierRepository.find(givenConnectionIdentifier);
 
         // Then
         assertThat(byHash).isEqualTo(Optional.empty());

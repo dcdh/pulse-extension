@@ -5,7 +5,6 @@ import com.damdamdeo.pulse.extension.core.UserId;
 import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
 import com.damdamdeo.pulse.extension.core.connecteduser.RegistrationCheckerException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
@@ -59,7 +58,7 @@ class DefaultConnectedUserFacadeTest {
         @GET
         @Path("isRegistered")
         public String isRegistered() throws RegistrationCheckerException {
-            return defaultConnectedUserFacade.isRegistered().map(Identifiable::id).orElse(null);
+            return defaultConnectedUserFacade.isRegistered().map(AnyIdentifiable::id).orElse(null);
         }
 
         @POST

@@ -1,11 +1,7 @@
 package com.damdamdeo.pulse.extension.it.infra.query;
 
 import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProviderException;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.query.*;
 import com.damdamdeo.pulse.extension.core.query.permission.Everyone;
@@ -73,7 +69,7 @@ public class TodoProjectionQueryUseCase implements MultipleResultQueryUseCase<To
     public MultipleResult<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
         Objects.requireNonNull(input);
         try {
-            Optional<Identifiable> identifiable = connectionIdentifierRepository.find(connectionIdentifierProvider.provide());
+            Optional<AnyIdentifiable> identifiable = connectionIdentifierRepository.find(connectionIdentifierProvider.provide());
             Validate.validState(identifiable.isPresent());
             return todoProjectionProjectionFromEventStore.findAllBy(OwnedBy.from(identifiable.get()), input, MULTIPLE_RESULT_PROJECTION_QUERY);
         } catch (final ConnectionIdentifierProviderException | ConnectionIdentifierRepositoryException exception) {

@@ -1,9 +1,6 @@
 package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
 
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifier;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepositoryException;
-import com.damdamdeo.pulse.extension.core.connectionidentifier.DuplicateConnectionIdentifierException;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -67,7 +64,7 @@ public class JdbcPostgresConnectionIdentifierRepository implements ConnectionIde
     }
 
     @Override
-    public Optional<Identifiable> find(final ConnectionIdentifier connectionIdentifier) throws ConnectionIdentifierRepositoryException {
+    public Optional<AnyIdentifiable> find(final ConnectionIdentifier connectionIdentifier) throws ConnectionIdentifierRepositoryException {
         Objects.requireNonNull(connectionIdentifier);
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(SELECT_BY_CONNECTION_IDENTIFIER_SQL)) {

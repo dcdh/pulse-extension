@@ -1,4 +1,4 @@
-package com.damdamdeo.pulse.extension.common.runtime.connectionidentifier;
+package com.damdamdeo.pulse.extension.core.connectionidentifier;
 
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 
@@ -8,5 +8,9 @@ public record AnyIdentifiable(String id) implements Identifiable {
 
     public AnyIdentifiable {
         Objects.requireNonNull(id);
+    }
+
+    public static AnyIdentifiable from(final Identifiable identifiable) {
+        return new AnyIdentifiable(identifiable.id());
     }
 }
