@@ -131,6 +131,11 @@ class ExecutedByTest {
         void shouldBeAnEndUser() {
             assertThat(new ExecutedBy.EndUser(new Username("bob@mail.com")).isEndUser()).isTrue();
         }
+
+        @Test
+        void shouldNotBeAnonymous() {
+            assertThat(new ExecutedBy.EndUser(new Username("bob@mail.com")).isAnonymous()).isFalse();
+        }
     }
 
     @Nested
@@ -156,6 +161,11 @@ class ExecutedByTest {
         void shouldNotBeAnEndUser() {
             assertThat(new ExecutedBy.ServiceAccount("cron-job").isEndUser()).isFalse();
         }
+
+        @Test
+        void shouldNotBeAnonymous() {
+            assertThat(new ExecutedBy.ServiceAccount("cron-job").isAnonymous()).isFalse();
+        }
     }
 
     @Nested
@@ -172,6 +182,11 @@ class ExecutedByTest {
         @Test
         void shouldNotBeAnEndUser() {
             assertThat(ExecutedBy.Anonymous.INSTANCE.isEndUser()).isFalse();
+        }
+
+        @Test
+        void shouldBeAnonymous() {
+            assertThat(ExecutedBy.Anonymous.INSTANCE.isAnonymous()).isTrue();
         }
     }
 
@@ -190,6 +205,11 @@ class ExecutedByTest {
         void shouldNotBeAnEndUser() {
             assertThat(ExecutedBy.NotAvailable.INSTANCE.isEndUser()).isFalse();
         }
+
+        @Test
+        void shouldNotBeAnonymous() {
+            assertThat(ExecutedBy.NotAvailable.INSTANCE.isAnonymous()).isFalse();
+        }
     }
 
     @Nested
@@ -206,6 +226,11 @@ class ExecutedByTest {
         @Test
         void shouldNotBeAnEndUser() {
             assertThat(ExecutedBy.Banned.INSTANCE.isEndUser()).isFalse();
+        }
+
+        @Test
+        void shouldNotBeAnonymous() {
+            assertThat(ExecutedBy.Banned.INSTANCE.isAnonymous()).isFalse();
         }
     }
 }

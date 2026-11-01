@@ -22,6 +22,8 @@ public sealed interface ExecutedBy
 
     boolean isEndUser();
 
+    boolean isAnonymous();
+
     final class Anonymous implements ExecutedBy {
 
         public static final String DISCRIMINANT = "A";
@@ -55,6 +57,11 @@ public sealed interface ExecutedBy
         public boolean isEndUser() {
             return false;
         }
+
+        @Override
+        public boolean isAnonymous() {
+            return true;
+        }
     }
 
     record EndUser(Username username) implements ExecutedBy {
@@ -82,6 +89,11 @@ public sealed interface ExecutedBy
         @Override
         public boolean isEndUser() {
             return true;
+        }
+
+        @Override
+        public boolean isAnonymous() {
+            return false;
         }
     }
 
@@ -120,6 +132,11 @@ public sealed interface ExecutedBy
         public boolean isEndUser() {
             return false;
         }
+
+        @Override
+        public boolean isAnonymous() {
+            return false;
+        }
     }
 
     record Job(JobName jobName) implements ExecutedBy {
@@ -152,6 +169,11 @@ public sealed interface ExecutedBy
 
         @Override
         public boolean isEndUser() {
+            return false;
+        }
+
+        @Override
+        public boolean isAnonymous() {
             return false;
         }
     }
@@ -189,6 +211,11 @@ public sealed interface ExecutedBy
         public boolean isEndUser() {
             return false;
         }
+
+        @Override
+        public boolean isAnonymous() {
+            return false;
+        }
     }
 
     final class Banned implements ExecutedBy {
@@ -219,6 +246,11 @@ public sealed interface ExecutedBy
 
         @Override
         public boolean isEndUser() {
+            return false;
+        }
+
+        @Override
+        public boolean isAnonymous() {
             return false;
         }
     }

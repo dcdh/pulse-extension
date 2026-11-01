@@ -11,7 +11,10 @@ import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseExceptionCode;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Anonymous;
+import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
+import java.util.List;
 import java.util.Objects;
 
 public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C extends CreationalCommand<K>, A extends AggregateRoot<K>>
@@ -54,4 +57,9 @@ public abstract class AbstractRegistrationDomainUseCase<K extends AggregateId, C
     protected abstract K from(SequenceNumber sequenceNumber);
 
     protected abstract void onUserNameRegistered(Handled<A, K> handled, C registrationCommand) throws UseCaseException;
+
+    @Override
+    public final List<Permission<K, C>> permissions() {
+        return List.of(new Anonymous<>());
+    }
 }

@@ -25,4 +25,8 @@ public record PermissionExecutionContext(ExecutionContextProvider executionConte
     public ExecutedBy executedBy() {
         return executionContextProvider().provide().executedBy();
     }
+
+    public boolean isAnonymous() {
+        return executionContextProvider().provide().executedBy().isAnonymous();
+    }
 }

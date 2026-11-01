@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.command.Command;
 import java.util.Objects;
 
 public sealed interface CompositePermission<K extends AggregateId, C extends Command<K>> extends Permission<K, C>
-        permits AndPermission, AnyEndUser, Everyone, ExecutedByHasAtLeastOneRole, ExecutedBySpecificEndUsers, ExecutedBySpecificJob, ExecutedBySpecificServiceAccounts, InExecutedBy, OrPermission, SpecificDomain, VisibilityRoleRestricted {
+        permits AndPermission, AnyEndUser, Everyone, ExecutedByHasAtLeastOneRole, ExecutedBySpecificEndUsers, ExecutedBySpecificJob, ExecutedBySpecificServiceAccounts, InExecutedBy, OrPermission, SpecificDomain, VisibilityRoleRestricted, Anonymous {
 
     default CompositePermission<K, C> or(final Permission<K, C>... permissions) {
         Objects.requireNonNull(permissions);

@@ -9,10 +9,7 @@ import com.damdamdeo.pulse.extension.core.command.RegisterUser;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.ConnectionIdentifierRepository;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
-import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
-import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 
-import java.util.List;
 import java.util.Objects;
 
 public class UserRegistrationDomainUseCase extends AbstractRegistrationDomainUseCase<UserId, RegisterUser, User> {
@@ -32,10 +29,5 @@ public class UserRegistrationDomainUseCase extends AbstractRegistrationDomainUse
     protected void onUserNameRegistered(final Handled<User, UserId> handled, final RegisterUser registrationCommand) throws UseCaseException {
         Objects.requireNonNull(handled);
         Objects.requireNonNull(registrationCommand);
-    }
-
-    @Override
-    public List<Permission<UserId, RegisterUser>> permissions() {
-        return List.of(new Everyone<>());
     }
 }
