@@ -1,0 +1,21 @@
+= HowTo
+
+== Hierarchy
+
+* domain
+** command
+** event
+** query
+*** listener
+*** usecase
+** spec
+** usecase
+
+=== Command
+
+CreateTodo
+
+== Event
+
+NewTodoCreated
+
