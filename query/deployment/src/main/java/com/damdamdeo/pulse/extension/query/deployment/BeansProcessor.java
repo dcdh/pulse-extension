@@ -1,7 +1,9 @@
 package com.damdamdeo.pulse.extension.query.deployment;
 
 import com.damdamdeo.pulse.extension.core.query.GenericQuery;
-import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.MultipleResultQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.PaginatedResultQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.SingleResultQueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.file.DefaultUploadedAtProvider;
 import com.damdamdeo.pulse.extension.core.query.file.FileSizeLimitedCopier;
 import com.damdamdeo.pulse.extension.core.query.file.query.DownloadQuery;
@@ -24,6 +26,7 @@ import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class BeansProcessor {
 
@@ -190,14 +193,15 @@ public class BeansProcessor {
 
     @BuildStep
     List<AdditionalBeanBuildItem> registerQueryUseCase(final CombinedIndexBuildItem combinedIndexBuildItem) {
-        return combinedIndexBuildItem.getIndex().getAllKnownImplementations(QueryUseCase.class)
-                .stream()
-                .filter(queryUseCase -> !queryUseCase.hasAnnotation(DotNames.DECORATOR))
-                .map(scheduledJob -> AdditionalBeanBuildItem.builder()
-                        .addBeanClass(scheduledJob.name().toString())
-                        .setDefaultScope(DotNames.SINGLETON)
-                        .setUnremovable()
-                        .build())
+        return Stream.of(SingleResultQueryUseCase.class, MultipleResultQueryUseCase.class, PaginatedResultQueryUseCase.class)
+                .flatMap(clazz -> combinedIndexBuildItem.getIndex().getAllKnownImplementations(clazz)
+                        .stream()
+                        .filter(queryUseCase -> !queryUseCase.hasAnnotation(DotNames.DECORATOR))
+                        .map(scheduledJob -> AdditionalBeanBuildItem.builder()
+                                .addBeanClass(scheduledJob.name().toString())
+                                .setDefaultScope(DotNames.SINGLETON)
+                                .setUnremovable()
+                                .build()))
                 .toList();
     }
 }

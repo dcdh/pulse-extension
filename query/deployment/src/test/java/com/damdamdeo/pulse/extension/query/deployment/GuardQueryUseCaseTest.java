@@ -36,7 +36,7 @@ class GuardQueryUseCaseTest {
     @Inject
     StubQueryUseCaseCaller stubQueryUseCaseCaller;
 
-    static class NoAudienceQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
+    static class NoAudienceQueryUseCase implements MultipleResultQueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
         @Override
         public MultipleResult<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {
@@ -67,12 +67,12 @@ class GuardQueryUseCaseTest {
     @Unremovable
     @Priority(2)
     @Decorator
-    static class StubQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
+    static class StubQueryUseCase implements MultipleResultQueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
         @Inject
         @Any
         @Delegate
-        QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> delegate;
+        MultipleResultQueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> delegate;
 
         @Inject
         StubQueryUseCaseCaller stubQueryUseCaseCaller;

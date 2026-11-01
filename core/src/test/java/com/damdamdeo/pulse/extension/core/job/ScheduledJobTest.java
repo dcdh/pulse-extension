@@ -42,7 +42,7 @@ class ScheduledJobTest {
     private ExecutionContextOverloader executionContextOverloader;
 
     @Mock
-    private QueryUseCase<TestId, TestInput, TestProjection, MultiplePageableResult<TestId, TestProjection>> queryUseCase;
+    private PaginatedResultQueryUseCase<TestId, TestInput, TestProjection, MultiplePageableResult<TestId, TestProjection>> queryUseCase;
 
     @Mock
     private DomainUseCase<TestId, TestCommand, TestAggregate> domainUseCase;
@@ -282,7 +282,7 @@ class ScheduledJobTest {
         public TestScheduledJob(
                 final JobUnblockingLockManager jobUnblockingLockManager,
                 final ExecutionContextOverloader executionContextOverloader,
-                final QueryUseCase<TestId, TestInput, TestProjection,
+                final PaginatedResultQueryUseCase<TestId, TestInput, TestProjection,
                         MultiplePageableResult<TestId, TestProjection>> queryUseCase,
                 final DomainUseCase<TestId, TestCommand, TestAggregate> domainUseCase,
                 final ResultProcessor resultProcessor) {

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class TodoProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
+public class TodoProjectionQueryUseCase implements MultipleResultQueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
     @Inject
     ProjectionFromEventStore<TodoId, TodoProjection> todoProjectionProjectionFromEventStore;

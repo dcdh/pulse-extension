@@ -7,6 +7,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
+import com.damdamdeo.pulse.extension.core.query.guard.SingleResultGuardQueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.permission.Everyone;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.core.query.permission.VisibilityRoleRestricted;
@@ -46,16 +47,16 @@ class GuardQueryUseCaseTest {
     ExecutedByResolver executedByResolver;
 
     @Mock
-    QueryUseCase<TodoId, Input, Projection<TodoId>, SingleResult<TodoId, Projection<TodoId>>> decorated;
+    SingleResultQueryUseCase<TodoId, Input, Projection<TodoId>, SingleResult<TodoId, Projection<TodoId>>> decorated;
 
     @Mock
     TraceAppender traceAppender;
 
-    private GuardQueryUseCase<TodoId, Input, Projection<TodoId>, SingleResult<TodoId, Projection<TodoId>>> guardQuery;
+    private SingleResultGuardQueryUseCase<TodoId, Input, Projection<TodoId>, SingleResult<TodoId, Projection<TodoId>>> guardQuery;
 
     @BeforeEach
     void setUp() {
-        guardQuery = new GuardQueryUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
+        guardQuery = new SingleResultGuardQueryUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, decorated, traceAppender) {
         };
     }

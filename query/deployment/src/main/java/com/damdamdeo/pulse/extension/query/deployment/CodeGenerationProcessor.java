@@ -3,9 +3,13 @@ package com.damdamdeo.pulse.extension.query.deployment;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
-import com.damdamdeo.pulse.extension.core.query.GuardQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.MultipleResultQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.PaginatedResultQueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.Projection;
-import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.SingleResultQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.guard.MultipleResultGuardQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.guard.PaginatedResultGuardQueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.guard.SingleResultGuardQueryUseCase;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.query.runtime.JdbcProjectionFromEventStore;
 import io.quarkus.arc.DefaultBean;
@@ -29,6 +33,8 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.ParameterizedType;
 
 import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Objects;
 
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 
@@ -85,17 +91,38 @@ public class CodeGenerationProcessor {
                 });
     }
 
+    record TargetClassByGuard(Class<?> targetClass, Class<?> guardQueryClass) {
+
+        TargetClassByGuard {
+            Objects.requireNonNull(targetClass);
+            Objects.requireNonNull(guardQueryClass);
+        }
+    }
+
     @BuildStep
     void generateGuardQuery(final CombinedIndexBuildItem combinedIndexBuildItem,
                             final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
                             final OutputTargetBuildItem outputTargetBuildItem) {
+        List.of(new TargetClassByGuard(SingleResultQueryUseCase.class, SingleResultGuardQueryUseCase.class),
+                        new TargetClassByGuard(MultipleResultQueryUseCase.class, MultipleResultGuardQueryUseCase.class),
+                        new TargetClassByGuard(PaginatedResultQueryUseCase.class, PaginatedResultGuardQueryUseCase.class))
+                .forEach(targetClassByGuard -> generateGuardQuery(
+                        targetClassByGuard.targetClass, targetClassByGuard.guardQueryClass,
+                        combinedIndexBuildItem, generatedBeanBuildItemBuildProducer, outputTargetBuildItem));
+    }
+
+    private void generateGuardQuery(final Class<?> targetClass,
+                                    final Class<?> guardQueryClass,
+                                    final CombinedIndexBuildItem combinedIndexBuildItem,
+                                    final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
+                                    final OutputTargetBuildItem outputTargetBuildItem) {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementations(QueryUseCase.class)
+                .getAllKnownImplementations(targetClass)
                 .forEach(queryClassInfo -> {
                     try {
                         final org.jboss.jandex.Type queryInterface = queryClassInfo.interfaceTypes().stream()
-                                .filter(t -> t.name().equals(DotName.createSimple(QueryUseCase.class)))
+                                .filter(t -> t.name().equals(DotName.createSimple(targetClass)))
                                 .findFirst()
                                 .orElseThrow();
                         final ParameterizedType parameterizedType = queryInterface.asParameterizedType();
@@ -117,7 +144,7 @@ public class CodeGenerationProcessor {
                                 .signature(SignatureBuilder.forClass()
                                         .setSuperClass(
                                                 Type.parameterizedType(
-                                                        Type.classType(GuardQueryUseCase.class),
+                                                        Type.classType(guardQueryClass),
                                                         Type.classType(aggregateIdClass),
                                                         Type.classType(inputClass),
                                                         Type.classType(projectionClass),
@@ -137,14 +164,14 @@ public class CodeGenerationProcessor {
 
                             try (final MethodCreator constructor = beanClassCreator.getMethodCreator("<init>", void.class,
                                     ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class, ExecutedByResolver.class,
-                                    QueryUseCase.class, TraceAppender.class)) {
+                                    targetClass, TraceAppender.class)) {
                                 constructor
                                         .setSignature(SignatureBuilder.forMethod()
                                                 .addParameterType(Type.classType(ExecutionContextProvider.class))
                                                 .addParameterType(Type.classType(BackendUserVisibilityRolesProvider.class))
                                                 .addParameterType(Type.classType(ExecutedByResolver.class))
                                                 .addParameterType(Type.parameterizedType(
-                                                        Type.classType(QueryUseCase.class),
+                                                        Type.classType(targetClass),
                                                         Type.classType(aggregateIdClass),
                                                         Type.classType(inputClass),
                                                         Type.classType(projectionClass),
@@ -157,9 +184,9 @@ public class CodeGenerationProcessor {
                                 constructor.getParameterAnnotations(3).addAnnotation(Delegate.class);
                                 constructor.setModifiers(Modifier.PUBLIC);
                                 constructor.invokeSpecialMethod(
-                                        MethodDescriptor.ofConstructor(GuardQueryUseCase.class,
+                                        MethodDescriptor.ofConstructor(guardQueryClass,
                                                 ExecutionContextProvider.class, BackendUserVisibilityRolesProvider.class,
-                                                ExecutedByResolver.class, QueryUseCase.class, TraceAppender.class),
+                                                ExecutedByResolver.class, targetClass, TraceAppender.class),
                                         constructor.getThis(),
                                         constructor.getMethodParam(0),
                                         constructor.getMethodParam(1),

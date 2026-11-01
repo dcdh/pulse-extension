@@ -2,15 +2,15 @@ package com.damdamdeo.pulse.extension.it.infra.query;
 
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.query.MultipleResult;
+import com.damdamdeo.pulse.extension.core.query.MultipleResultQueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
-import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 
 import java.util.List;
 
-public class FailingProjectionQueryUseCase implements QueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
+public class FailingProjectionQueryUseCase implements MultipleResultQueryUseCase<TodoId, ListTodos, TodoProjection, MultipleResult<TodoId, TodoProjection>> {
 
     @Override
     public MultipleResult<TodoId, TodoProjection> execute(final ListTodos input) throws QueryException {

@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.query.deployment.file;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
+import com.damdamdeo.pulse.extension.core.query.ListDoneTodosQueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.file.*;
 import com.damdamdeo.pulse.extension.query.runtime.file.CachedFileRepository;
 import com.damdamdeo.pulse.extension.query.runtime.file.JdbcPostgresFileRepository;
@@ -30,12 +31,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JdbcPostgresFileRepositoryTest {
-
+    // TODO split file into another file-query module
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot((jar) -> jar.addClasses(TestResourceProvider.class, Resource.class)
                     .addAsResource("facture.jpg"))
-            .overrideConfigKey("quarkus.arc.exclude-types", CachedFileRepository.class.getName())
+            .overrideConfigKey("quarkus.arc.exclude-types", CachedFileRepository.class.getName() + "," + ListDoneTodosQueryUseCase.class.getName())
             .withConfigurationResource("application.properties");
 
     @Inject

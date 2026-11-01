@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import java.util.List;
 import java.util.Objects;
 
-public class ListDoneTodosQueryUseCase implements QueryUseCase<TodoId, ListDoneTodos, TodoProjection, MultiplePageableResult<TodoId, TodoProjection>> {
+public class ListDoneTodosQueryUseCase implements PaginatedResultQueryUseCase<TodoId, ListDoneTodos, TodoProjection, MultiplePageableResult<TodoId, TodoProjection>> {
 
     private final TodoRepository todoRepository;
 

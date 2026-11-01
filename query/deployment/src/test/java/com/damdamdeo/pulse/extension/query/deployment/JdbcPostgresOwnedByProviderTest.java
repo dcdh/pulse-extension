@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.query.ListDoneTodosQueryUseCase;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.CachedOwnedByProvider;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.JdbcPostgresOwnedByProvider;
 import com.damdamdeo.pulse.extension.query.runtime.ownedby.UnableToProvideOwnedByException;
@@ -42,7 +43,7 @@ class JdbcPostgresOwnedByProviderTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(StubPassphraseProvider.class,
                     EventTestRepository.class))
-            .overrideConfigKey("quarkus.arc.exclude-types", CachedOwnedByProvider.class.getName())
+            .overrideConfigKey("quarkus.arc.exclude-types", CachedOwnedByProvider.class.getName() + "," + ListDoneTodosQueryUseCase.class.getName())
             .withConfigurationResource("application.properties");
 
     @Inject

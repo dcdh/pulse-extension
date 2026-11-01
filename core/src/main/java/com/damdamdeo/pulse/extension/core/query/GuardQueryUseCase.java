@@ -3,15 +3,15 @@ package com.damdamdeo.pulse.extension.core.query;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
-import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import com.damdamdeo.pulse.extension.core.permission.BackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
+import com.damdamdeo.pulse.extension.core.query.guard.QueryCallable;
 import com.damdamdeo.pulse.extension.core.query.permission.Permission;
 import com.damdamdeo.pulse.extension.core.traceability.ExecutionStatus;
-import com.damdamdeo.pulse.extension.core.traceability.TraceabilityDetails;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppenderException;
+import com.damdamdeo.pulse.extension.core.traceability.TraceabilityDetails;
 
 import java.util.List;
 import java.util.Objects;
@@ -38,36 +38,7 @@ public abstract class GuardQueryUseCase<A extends AggregateId, I extends Input, 
         this.traceAppender = Objects.requireNonNull(traceAppender);
     }
 
-    @Override
-    public final R execute(final I input) throws QueryException {
-        Objects.requireNonNull(input);
-        return internalExecution(new QueryCallable<R>() {
-            @Override
-            public R execute() throws QueryException {
-                return decorated.execute(input);
-            }
-        }, input);
-    }
-
-    @Override
-    public final R execute(final I input, final Pagination pagination) throws QueryException {
-        Objects.requireNonNull(input);
-        Objects.requireNonNull(pagination);
-        return internalExecution(new QueryCallable<R>() {
-            @Override
-            public R execute() throws QueryException {
-                return decorated.execute(input, pagination);
-            }
-        }, input);
-    }
-
-    @FunctionalInterface
-    public interface QueryCallable<T> {
-
-        T execute() throws QueryException;
-    }
-
-    private R internalExecution(final QueryCallable<R> queryCallable, final Input input) throws QueryException {
+    protected final R internalExecution(final QueryCallable<R> queryCallable, final Input input) throws QueryException {
         Objects.requireNonNull(queryCallable);
         Objects.requireNonNull(input);
         final List<Permission<A>> permissions = decorated.permissions();

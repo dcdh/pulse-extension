@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.command.ArchiveTodo;
 import com.damdamdeo.pulse.extension.core.job.*;
 import com.damdamdeo.pulse.extension.core.query.ListDoneTodos;
 import com.damdamdeo.pulse.extension.core.query.MultiplePageableResult;
-import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.PaginatedResultQueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.TodoProjection;
 import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class ArchiveTodoSimpleScheduledJob extends SimpleScheduledJob<TodoId, Li
     protected ArchiveTodoSimpleScheduledJob(
             final JobUnblockingLockManager jobUnblockingLockManager,
             final ExecutionContextOverloader executionContextOverloader,
-            final QueryUseCase<TodoId, ListDoneTodos, TodoProjection, MultiplePageableResult<TodoId, TodoProjection>> queryUseCase,
+            final PaginatedResultQueryUseCase<TodoId, ListDoneTodos, TodoProjection, MultiplePageableResult<TodoId, TodoProjection>> queryUseCase,
             final DomainUseCase<TodoId, ArchiveTodo, Todo> domainUseCase) {
         super(jobUnblockingLockManager, executionContextOverloader, queryUseCase, domainUseCase);
     }

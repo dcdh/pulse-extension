@@ -3,10 +3,7 @@ package com.damdamdeo.pulse.extension.job.runtime.batch;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.job.SimpleScheduledJob;
 import com.damdamdeo.pulse.extension.core.pagination.Pagination;
-import com.damdamdeo.pulse.extension.core.query.Input;
-import com.damdamdeo.pulse.extension.core.query.MultiplePageableResult;
-import com.damdamdeo.pulse.extension.core.query.Projection;
-import com.damdamdeo.pulse.extension.core.query.QueryUseCase;
+import com.damdamdeo.pulse.extension.core.query.*;
 import jakarta.batch.api.chunk.AbstractItemReader;
 import jakarta.batch.api.chunk.ItemReader;
 import jakarta.batch.runtime.context.JobContext;
@@ -32,10 +29,10 @@ public abstract class QueryUseCaseReader<A extends AggregateId, I extends Input,
     private Queue<P> toProcess;
     private I input;
 
-    private final QueryUseCase<A, I, P, R> queryUseCase;
+    private final PaginatedResultQueryUseCase<A, I, P, R> queryUseCase;
     private final JobContext jobContext;
 
-    protected QueryUseCaseReader(final QueryUseCase<A, I, P, R> queryUseCase, final JobContext jobContext) {
+    protected QueryUseCaseReader(final PaginatedResultQueryUseCase<A, I, P, R> queryUseCase, final JobContext jobContext) {
         this.queryUseCase = Objects.requireNonNull(queryUseCase);
         this.jobContext = Objects.requireNonNull(jobContext);
     }

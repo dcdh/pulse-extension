@@ -18,12 +18,12 @@ public abstract class SimpleScheduledJob<A extends AggregateId, I extends Input,
 
     private final JobUnblockingLockManager jobUnblockingLockManager;
     private final ExecutionContextOverloader executionContextOverloader;
-    private final QueryUseCase<A, I, P, R> queryUseCase;
+    private final PaginatedResultQueryUseCase<A, I, P, R> queryUseCase;
     private final DomainUseCase<A, C, AR> domainUseCase;
 
     protected SimpleScheduledJob(final JobUnblockingLockManager jobUnblockingLockManager,
                                  final ExecutionContextOverloader executionContextOverloader,
-                                 final QueryUseCase<A, I, P, R> queryUseCase,
+                                 final PaginatedResultQueryUseCase<A, I, P, R> queryUseCase,
                                  final DomainUseCase<A, C, AR> domainUseCase) {
         this.jobUnblockingLockManager = Objects.requireNonNull(jobUnblockingLockManager);
         this.executionContextOverloader = Objects.requireNonNull(executionContextOverloader);
