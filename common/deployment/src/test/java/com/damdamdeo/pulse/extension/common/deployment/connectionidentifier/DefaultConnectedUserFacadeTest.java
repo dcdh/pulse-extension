@@ -2,9 +2,11 @@ package com.damdamdeo.pulse.extension.common.deployment.connectionidentifier;
 
 import com.damdamdeo.pulse.extension.common.deployment.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.core.UserId;
+import com.damdamdeo.pulse.extension.core.connecteduser.ConnectedUserException;
 import com.damdamdeo.pulse.extension.core.connecteduser.DefaultConnectedUserFacade;
 import com.damdamdeo.pulse.extension.core.connecteduser.RegistrationCheckerException;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import io.quarkus.builder.Version;
 import io.quarkus.maven.dependency.Dependency;
@@ -15,6 +17,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -25,6 +28,7 @@ import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DefaultConnectedUserFacadeTest {
@@ -55,6 +59,9 @@ class DefaultConnectedUserFacadeTest {
         @Inject
         DefaultConnectedUserFacade defaultConnectedUserFacade;
 
+        @Inject
+        ExecutionContextProvider executionContextProvider;
+
         @GET
         @Path("isRegistered")
         public String isRegistered() throws RegistrationCheckerException {
@@ -68,6 +75,19 @@ class DefaultConnectedUserFacadeTest {
                 DuplicateConnectionIdentifierException {
             final ConnectionIdentifier connectionIdentifier = connectionIdentifierProvider.provide();
             connectionIdentifierRepository.store(connectionIdentifier, UserId.USER_1);
+        }
+
+        @GET
+        @Path("findByExecutedBy")
+        public Response findByExecutedBy() throws ConnectedUserException {
+            final String identifiable = defaultConnectedUserFacade.findByExecutedBy(executionContextProvider.provide().executedBy())
+                    .map(AnyIdentifiable::id)
+                    .orElse(null);
+            if (identifiable == null) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            } else {
+                return Response.ok(identifiable).build();
+            }
         }
     }
 
@@ -102,6 +122,14 @@ class DefaultConnectedUserFacadeTest {
                 .get("/registration/isRegistered")
                 .then().log().all()
                 .statusCode(204);
+
+        given()
+                .header("Authorization", "Bearer %s".formatted(accessToken))
+                .when()
+                .log().all()
+                .get("/registration/findByExecutedBy")
+                .then().log().all()
+                .statusCode(404);
     }
 
     @Test
@@ -145,5 +173,14 @@ class DefaultConnectedUserFacadeTest {
                 .then().log().all()
                 .statusCode(200)
                 .body(equalTo("U000001"));
+
+        given()
+                .header("Authorization", "Bearer %s".formatted(accessToken))
+                .when()
+                .log().all()
+                .get("/registration/findByExecutedBy")
+                .then().log().all()
+                .statusCode(200)
+                .body(is("U000001"));
     }
 }

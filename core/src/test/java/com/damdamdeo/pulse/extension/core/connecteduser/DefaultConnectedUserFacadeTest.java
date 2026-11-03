@@ -1,6 +1,9 @@
 package com.damdamdeo.pulse.extension.core.connecteduser;
 
 import com.damdamdeo.pulse.extension.core.connectionidentifier.*;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.hashing.Hash;
+import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +25,9 @@ class DefaultConnectedUserFacadeTest {
 
     @Mock
     ConnectionIdentifierRepository connectionIdentifierRepository;
+
+    @Mock
+    Hasher hasher;
 
     @InjectMocks
     DefaultConnectedUserFacade facade;
@@ -146,14 +152,14 @@ class DefaultConnectedUserFacadeTest {
         }
 
         @Test
-        void shouldThrowTechnicalExceptionWhenConnectionIdentifierProviderFails() throws Exception {
+        void shouldThrowConnectedUserExceptionWhenConnectionIdentifierProviderFails() throws Exception {
             // Given
             final ConnectionIdentifierProviderException cause = new ConnectionIdentifierProviderException(new RuntimeException());
             when(connectionIdentifierProvider.provide()).thenThrow(cause);
 
             // When
-            final RegistrationCheckerException exception = assertThrows(
-                    RegistrationCheckerException.class, () -> facade.getConnectedUser());
+            final ConnectedUserException exception = assertThrows(
+                    ConnectedUserException.class, () -> facade.getConnectedUser());
 
             // Then
             assertAll(
@@ -164,7 +170,7 @@ class DefaultConnectedUserFacadeTest {
         }
 
         @Test
-        void shouldThrowTechnicalExceptionWhenConnectionIdentifierRepositoryFails() throws Exception {
+        void shouldThrowConnectedUserExceptionWhenConnectionIdentifierRepositoryFails() throws Exception {
             // Given
             final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("0000000000000000000000000000000000000000000000000000000000000000");
             final ConnectionIdentifierRepositoryException cause = new ConnectionIdentifierRepositoryException("msg", new RuntimeException());
@@ -172,14 +178,80 @@ class DefaultConnectedUserFacadeTest {
             when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenThrow(cause);
 
             // When
-            final RegistrationCheckerException exception = assertThrows(
-                    RegistrationCheckerException.class, () -> facade.getConnectedUser());
+            final ConnectedUserException exception = assertThrows(
+                    ConnectedUserException.class, () -> facade.getConnectedUser());
 
             // Then
             assertAll(
                     () -> assertSame(cause, exception.getCause()),
                     () -> verify(connectionIdentifierProvider).provide(),
                     () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier)
+            );
+        }
+    }
+
+    @Nested
+    class FindByExecutedBy {
+
+        @Test
+        void shouldFindConnectedUserWhenExecutedByIsEndUser() throws Exception {
+            // Given
+            final Username givenUsername = new Username("alice@example.com");
+            final ExecutedBy givenExecutedBy = new ExecutedBy.EndUser(givenUsername);
+            final ConnectedUser connectedUser = new ConnectedUser(givenUsername);
+            final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("abcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd");
+            final AnyIdentifiable givenIdentifiable = mock(AnyIdentifiable.class);
+            when(hasher.hash(connectedUser)).thenReturn(new Hash<>(givenConnectionIdentifier.id()));
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenReturn(Optional.of(givenIdentifiable));
+
+            // When
+            final Optional<AnyIdentifiable> result = facade.findByExecutedBy(givenExecutedBy);
+
+            // Then
+            assertAll(
+                    () -> assertEquals(Optional.of(givenIdentifiable), result),
+                    () -> verify(hasher).hash(connectedUser),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier),
+                    () -> verifyNoInteractions(connectionIdentifierProvider)
+            );
+        }
+
+        @Test
+        void shouldReturnEmptyWhenExecutedByIsNotEndUser() throws Exception {
+            // Given
+            final ExecutedBy givenExecutedBy = new ExecutedBy.ServiceAccount("batch");
+
+            // When
+            final Optional<AnyIdentifiable> result = facade.findByExecutedBy(givenExecutedBy);
+
+            // Then
+            assertAll(
+                    () -> assertEquals(Optional.empty(), result),
+                    () -> verifyNoInteractions(hasher, connectionIdentifierRepository, connectionIdentifierProvider)
+            );
+        }
+
+        @Test
+        void shouldThrowConnectedUserExceptionWhenRepositoryFails() throws Exception {
+            // Given
+            final Username givenUsername = new Username("alice@example.com");
+            final ExecutedBy givenExecutedBy = new ExecutedBy.EndUser(givenUsername);
+            final ConnectedUser connectedUser = new ConnectedUser(givenUsername);
+            final ConnectionIdentifier givenConnectionIdentifier = ConnectionIdentifier.from("abcdef123456abcdef123456abcdef123456abcdef123456abcdef123456abcd");
+            final ConnectionIdentifierRepositoryException cause = new ConnectionIdentifierRepositoryException("msg", new RuntimeException());
+            when(hasher.hash(connectedUser)).thenReturn(new Hash<>(givenConnectionIdentifier.id()));
+            when(connectionIdentifierRepository.find(givenConnectionIdentifier)).thenThrow(cause);
+
+            // When
+            final ConnectedUserException exception = assertThrows(
+                    ConnectedUserException.class, () -> facade.findByExecutedBy(givenExecutedBy));
+
+            // Then
+            assertAll(
+                    () -> assertSame(cause, exception.getCause()),
+                    () -> verify(hasher).hash(connectedUser),
+                    () -> verify(connectionIdentifierRepository).find(givenConnectionIdentifier),
+                    () -> verifyNoInteractions(connectionIdentifierProvider)
             );
         }
     }

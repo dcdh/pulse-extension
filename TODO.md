@@ -1,7 +1,8 @@
 = TODO
 
 == Must have
-2. Quarkus batchlet with reader as a projection reader and writer as a domain use case - Add a simple test - create a specific extension
+1. UseCase prendre en greneric un UseCaseInput et faire le mapping vers la Command via une methode onBefore (la renommer)
+3. Quarkus batchlet with reader as a projection reader and writer as a domain use case - Add a simple test - create a specific extension
    https://docs.quarkiverse.io/quarkus-jberet/dev/chunk-processing.html
 1. rewrite the integration test to reflect the reality, same package than facturation, remove creational part, need two command, creational and mark as done, do the query, use DTO whit domain object and openapi, dot the tests
 create and adoc documentation with tests
