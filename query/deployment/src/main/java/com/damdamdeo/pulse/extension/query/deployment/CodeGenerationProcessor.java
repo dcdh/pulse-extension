@@ -11,7 +11,6 @@ import com.damdamdeo.pulse.extension.core.query.guard.MultipleResultGuardQueryUs
 import com.damdamdeo.pulse.extension.core.query.guard.PaginatedResultGuardQueryUseCase;
 import com.damdamdeo.pulse.extension.core.query.guard.SingleResultGuardQueryUseCase;
 import com.damdamdeo.pulse.extension.core.traceability.TraceAppender;
-import com.damdamdeo.pulse.extension.query.runtime.JdbcProjectionFromEventStore;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
@@ -25,8 +24,6 @@ import jakarta.annotation.Priority;
 import jakarta.decorator.Decorator;
 import jakarta.decorator.Delegate;
 import jakarta.enterprise.inject.Any;
-import jakarta.inject.Singleton;
-import jakarta.transaction.Transactional;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
@@ -39,57 +36,6 @@ import java.util.Objects;
 import static com.damdamdeo.pulse.extension.common.deployment.CodeGenerationWriter.writeGeneratedClass;
 
 public class CodeGenerationProcessor {
-
-    @BuildStep
-    void generateJdbcProjectionFromEventStore(final CombinedIndexBuildItem combinedIndexBuildItem,
-                                              final BuildProducer<GeneratedBeanBuildItem> generatedBeanBuildItemBuildProducer,
-                                              final OutputTargetBuildItem outputTargetBuildItem) {
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        combinedIndexBuildItem.getIndex()
-                .getAllKnownImplementations(Projection.class)
-                .forEach(projectionClassInfo -> {
-                    try {
-                        final org.jboss.jandex.Type projectionInterface = projectionClassInfo.interfaceTypes().stream()
-                                .filter(t -> t.name().equals(DotName.createSimple(Projection.class)))
-                                .findFirst()
-                                .orElseThrow();
-                        final ParameterizedType parameterizedType = projectionInterface.asParameterizedType();
-                        final Class<?> aggregateIdClass = classLoader.loadClass(
-                                parameterizedType.arguments().getFirst().name().toString());
-                        final Class<?> projectionClass = classLoader.loadClass(projectionClassInfo.name().toString());
-                        try (final ClassCreator beanClassCreator = ClassCreator.builder()
-                                .classOutput(new GeneratedBeanGizmoAdaptor(generatedBeanBuildItemBuildProducer))
-                                .className(projectionClass.getName().replaceAll("\\$", "_") + "JdbcProjectionFromEventStoreGenerated")
-                                .signature(SignatureBuilder.forClass()
-                                        .setSuperClass(
-                                                Type.parameterizedType(
-                                                        Type.classType(JdbcProjectionFromEventStore.class),
-                                                        Type.classType(aggregateIdClass),
-                                                        Type.classType(projectionClass))))
-                                .setFinal(false) // must be false when using @Transactional
-                                .build()) {
-                            beanClassCreator.addAnnotation(Transactional.class);
-                            beanClassCreator.addAnnotation(Singleton.class);
-                            beanClassCreator.addAnnotation(Unremovable.class);
-                            beanClassCreator.addAnnotation(DefaultBean.class);
-
-                            try (final MethodCreator getAggregateIdClass = beanClassCreator.getMethodCreator("getAggregateIdClass", Class.class)) {
-                                getAggregateIdClass.setModifiers(Modifier.PROTECTED);
-                                getAggregateIdClass.returnValue(getAggregateIdClass.loadClass(aggregateIdClass));
-                            }
-
-                            try (final MethodCreator getProjectionClass = beanClassCreator.getMethodCreator("getProjectionClass", Class.class)) {
-                                getProjectionClass.setModifiers(Modifier.PROTECTED);
-                                getProjectionClass.returnValue(getProjectionClass.loadClass(projectionClass));
-                            }
-
-                            writeGeneratedClass(beanClassCreator, outputTargetBuildItem);
-                        }
-                    } catch (final ClassNotFoundException exception) {
-                        throw new RuntimeException(exception);
-                    }
-                });
-    }
 
     record TargetClassByGuard(Class<?> targetClass, Class<?> guardQueryClass) {
 
