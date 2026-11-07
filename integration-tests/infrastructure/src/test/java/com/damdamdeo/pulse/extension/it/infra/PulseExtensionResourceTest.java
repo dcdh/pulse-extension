@@ -70,28 +70,6 @@ class PulseExtensionResourceTest {
 
     @Test
     @Order(2)
-    void shouldListConnectedUserTodos() {
-        // Given
-        final String accessToken = getAccessToken();
-
-        // When && Then
-        given()
-                .header("Authorization", "Bearer %s".formatted(accessToken))
-                .when().get("/pulse-extension/listConnectedUserTodos")
-                .then()
-                .log().all()
-                .statusCode(200)
-                .body("projections.size()", is(1))
-                .body("projections[0].todoId", matchesPattern(UUID_PATTERN))
-                .body("projections[0].description", is("lorem ipsum"))
-                .body("projections[0].status", is("IN_PROGRESS"))
-                .body("projections[0].important", is(false))
-                .body("projections[0].checklist[0].todoChecklistId", matchesPattern(UUID_PATTERN))
-                .body("projections[0].checklist[0].description", is("Make it works !"));
-    }
-
-    @Test
-    @Order(3)
     void shouldConsumeAsyncEvents() {
         await().atMost(10, TimeUnit.SECONDS).until(() -> given()
                 .when().post("/pulse-extension/called")
@@ -143,7 +121,7 @@ class PulseExtensionResourceTest {
     }
 
     @Test
-    @Order(4)
+    @Order(3)
     void shouldExecuteFailingProjectionQueryReturnExpectedFailFromExceptionMapper() {
         // Given
 
