@@ -30,8 +30,6 @@ import com.damdamdeo.pulse.extension.it.domain.ListTodos;
 import com.damdamdeo.pulse.extension.it.infra.async.Call;
 import com.damdamdeo.pulse.extension.it.infra.async.StatisticsEventHandler;
 import com.damdamdeo.pulse.extension.it.infra.query.FailingProjectionQueryUseCase;
-import com.damdamdeo.pulse.extension.it.infra.query.TodoProjectionQueryUseCase;
-import io.quarkus.security.Authenticated;
 import io.quarkus.vault.VaultKVSecretEngine;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Any;
@@ -67,9 +65,6 @@ public class PulseExtensionResource {
     Instance<StatisticsEventHandler> statisticsEventHandlerInstance;
 
     @Inject
-    TodoProjectionQueryUseCase todoProjectionQuery;
-
-    @Inject
     FailingProjectionQueryUseCase failingProjectionQuery;
 
     @Inject
@@ -98,7 +93,7 @@ public class PulseExtensionResource {
     @POST
     @Path("/creationalWorkflow")
     @Transactional
-    @Authenticated
+//    @Authenticated
     public Response creationalWorkflow() throws SQLException {
         try {
             creationalWorkflow.execute(new InitialiserCommand());
@@ -223,13 +218,6 @@ public class PulseExtensionResource {
     @ServerExceptionMapper
     public RestResponse<String> mapException(final ConnectionIdentifierRepositoryException exception) {
         return RestResponse.status(RestResponse.Status.INTERNAL_SERVER_ERROR, exception.getMessage());
-    }
-
-    @GET
-    @Path("/listConnectedUserTodos")
-    @Authenticated
-    public MultipleResult<TodoId, TodoProjection> listConnectedUserTodos() throws QueryException {
-        return todoProjectionQuery.execute(new ListTodos());
     }
 
     @GET
