@@ -1,13 +1,13 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
 
 import java.util.Objects;
 
-public final class Everyone<K extends AggregateId> implements CompositePermission<K> {
+public final class Everyone<K extends Identifiable> implements CompositePermission<K> {
 
     @Override
     public boolean allow(final ProjectionId<K> projectionId, final PermissionExecutionContext permissionExecutionContext)

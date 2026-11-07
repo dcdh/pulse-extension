@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class AndPermission<K extends AggregateId> implements CompositePermission<K> {
+public final class AndPermission<K extends Identifiable> implements CompositePermission<K> {
 
     private final List<Permission<K>> Permissions;
 

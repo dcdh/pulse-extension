@@ -1,11 +1,11 @@
 package com.damdamdeo.pulse.extension.traceability.deployment.api;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.event.EventType;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
@@ -26,12 +26,12 @@ import java.util.Objects;
 public class StubDefaultDetailedInvolvedFinder implements DetailedInvolvedFinder {
 
     @Override
-    public Page<DetailedInvolved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded, final Pagination pagination) throws FinderException {
-        Objects.requireNonNull(aggregateId);
+    public Page<DetailedInvolved> findBy(final Identifiable identifiable, final IncludeUncompounded includeUncompounded, final Pagination pagination) throws FinderException {
+        Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Validate.validState(includeUncompounded.included() == true);// force setting the query parameter
         Objects.requireNonNull(pagination);
-        if (aggregateId.equals(new AnyAggregateId("BOOM"))) {
+        if (identifiable.equals(new AnyIdentifiable("BOOM"))) {
             throw new FinderException(new RuntimeException("BOOM"));
         }
         return new Page<>(

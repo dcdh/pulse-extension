@@ -54,7 +54,7 @@ class DiskUsageTest {
                     ExecutionStatus.SUCCESS,
                     new From("from"),
                     List.of(
-                            EncodedTraceAggregateId.from(
+                            EncodedTraceIdentifiable.from(
                                     new TodoProjection(
                                             ProjectionId.from(TodoId.USER_1_TODO_1),
                                             "lorem ipsum",
@@ -67,7 +67,7 @@ class DiskUsageTest {
 
             // Then
             final long finalExecution = execution;
-            Stream.of("executed_by_encoded", "traceability_aggregate", "traceability_details", "traceability_details_traceability_aggregate")
+            Stream.of("executed_by_encoded", "traceability_identifiable", "traceability_details", "traceability_details_traceability_identifiable")
                     .map(tableName -> "todo_taking." + tableName)
                     .forEach(schemaTableName -> {
                         try (final Connection connection = dataSource.getConnection();

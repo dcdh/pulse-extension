@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
 import com.damdamdeo.pulse.extension.core.query.Input;
 import com.damdamdeo.pulse.extension.core.query.Projection;
@@ -22,9 +23,9 @@ public final class NoOpTraceAppender implements TraceAppender {
     }
 
     @Override
-    public <A extends AggregateId, P extends Projection<A>> void append(final Input input, final List<P> projections,
-                                                                        final ExecutionStatus executionStatus,
-                                                                        final TraceabilityDetails traceabilityDetails)
+    public <A extends Identifiable, P extends Projection<A>> void append(final Input input, final List<P> projections,
+                                                                         final ExecutionStatus executionStatus,
+                                                                         final TraceabilityDetails traceabilityDetails)
             throws TraceAppenderException {
         Objects.requireNonNull(input);
         Objects.requireNonNull(projections);
@@ -34,8 +35,8 @@ public final class NoOpTraceAppender implements TraceAppender {
     }
 
     @Override
-    public void append(final Set<AggregateId> aggregateIds) throws TraceAppenderException {
-        Objects.requireNonNull(aggregateIds);
+    public void append(final Set<Identifiable> identifiables) throws TraceAppenderException {
+        Objects.requireNonNull(identifiables);
         // no-op
     }
 }

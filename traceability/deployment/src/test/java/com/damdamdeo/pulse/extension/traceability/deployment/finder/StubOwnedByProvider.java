@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.traceability.deployment.finder;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProvider;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProviderException;
@@ -15,7 +15,7 @@ import jakarta.enterprise.inject.Alternative;
 public class StubOwnedByProvider implements OwnedByProvider {
 
     @Override
-    public OwnedBy provide(final AggregateId aggregateId) throws OwnedByProviderException {
+    public OwnedBy provide(final Identifiable identifiable) throws OwnedByProviderException {
         return Todo.OWNED_BY_USER_1;
     }
 }

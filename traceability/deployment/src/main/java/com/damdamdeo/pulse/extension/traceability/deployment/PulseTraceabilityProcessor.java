@@ -40,8 +40,8 @@ public class PulseTraceabilityProcessor {
                               CONSTRAINT ebe_unique UNIQUE (executed_by_hashed)
                             );
                             
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate (
-                              aggregate_root_id character varying(255) NOT NULL,
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable (
+                              identifiable character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
                               command_nb_of_times bigint DEFAULT 0,
                               command_unauthorized_nb_of_times bigint DEFAULT 0,
@@ -49,44 +49,44 @@ public class PulseTraceabilityProcessor {
                               query_nb_of_times bigint DEFAULT 0,
                               query_unauthorized_nb_of_times bigint DEFAULT 0,
                               traceability_nb_of_times bigint DEFAULT 0,
-                              CONSTRAINT ta_pkey PRIMARY KEY (aggregate_root_id, executed_by_encoded_id),
+                              CONSTRAINT ta_pkey PRIMARY KEY (identifiable, executed_by_encoded_id),
                               CONSTRAINT ta_ebe_fkey
                                 FOREIGN KEY (executed_by_encoded_id)
                                 REFERENCES %1$s.executed_by_encoded (id)
-                            ) PARTITION BY HASH (aggregate_root_id, executed_by_encoded_id);
+                            ) PARTITION BY HASH (identifiable, executed_by_encoded_id);
                             
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_00 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 0);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_01 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 1);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_02 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 2);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_03 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 3);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_04 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 4);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_05 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 5);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_06 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 6);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_07 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 7);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_08 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 8);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_09 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 9);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_10 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 10);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_11 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 11);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_12 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 12);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_13 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 13);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_14 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 14);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_15 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 15);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_16 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 16);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_17 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 17);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_18 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 18);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_19 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 19);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_20 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 20);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_21 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 21);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_22 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 22);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_23 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 23);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_24 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 24);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_25 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 25);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_26 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 26);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_27 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 27);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_28 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 28);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_29 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 29);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_30 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 30);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_31 PARTITION OF %1$s.traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 31);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_00 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 0);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_01 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 1);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_02 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 2);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_03 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 3);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_04 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 4);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_05 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 5);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_06 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 6);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_07 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 7);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_08 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 8);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_09 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 9);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_10 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 10);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_11 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 11);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_12 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 12);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_13 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 13);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_14 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 14);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_15 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 15);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_16 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 16);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_17 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 17);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_18 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 18);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_19 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 19);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_20 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 20);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_21 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 21);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_22 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 22);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_23 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 23);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_24 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 24);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_25 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 25);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_26 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 26);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_27 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 27);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_28 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 28);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_29 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 29);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_30 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 30);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable_31 PARTITION OF %1$s.traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 31);
                             
                             CREATE SEQUENCE IF NOT EXISTS %1$s.trace_id_seq START WITH 1 INCREMENT BY 1;
                             CREATE SEQUENCE IF NOT EXISTS %1$s.correlation_id_seq START WITH 1 INCREMENT BY 1;
@@ -103,51 +103,51 @@ public class PulseTraceabilityProcessor {
                               CONSTRAINT td_execution_status_check CHECK (execution_status IN (0, 1, 2))
                             );
                             
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate (
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable (
                                 traceability_details_id bigint not null,
-                                traceability_aggregate_aggregate_root_id character varying(255) NOT NULL,
-                                traceability_aggregate_executed_by_encoded_id bigint NOT NULL,
-                                CONSTRAINT tdta_pkey PRIMARY KEY (traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id),
+                                traceability_identifiable_identifiable character varying(255) NOT NULL,
+                                traceability_identifiable_executed_by_encoded_id bigint NOT NULL,
+                                CONSTRAINT tdta_pkey PRIMARY KEY (traceability_details_id, traceability_identifiable_identifiable, traceability_identifiable_executed_by_encoded_id),
                                 CONSTRAINT tdta_td_id_fkey
                                   FOREIGN KEY (traceability_details_id)
                                   REFERENCES %1$s.traceability_details (trace_id),
                                 CONSTRAINT tdta_ta_id_fkey
-                                  FOREIGN KEY (traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id)
-                                  REFERENCES %1$s.traceability_aggregate (aggregate_root_id, executed_by_encoded_id)
-                            ) PARTITION BY HASH (traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id);
+                                  FOREIGN KEY (traceability_identifiable_identifiable, traceability_identifiable_executed_by_encoded_id)
+                                  REFERENCES %1$s.traceability_identifiable (identifiable, executed_by_encoded_id)
+                            ) PARTITION BY HASH (traceability_details_id, traceability_identifiable_identifiable, traceability_identifiable_executed_by_encoded_id);
                             
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_00 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 0);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_01 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 1);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_02 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 2);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_03 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 3);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_04 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 4);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_05 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 5);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_06 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 6);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_07 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 7);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_08 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 8);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_09 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 9);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_10 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 10);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_11 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 11);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_12 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 12);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_13 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 13);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_14 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 14);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_15 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 15);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_16 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 16);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_17 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 17);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_18 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 18);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_19 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 19);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_20 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 20);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_21 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 21);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_22 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 22);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_23 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 23);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_24 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 24);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_25 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 25);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_26 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 26);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_27 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 27);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_28 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 28);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_29 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 29);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_30 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 30);
-                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_aggregate_31 PARTITION OF %1$s.traceability_details_traceability_aggregate FOR VALUES WITH (MODULUS 32, REMAINDER 31);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_00 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 0);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_01 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 1);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_02 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 2);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_03 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 3);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_04 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 4);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_05 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 5);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_06 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 6);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_07 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 7);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_08 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 8);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_09 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 9);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_10 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 10);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_11 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 11);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_12 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 12);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_13 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 13);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_14 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 14);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_15 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 15);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_16 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 16);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_17 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 17);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_18 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 18);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_19 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 19);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_20 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 20);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_21 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 21);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_22 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 22);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_23 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 23);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_24 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 24);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_25 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 25);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_26 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 26);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_27 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 27);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_28 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 28);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_29 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 29);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_30 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 30);
+                            CREATE TABLE IF NOT EXISTS %1$s.traceability_details_traceability_identifiable_31 PARTITION OF %1$s.traceability_details_traceability_identifiable FOR VALUES WITH (MODULUS 32, REMAINDER 31);
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events (
                                 id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,

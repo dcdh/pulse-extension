@@ -51,15 +51,15 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
                 ExecutionStatus.SUCCESS,
                 new From("from"),
                 List.of(
-                        EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                 new ExecutedByHashed("EU:alice-hashed"),
                                 new ExecutedByEncoded("EU:aliceEncoded"),
                                 new EventType("TodoCreated"), new AggregateVersion(0)),
-                        EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                 new ExecutedByHashed("EU:alice-hashed"),
                                 new ExecutedByEncoded("EU:aliceEncoded"),
                                 new EventType("TodoUpdated"), new AggregateVersion(1)),
-                        EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                 new ExecutedByHashed("EU:bob-hashed"),
                                 new ExecutedByEncoded("EU:bobEncoded"),
                                 new EventType("TodoUpdated"), new AggregateVersion(2))));
@@ -76,18 +76,18 @@ class JdbcPostgresInvolvedTraceRecorderRepositoryTest {
                              SELECT id, executed_by_hashed, executed_by_encoded FROM todo_taking.executed_by_encoded
                              """
              );
-             final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
+             final PreparedStatement selectTraceabilityIdentifiablePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_aggregate
+                             SELECT identifiable, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_identifiable
                              """)) {
             ResultSet resultSet = selectExecutedByEncodedPreparedStatement.executeQuery();
             while (resultSet.next()) {
                 data.add(String.join("|", resultSet.getString("id"), resultSet.getString("executed_by_hashed"), resultSet.getString("executed_by_encoded")));
             }
-            resultSet = selectTraceabilityAggregatePreparedStatement.executeQuery();
+            resultSet = selectTraceabilityIdentifiablePreparedStatement.executeQuery();
             while (resultSet.next()) {
-                data.add(String.join("|", resultSet.getString("aggregate_root_id"), resultSet.getString("executed_by_encoded_id"),
+                data.add(String.join("|", resultSet.getString("identifiable"), resultSet.getString("executed_by_encoded_id"),
                         String.valueOf(resultSet.getLong("command_nb_of_times")),
                         String.valueOf(resultSet.getLong("command_unauthorized_nb_of_times")),
                         String.valueOf(resultSet.getLong("command_business_failed_nb_of_times")),

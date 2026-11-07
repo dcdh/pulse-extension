@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.core.traceability;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.event.EventType;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -50,27 +51,27 @@ public final class DefaultTraceAppender implements TraceAppender {
         try {
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
             final A aggregateId = command.id();
-            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(versionizedEvents.isEmpty() ? 1 : versionizedEvents.size());
+            final List<EncodedTraceIdentifiable> encodedTraceIdentifiables = new ArrayList<>(versionizedEvents.isEmpty() ? 1 : versionizedEvents.size());
             for (final VersionizedEvent<A> versionizedEvent : versionizedEvents) {
-                final EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.from(command,
+                final EncodedTraceIdentifiable encodedTraceIdentifiable = EncodedTraceIdentifiable.from(command,
                         executedBy.hash(usernameHasher),
                         executedByEncodedProvider.provide(aggregateId, executedBy),
                         EventType.from(versionizedEvent.event().getClass()),
                         versionizedEvent.version());
-                encodedTraceAggregateIds.add(encodedTraceAggregateId);
+                encodedTraceIdentifiables.add(encodedTraceIdentifiable);
             }
             if (versionizedEvents.isEmpty()) {
-                final EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.from(command,
+                final EncodedTraceIdentifiable encodedTraceIdentifiable = EncodedTraceIdentifiable.from(command,
                         executedBy.hash(usernameHasher),
                         executedByEncodedProvider.provide(aggregateId, executedBy));
-                encodedTraceAggregateIds.add(encodedTraceAggregateId);
+                encodedTraceIdentifiables.add(encodedTraceIdentifiable);
             }
             final TraceRecorderRepository traceRecorderRepository = traceRecorderRepositoryProvider
                     .provide(TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
             traceRecorderRepository.store(new TraceRecorder(traceIdGenerator.generate(),
                     correlationIdProvider.provide(),
                     executedAtProvider.now(),
-                    Source.COMMAND, executionStatus, From.from(command), encodedTraceAggregateIds));
+                    Source.COMMAND, executionStatus, From.from(command), encodedTraceIdentifiables));
         } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException |
                        CorrelationIdProviderException exception) {
             throw new TraceAppenderException(exception);
@@ -78,9 +79,9 @@ public final class DefaultTraceAppender implements TraceAppender {
     }
 
     @Override
-    public <A extends AggregateId, P extends Projection<A>> void append(final Input input, final List<P> projections,
-                                                                        final ExecutionStatus executionStatus,
-                                                                        final TraceabilityDetails traceabilityDetails)
+    public <A extends Identifiable, P extends Projection<A>> void append(final Input input, final List<P> projections,
+                                                                         final ExecutionStatus executionStatus,
+                                                                         final TraceabilityDetails traceabilityDetails)
             throws TraceAppenderException {
         Objects.requireNonNull(input);
         Objects.requireNonNull(projections);
@@ -91,12 +92,12 @@ public final class DefaultTraceAppender implements TraceAppender {
         }
         try {
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(projections.size());
+            final List<EncodedTraceIdentifiable> encodedTraceIdentifiables = new ArrayList<>(projections.size());
             for (final Projection<A> projection : projections) {
-                EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.from(projection,
+                EncodedTraceIdentifiable encodedTraceAggregateId = EncodedTraceIdentifiable.from(projection,
                         executedBy.hash(usernameHasher),
                         executedByEncodedProvider.provide(projection.id().linkTo(), executedBy));
-                encodedTraceAggregateIds.add(encodedTraceAggregateId);
+                encodedTraceIdentifiables.add(encodedTraceAggregateId);
             }
             final TraceRecorderRepository traceRecorderRepository = traceRecorderRepositoryProvider
                     .provide(TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
@@ -104,7 +105,7 @@ public final class DefaultTraceAppender implements TraceAppender {
                     correlationIdProvider.provide(),
                     executedAtProvider.now(),
                     Source.QUERY,
-                    executionStatus, From.from(input), encodedTraceAggregateIds));
+                    executionStatus, From.from(input), encodedTraceIdentifiables));
         } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException |
                        CorrelationIdProviderException exception) {
             throw new TraceAppenderException(exception);
@@ -112,19 +113,19 @@ public final class DefaultTraceAppender implements TraceAppender {
     }
 
     @Override
-    public void append(final Set<AggregateId> aggregateIds) throws TraceAppenderException {
-        Objects.requireNonNull(aggregateIds);
-        if (aggregateIds.isEmpty()) {
+    public void append(final Set<Identifiable> identifiables) throws TraceAppenderException {
+        Objects.requireNonNull(identifiables);
+        if (identifiables.isEmpty()) {
             return;
         }
         try {
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final List<EncodedTraceAggregateId> encodedTraceAggregateIds = new ArrayList<>(aggregateIds.size());
-            for (final AggregateId aggregateId : aggregateIds) {
-                EncodedTraceAggregateId encodedTraceAggregateId = EncodedTraceAggregateId.fromTraceability(aggregateId,
+            final List<EncodedTraceIdentifiable> encodedTraceIdentifiables = new ArrayList<>(identifiables.size());
+            for (final Identifiable identifiable : identifiables) {
+                EncodedTraceIdentifiable encodedTraceAggregateId = EncodedTraceIdentifiable.fromTraceability(identifiable,
                         executedBy.hash(usernameHasher),
-                        executedByEncodedProvider.provide(aggregateId, executedBy));
-                encodedTraceAggregateIds.add(encodedTraceAggregateId);
+                        executedByEncodedProvider.provide(identifiable, executedBy));
+                encodedTraceIdentifiables.add(encodedTraceAggregateId);
             }
             final TraceRecorderRepository traceRecorderRepository = traceRecorderRepositoryProvider
                     .provide(TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
@@ -132,7 +133,7 @@ public final class DefaultTraceAppender implements TraceAppender {
                     correlationIdProvider.provide(),
                     executedAtProvider.now(),
                     Source.TRACEABILITY,
-                    ExecutionStatus.SUCCESS, new From("TRACEABILITY"), encodedTraceAggregateIds));
+                    ExecutionStatus.SUCCESS, new From("TRACEABILITY"), encodedTraceIdentifiables));
         } catch (final TraceIdGeneratorException | ExecutedByEncoderException | TraceRepositoryException |
                        CorrelationIdProviderException exception) {
             throw new TraceAppenderException(exception);

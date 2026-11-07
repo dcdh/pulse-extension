@@ -52,15 +52,15 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
                 ExecutionStatus.SUCCESS,
                 new From("from"),
                 List.of(
-                        EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                 new ExecutedByHashed("EU:alice-hashed"),
                                 new ExecutedByEncoded("EU:aliceEncoded"),
                                 new EventType("TodoCreated"), new AggregateVersion(0)),
-                        EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                 new ExecutedByHashed("EU:alice-hashed"),
                                 new ExecutedByEncoded("EU:aliceEncoded"),
                                 new EventType("TodoUpdated"), new AggregateVersion(1)),
-                        EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                 new ExecutedByHashed("EU:bob-hashed"),
                                 new ExecutedByEncoded("EU:bobEncoded"),
                                 new EventType("TodoUpdated"), new AggregateVersion(2))));
@@ -86,12 +86,12 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
              final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_aggregate
+                             SELECT identifiable, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_identifiable
                              """);
              final PreparedStatement selectTraceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id FROM todo_taking.traceability_details_traceability_aggregate
+                             SELECT traceability_details_id, traceability_identifiable_identifiable, traceability_identifiable_executed_by_encoded_id FROM todo_taking.traceability_details_traceability_identifiable
                              """
              )) {
             ResultSet resultSet = selectTraceabilityDetailsPreparedStatement.executeQuery();
@@ -107,7 +107,7 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
             }
             resultSet = selectTraceabilityAggregatePreparedStatement.executeQuery();
             while (resultSet.next()) {
-                data.add(String.join("|", resultSet.getString("aggregate_root_id"),
+                data.add(String.join("|", resultSet.getString("identifiable"),
                         resultSet.getString("executed_by_encoded_id"),
                         String.valueOf(resultSet.getLong("command_nb_of_times")),
                         String.valueOf(resultSet.getLong("command_unauthorized_nb_of_times")),
@@ -119,8 +119,8 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
             resultSet = selectTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeQuery();
             while (resultSet.next()) {
                 data.add(String.join("|", resultSet.getString("traceability_details_id"),
-                        resultSet.getString("traceability_aggregate_aggregate_root_id"),
-                        resultSet.getString("traceability_aggregate_executed_by_encoded_id")));
+                        resultSet.getString("traceability_identifiable_identifiable"),
+                        resultSet.getString("traceability_identifiable_executed_by_encoded_id")));
             }
         }
         assertThat(data).containsExactly("0|2026-09-06 14:00:00+02|0|0|from",

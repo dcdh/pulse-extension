@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProvider;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProviderException;
@@ -30,11 +30,11 @@ public class JdbcPostgresOwnedByProvider implements OwnedByProvider {
     }
 
     @Override
-    public OwnedBy provide(final AggregateId aggregateId) throws OwnedByProviderException {
-        Objects.requireNonNull(aggregateId);
+    public OwnedBy provide(final Identifiable identifiable) throws OwnedByProviderException {
+        Objects.requireNonNull(identifiable);
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement preparedStatement = connection.prepareStatement(PROVIDE_SQL)) {
-            preparedStatement.setString(1, aggregateId.id());
+            preparedStatement.setString(1, identifiable.id());
             final var resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 return new OwnedBy(resultSet.getString("owned_by"));

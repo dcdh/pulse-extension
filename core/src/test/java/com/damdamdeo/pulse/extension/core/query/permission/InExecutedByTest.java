@@ -5,6 +5,7 @@ import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.permission.ExecutedByResolver;
@@ -52,7 +53,8 @@ class InExecutedByTest {
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
+        final AnyAggregateId anyAggregateId = AnyAggregateId.from(projectionId.linkTo());
+        when(aggregateIdDecomposer.unCompound(anyAggregateId)).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
@@ -66,7 +68,7 @@ class InExecutedByTest {
                 () -> verify(permissionExecutionContext).executedByResolver(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(aggregateIdDecomposer).unCompound(projectionId.linkTo()),
+                () -> verify(aggregateIdDecomposer).unCompound(anyAggregateId),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds)
 
         );
@@ -85,7 +87,8 @@ class InExecutedByTest {
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
+        final AnyAggregateId anyAggregateId = AnyAggregateId.from(projectionId.linkTo());
+        when(aggregateIdDecomposer.unCompound(anyAggregateId)).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(executedByEligibles);
 
         // When
@@ -99,7 +102,7 @@ class InExecutedByTest {
                 () -> verify(permissionExecutionContext).executedByResolver(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(aggregateIdDecomposer).unCompound(projectionId.linkTo()),
+                () -> verify(aggregateIdDecomposer).unCompound(anyAggregateId),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds)
         );
     }
@@ -115,8 +118,10 @@ class InExecutedByTest {
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(new ExecutedBy.EndUser(new Username("alice@mail.com")));
-        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
-        when(executedByResolver.resolve(uncompoundedAggregateIds)).thenReturn(Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
+        final AnyAggregateId anyAggregateId = AnyAggregateId.from(projectionId.linkTo());
+        when(aggregateIdDecomposer.unCompound(anyAggregateId)).thenReturn(uncompoundedAggregateIds);
+        when(executedByResolver.resolve(uncompoundedAggregateIds))
+                .thenReturn(Set.of(new ExecutedBy.EndUser(new Username("alice@mail.com"))));
 
         // When
         permission.allow(projectionId, permissionExecutionContext);
@@ -128,7 +133,7 @@ class InExecutedByTest {
                 () -> verify(permissionExecutionContext).executedByResolver(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(executionContextProvider).provide(),
-                () -> verify(aggregateIdDecomposer).unCompound(projectionId.linkTo()),
+                () -> verify(aggregateIdDecomposer).unCompound(anyAggregateId),
                 () -> verify(executedByResolver).resolve(uncompoundedAggregateIds)
         );
     }
@@ -143,7 +148,8 @@ class InExecutedByTest {
         when(permissionExecutionContext.executionContextProvider()).thenReturn(executionContextProvider);
         when(permissionExecutionContext.aggregateIdDecomposer()).thenReturn(aggregateIdDecomposer);
         when(permissionExecutionContext.executedByResolver()).thenReturn(executedByResolver);
-        when(aggregateIdDecomposer.unCompound(projectionId.linkTo())).thenReturn(uncompoundedAggregateIds);
+        final AnyAggregateId anyAggregateId = AnyAggregateId.from(projectionId.linkTo());
+        when(aggregateIdDecomposer.unCompound(anyAggregateId)).thenReturn(uncompoundedAggregateIds);
         when(executedByResolver.resolve(uncompoundedAggregateIds)).thenThrow(cause);
 
         // When

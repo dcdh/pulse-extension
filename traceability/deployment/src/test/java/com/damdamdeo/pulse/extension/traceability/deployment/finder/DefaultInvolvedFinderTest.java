@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
@@ -57,11 +57,11 @@ class DefaultInvolvedFinderTest {
                         ExecutionStatus.SUCCESS,
                         new From("from"),
                         List.of(
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoCreated"), new AggregateVersion(0)),
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"),
                                         new EventType("TodoUpdated"), new AggregateVersion(2))))
@@ -72,7 +72,7 @@ class DefaultInvolvedFinderTest {
 
     @Test
     @RunOnVertxContext
-    void shouldFindByAggregateId() throws FinderException {
+    void shouldFindByIdenifiable() throws FinderException {
         // Given
 
         // When
@@ -81,10 +81,10 @@ class DefaultInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new Involved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
                                 QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER),
-                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
+                        new Involved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
                                 QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 2L));
@@ -101,7 +101,7 @@ class DefaultInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new Involved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new Involved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER,
                                 QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L));

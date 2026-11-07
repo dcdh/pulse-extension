@@ -1,10 +1,10 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 
 import java.util.Objects;
 
-public sealed interface CompositePermission<K extends AggregateId> extends Permission<K>
+public sealed interface CompositePermission<K extends Identifiable> extends Permission<K>
         permits OrPermission, AndPermission, Everyone, AnyEndUser, VisibilityRoleRestricted, InExecutedBy,
         ExecutedBySpecificServiceAccounts, ExecutedByHasAtLeastOneRole, ExecutedBySpecificEndUsers, SpecificQuery,
         ExecutedBySpecificJob {

@@ -28,13 +28,13 @@ class EncodedTraceAggregateIdTest {
         when(projection.id()).thenReturn(ProjectionId.from(aggregateId));
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+        final EncodedTraceIdentifiable trace = EncodedTraceIdentifiable.from(
                 projection, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
 
         // then
         assertAll(
                 () -> assertEquals(Source.QUERY, trace.source()),
-                () -> assertEquals(aggregateId, trace.aggregateId()),
+                () -> assertEquals(aggregateId, trace.identifiable()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertNull(trace.eventType()),
@@ -49,13 +49,13 @@ class EncodedTraceAggregateIdTest {
         final TodoId aggregateId = TodoId.USER_1_TODO_1;
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.fromTraceability(
+        final EncodedTraceIdentifiable trace = EncodedTraceIdentifiable.fromTraceability(
                 aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
 
         // then
         assertAll(
                 () -> assertEquals(Source.TRACEABILITY, trace.source()),
-                () -> assertEquals(aggregateId, trace.aggregateId()),
+                () -> assertEquals(aggregateId, trace.identifiable()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertNull(trace.eventType()),
@@ -72,13 +72,13 @@ class EncodedTraceAggregateIdTest {
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+        final EncodedTraceIdentifiable trace = EncodedTraceIdentifiable.from(
                 command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, eventType, aggregateVersion);
 
         // then
         assertAll(
                 () -> assertEquals(Source.COMMAND, trace.source()),
-                () -> assertEquals(command.id(), trace.aggregateId()),
+                () -> assertEquals(command.id(), trace.identifiable()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertEquals(eventType, trace.eventType()),
@@ -93,13 +93,13 @@ class EncodedTraceAggregateIdTest {
         final Command<TodoId> command = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+        final EncodedTraceIdentifiable trace = EncodedTraceIdentifiable.from(
                 command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
 
         // then
         assertAll(
                 () -> assertEquals(Source.COMMAND, trace.source()),
-                () -> assertEquals(command.id(), trace.aggregateId()),
+                () -> assertEquals(command.id(), trace.identifiable()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertNull(trace.eventType()),
@@ -115,7 +115,7 @@ class EncodedTraceAggregateIdTest {
         final EventType eventType = new EventType("TodoCreated");
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+        final EncodedTraceIdentifiable trace = EncodedTraceIdentifiable.from(
                 command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                 eventType, null);
 
@@ -130,7 +130,7 @@ class EncodedTraceAggregateIdTest {
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
 
         // when
-        final EncodedTraceAggregateId trace = EncodedTraceAggregateId.from(
+        final EncodedTraceIdentifiable trace = EncodedTraceIdentifiable.from(
                 command, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                 null, aggregateVersion);
 
@@ -147,10 +147,10 @@ class EncodedTraceAggregateIdTest {
 
         // when / then
         assertAll(
-                () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceAggregateId(
+                () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceIdentifiable(
                         Source.QUERY, aggregateId, ProjectionId.from(aggregateId), EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                         eventType, null)),
-                () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceAggregateId(
+                () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceIdentifiable(
                         Source.QUERY, aggregateId, ProjectionId.from(aggregateId), EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                         null, aggregateVersion))
         );
@@ -163,13 +163,13 @@ class EncodedTraceAggregateIdTest {
 
         // when / then
         assertAll(
-                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
+                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceIdentifiable(
                         null, aggregateId, null, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, null, null)),
-                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
+                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceIdentifiable(
                         Source.COMMAND, null, null, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED, null, null)),
-                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
+                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceIdentifiable(
                         Source.COMMAND, aggregateId, null, null, EXECUTED_BY_ENCODED, null, null)),
-                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceAggregateId(
+                () -> assertThrows(NullPointerException.class, () -> new EncodedTraceIdentifiable(
                         Source.COMMAND, aggregateId, null, EXECUTED_BY_HASHED, null, null, null))
         );
     }

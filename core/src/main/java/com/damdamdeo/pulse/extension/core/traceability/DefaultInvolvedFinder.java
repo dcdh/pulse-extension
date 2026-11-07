@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameDecoder;
@@ -34,12 +34,12 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
     }
 
     @Override
-    public Page<Involved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded,
+    public Page<Involved> findBy(final Identifiable identifiable, final IncludeUncompounded includeUncompounded,
                                  final Pagination pagination) throws FinderException {
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(pagination);
-        return findBy(() -> encodedInvolvedRepository.findBy(aggregateId, includeUncompounded, pagination));
+        return findBy(() -> encodedInvolvedRepository.findBy(identifiable, includeUncompounded, pagination));
     }
 
     @Override
@@ -59,11 +59,11 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
             final List<Involved> listOfInvolved = new ArrayList<>(involvedPage.content().size());
             for (final EncodedInvolved encodedInvolved : involvedPage.content()) {
                 final Involved involved = new Involved(
-                        encodedInvolved.aggregateId(),
+                        encodedInvolved.identifiable(),
                         new Actor(
                                 encodedInvolved.encodedActor().executedByHashed(),
                                 encodedInvolved.encodedActor().executedByEncoded()
-                                        .to(usernameDecoder, ownedByProvider.provide(encodedInvolved.aggregateId()))),
+                                        .to(usernameDecoder, ownedByProvider.provide(encodedInvolved.identifiable()))),
                         encodedInvolved.commandNbOfTimes(),
                         encodedInvolved.commandUnauthorizedNbOfTimes(),
                         encodedInvolved.commandBusinessFailedNbOfTimes(),
@@ -72,7 +72,7 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
                         encodedInvolved.traceabilityNbOfTimes());
                 listOfInvolved.add(involved);
             }
-            traceAppender.append(listOfInvolved.stream().map(Involved::aggregateId).collect(Collectors.toSet()));
+            traceAppender.append(listOfInvolved.stream().map(Involved::identifiable).collect(Collectors.toSet()));
             return new Page<>(listOfInvolved, involvedPage.pagination(), involvedPage.totalElements());
         } catch (final TraceRepositoryException | OwnedByProviderException | UnauthorizedException
                        | TraceAppenderException exception) {

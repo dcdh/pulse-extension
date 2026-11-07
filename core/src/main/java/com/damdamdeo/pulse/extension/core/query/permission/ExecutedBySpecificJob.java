@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.job.JobName;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.query.QueryException;
 import java.util.Objects;
 import java.util.logging.Logger;
 
-public record ExecutedBySpecificJob<K extends AggregateId>(JobName jobName) implements CompositePermission<K> {
+public record ExecutedBySpecificJob<K extends Identifiable>(JobName jobName) implements CompositePermission<K> {
 
     static final Logger LOGGER = Logger.getLogger(ExecutedBySpecificJob.class.getName());
 

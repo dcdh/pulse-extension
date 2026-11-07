@@ -22,19 +22,19 @@ class TraceabilityFinderInvolvedEndpointTest {
             .withConfigurationResource("application.properties");
 
     @Test
-    void shouldFindByAggregateId() {
+    void shouldFindByIdentifiable() {
         given()
-                .pathParam("aggregateId", "U000001-T000001")
+                .pathParam("identifiable", "U000001-T000001")
                 .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
-                .get("/traceability/finder/involved/byAggregateId/{aggregateId}")
+                .get("/traceability/finder/involved/byIdentifiable/{identifiable}")
                 .then()
                 .log().all()
                 .statusCode(200)
                 .body("listOfInvolved.size()", equalTo(2))
-                .body("listOfInvolved[0].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[0].commandNbOfTimes", equalTo(1))
@@ -42,7 +42,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                 .body("listOfInvolved[0].commandBusinessFailedNbOfTimes", equalTo(0))
                 .body("listOfInvolved[0].queryNbOfTimes", equalTo(0))
                 .body("listOfInvolved[0].queryUnauthorizedNbOfTimes", equalTo(0))
-                .body("listOfInvolved[1].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[1].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[1].executedByHashed", equalTo("EU:bob-hashed"))
                 .body("listOfInvolved[1].executedBy", equalTo("EU:bob@mail.com"))
                 .body("listOfInvolved[1].commandNbOfTimes", equalTo(1))
@@ -58,12 +58,12 @@ class TraceabilityFinderInvolvedEndpointTest {
     @Test
     void shouldMapOnException() {
         given()
-                .pathParam("aggregateId", "BOOM")
+                .pathParam("identifiable", "BOOM")
                 .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
-                .get("/traceability/finder/involved/byAggregateId/{aggregateId}")
+                .get("/traceability/finder/involved/byIdentifiable/{identifiable}")
                 .then()
                 .log().all()
                 .statusCode(500)
@@ -76,7 +76,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                 .body("title", equalTo("Internal Server Error"))
                 .body("statusCode", equalTo(500))
                 .body("detail", nullValue())
-                .body("instance", equalTo("%2Ftraceability%2Ffinder%2Finvolved%2FbyAggregateId%2FBOOM"))
+                .body("instance", equalTo("%2Ftraceability%2Ffinder%2Finvolved%2FbyIdentifiable%2FBOOM"))
                 .body("parameters", anEmptyMap())
                 .body("headers", anEmptyMap());
     }
@@ -93,7 +93,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                 .log().all()
                 .statusCode(200)
                 .body("listOfInvolved.size()", equalTo(1))
-                .body("listOfInvolved[0].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("totalPages", equalTo(1))
@@ -116,7 +116,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                     "openapi": "3.1.0",
                     "components": {
                         "schemas": {
-                            "AnyAggregateId": {
+                            "AnyIdentifiable": {
                                 "type": "object",
                                 "properties": {
                                     "id": {
@@ -240,7 +240,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                             "InvolvedDTO": {
                                 "type": "object",
                                 "required": [
-                                    "aggregateId",
+                                    "identifiable",
                                     "executedByHashed",
                                     "executedBy",
                                     "commandNbOfTimes",
@@ -250,11 +250,11 @@ class TraceabilityFinderInvolvedEndpointTest {
                                     "queryUnauthorizedNbOfTimes",
                                     "traceabilityNbOfTimes"
                                 ],
-                                "description": "Actor involved in the execution of an aggregate.",
+                                "description": "Actor involved in the execution of an identifiable.",
                                 "properties": {
-                                    "aggregateId": {
+                                    "identifiable": {
                                         "type": "string",
-                                        "description": "Identifier of the aggregate."
+                                        "description": "Identifier of the identifiable."
                                     },
                                     "executedByHashed": {
                                         "type": "string",
@@ -409,15 +409,15 @@ class TraceabilityFinderInvolvedEndpointTest {
                                 ]
                             }
                         },
-                        "/traceability/finder/involved/byAggregateId/{aggregateId}": {
+                        "/traceability/finder/involved/byIdentifiable/{identifiable}": {
                             "get": {
                                 "parameters": [
                                     {
-                                        "name": "aggregateId",
+                                        "name": "identifiable",
                                         "in": "path",
                                         "required": true,
                                         "schema": {
-                                            "$ref": "#/components/schemas/AnyAggregateId"
+                                            "$ref": "#/components/schemas/AnyIdentifiable"
                                         }
                                     },
                                     {

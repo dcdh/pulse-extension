@@ -5,7 +5,7 @@ import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -59,15 +59,15 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoCreated"), new AggregateVersion(0)),
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoUpdated"), new AggregateVersion(1)),
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"),
                                         new EventType("TodoUpdated"), new AggregateVersion(2)))),
@@ -79,7 +79,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_UNAUTHORIZED,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
@@ -90,7 +90,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_BUSINESS,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
@@ -101,7 +101,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("fromQuery"),
                         List.of(
-                                EncodedTraceAggregateId.from(
+                                EncodedTraceIdentifiable.from(
                                         new TodoProjection(
                                                 ProjectionId.from(TodoId.USER_1_TODO_2),
                                                 "lorem ipsum",
@@ -116,7 +116,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_UNAUTHORIZED,
                         new From("fromQuery"),
                         List.of(
-                                EncodedTraceAggregateId.from(
+                                EncodedTraceIdentifiable.from(
                                         new TodoProjection(
                                                 ProjectionId.from(TodoId.USER_1_TODO_1),
                                                 "lorem ipsum",
@@ -131,7 +131,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.FAILED_UNAUTHORIZED,
                         new From("fromQuery"),
                         List.of(
-                                EncodedTraceAggregateId.from(
+                                EncodedTraceIdentifiable.from(
                                         new TodoChecklistProjection(
                                                 ProjectionId.from(TodoChecklistId.USER_1_TODO_1_1),
                                                 "Implement Projection feature"),
@@ -145,7 +145,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("fromCommand"),
                         List.of(
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_2),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_2),
                                         new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"),
                                         new EventType("TodoCreated"), new AggregateVersion(0)))),
@@ -157,7 +157,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("TRACEABILITY"),
                         List.of(
-                                EncodedTraceAggregateId.fromTraceability(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceIdentifiable.fromTraceability(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(9L),
@@ -167,7 +167,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("TRACEABILITY"),
                         List.of(
-                                EncodedTraceAggregateId.fromTraceability(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceIdentifiable.fromTraceability(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"))))
         )) {
             jdbcPostgresInvolvedTraceRecorderRepository.store(traceRecorder);
@@ -175,7 +175,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
     }
 
     @Test
-    void shouldFindByAggregateId() throws TraceRepositoryException {
+    void shouldFindByIdentifiable() throws TraceRepositoryException {
         // Given
         final List<Page<EncodedInvolved>> executions = new ArrayList<>(2);
 
@@ -194,26 +194,26 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new CommandNbOfTimes(3), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(0))),
                         new Pagination(0, 1), 2L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0))),
                         new Pagination(1, 1), 2L),
                 new Page<>(List.of(), new Pagination(2, 1), 2L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new CommandNbOfTimes(3), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(0)),
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0))),
                         new Pagination(0, -1), 2L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_2), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_2), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(1), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(1), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(2))),
                         new Pagination(0, -1), 1L)
@@ -221,7 +221,7 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
     }
 
     @Test
-    void shouldFindByAggregateIdWithUncompounded() throws TraceRepositoryException {
+    void shouldFindByIdentifiableWithUncompounded() throws TraceRepositoryException {
         // Given
         final List<Page<EncodedInvolved>> executions = new ArrayList<>(2);
 
@@ -238,28 +238,28 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new CommandNbOfTimes(3), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(0))),
                         new Pagination(0, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0))),
                         new Pagination(1, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new CommandNbOfTimes(3), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(0)),
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0)),
-                        new EncodedInvolved(AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoChecklistId.USER_1_TODO_1_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0))),
                         new Pagination(0, -1), 3L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from(TodoId.USER_1_TODO_2), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(AnyIdentifiable.from(TodoId.USER_1_TODO_2), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(1), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(1), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(2))),
                         new Pagination(0, -1), 1L)
@@ -280,28 +280,28 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0))),
                         new Pagination(0, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(new AnyIdentifiable("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0))),
                         new Pagination(1, 1), 3L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(1), new CommandBusinessFailedNbOfTimes(1),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0)),
-                        new EncodedInvolved(AnyAggregateId.from("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(new AnyIdentifiable("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(0), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(1), new TraceabilityNbOfTimes(0)),
-                        new EncodedInvolved(AnyAggregateId.from("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedInvolved(new AnyIdentifiable("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new CommandNbOfTimes(1), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(1), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(2))),
                         new Pagination(0, -1), 3L),
                 new Page<>(List.of(
-                        new EncodedInvolved(AnyAggregateId.from("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedInvolved(new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new CommandNbOfTimes(3), new CommandUnauthorizedNbOfTimes(0), new CommandBusinessFailedNbOfTimes(0),
                                 new QueryNbOfTimes(0), new QueryUnauthorizedNbOfTimes(0), new TraceabilityNbOfTimes(0))),
                         new Pagination(0, -1), 1L)

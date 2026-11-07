@@ -118,7 +118,7 @@ public abstract class DefaultPurposeEventChannelExecutor<T> implements PurposeEv
         Objects.requireNonNull(fromApplication);
         Objects.requireNonNull(eventKey);
         Objects.requireNonNull(eventValue);
-        LOGGER.fine("Message from target '%s' - applicationNaming '%s' - aggregateRootType '%s' - aggregateId '%s' - currentVersionInConsumption '%s' - eventType '%s' already consumed"
+        LOGGER.fine("Message from target '%s' - applicationNaming '%s' - aggregateRootType '%s' - identifiable '%s' - currentVersionInConsumption '%s' - eventType '%s' already consumed"
                 .formatted(purpose.name(), fromApplication.applicationNaming().name(), eventKey.toAggregateRootType().type(), eventKey.toAggregateId().id(), eventKey.toCurrentVersionInConsumption().version(), eventValue.toEventType()));
     }
 }

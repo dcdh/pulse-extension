@@ -1,11 +1,11 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.event.EventType;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
@@ -35,9 +35,9 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
     }
 
     @Override
-    public Page<EncodedDetailedInvolved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded,
+    public Page<EncodedDetailedInvolved> findBy(final Identifiable identifiable, final IncludeUncompounded includeUncompounded,
                                                 final Pagination pagination) throws TraceRepositoryException {
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(pagination);
         try (final Connection connection = dataSource.getConnection();
@@ -46,14 +46,14 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                      """
                              SELECT COUNT(td.*) AS count
                              FROM %1$s.traceability_details td
-                             JOIN %1$s.traceability_details_traceability_aggregate tdta
-                               ON tdta.traceability_details_id = td.trace_id
-                             JOIN %1$s.traceability_aggregate ta
-                               ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
-                               AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
+                             JOIN %1$s.traceability_details_traceability_identifiable tdti
+                               ON tdti.traceability_details_id = td.trace_id
+                             JOIN %1$s.traceability_identifiable ti
+                               ON ti.identifiable = tdti.traceability_identifiable_identifiable
+                               AND ti.executed_by_encoded_id = tdti.traceability_identifiable_executed_by_encoded_id
                              LEFT JOIN %1$s.traceability_aggregate_events tae
                                ON tae.traceability_trace_id = td.trace_id
-                             WHERE ta.aggregate_root_id LIKE ?
+                             WHERE ti.identifiable LIKE ?
                              """.formatted(schemaName.name()));
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
@@ -64,30 +64,30 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        td.execution_status AS execution_status,
                        td.from_value AS from_value,
                        td.executed_at AS executed_at,
-                       ta.aggregate_root_id as aggregate_root_id,
+                       ti.identifiable as identifiable,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded,
                        tae.event_type AS event_type,
                        tae.aggregate_version AS aggregate_version
                      FROM %1$s.traceability_details td
-                     JOIN %1$s.traceability_details_traceability_aggregate tdta
-                       ON tdta.traceability_details_id = td.trace_id
-                     JOIN %1$s.traceability_aggregate ta
-                       ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
-                       AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
+                     JOIN %1$s.traceability_details_traceability_identifiable tdti
+                       ON tdti.traceability_details_id = td.trace_id
+                     JOIN %1$s.traceability_identifiable ti
+                       ON ti.identifiable = tdti.traceability_identifiable_identifiable
+                       AND ti.executed_by_encoded_id = tdti.traceability_identifiable_executed_by_encoded_id
                      JOIN %1$s.executed_by_encoded ebe
-                       ON ebe.id = ta.executed_by_encoded_id
+                       ON ebe.id = ti.executed_by_encoded_id
                      LEFT JOIN %1$s.traceability_aggregate_events tae
                        ON tae.traceability_trace_id = td.trace_id
-                     WHERE ta.aggregate_root_id LIKE ?
+                     WHERE ti.identifiable LIKE ?
                      ORDER BY td.trace_id ASC, tae.aggregate_version ASC
                      LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
                 if (!includeUncompounded.included()) {
-                    selectPreparedStatement.setString(1, aggregateId.id());
+                    selectPreparedStatement.setString(1, identifiable.id());
                 } else {
-                    selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                    selectPreparedStatement.setString(1, identifiable.id() + "%");
                 }
                 selectPreparedStatement.setNull(2, Types.INTEGER);
                 selectPreparedStatement.setLong(3, 0);
@@ -97,7 +97,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -115,11 +115,11 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                 return new Page<>(content, pagination, content.size());
             } else {
                 if (!includeUncompounded.included()) {
-                    countPreparedStatement.setString(1, aggregateId.id());
-                    selectPreparedStatement.setString(1, aggregateId.id());
+                    countPreparedStatement.setString(1, identifiable.id());
+                    selectPreparedStatement.setString(1, identifiable.id());
                 } else {
-                    countPreparedStatement.setString(1, aggregateId.id() + "%");
-                    selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                    countPreparedStatement.setString(1, identifiable.id() + "%");
+                    selectPreparedStatement.setString(1, identifiable.id() + "%");
                 }
                 selectPreparedStatement.setLong(2, pagination.size());
                 selectPreparedStatement.setLong(3, pagination.offset());
@@ -132,7 +132,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -164,13 +164,13 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                      """                     
                              SELECT COUNT(td.*) AS count
                              FROM %1$s.traceability_details td
-                             JOIN %1$s.traceability_details_traceability_aggregate tdta
-                               ON tdta.traceability_details_id = td.trace_id
-                             JOIN %1$s.traceability_aggregate ta
-                               ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
-                               AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
+                             JOIN %1$s.traceability_details_traceability_identifiable tdti
+                               ON tdti.traceability_details_id = td.trace_id
+                             JOIN %1$s.traceability_identifiable ti
+                               ON ti.identifiable = tdti.traceability_identifiable_identifiable
+                               AND ti.executed_by_encoded_id = tdti.traceability_identifiable_executed_by_encoded_id
                              JOIN %1$s.executed_by_encoded ebe
-                               ON ebe.id = ta.executed_by_encoded_id
+                               ON ebe.id = ti.executed_by_encoded_id
                              LEFT JOIN %1$s.traceability_aggregate_events tae
                                ON tae.traceability_trace_id = td.trace_id
                              WHERE ebe.executed_by_hashed = ?
@@ -184,19 +184,19 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                          td.execution_status AS execution_status,
                          td.from_value AS from_value,
                          td.executed_at AS executed_at,
-                         ta.aggregate_root_id AS aggregate_root_id,
+                         ti.identifiable AS identifiable,
                          ebe.executed_by_hashed AS executed_by_hashed,
                          ebe.executed_by_encoded AS executed_by_encoded,
                          tae.event_type AS event_type,
                          tae.aggregate_version AS aggregate_version
                      FROM %1$s.traceability_details td
-                     JOIN %1$s.traceability_details_traceability_aggregate tdta
-                       ON tdta.traceability_details_id = td.trace_id
-                     JOIN %1$s.traceability_aggregate ta
-                       ON ta.aggregate_root_id = tdta.traceability_aggregate_aggregate_root_id
-                       AND ta.executed_by_encoded_id = tdta.traceability_aggregate_executed_by_encoded_id
+                     JOIN %1$s.traceability_details_traceability_identifiable tdti
+                       ON tdti.traceability_details_id = td.trace_id
+                     JOIN %1$s.traceability_identifiable ti
+                       ON ti.identifiable = tdti.traceability_identifiable_identifiable
+                       AND ti.executed_by_encoded_id = tdti.traceability_identifiable_executed_by_encoded_id
                      JOIN %1$s.executed_by_encoded ebe
-                       ON ebe.id = ta.executed_by_encoded_id
+                       ON ebe.id = ti.executed_by_encoded_id
                      LEFT JOIN %1$s.traceability_aggregate_events tae
                        ON tae.traceability_trace_id = td.trace_id
                      WHERE ebe.executed_by_hashed = ?
@@ -213,7 +213,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -243,7 +243,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))

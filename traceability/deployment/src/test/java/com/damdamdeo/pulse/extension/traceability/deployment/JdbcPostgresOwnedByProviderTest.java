@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.traceability.deployment;
 
 import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.TestUsernameEncoder;
@@ -78,7 +78,7 @@ class JdbcPostgresOwnedByProviderTest {
                 Todo.OWNED_BY_USER_1, BOB);
 
         // When
-        final OwnedBy provided = jdbcPostgresOwnedByProvider.provide(new AnyAggregateId("00000000-0000-0000-0000-000000000001"));
+        final OwnedBy provided = jdbcPostgresOwnedByProvider.provide(new AnyIdentifiable("00000000-0000-0000-0000-000000000001"));
 
         // Then
         assertThat(provided).isEqualTo(Todo.OWNED_BY_USER_1);
@@ -89,7 +89,7 @@ class JdbcPostgresOwnedByProviderTest {
         // Given
 
         // When / Then
-        assertThatThrownBy(() -> jdbcPostgresOwnedByProvider.provide(new AnyAggregateId("00000000-0000-0000-0000-000000000001")))
+        assertThatThrownBy(() -> jdbcPostgresOwnedByProvider.provide(new AnyIdentifiable("00000000-0000-0000-0000-000000000001")))
                 .isExactlyInstanceOf(OwnedByProviderException.class)
                 .cause()
                 .isExactlyInstanceOf(IllegalStateException.class)

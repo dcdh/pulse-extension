@@ -4,7 +4,7 @@ import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
@@ -59,11 +59,11 @@ class DefaultDetailedInvolvedFinderTest {
                         ExecutionStatus.SUCCESS,
                         new From("from"),
                         List.of(
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                         new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoCreated"), new AggregateVersion(0)),
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
                                 new ExecutedByHashed("EU:alice-hashed"),
                                         new ExecutedByEncoded("EU:aliceEncoded"),
                                         new EventType("TodoUpdated"), new AggregateVersion(1)))),
@@ -75,7 +75,7 @@ class DefaultDetailedInvolvedFinderTest {
                         ExecutionStatus.SUCCESS,
                         new From("from"),
                         List.of(
-                                EncodedTraceAggregateId.from(new MarkTodoAsDone(TodoId.USER_1_TODO_2),
+                                EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_2),
                                         new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"),
                                         new EventType("TodoCreated"), new AggregateVersion(0))))
@@ -86,7 +86,7 @@ class DefaultDetailedInvolvedFinderTest {
 
     @Test
     @RunOnVertxContext
-    void shouldFindByAggregateId() throws FinderException {
+    void shouldFindByIdentifiable() throws FinderException {
         // Given
 
         // When
@@ -95,9 +95,9 @@ class DefaultDetailedInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 2L));
     }
@@ -113,9 +113,9 @@ class DefaultDetailedInvolvedFinderTest {
         // Then
         assertThat(by).isEqualTo(new Page<>(
                 List.of(
-                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new DetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("from"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                 new Pagination(0, 10), 2L));
     }

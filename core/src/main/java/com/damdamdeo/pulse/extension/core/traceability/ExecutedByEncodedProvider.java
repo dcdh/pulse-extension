@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 
 import java.util.Objects;
@@ -22,14 +22,14 @@ public final class ExecutedByEncodedProvider {
         this.usernameHasher = Objects.requireNonNull(usernameHasher);
     }
 
-    public ExecutedByEncoded provide(final AggregateId aggregateId, final ExecutedBy executedBy) throws ExecutedByEncoderException {
+    public ExecutedByEncoded provide(final Identifiable identifiable, final ExecutedBy executedBy) throws ExecutedByEncoderException {
         Objects.requireNonNull(executedBy);
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(identifiable);
         try {
             final ExecutedByHashed hashed = executedBy.hash(usernameHasher);
             final ExecutedByEncoded by = executedByEncodedRepository.findBy(hashed);
             if (by == null) {
-                final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, ownedByProvider.provide(aggregateId));
+                final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, ownedByProvider.provide(identifiable));
                 executedByEncodedRepository.store(hashed, encoded);
                 return encoded;
             } else {

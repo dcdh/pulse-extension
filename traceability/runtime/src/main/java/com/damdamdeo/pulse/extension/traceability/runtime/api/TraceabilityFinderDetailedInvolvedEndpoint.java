@@ -3,8 +3,10 @@ package com.damdamdeo.pulse.extension.traceability.runtime.api;
 import com.damdamdeo.pulse.extension.common.runtime.pagination.PaginationDTO;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.EventType;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
@@ -49,7 +51,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         }
     }
 
-    @Schema(description = "Actor involved in the execution of an aggregate.")
+    @Schema(description = "Actor involved in the execution of an identifiable.")
     public record DetailedInvolvedDTO(
 
             @Schema(type = SchemaType.NUMBER, implementation = Long.class,
@@ -61,8 +63,8 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
             CorrelationId correlationId,
 
             @Schema(type = SchemaType.STRING, implementation = String.class,
-                    description = "Identifier of the aggregate.", required = true)
-            AggregateId aggregateId,
+                    description = "Identifier of the identifiable.", required = true)
+            Identifiable identifiable,
 
             @Schema(type = SchemaType.STRING, implementation = String.class,
                     description = "Hashed identifier of the actor who executed the operation.", required = true)
@@ -95,7 +97,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         public DetailedInvolvedDTO {
             Objects.requireNonNull(traceId);
             Objects.requireNonNull(correlationId);
-            Objects.requireNonNull(aggregateId);
+            Objects.requireNonNull(identifiable);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
             Objects.requireNonNull(executionStatus);
@@ -105,7 +107,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         }
 
         public DetailedInvolvedDTO(final DetailedInvolved detailedInvolved) {
-            this(detailedInvolved.traceId(), detailedInvolved.correlationId(), detailedInvolved.aggregateId(),
+            this(detailedInvolved.traceId(), detailedInvolved.correlationId(), detailedInvolved.identifiable(),
                     detailedInvolved.actor().executedByHashed(), detailedInvolved.actor().executedBy(),
                     detailedInvolved.eventType(), detailedInvolved.aggregateVersion(),
                     detailedInvolved.source(), detailedInvolved.executionStatus(),
@@ -113,15 +115,15 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
         }
     }
 
-    @Path("byAggregateId/{aggregateId}")
+    @Path("byIdentifiable/{identifiable}")
     @GET
-    public DetailedInvolvedPageDTO findBy(@PathParam("aggregateId") final AnyAggregateId aggregateId,
+    public DetailedInvolvedPageDTO findBy(@PathParam("identifiable") final AnyIdentifiable identifiable,
                                           @QueryParam("includeUncompounded") @DefaultValue("false") final IncludeUncompounded includeUncompounded,
                                           @BeanParam final PaginationDTO paginationDTO) throws FinderException {
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(paginationDTO);
-        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(aggregateId, includeUncompounded, paginationDTO.toPagination());
+        final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(identifiable, includeUncompounded, paginationDTO.toPagination());
         return new DetailedInvolvedPageDTO(
                 by.content().stream().map(DetailedInvolvedDTO::new).toList(),
                 by.totalPages(), by.hasNext(), by.hasPrevious());

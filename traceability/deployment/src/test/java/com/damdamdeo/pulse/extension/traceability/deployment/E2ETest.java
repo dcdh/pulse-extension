@@ -180,17 +180,17 @@ class E2ETest {
 
         // Then
         given()
-                .pathParam("aggregateId", "U000001-T000001")
+                .pathParam("identifiable", "U000001-T000001")
                 .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
-                .get("/traceability/finder/involved/byAggregateId/{aggregateId}")
+                .get("/traceability/finder/involved/byIdentifiable/{identifiable}")
                 .then()
                 .log().all()
                 .statusCode(200)
                 .body("listOfInvolved.size()", equalTo(2))
-                .body("listOfInvolved[0].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[0].commandNbOfTimes", equalTo(2))
@@ -199,7 +199,7 @@ class E2ETest {
                 .body("listOfInvolved[0].queryNbOfTimes", equalTo(0))
                 .body("listOfInvolved[0].queryUnauthorizedNbOfTimes", equalTo(0))
                 .body("listOfInvolved[0].traceabilityNbOfTimes", equalTo(0))
-                .body("listOfInvolved[1].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[1].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[1].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
                 .body("listOfInvolved[1].executedBy", equalTo("EU:bob@mail.com"))
                 .body("listOfInvolved[1].commandNbOfTimes", equalTo(1))
@@ -212,12 +212,12 @@ class E2ETest {
                 .body("hasNext", equalTo(false))
                 .body("hasPrevious", equalTo(false));
         given()
-                .pathParam("aggregateId", "U000001-T000001")
+                .pathParam("identifiable", "U000001-T000001")
                 .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
-                .get("/traceability/finder/detailed/byAggregateId/{aggregateId}")
+                .get("/traceability/finder/detailed/byIdentifiable/{identifiable}")
                 .then()
                 .log().all()
                 .statusCode(200)
@@ -225,7 +225,7 @@ class E2ETest {
 
                 .body("listOfInvolved[0].traceId", equalTo(1))
                 .body("listOfInvolved[0].correlationId", equalTo(1))
-                .body("listOfInvolved[0].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[0].eventType", equalTo("NewTodoCreated"))
@@ -237,7 +237,7 @@ class E2ETest {
 
                 .body("listOfInvolved[1].traceId", equalTo(1))
                 .body("listOfInvolved[1].correlationId", equalTo(1))
-                .body("listOfInvolved[1].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[1].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[1].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
                 .body("listOfInvolved[1].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[1].eventType", equalTo("TodoDescriptionUpdated"))
@@ -249,7 +249,7 @@ class E2ETest {
 
                 .body("listOfInvolved[2].traceId", equalTo(2))
                 .body("listOfInvolved[2].correlationId", equalTo(1))
-                .body("listOfInvolved[2].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[2].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[2].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
                 .body("listOfInvolved[2].executedBy", equalTo("EU:bob@mail.com"))
                 .body("listOfInvolved[2].eventType", equalTo("TodoMarkedAsDone"))
@@ -261,7 +261,7 @@ class E2ETest {
 
                 .body("listOfInvolved[3].traceId", equalTo(3))
                 .body("listOfInvolved[3].correlationId", equalTo(1))
-                .body("listOfInvolved[3].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[3].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[3].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
                 .body("listOfInvolved[3].executedBy", equalTo("EU:bob@mail.com"))
                 .body("listOfInvolved[3].eventType", nullValue())
@@ -273,7 +273,7 @@ class E2ETest {
 
                 .body("listOfInvolved[4].traceId", equalTo(6))
                 .body("listOfInvolved[4].correlationId", equalTo(2))
-                .body("listOfInvolved[4].aggregateId", equalTo("U000001-T000001"))
+                .body("listOfInvolved[4].identifiable", equalTo("U000001-T000001"))
                 .body("listOfInvolved[4].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
                 .body("listOfInvolved[4].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[4].eventType", nullValue())
@@ -302,15 +302,15 @@ class E2ETest {
                              SELECT id, executed_by_hashed, executed_by_encoded FROM todo_taking.executed_by_encoded
                              """
              );
-             final PreparedStatement selectTraceabilityAggregatePreparedStatement = connection.prepareStatement(
+             final PreparedStatement selectTraceabilityIdentifiablePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT aggregate_root_id, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_aggregate
+                             SELECT identifiable, executed_by_encoded_id, command_nb_of_times, command_unauthorized_nb_of_times, command_business_failed_nb_of_times, query_nb_of_times, query_unauthorized_nb_of_times, traceability_nb_of_times FROM todo_taking.traceability_identifiable
                              """);
              final PreparedStatement selectTraceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id FROM todo_taking.traceability_details_traceability_aggregate
+                             SELECT traceability_details_id, traceability_identifiable_identifiable, traceability_identifiable_executed_by_encoded_id FROM todo_taking.traceability_details_traceability_identifiable
                              """
              );
              final PreparedStatement selectTraceabilityAggregateEventsPreparedStatement = connection.prepareStatement(
@@ -337,11 +337,11 @@ class E2ETest {
                         resultSet.getString("id"), resultSet.getString("executed_by_hashed"),
                         resultSet.getString("executed_by_encoded")));
             }
-            resultSet = selectTraceabilityAggregatePreparedStatement.executeQuery();
+            resultSet = selectTraceabilityIdentifiablePreparedStatement.executeQuery();
             while (resultSet.next()) {
                 data.add(String.join("|",
-                        "traceability_aggregate",
-                        resultSet.getString("aggregate_root_id"),
+                        "traceability_identifiable",
+                        resultSet.getString("identifiable"),
                         resultSet.getString("executed_by_encoded_id"),
                         String.valueOf(resultSet.getLong("command_nb_of_times")),
                         String.valueOf(resultSet.getLong("command_unauthorized_nb_of_times")),
@@ -353,10 +353,10 @@ class E2ETest {
             resultSet = selectTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeQuery();
             while (resultSet.next()) {
                 data.add(String.join("|",
-                        "traceability_details_traceability_aggregate",
+                        "traceability_details_traceability_identifiable",
                         resultSet.getString("traceability_details_id"),
-                        resultSet.getString("traceability_aggregate_aggregate_root_id"),
-                        resultSet.getString("traceability_aggregate_executed_by_encoded_id")));
+                        resultSet.getString("traceability_identifiable_identifiable"),
+                        resultSet.getString("traceability_identifiable_executed_by_encoded_id")));
             }
             resultSet = selectTraceabilityAggregateEventsPreparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -380,16 +380,16 @@ class E2ETest {
                 "traceability_details|7|3|2026-09-06 14:00:00+02|2|0|TRACEABILITY",
                 "executed_by_encoded|1|EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4|EU:aliceEncoded",
                 "executed_by_encoded|4|EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976|EU:bobEncoded",
-                "traceability_aggregate|U000001-T000002|1|1|0|0|0|0|1",
-                "traceability_aggregate|U000001-T000001|4|1|0|0|0|1|0",
-                "traceability_aggregate|U000001-T000001|1|2|0|0|0|0|2",
-                "traceability_details_traceability_aggregate|5|U000001-T000002|1",
-                "traceability_details_traceability_aggregate|3|U000001-T000001|4",
-                "traceability_details_traceability_aggregate|4|U000001-T000002|1",
-                "traceability_details_traceability_aggregate|7|U000001-T000001|1",
-                "traceability_details_traceability_aggregate|1|U000001-T000001|1",
-                "traceability_details_traceability_aggregate|6|U000001-T000001|1",
-                "traceability_details_traceability_aggregate|2|U000001-T000001|4",
+                "traceability_identifiable|U000001-T000002|1|1|0|0|0|0|1",
+                "traceability_identifiable|U000001-T000001|4|1|0|0|0|1|0",
+                "traceability_identifiable|U000001-T000001|1|2|0|0|0|0|2",
+                "traceability_details_traceability_identifiable|5|U000001-T000002|1",
+                "traceability_details_traceability_identifiable|3|U000001-T000001|4",
+                "traceability_details_traceability_identifiable|4|U000001-T000002|1",
+                "traceability_details_traceability_identifiable|7|U000001-T000001|1",
+                "traceability_details_traceability_identifiable|1|U000001-T000001|1",
+                "traceability_details_traceability_identifiable|6|U000001-T000001|1",
+                "traceability_details_traceability_identifiable|2|U000001-T000001|4",
                 "traceability_aggregate_events|4|4|U000001-T000002|null|NewTodoCreated|0",
                 "traceability_aggregate_events|1|1|U000001-T000001|null|NewTodoCreated|0",
                 "traceability_aggregate_events|2|1|U000001-T000001|null|TodoDescriptionUpdated|1",

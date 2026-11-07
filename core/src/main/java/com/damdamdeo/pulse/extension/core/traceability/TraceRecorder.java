@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public record TraceRecorder(TraceId traceId, CorrelationId correlationId, ExecutedAt executedAt, Source source,
                             ExecutionStatus executionStatus, From from,
-                            List<EncodedTraceAggregateId> encodedTraceAggregateIds) {
+                            List<EncodedTraceIdentifiable> encodedTraceIdentifiables) {
 
     public TraceRecorder {
         Objects.requireNonNull(traceId);
@@ -16,9 +16,9 @@ public record TraceRecorder(TraceId traceId, CorrelationId correlationId, Execut
         Objects.requireNonNull(source);
         Objects.requireNonNull(executionStatus);
         Objects.requireNonNull(from);
-        Objects.requireNonNull(encodedTraceAggregateIds);
-        Validate.isTrue(!encodedTraceAggregateIds.isEmpty());
-        Validate.validState(encodedTraceAggregateIds.stream().map(EncodedTraceAggregateId::source)
-                .allMatch(source1 -> source1 == source));
+        Objects.requireNonNull(encodedTraceIdentifiables);
+        Validate.isTrue(!encodedTraceIdentifiables.isEmpty());
+        Validate.validState(encodedTraceIdentifiables.stream().map(EncodedTraceIdentifiable::source)
+                .allMatch(source1 -> source1.equals(source)));
     }
 }

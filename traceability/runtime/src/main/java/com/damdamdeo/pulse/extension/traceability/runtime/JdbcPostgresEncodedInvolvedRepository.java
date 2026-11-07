@@ -1,9 +1,9 @@
 package com.damdamdeo.pulse.extension.traceability.runtime;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
@@ -33,40 +33,40 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
     }
 
     @Override
-    public Page<EncodedInvolved> findBy(final AggregateId aggregateId, final IncludeUncompounded includeUncompounded,
+    public Page<EncodedInvolved> findBy(final Identifiable identifiable, final IncludeUncompounded includeUncompounded,
                                         final Pagination pagination) throws TraceRepositoryException {
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(pagination);
         try (final Connection connection = dataSource.getConnection();
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(ta.*) AS count FROM %s.traceability_aggregate ta WHERE aggregate_root_id LIKE ?
+                     SELECT COUNT(ti.*) AS count FROM %s.traceability_identifiable ti WHERE identifiable LIKE ?
                      """.formatted(schemaName.name()));
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
-                       ta.aggregate_root_id as aggregate_root_id,
-                       ta.command_nb_of_times AS command_nb_of_times,
-                       ta.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
-                       ta.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
-                       ta.query_nb_of_times AS query_nb_of_times,
-                       ta.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
-                       ta.traceability_nb_of_times AS traceability_nb_of_times,
+                       ti.identifiable as identifiable,
+                       ti.command_nb_of_times AS command_nb_of_times,
+                       ti.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
+                       ti.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
+                       ti.query_nb_of_times AS query_nb_of_times,
+                       ti.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
+                       ti.traceability_nb_of_times AS traceability_nb_of_times,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded
-                     FROM %1$s.traceability_aggregate ta
+                     FROM %1$s.traceability_identifiable ti
                      JOIN %1$s.executed_by_encoded ebe
-                       ON ebe.id = ta.executed_by_encoded_id
-                     WHERE ta.aggregate_root_id LIKE ?
-                     ORDER BY aggregate_root_id ASC, executed_by_hashed ASC, executed_by_encoded ASC
+                       ON ebe.id = ti.executed_by_encoded_id
+                     WHERE ti.identifiable LIKE ?
+                     ORDER BY identifiable ASC, executed_by_hashed ASC, executed_by_encoded ASC
                      LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
                 if (!includeUncompounded.included()) {
-                    selectPreparedStatement.setString(1, aggregateId.id());
+                    selectPreparedStatement.setString(1, identifiable.id());
                 } else {
-                    selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                    selectPreparedStatement.setString(1, identifiable.id() + "%");
                 }
                 selectPreparedStatement.setNull(2, Types.INTEGER);
                 selectPreparedStatement.setLong(3, 0);
@@ -74,7 +74,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
@@ -89,11 +89,11 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                 return new Page<>(content, pagination, content.size());
             } else {
                 if (!includeUncompounded.included()) {
-                    countPreparedStatement.setString(1, aggregateId.id());
-                    selectPreparedStatement.setString(1, aggregateId.id());
+                    countPreparedStatement.setString(1, identifiable.id());
+                    selectPreparedStatement.setString(1, identifiable.id());
                 } else {
-                    countPreparedStatement.setString(1, aggregateId.id() + "%");
-                    selectPreparedStatement.setString(1, aggregateId.id() + "%");
+                    countPreparedStatement.setString(1, identifiable.id() + "%");
+                    selectPreparedStatement.setString(1, identifiable.id() + "%");
                 }
                 selectPreparedStatement.setLong(2, pagination.size());
                 selectPreparedStatement.setLong(3, pagination.offset());
@@ -104,7 +104,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     final List<EncodedInvolved> content = new ArrayList<>(pagination.size());
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
@@ -130,28 +130,28 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
         try (final Connection connection = dataSource.getConnection();
              // language=sql
              final PreparedStatement countPreparedStatement = connection.prepareStatement("""
-                     SELECT COUNT(ta.*) AS count
-                     FROM %1$s.traceability_aggregate ta
+                     SELECT COUNT(ti.*) AS count
+                     FROM %1$s.traceability_identifiable ti
                      JOIN %1$s.executed_by_encoded ebe
-                       ON ebe.id = ta.executed_by_encoded_id
+                       ON ebe.id = ti.executed_by_encoded_id
                      WHERE ebe.executed_by_hashed = ?
                      """.formatted(schemaName.name()));
              // language=sql
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
-                       ta.aggregate_root_id AS aggregate_root_id,
-                       ta.command_nb_of_times AS command_nb_of_times,
-                       ta.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
-                       ta.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
-                       ta.query_nb_of_times AS query_nb_of_times,
-                       ta.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
-                       ta.traceability_nb_of_times AS traceability_nb_of_times,
+                       ti.identifiable AS identifiable,
+                       ti.command_nb_of_times AS command_nb_of_times,
+                       ti.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
+                       ti.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
+                       ti.query_nb_of_times AS query_nb_of_times,
+                       ti.query_unauthorized_nb_of_times AS query_unauthorized_nb_of_times,
+                       ti.traceability_nb_of_times AS traceability_nb_of_times,
                        ebe.executed_by_encoded AS executed_by_encoded
-                     FROM %1$s.traceability_aggregate ta
+                     FROM %1$s.traceability_identifiable ti
                      JOIN %1$s.executed_by_encoded ebe
-                       ON ebe.id = ta.executed_by_encoded_id
+                       ON ebe.id = ti.executed_by_encoded_id
                      WHERE ebe.executed_by_hashed = ?
-                     ORDER BY aggregate_root_id ASC, executed_by_hashed ASC, executed_by_encoded ASC
+                     ORDER BY identifiable ASC, executed_by_hashed ASC, executed_by_encoded ASC
                      LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
@@ -162,7 +162,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         executedByHashed,
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -188,7 +188,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     final List<EncodedInvolved> content = new ArrayList<>(pagination.size());
                     while (select.next()) {
                         content.add(new EncodedInvolved(
-                                new AnyAggregateId(select.getString("aggregate_root_id")),
+                                new AnyIdentifiable(select.getString("identifiable")),
                                 new EncodedActor(
                                         executedByHashed,
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))

@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.traceability.runtime;
 
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
-import com.damdamdeo.pulse.extension.core.traceability.EncodedTraceAggregateId;
+import com.damdamdeo.pulse.extension.core.traceability.EncodedTraceIdentifiable;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorder;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorderRepository;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRepositoryException;
@@ -37,14 +37,14 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
             """;
 
     // language=sql
-    public static final String INSERT_TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_details_traceability_aggregate (
+    public static final String INSERT_TRACEABILITY_DETAILS_TRACEABILITY_IDENTIFIABLE_SQL = """
+            INSERT INTO %s.traceability_details_traceability_identifiable (
                 traceability_details_id,
-                traceability_aggregate_aggregate_root_id,
-                traceability_aggregate_executed_by_encoded_id
+                traceability_identifiable_identifiable,
+                traceability_identifiable_executed_by_encoded_id
             )
             VALUES (?, ?, ?)
-            ON CONFLICT (traceability_details_id, traceability_aggregate_aggregate_root_id, traceability_aggregate_executed_by_encoded_id)
+            ON CONFLICT (traceability_details_id, traceability_identifiable_identifiable, traceability_identifiable_executed_by_encoded_id)
             DO NOTHING
             """;
 
@@ -74,17 +74,17 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
         Objects.requireNonNull(traceRecorder);
         final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
             case COMMAND -> switch (traceRecorder.executionStatus()) {
-                case SUCCESS -> SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
-                case FAILED_UNAUTHORIZED -> SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
-                case FAILED_BUSINESS -> SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_AGGREGATE_SQL;
+                case SUCCESS -> SOURCE_COMMAND_TRACEABILITY_IDENTIFIABLE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL;
+                case FAILED_BUSINESS -> SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_IDENTIFIABLE_SQL;
             };
             case QUERY -> switch (traceRecorder.executionStatus()) {
-                case SUCCESS -> SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
-                case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
+                case SUCCESS -> SOURCE_QUERY_TRACEABILITY_IDENTIFIABLE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL;
                 case FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
             };
             case TRACEABILITY -> switch (traceRecorder.executionStatus()) {
-                case SUCCESS -> SOURCE_TRACEABILITY_AGGREGATE_SQL;
+                case SUCCESS -> SOURCE_TRACEABILITY_IDENTIFIABLE_SQL;
                 case FAILED_UNAUTHORIZED, FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
             };
         };
@@ -96,8 +96,8 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                          JdbcPostgresInvolvedTraceRecorderRepository.INSERT_EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
                  final PreparedStatement insertTraceabilityAggregatePreparedStatement = connection.prepareStatement(
                          traceabilityAggregateSQL.formatted(schemaName.name()));
-                 final PreparedStatement insertTraceabilityDetailsTraceabilityAggregatePreparedStatement = connection.prepareStatement(
-                         INSERT_TRACEABILITY_DETAILS_TRACEABILITY_AGGREGATE_SQL.formatted(schemaName.name()));
+                 final PreparedStatement insertTraceabilityDetailsTraceabilityIdentifiablePreparedStatement = connection.prepareStatement(
+                         INSERT_TRACEABILITY_DETAILS_TRACEABILITY_IDENTIFIABLE_SQL.formatted(schemaName.name()));
                  final PreparedStatement insertTraceabilityAggregateEventPreparedStatement = connection.prepareStatement(
                          INSERT_TRACEABILITY_AGGREGATE_EVENT_SQL.formatted(schemaName.name()))) {
                 traceabilityDetailsPreparedStatement.setLong(1, traceRecorder.traceId().id());
@@ -107,10 +107,10 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                 traceabilityDetailsPreparedStatement.setInt(5, traceRecorder.executionStatus().ordinal());
                 traceabilityDetailsPreparedStatement.setString(6, traceRecorder.from().from());
                 traceabilityDetailsPreparedStatement.executeUpdate();
-                for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
-                    insertExecutedByEncodedPreparedStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
-                    insertExecutedByEncodedPreparedStatement.setString(2, encodedTraceAggregateId.executedByEncoded().encoded());
-                    insertExecutedByEncodedPreparedStatement.setString(3, encodedTraceAggregateId.executedByHashed().hashed());
+                for (final EncodedTraceIdentifiable encodedTraceIdentifiable : traceRecorder.encodedTraceIdentifiables()) {
+                    insertExecutedByEncodedPreparedStatement.setString(1, encodedTraceIdentifiable.executedByHashed().hashed());
+                    insertExecutedByEncodedPreparedStatement.setString(2, encodedTraceIdentifiable.executedByEncoded().encoded());
+                    insertExecutedByEncodedPreparedStatement.setString(3, encodedTraceIdentifiable.executedByHashed().hashed());
                     final long executedByEncodedId;
                     try (final ResultSet resultSet = insertExecutedByEncodedPreparedStatement.executeQuery()) {
                         if (!resultSet.next()) {
@@ -118,21 +118,21 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                         }
                         executedByEncodedId = resultSet.getLong(1);
                     }
-                    insertTraceabilityAggregatePreparedStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
+                    insertTraceabilityAggregatePreparedStatement.setString(1, encodedTraceIdentifiable.identifiable().id());
                     insertTraceabilityAggregatePreparedStatement.setLong(2, executedByEncodedId);
                     insertTraceabilityAggregatePreparedStatement.executeUpdate();
-                    if (encodedTraceAggregateId.hasEvent()) {
+                    if (encodedTraceIdentifiable.hasEvent()) {
                         insertTraceabilityAggregateEventPreparedStatement.setLong(1, traceRecorder.traceId().id());
-                        insertTraceabilityAggregateEventPreparedStatement.setString(2, encodedTraceAggregateId.aggregateId().id());
-                        insertTraceabilityAggregateEventPreparedStatement.setString(3, encodedTraceAggregateId.projectionId() != null ? encodedTraceAggregateId.projectionId().id() : null);
-                        insertTraceabilityAggregateEventPreparedStatement.setString(4, encodedTraceAggregateId.eventType().type());
-                        insertTraceabilityAggregateEventPreparedStatement.setInt(5, encodedTraceAggregateId.aggregateVersion().version());
+                        insertTraceabilityAggregateEventPreparedStatement.setString(2, encodedTraceIdentifiable.identifiable().id());
+                        insertTraceabilityAggregateEventPreparedStatement.setString(3, encodedTraceIdentifiable.projectionId() != null ? encodedTraceIdentifiable.projectionId().id() : null);
+                        insertTraceabilityAggregateEventPreparedStatement.setString(4, encodedTraceIdentifiable.eventType().type());
+                        insertTraceabilityAggregateEventPreparedStatement.setInt(5, encodedTraceIdentifiable.aggregateVersion().version());
                         insertTraceabilityAggregateEventPreparedStatement.executeUpdate();
                     }
-                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(1, traceRecorder.traceId().id());
-                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setString(2, encodedTraceAggregateId.aggregateId().id());
-                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.setLong(3, executedByEncodedId);
-                    insertTraceabilityDetailsTraceabilityAggregatePreparedStatement.executeUpdate();
+                    insertTraceabilityDetailsTraceabilityIdentifiablePreparedStatement.setLong(1, traceRecorder.traceId().id());
+                    insertTraceabilityDetailsTraceabilityIdentifiablePreparedStatement.setString(2, encodedTraceIdentifiable.identifiable().id());
+                    insertTraceabilityDetailsTraceabilityIdentifiablePreparedStatement.setLong(3, executedByEncodedId);
+                    insertTraceabilityDetailsTraceabilityIdentifiablePreparedStatement.executeUpdate();
                 }
                 connection.commit();
             } catch (final SQLException exception) {

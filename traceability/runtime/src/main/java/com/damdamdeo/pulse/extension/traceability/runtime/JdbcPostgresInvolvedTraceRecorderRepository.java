@@ -2,7 +2,7 @@ package com.damdamdeo.pulse.extension.traceability.runtime;
 
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
-import com.damdamdeo.pulse.extension.core.traceability.EncodedTraceAggregateId;
+import com.damdamdeo.pulse.extension.core.traceability.EncodedTraceIdentifiable;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorder;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRecorderRepository;
 import com.damdamdeo.pulse.extension.core.traceability.TraceRepositoryException;
@@ -50,81 +50,81 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
             """;
 
     // language=sql
-    public static final String SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_aggregate (
-                aggregate_root_id,
+    public static final String SOURCE_COMMAND_TRACEABILITY_IDENTIFIABLE_SQL = """
+            INSERT INTO %s.traceability_identifiable (
+                identifiable,
                 executed_by_encoded_id,
                 command_nb_of_times
             )
             VALUES (?, ?, 1)
-            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
-            SET command_nb_of_times = %1$s.traceability_aggregate.command_nb_of_times + 1;
+            SET command_nb_of_times = %1$s.traceability_identifiable.command_nb_of_times + 1;
             """;
 
     // language=sql
-    public static final String SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_aggregate (
-                aggregate_root_id,
+    public static final String SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL = """
+            INSERT INTO %s.traceability_identifiable (
+                identifiable,
                 executed_by_encoded_id,
                 command_unauthorized_nb_of_times
             )
             VALUES (?, ?, 1)
-            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
-            SET command_unauthorized_nb_of_times = %1$s.traceability_aggregate.command_unauthorized_nb_of_times + 1;
+            SET command_unauthorized_nb_of_times = %1$s.traceability_identifiable.command_unauthorized_nb_of_times + 1;
             """;
 
     // language=sql
-    public static final String SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_aggregate (
-                aggregate_root_id,
+    public static final String SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_IDENTIFIABLE_SQL = """
+            INSERT INTO %s.traceability_identifiable (
+                identifiable,
                 executed_by_encoded_id,
                 command_business_failed_nb_of_times
             )
             VALUES (?, ?, 1)
-            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
-            SET command_business_failed_nb_of_times = %1$s.traceability_aggregate.command_business_failed_nb_of_times + 1;
+            SET command_business_failed_nb_of_times = %1$s.traceability_identifiable.command_business_failed_nb_of_times + 1;
             """;
 
     // language=sql
-    public static final String SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_aggregate (
-                aggregate_root_id,
+    public static final String SOURCE_QUERY_TRACEABILITY_IDENTIFIABLE_SQL = """
+            INSERT INTO %s.traceability_identifiable (
+                identifiable,
                 executed_by_encoded_id,
                 query_nb_of_times
             )
             VALUES (?, ?, 1)
-            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
-            SET query_nb_of_times = %1$s.traceability_aggregate.query_nb_of_times + 1;
+            SET query_nb_of_times = %1$s.traceability_identifiable.query_nb_of_times + 1;
             """;
 
     // language=sql
-    public static final String SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_aggregate (
-                aggregate_root_id,
+    public static final String SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL = """
+            INSERT INTO %s.traceability_identifiable (
+                identifiable,
                 executed_by_encoded_id,
                 query_unauthorized_nb_of_times
             )
             VALUES (?, ?, 1)
-            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
-            SET query_unauthorized_nb_of_times = %1$s.traceability_aggregate.query_unauthorized_nb_of_times + 1;
+            SET query_unauthorized_nb_of_times = %1$s.traceability_identifiable.query_unauthorized_nb_of_times + 1;
             """;
 
     // language=sql
-    public static final String SOURCE_TRACEABILITY_AGGREGATE_SQL = """
-            INSERT INTO %s.traceability_aggregate (
-                aggregate_root_id,
+    public static final String SOURCE_TRACEABILITY_IDENTIFIABLE_SQL = """
+            INSERT INTO %s.traceability_identifiable (
+                identifiable,
                 executed_by_encoded_id,
                 traceability_nb_of_times
             )
             VALUES (?, ?, 1)
-            ON CONFLICT (aggregate_root_id, executed_by_encoded_id)
+            ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
-            SET traceability_nb_of_times = %1$s.traceability_aggregate.traceability_nb_of_times + 1;
+            SET traceability_nb_of_times = %1$s.traceability_identifiable.traceability_nb_of_times + 1;
             """;
 
     private final DataSource dataSource;
@@ -141,17 +141,17 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
         Objects.requireNonNull(traceRecorder);
         final String traceabilityAggregateSQL = switch (traceRecorder.source()) {
             case COMMAND -> switch (traceRecorder.executionStatus()) {
-                case SUCCESS -> SOURCE_COMMAND_TRACEABILITY_AGGREGATE_SQL;
-                case FAILED_UNAUTHORIZED -> SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
-                case FAILED_BUSINESS -> SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_AGGREGATE_SQL;
+                case SUCCESS -> SOURCE_COMMAND_TRACEABILITY_IDENTIFIABLE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL;
+                case FAILED_BUSINESS -> SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_IDENTIFIABLE_SQL;
             };
             case QUERY -> switch (traceRecorder.executionStatus()) {
-                case SUCCESS -> SOURCE_QUERY_TRACEABILITY_AGGREGATE_SQL;
-                case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_AGGREGATE_SQL;
+                case SUCCESS -> SOURCE_QUERY_TRACEABILITY_IDENTIFIABLE_SQL;
+                case FAILED_UNAUTHORIZED -> SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL;
                 case FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
             };
             case TRACEABILITY -> switch (traceRecorder.executionStatus()) {
-                case SUCCESS -> SOURCE_TRACEABILITY_AGGREGATE_SQL;
+                case SUCCESS -> SOURCE_TRACEABILITY_IDENTIFIABLE_SQL;
                 case FAILED_UNAUTHORIZED, FAILED_BUSINESS -> throw new IllegalStateException("Should not be here");
             };
         };
@@ -161,18 +161,18 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
                     INSERT_EXECUTED_BY_ENCODED_SQL.formatted(schemaName.name()));
                  final PreparedStatement aggregateStatement = connection.prepareStatement(
                          traceabilityAggregateSQL.formatted(schemaName.name()))) {
-                for (final EncodedTraceAggregateId encodedTraceAggregateId : traceRecorder.encodedTraceAggregateIds()) {
+                for (final EncodedTraceIdentifiable encodedTraceIdentifiable : traceRecorder.encodedTraceIdentifiables()) {
                     final long executedByEncodedId;
-                    executedByStatement.setString(1, encodedTraceAggregateId.executedByHashed().hashed());
-                    executedByStatement.setString(2, encodedTraceAggregateId.executedByEncoded().encoded());
-                    executedByStatement.setString(3, encodedTraceAggregateId.executedByHashed().hashed());
+                    executedByStatement.setString(1, encodedTraceIdentifiable.executedByHashed().hashed());
+                    executedByStatement.setString(2, encodedTraceIdentifiable.executedByEncoded().encoded());
+                    executedByStatement.setString(3, encodedTraceIdentifiable.executedByHashed().hashed());
                     try (final ResultSet resultSet = executedByStatement.executeQuery()) {
                         if (!resultSet.next()) {
                             throw new SQLException("Unable to retrieve executed_by_encoded id");
                         }
                         executedByEncodedId = resultSet.getLong(1);
                     }
-                    aggregateStatement.setString(1, encodedTraceAggregateId.aggregateId().id());
+                    aggregateStatement.setString(1, encodedTraceIdentifiable.identifiable().id());
                     aggregateStatement.setLong(2, executedByEncodedId);
                     aggregateStatement.addBatch();
                 }

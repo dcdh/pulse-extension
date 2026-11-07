@@ -13,4 +13,8 @@ public record AnyIdentifiable(String id) implements Identifiable {
     public static AnyIdentifiable from(final Identifiable identifiable) {
         return new AnyIdentifiable(identifiable.id());
     }
+
+    public static AnyIdentifiable from(final String id) {
+        return new AnyIdentifiable(id);
+    }
 }

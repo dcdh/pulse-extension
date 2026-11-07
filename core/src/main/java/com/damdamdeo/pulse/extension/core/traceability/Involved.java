@@ -1,11 +1,11 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 
 import java.util.Objects;
 
-public record Involved(AggregateId aggregateId, Actor actor,
+public record Involved(Identifiable identifiable, Actor actor,
                        CommandNbOfTimes commandNbOfTimes,
                        CommandUnauthorizedNbOfTimes commandUnauthorizedNbOfTimes,
                        CommandBusinessFailedNbOfTimes commandBusinessFailedNbOfTimes,
@@ -14,7 +14,7 @@ public record Involved(AggregateId aggregateId, Actor actor,
                        TraceabilityNbOfTimes traceabilityNbOfTimes) {
 
     public Involved {
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(identifiable);
         Objects.requireNonNull(actor);
         Objects.requireNonNull(commandNbOfTimes);
         Objects.requireNonNull(commandUnauthorizedNbOfTimes);

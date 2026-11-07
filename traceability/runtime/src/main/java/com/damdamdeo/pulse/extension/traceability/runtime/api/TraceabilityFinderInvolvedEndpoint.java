@@ -1,12 +1,15 @@
 package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
 import com.damdamdeo.pulse.extension.common.runtime.pagination.PaginationDTO;
-import com.damdamdeo.pulse.extension.core.AggregateId;
-import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
+import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
+import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
-import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.FinderException;
+import com.damdamdeo.pulse.extension.core.traceability.IncludeUncompounded;
+import com.damdamdeo.pulse.extension.core.traceability.Involved;
+import com.damdamdeo.pulse.extension.core.traceability.InvolvedFinder;
 import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -48,12 +51,12 @@ public class TraceabilityFinderInvolvedEndpoint {
         }
     }
 
-    @Schema(description = "Actor involved in the execution of an aggregate.")
+    @Schema(description = "Actor involved in the execution of an identifiable.")
     public record InvolvedDTO(
 
             @Schema(type = SchemaType.STRING, implementation = String.class,
-                    description = "Identifier of the aggregate.", required = true)
-            AggregateId aggregateId,
+                    description = "Identifier of the identifiable.", required = true)
+            Identifiable identifiable,
 
             @Schema(type = SchemaType.STRING, implementation = String.class,
                     description = "Hashed identifier of the actor who executed the operation.", required = true)
@@ -88,7 +91,7 @@ public class TraceabilityFinderInvolvedEndpoint {
             TraceabilityNbOfTimes traceabilityNbOfTimes) {
 
         public InvolvedDTO {
-            Objects.requireNonNull(aggregateId);
+            Objects.requireNonNull(identifiable);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
             Objects.requireNonNull(commandNbOfTimes);
@@ -100,7 +103,7 @@ public class TraceabilityFinderInvolvedEndpoint {
         }
 
         public InvolvedDTO(final Involved involved) {
-            this(involved.aggregateId(), involved.actor().executedByHashed(), involved.actor().executedBy(),
+            this(involved.identifiable(), involved.actor().executedByHashed(), involved.actor().executedBy(),
                     involved.commandNbOfTimes(),
                     involved.commandUnauthorizedNbOfTimes(),
                     involved.commandBusinessFailedNbOfTimes(),
@@ -110,15 +113,15 @@ public class TraceabilityFinderInvolvedEndpoint {
         }
     }
 
-    @Path("byAggregateId/{aggregateId}")
+    @Path("byIdentifiable/{identifiable}")
     @GET
-    public InvolvedPageDTO findBy(@PathParam("aggregateId") final AnyAggregateId aggregateId,
+    public InvolvedPageDTO findBy(@PathParam("identifiable") final AnyIdentifiable identifiable,
                                   @QueryParam("includeUncompounded") @DefaultValue("false") final IncludeUncompounded includeUncompounded,
                                   @BeanParam final PaginationDTO paginationDTO) throws FinderException {
-        Objects.requireNonNull(aggregateId);
+        Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(paginationDTO);
-        final Page<Involved> by = involvedFinder.findBy(aggregateId, includeUncompounded, paginationDTO.toPagination());
+        final Page<Involved> by = involvedFinder.findBy(identifiable, includeUncompounded, paginationDTO.toPagination());
         return new InvolvedPageDTO(
                 by.content().stream().map(InvolvedDTO::new).toList(),
                 by.totalPages(), by.hasNext(), by.hasPrevious());

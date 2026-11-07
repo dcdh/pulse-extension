@@ -88,7 +88,7 @@ class PulseExtensionResourceTest {
                 .body("purpose.name", equalTo("statistics"))
                 // aggregate root
                 .body("aggregateRootType.type", equalTo("User"))
-                .body("aggregateId", matchesPattern(UUID_PATTERN))
+                .body("identifiable", matchesPattern(UUID_PATTERN))
                 // version
                 .body("currentVersionInConsumption.version", equalTo(0))
                 // storedAt
@@ -106,7 +106,7 @@ class PulseExtensionResourceTest {
                 .body("decryptableEventPayload.decrypted", equalTo(true))
                 // aggregateRootLoaded
                 .body("aggregateRootLoaded.aggregateRootType.type", equalTo("User"))
-                .body("aggregateRootLoaded.aggregateId", matchesPattern(UUID_PATTERN))
+                .body("aggregateRootLoaded.identifiable", matchesPattern(UUID_PATTERN))
                 .body("aggregateRootLoaded.lastAggregateVersion.version", equalTo(0))
                 // encrypted aggregate payload
                 .body("aggregateRootLoaded.encryptedAggregateRootPayload.payload", not(emptyOrNullString()))
