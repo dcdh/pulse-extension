@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -14,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +28,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultDetailedInvolvedFinderTest {
+
+    private static final AnyAggregateId LINK_TO = new AnyAggregateId("aggregate");
 
     @Mock
     private EncodedDetailedInvolvedRepository encodedDetailedInvolvedRepository;
@@ -80,7 +84,7 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("EU:encoded");
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, executedByEncoded), null, null,
                 source, ExecutionStatus.SUCCESS, from, executedAt);
         final Page<EncodedDetailedInvolved> encodedPage = new Page<>(List.of(encodedDetailedInvolved), pagination, 1);
@@ -108,7 +112,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(detailedInvolved.actor().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(identifiable, new IncludeUncompounded(false), pagination),
                 () -> verify(ownedByProvider).provide(identifiable),
-                () -> verify(traceAppender).append(Set.of(identifiable))
+                () -> verify(traceAppender).append(Map.of(identifiable, LINK_TO))
         );
     }
 
@@ -117,7 +121,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(1, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")),
                 null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         final Page<EncodedDetailedInvolved> encodedPage = new Page<>(List.of(encodedDetailedInvolved), pagination, 11);
@@ -145,7 +149,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(detailedInvolved.actor().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(executedByHashed, pagination),
                 () -> verify(ownedByProvider).provide(identifiable),
-                () -> verify(traceAppender).append(Set.of(identifiable))
+                () -> verify(traceAppender).append(Map.of(identifiable, LINK_TO))
         );
     }
 
@@ -166,7 +170,7 @@ class DefaultDetailedInvolvedFinderTest {
                 () -> assertThat(result.pagination()).isSameAs(pagination),
                 () -> assertThat(result.totalElements()).isZero(),
                 () -> verify(encodedDetailedInvolvedRepository).findBy(identifiable, new IncludeUncompounded(false), pagination),
-                () -> verify(traceAppender).append(Set.of()),
+                () -> verify(traceAppender).append(Map.of()),
                 () -> verifyNoInteractions(ownedByProvider, usernameDecoder)
         );
     }
@@ -176,7 +180,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Anonymous.DISCRIMINANT);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Anonymous.DISCRIMINANT)),
                 null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -199,7 +203,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.NotAvailable.DISCRIMINANT);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.NotAvailable.DISCRIMINANT)),
                 null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -223,7 +227,7 @@ class DefaultDetailedInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final String serviceAccount = "my-service";
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("SA:" + serviceAccount);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded("SA:" + serviceAccount)),
                 null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -247,7 +251,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Banned.DISCRIMINANT);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Banned.DISCRIMINANT)),
                 null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -271,7 +275,7 @@ class DefaultDetailedInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")),
                 null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         givenTraceabilityReadRole();
@@ -332,7 +336,7 @@ class DefaultDetailedInvolvedFinderTest {
     void shouldWrapTraceAppenderExceptionWhenFindingByAggregateId() throws Exception {
         // given
         final Pagination pagination = new Pagination(0, 10);
-        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved encodedDetailedInvolved = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(new ExecutedByHashed("EU:hashed"), new ExecutedByEncoded("EU:encoded")),
                 null, null, source, ExecutionStatus.SUCCESS, from, executedAt);
         final TraceAppenderException exception = new TraceAppenderException(new RuntimeException("Unable to append trace"));
@@ -341,7 +345,7 @@ class DefaultDetailedInvolvedFinderTest {
                 .willReturn(new Page<>(List.of(encodedDetailedInvolved), pagination, 1));
         given(ownedByProvider.provide(identifiable)).willReturn(ownedBy);
         given(usernameDecoder.decode(any(), same(ownedBy))).willReturn(username);
-        doThrow(exception).when(traceAppender).append(Set.of(identifiable));
+        doThrow(exception).when(traceAppender).append(Map.of(identifiable, LINK_TO));
 
         // when / then
         assertThatThrownBy(() -> finder.findBy(identifiable, new IncludeUncompounded(false), pagination))
@@ -438,10 +442,10 @@ class DefaultDetailedInvolvedFinderTest {
         final ExecutedAt secondExecutedAt = mock(ExecutedAt.class);
         final ExecutedByHashed firstHash = new ExecutedByHashed("EU:first");
         final ExecutedByHashed secondHash = new ExecutedByHashed("SA:second");
-        final EncodedDetailedInvolved first = new EncodedDetailedInvolved(traceId, correlationId, identifiable,
+        final EncodedDetailedInvolved first = new EncodedDetailedInvolved(traceId, correlationId, identifiable, LINK_TO,
                 new EncodedActor(firstHash, new ExecutedByEncoded("EU:first")), null, null,
                 source, ExecutionStatus.SUCCESS, from, executedAt);
-        final EncodedDetailedInvolved second = new EncodedDetailedInvolved(secondTraceId, correlationId, secondIdentifiable,
+        final EncodedDetailedInvolved second = new EncodedDetailedInvolved(secondTraceId, correlationId, secondIdentifiable, LINK_TO,
                 new EncodedActor(secondHash, new ExecutedByEncoded("SA:second")), null, null,
                 secondSource, ExecutionStatus.SUCCESS, secondFrom, secondExecutedAt);
         givenTraceabilityReadRole();

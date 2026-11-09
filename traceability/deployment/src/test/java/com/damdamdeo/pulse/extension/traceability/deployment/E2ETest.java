@@ -2,7 +2,9 @@ package com.damdamdeo.pulse.extension.traceability.deployment;
 
 import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.command.CommandId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
@@ -30,10 +32,7 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static com.damdamdeo.pulse.extension.core.traceability.Finder.ROLE_TRACEABILITY_READ;
 import static io.restassured.RestAssured.given;
@@ -124,10 +123,15 @@ class E2ETest {
         }
     }
 
-    record SimpleCommand(TodoId id) implements Command<TodoId> {
+    record SimpleCommand(TodoId todoId) implements Command<TodoId> {
 
         SimpleCommand {
-            Objects.requireNonNull(id);
+            Objects.requireNonNull(todoId);
+        }
+
+        @Override
+        public CommandId<TodoId> id() {
+            return CommandId.from(todoId);
         }
     }
 
@@ -165,7 +169,7 @@ class E2ETest {
         ), ExecutionStatus.SUCCESS);
         traceAppender.append(new SampleInput(),
                 List.of(new TodoProjection(
-                                ProjectionId.from(TodoId.USER_1_TODO_1),
+                        ProjectionId.from(TodoId.USER_1_TODO_1),
                         "lorem ipsum",
                         Status.IN_PROGRESS, false, List.of())),
                 ExecutionStatus.FAILED_UNAUTHORIZED,
@@ -176,7 +180,7 @@ class E2ETest {
                 new VersionizedEvent<>(new AggregateVersion(0),
                         new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ALICE))
         ), ExecutionStatus.SUCCESS);
-        traceAppender.append(Set.of(TodoId.USER_1_TODO_2));
+        traceAppender.append(Map.of(TodoId.USER_1_TODO_2, AnyAggregateId.from(TodoId.USER_1_TODO_2)));
 
         // Then
         given()
@@ -316,7 +320,7 @@ class E2ETest {
              final PreparedStatement selectTraceabilityAggregateEventsPreparedStatement = connection.prepareStatement(
                      // language=sql
                      """
-                             SELECT id, traceability_trace_id, aggregate_root_id, projection_id, event_type, aggregate_version FROM todo_taking.traceability_aggregate_events
+                             SELECT id, traceability_trace_id, identifiable, link_to_aggregate_root_id, event_type, aggregate_version FROM todo_taking.traceability_aggregate_events
                              """
              )) {
             ResultSet resultSet = selectTraceabilityDetailsPreparedStatement.executeQuery();
@@ -364,8 +368,8 @@ class E2ETest {
                         "traceability_aggregate_events",
                         resultSet.getString("id"),
                         resultSet.getString("traceability_trace_id"),
-                        resultSet.getString("aggregate_root_id"),
-                        resultSet.getString("projection_id"),
+                        resultSet.getString("identifiable"),
+                        resultSet.getString("link_to_aggregate_root_id"),
                         resultSet.getString("event_type"),
                         String.valueOf(resultSet.getLong("aggregate_version"))));
             }
@@ -390,10 +394,10 @@ class E2ETest {
                 "traceability_details_traceability_identifiable|1|U000001-T000001|1",
                 "traceability_details_traceability_identifiable|6|U000001-T000001|1",
                 "traceability_details_traceability_identifiable|2|U000001-T000001|4",
-                "traceability_aggregate_events|4|4|U000001-T000002|null|NewTodoCreated|0",
-                "traceability_aggregate_events|1|1|U000001-T000001|null|NewTodoCreated|0",
-                "traceability_aggregate_events|2|1|U000001-T000001|null|TodoDescriptionUpdated|1",
-                "traceability_aggregate_events|3|2|U000001-T000001|null|TodoMarkedAsDone|2");
+                "traceability_aggregate_events|4|4|U000001-T000002|U000001-T000002|NewTodoCreated|0",
+                "traceability_aggregate_events|1|1|U000001-T000001|U000001-T000001|NewTodoCreated|0",
+                "traceability_aggregate_events|2|1|U000001-T000001|U000001-T000001|TodoDescriptionUpdated|1",
+                "traceability_aggregate_events|3|2|U000001-T000001|U000001-T000001|TodoMarkedAsDone|2");
     }
 
     private void insertEvent(final String aggregateRootId, final String aggregateRootType, final Integer version,

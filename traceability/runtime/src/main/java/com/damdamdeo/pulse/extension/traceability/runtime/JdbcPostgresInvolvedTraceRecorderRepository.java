@@ -53,10 +53,11 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public static final String SOURCE_COMMAND_TRACEABILITY_IDENTIFIABLE_SQL = """
             INSERT INTO %s.traceability_identifiable (
                 identifiable,
+                link_to_aggregate_root_id,
                 executed_by_encoded_id,
                 command_nb_of_times
             )
-            VALUES (?, ?, 1)
+            VALUES (?, ?, ?, 1)
             ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
             SET command_nb_of_times = %1$s.traceability_identifiable.command_nb_of_times + 1;
@@ -66,10 +67,11 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public static final String SOURCE_COMMAND_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL = """
             INSERT INTO %s.traceability_identifiable (
                 identifiable,
+                link_to_aggregate_root_id,
                 executed_by_encoded_id,
                 command_unauthorized_nb_of_times
             )
-            VALUES (?, ?, 1)
+            VALUES (?, ?, ?, 1)
             ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
             SET command_unauthorized_nb_of_times = %1$s.traceability_identifiable.command_unauthorized_nb_of_times + 1;
@@ -79,10 +81,11 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public static final String SOURCE_COMMAND_BUSINESS_FAILED_TRACEABILITY_IDENTIFIABLE_SQL = """
             INSERT INTO %s.traceability_identifiable (
                 identifiable,
+                link_to_aggregate_root_id,
                 executed_by_encoded_id,
                 command_business_failed_nb_of_times
             )
-            VALUES (?, ?, 1)
+            VALUES (?, ?, ?, 1)
             ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
             SET command_business_failed_nb_of_times = %1$s.traceability_identifiable.command_business_failed_nb_of_times + 1;
@@ -92,10 +95,11 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public static final String SOURCE_QUERY_TRACEABILITY_IDENTIFIABLE_SQL = """
             INSERT INTO %s.traceability_identifiable (
                 identifiable,
+                link_to_aggregate_root_id,
                 executed_by_encoded_id,
                 query_nb_of_times
             )
-            VALUES (?, ?, 1)
+            VALUES (?, ?, ?, 1)
             ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
             SET query_nb_of_times = %1$s.traceability_identifiable.query_nb_of_times + 1;
@@ -105,10 +109,11 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public static final String SOURCE_QUERY_UNAUTHORIZED_TRACEABILITY_IDENTIFIABLE_SQL = """
             INSERT INTO %s.traceability_identifiable (
                 identifiable,
+                link_to_aggregate_root_id,
                 executed_by_encoded_id,
                 query_unauthorized_nb_of_times
             )
-            VALUES (?, ?, 1)
+            VALUES (?, ?, ?, 1)
             ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
             SET query_unauthorized_nb_of_times = %1$s.traceability_identifiable.query_unauthorized_nb_of_times + 1;
@@ -118,10 +123,11 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
     public static final String SOURCE_TRACEABILITY_IDENTIFIABLE_SQL = """
             INSERT INTO %s.traceability_identifiable (
                 identifiable,
+                link_to_aggregate_root_id,
                 executed_by_encoded_id,
                 traceability_nb_of_times
             )
-            VALUES (?, ?, 1)
+            VALUES (?, ?, ?, 1)
             ON CONFLICT (identifiable, executed_by_encoded_id)
             DO UPDATE
             SET traceability_nb_of_times = %1$s.traceability_identifiable.traceability_nb_of_times + 1;
@@ -173,7 +179,8 @@ public class JdbcPostgresInvolvedTraceRecorderRepository implements TraceRecorde
                         executedByEncodedId = resultSet.getLong(1);
                     }
                     aggregateStatement.setString(1, encodedTraceIdentifiable.identifiable().id());
-                    aggregateStatement.setLong(2, executedByEncodedId);
+                    aggregateStatement.setString(2, encodedTraceIdentifiable.linkTo().id());
+                    aggregateStatement.setLong(3, executedByEncodedId);
                     aggregateStatement.addBatch();
                 }
                 aggregateStatement.executeBatch();

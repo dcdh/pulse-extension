@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -50,7 +51,7 @@ class EncodedTraceAggregateIdTest {
 
         // when
         final EncodedTraceIdentifiable trace = EncodedTraceIdentifiable.fromTraceability(
-                aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
+                aggregateId, new AnyAggregateId(aggregateId.id()), EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED);
 
         // then
         assertAll(
@@ -78,7 +79,7 @@ class EncodedTraceAggregateIdTest {
         // then
         assertAll(
                 () -> assertEquals(Source.COMMAND, trace.source()),
-                () -> assertEquals(command.id(), trace.identifiable()),
+                () -> assertEquals(command.id().id(), trace.identifiable()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertEquals(eventType, trace.eventType()),
@@ -99,7 +100,7 @@ class EncodedTraceAggregateIdTest {
         // then
         assertAll(
                 () -> assertEquals(Source.COMMAND, trace.source()),
-                () -> assertEquals(command.id(), trace.identifiable()),
+                () -> assertEquals(command.id().id(), trace.identifiable()),
                 () -> assertEquals(EXECUTED_BY_HASHED, trace.executedByHashed()),
                 () -> assertEquals(EXECUTED_BY_ENCODED, trace.executedByEncoded()),
                 () -> assertNull(trace.eventType()),
@@ -148,10 +149,10 @@ class EncodedTraceAggregateIdTest {
         // when / then
         assertAll(
                 () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceIdentifiable(
-                        Source.QUERY, aggregateId, ProjectionId.from(aggregateId), EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
+                        Source.QUERY, aggregateId, aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                         eventType, null)),
                 () -> assertThrows(IllegalArgumentException.class, () -> new EncodedTraceIdentifiable(
-                        Source.QUERY, aggregateId, ProjectionId.from(aggregateId), EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
+                        Source.QUERY, aggregateId, aggregateId, EXECUTED_BY_HASHED, EXECUTED_BY_ENCODED,
                         null, aggregateVersion))
         );
     }

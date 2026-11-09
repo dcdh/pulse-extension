@@ -35,6 +35,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                 .statusCode(200)
                 .body("listOfInvolved.size()", equalTo(2))
                 .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].linkToAggregateRootId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[0].commandNbOfTimes", equalTo(1))
@@ -94,6 +95,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                 .statusCode(200)
                 .body("listOfInvolved.size()", equalTo(1))
                 .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].linkToAggregateRootId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("totalPages", equalTo(1))
@@ -241,6 +243,7 @@ class TraceabilityFinderInvolvedEndpointTest {
                                 "type": "object",
                                 "required": [
                                     "identifiable",
+                                    "linkToAggregateRootId",
                                     "executedByHashed",
                                     "executedBy",
                                     "commandNbOfTimes",
@@ -255,6 +258,10 @@ class TraceabilityFinderInvolvedEndpointTest {
                                     "identifiable": {
                                         "type": "string",
                                         "description": "Identifier of the identifiable."
+                                    },
+                                    "linkToAggregateRootId": {
+                                        "type": "string",
+                                        "description": "Link to aggregate root identifier."
                                     },
                                     "executedByHashed": {
                                         "type": "string",

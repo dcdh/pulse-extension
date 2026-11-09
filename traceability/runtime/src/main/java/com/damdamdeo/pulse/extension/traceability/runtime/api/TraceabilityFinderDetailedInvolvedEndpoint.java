@@ -67,6 +67,10 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
             Identifiable identifiable,
 
             @Schema(type = SchemaType.STRING, implementation = String.class,
+                    description = "Link to aggregate root identifier.", required = true)
+            AnyAggregateId linkToAggregateRootId,
+
+            @Schema(type = SchemaType.STRING, implementation = String.class,
                     description = "Hashed identifier of the actor who executed the operation.", required = true)
             ExecutedByHashed executedByHashed,
 
@@ -108,6 +112,7 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
 
         public DetailedInvolvedDTO(final DetailedInvolved detailedInvolved) {
             this(detailedInvolved.traceId(), detailedInvolved.correlationId(), detailedInvolved.identifiable(),
+                    detailedInvolved.linkTo(),
                     detailedInvolved.actor().executedByHashed(), detailedInvolved.actor().executedBy(),
                     detailedInvolved.eventType(), detailedInvolved.aggregateVersion(),
                     detailedInvolved.source(), detailedInvolved.executionStatus(),

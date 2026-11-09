@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.VersionizedEvent;
@@ -13,8 +14,8 @@ import com.damdamdeo.pulse.extension.core.query.Projection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 public final class DefaultTraceAppender implements TraceAppender {
 
@@ -50,7 +51,7 @@ public final class DefaultTraceAppender implements TraceAppender {
         Objects.requireNonNull(executionStatus);
         try {
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
-            final A aggregateId = command.id();
+            final A aggregateId = command.id().linkTo();
             final List<EncodedTraceIdentifiable> encodedTraceIdentifiables = new ArrayList<>(versionizedEvents.isEmpty() ? 1 : versionizedEvents.size());
             for (final VersionizedEvent<A> versionizedEvent : versionizedEvents) {
                 final EncodedTraceIdentifiable encodedTraceIdentifiable = EncodedTraceIdentifiable.from(command,
@@ -79,9 +80,9 @@ public final class DefaultTraceAppender implements TraceAppender {
     }
 
     @Override
-    public <A extends Identifiable, P extends Projection<A>> void append(final Input input, final List<P> projections,
-                                                                         final ExecutionStatus executionStatus,
-                                                                         final TraceabilityDetails traceabilityDetails)
+    public <A extends AggregateId, P extends Projection<A>> void append(final Input input, final List<P> projections,
+                                                                        final ExecutionStatus executionStatus,
+                                                                        final TraceabilityDetails traceabilityDetails)
             throws TraceAppenderException {
         Objects.requireNonNull(input);
         Objects.requireNonNull(projections);
@@ -113,7 +114,7 @@ public final class DefaultTraceAppender implements TraceAppender {
     }
 
     @Override
-    public void append(final Set<Identifiable> identifiables) throws TraceAppenderException {
+    public void append(final Map<Identifiable, AnyAggregateId> identifiables) throws TraceAppenderException {
         Objects.requireNonNull(identifiables);
         if (identifiables.isEmpty()) {
             return;
@@ -121,8 +122,12 @@ public final class DefaultTraceAppender implements TraceAppender {
         try {
             final ExecutedBy executedBy = executionContextProvider.provide().executedBy();
             final List<EncodedTraceIdentifiable> encodedTraceIdentifiables = new ArrayList<>(identifiables.size());
-            for (final Identifiable identifiable : identifiables) {
-                EncodedTraceIdentifiable encodedTraceAggregateId = EncodedTraceIdentifiable.fromTraceability(identifiable,
+            for (final Map.Entry<Identifiable, AnyAggregateId> entry : identifiables.entrySet()) {
+                final Identifiable identifiable = entry.getKey();
+                final AnyAggregateId anyAggregateId = entry.getValue();
+                EncodedTraceIdentifiable encodedTraceAggregateId = EncodedTraceIdentifiable.fromTraceability(
+                        identifiable,
+                        anyAggregateId,
                         executedBy.hash(usernameHasher),
                         executedByEncodedProvider.provide(identifiable, executedBy));
                 encodedTraceIdentifiables.add(encodedTraceAggregateId);

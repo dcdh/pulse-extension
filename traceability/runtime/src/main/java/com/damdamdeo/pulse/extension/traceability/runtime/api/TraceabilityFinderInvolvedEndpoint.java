@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
 import com.damdamdeo.pulse.extension.common.runtime.pagination.PaginationDTO;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -59,6 +60,10 @@ public class TraceabilityFinderInvolvedEndpoint {
             Identifiable identifiable,
 
             @Schema(type = SchemaType.STRING, implementation = String.class,
+                    description = "Link to aggregate root identifier.", required = true)
+            AnyAggregateId linkToAggregateRootId,
+
+            @Schema(type = SchemaType.STRING, implementation = String.class,
                     description = "Hashed identifier of the actor who executed the operation.", required = true)
             ExecutedByHashed executedByHashed,
 
@@ -92,6 +97,7 @@ public class TraceabilityFinderInvolvedEndpoint {
 
         public InvolvedDTO {
             Objects.requireNonNull(identifiable);
+            Objects.requireNonNull(linkToAggregateRootId);
             Objects.requireNonNull(executedByHashed);
             Objects.requireNonNull(executedBy);
             Objects.requireNonNull(commandNbOfTimes);
@@ -103,7 +109,9 @@ public class TraceabilityFinderInvolvedEndpoint {
         }
 
         public InvolvedDTO(final Involved involved) {
-            this(involved.identifiable(), involved.actor().executedByHashed(), involved.actor().executedBy(),
+            this(involved.identifiable(),
+                    involved.linkTo(),
+                    involved.actor().executedByHashed(), involved.actor().executedBy(),
                     involved.commandNbOfTimes(),
                     involved.commandUnauthorizedNbOfTimes(),
                     involved.commandBusinessFailedNbOfTimes(),

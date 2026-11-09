@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.core.TodoChecklistId;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -153,7 +154,8 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("TRACEABILITY"),
                         List.of(
-                                EncodedTraceIdentifiable.fromTraceability(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceIdentifiable.fromTraceability(TodoId.USER_1_TODO_2, AnyAggregateId.from(TodoId.USER_1_TODO_2),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
                         new TraceId(9L),
@@ -163,7 +165,8 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
                         ExecutionStatus.SUCCESS,
                         new From("TRACEABILITY"),
                         List.of(
-                                EncodedTraceIdentifiable.fromTraceability(TodoId.USER_1_TODO_2, new ExecutedByHashed("EU:bob-hashed"),
+                                EncodedTraceIdentifiable.fromTraceability(TodoId.USER_1_TODO_2, AnyAggregateId.from(TodoId.USER_1_TODO_2),
+                                        new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded"))))
         )) {
             jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.store(traceRecorder);
@@ -185,25 +188,25 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
 
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(0, 1), 6L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(1, 1), 6L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(2), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_BUSINESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T16:00:00Z")))),
                         new Pagination(0, -1), 6L)
         );
@@ -225,27 +228,45 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(0, 1), 7L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))),
                         new Pagination(1, 1), 7L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(2), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_BUSINESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L), AnyIdentifiable.from(TodoId.USER_1_TODO_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L),
+                                AnyIdentifiable.from(TodoId.USER_1_TODO_1), AnyAggregateId.from(TodoId.USER_1_TODO_1),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T16:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(6L), new CorrelationId(6L), AnyIdentifiable.from(TodoChecklistId.USER_1_TODO_1_1), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(6L), new CorrelationId(6L),
+                                AnyIdentifiable.from(TodoChecklistId.USER_1_TODO_1_1), AnyAggregateId.from(TodoChecklistId.USER_1_TODO_1_1),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T17:00:00Z")))),
                         new Pagination(0, -1), 7L)
         );
@@ -265,37 +286,63 @@ class JdbcPostgresEncodedDetailedInvolvedRepositoryTest {
         // Then
         assertThat(executions).containsExactly(
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z")))),
                         new Pagination(0, 1), 8L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_BUSINESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z")))),
                         new Pagination(1, 1), 8L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(2L), new CorrelationId(2L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T13:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(3L), new CorrelationId(3L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.COMMAND, ExecutionStatus.FAILED_BUSINESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T14:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(4L), new CorrelationId(4L), new AnyIdentifiable("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(4L), new CorrelationId(4L),
+                                new AnyIdentifiable("U000001-T000002"), AnyAggregateId.from("U000001-T000002"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.QUERY, ExecutionStatus.SUCCESS, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T15:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(5L), new CorrelationId(5L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T16:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(6L), new CorrelationId(6L), new AnyIdentifiable("U000001-T000001-CL000001"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(6L), new CorrelationId(6L),
+                                new AnyIdentifiable("U000001-T000001-CL000001"), AnyAggregateId.from("U000001-T000001-CL000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.QUERY, ExecutionStatus.FAILED_UNAUTHORIZED, new From("fromQuery"), new ExecutedAt(Instant.parse("2026-09-06T17:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(7L), new CorrelationId(7L), new AnyIdentifiable("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(7L), new CorrelationId(7L),
+                                new AnyIdentifiable("U000001-T000002"), AnyAggregateId.from("U000001-T000002"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T18:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(8L), new CorrelationId(8L), new AnyIdentifiable("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(8L), new CorrelationId(8L),
+                                new AnyIdentifiable("U000001-T000002"), AnyAggregateId.from("U000001-T000002"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.TRACEABILITY, ExecutionStatus.SUCCESS, new From("TRACEABILITY"), new ExecutedAt(Instant.parse("2026-09-06T19:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(9L), new CorrelationId(9L), new AnyIdentifiable("U000001-T000002"), new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(9L), new CorrelationId(9L),
+                                new AnyIdentifiable("U000001-T000002"), AnyAggregateId.from("U000001-T000002"),
+                                new EncodedActor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedByEncoded("EU:bobEncoded")),
                                 null, null, Source.TRACEABILITY, ExecutionStatus.SUCCESS, new From("TRACEABILITY"), new ExecutedAt(Instant.parse("2026-09-06T20:00:00Z")))),
                         new Pagination(0, -1), 8L),
                 new Page<>(List.of(
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoCreated"), new AggregateVersion(0), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(1), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z"))),
-                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L), new AnyIdentifiable("U000001-T000001"), new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
+                        new EncodedDetailedInvolved(new TraceId(1L), new CorrelationId(1L),
+                                new AnyIdentifiable("U000001-T000001"), AnyAggregateId.from("U000001-T000001"),
+                                new EncodedActor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedByEncoded("EU:aliceEncoded")),
                                 new EventType("TodoUpdated"), new AggregateVersion(2), Source.COMMAND, ExecutionStatus.SUCCESS, new From("fromCommand"), new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")))
                 ), new Pagination(0, -1), 3L)
         );

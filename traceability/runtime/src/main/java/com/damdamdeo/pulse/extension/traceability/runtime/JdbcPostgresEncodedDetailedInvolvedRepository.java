@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.traceability.runtime;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
@@ -65,6 +66,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        td.from_value AS from_value,
                        td.executed_at AS executed_at,
                        ti.identifiable as identifiable,
+                       ti.link_to_aggregate_root_id as link_to_aggregate_root_id,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded,
                        tae.event_type AS event_type,
@@ -98,6 +100,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -133,6 +136,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -185,6 +189,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                          td.from_value AS from_value,
                          td.executed_at AS executed_at,
                          ti.identifiable AS identifiable,
+                         ti.link_to_aggregate_root_id as link_to_aggregate_root_id,
                          ebe.executed_by_hashed AS executed_by_hashed,
                          ebe.executed_by_encoded AS executed_by_encoded,
                          tae.event_type AS event_type,
@@ -214,6 +219,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -244,6 +250,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))

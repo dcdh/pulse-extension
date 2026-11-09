@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.ProjectionId;
@@ -12,15 +12,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record ExecutedBySpecificServiceAccounts<K extends Identifiable>(
-        String... names) implements CompositePermission<K> {
+public record ExecutedBySpecificServiceAccounts<A extends AggregateId>(
+        String... names) implements CompositePermission<A> {
 
     public ExecutedBySpecificServiceAccounts {
         Objects.requireNonNull(names);
     }
 
     @Override
-    public boolean allow(final ProjectionId<K> projectionId, final PermissionExecutionContext permissionExecutionContext)
+    public boolean allow(final ProjectionId<A> projectionId, final PermissionExecutionContext permissionExecutionContext)
             throws QueryException {
         Objects.requireNonNull(projectionId);
         Objects.requireNonNull(permissionExecutionContext);

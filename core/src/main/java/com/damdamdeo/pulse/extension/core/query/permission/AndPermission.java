@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.query.permission;
 
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
+import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.ProjectionId;
 import com.damdamdeo.pulse.extension.core.query.QueryException;
@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public final class AndPermission<K extends Identifiable> implements CompositePermission<K> {
+public final class AndPermission<A extends AggregateId> implements CompositePermission<A> {
 
-    private final List<Permission<K>> Permissions;
+    private final List<Permission<A>> Permissions;
 
     @SafeVarargs
-    public AndPermission(final Permission<K> first, final Permission<K>... others) {
+    public AndPermission(final Permission<A> first, final Permission<A>... others) {
         Objects.requireNonNull(first);
         Objects.requireNonNull(others);
         this.Permissions = new ArrayList<>(others.length + 1);
@@ -23,11 +23,11 @@ public final class AndPermission<K extends Identifiable> implements CompositePer
     }
 
     @Override
-    public boolean allow(final ProjectionId<K> projectionId, final PermissionExecutionContext permissionExecutionContext)
+    public boolean allow(final ProjectionId<A> projectionId, final PermissionExecutionContext permissionExecutionContext)
             throws QueryException {
         Objects.requireNonNull(projectionId);
         Objects.requireNonNull(permissionExecutionContext);
-        for (final Permission<K> Permission : Permissions) {
+        for (final Permission<A> Permission : Permissions) {
             if (!Permission.allow(projectionId, permissionExecutionContext)) {
                 return false;
             }

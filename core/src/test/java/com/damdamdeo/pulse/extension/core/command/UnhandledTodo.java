@@ -4,10 +4,14 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 
 import java.util.Objects;
 
-public record UnhandledTodo(TodoId id) implements Command<TodoId> {
+public record UnhandledTodo(TodoId aggregateId) implements Command<TodoId> {
 
     public UnhandledTodo {
-        Objects.requireNonNull(id);
+        Objects.requireNonNull(aggregateId);
+    }
+
+    @Override
+    public CommandId<TodoId> id() {
+        return CommandId.from(aggregateId);
     }
 }
-

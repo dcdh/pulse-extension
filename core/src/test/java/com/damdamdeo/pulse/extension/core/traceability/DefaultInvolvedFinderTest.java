@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.UnauthorizedException;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
@@ -16,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,6 +31,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultInvolvedFinderTest {
+
+    private static final AnyAggregateId LINK_TO = new AnyAggregateId("aggregate");
 
     @Mock
     private EncodedInvolvedRepository encodedInvolvedRepository;
@@ -70,7 +74,7 @@ class DefaultInvolvedFinderTest {
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("EU:encoded");
 
-        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable,
+        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, executedByEncoded),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,
@@ -103,7 +107,7 @@ class DefaultInvolvedFinderTest {
                 () -> assertThat(firstInvolved.actor().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedInvolvedRepository).findBy(identifiable, new IncludeUncompounded(false), pagination),
                 () -> verify(ownedByProvider).provide(identifiable),
-                () -> verify(traceAppender).append(Set.of(identifiable))
+                () -> verify(traceAppender).append(Map.of(identifiable, LINK_TO))
         );
     }
 
@@ -113,7 +117,7 @@ class DefaultInvolvedFinderTest {
         final Pagination pagination = new Pagination(1, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("EU:encoded");
-        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable,
+        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, executedByEncoded),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,
@@ -142,7 +146,7 @@ class DefaultInvolvedFinderTest {
                 () -> assertThat(firstInvolved.actor().executedBy()).isEqualTo(new ExecutedBy.EndUser(username)),
                 () -> verify(encodedInvolvedRepository).findBy(executedByHashed, pagination),
                 () -> verify(ownedByProvider).provide(identifiable),
-                () -> verify(traceAppender).append(Set.of(identifiable))
+                () -> verify(traceAppender).append(Map.of(identifiable, LINK_TO))
         );
     }
 
@@ -163,7 +167,7 @@ class DefaultInvolvedFinderTest {
                 () -> assertThat(result.pagination()).isSameAs(pagination),
                 () -> assertThat(result.totalElements()).isZero(),
                 () -> verify(encodedInvolvedRepository).findBy(identifiable, new IncludeUncompounded(false), pagination),
-                () -> verify(traceAppender).append(Set.of()),
+                () -> verify(traceAppender).append(Map.of()),
                 () -> verifyNoInteractions(ownedByProvider, usernameDecoder)
         );
     }
@@ -173,7 +177,7 @@ class DefaultInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Anonymous.DISCRIMINANT);
-        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable, new EncodedActor(executedByHashed,
+        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable, LINK_TO, new EncodedActor(executedByHashed,
                 new ExecutedByEncoded(ExecutedBy.Anonymous.DISCRIMINANT)),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,
@@ -203,7 +207,7 @@ class DefaultInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.NotAvailable.DISCRIMINANT);
         final EncodedInvolved encodedInvolved = new EncodedInvolved(
-                identifiable, new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.NotAvailable.DISCRIMINANT)),
+                identifiable, LINK_TO, new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.NotAvailable.DISCRIMINANT)),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,
                 CommandBusinessFailedNbOfTimes.ONE,
@@ -232,7 +236,7 @@ class DefaultInvolvedFinderTest {
         final String serviceAccount = "my-service";
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("SA:" + serviceAccount);
         final EncodedInvolved encodedInvolved = new EncodedInvolved(
-                identifiable, new EncodedActor(executedByHashed, new ExecutedByEncoded("SA:" + serviceAccount)),
+                identifiable, LINK_TO, new EncodedActor(executedByHashed, new ExecutedByEncoded("SA:" + serviceAccount)),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,
                 CommandBusinessFailedNbOfTimes.ONE,
@@ -260,7 +264,7 @@ class DefaultInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed(ExecutedBy.Banned.DISCRIMINANT);
         final EncodedInvolved encodedInvolved = new EncodedInvolved(
-                identifiable, new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Banned.DISCRIMINANT)),
+                identifiable, LINK_TO, new EncodedActor(executedByHashed, new ExecutedByEncoded(ExecutedBy.Banned.DISCRIMINANT)),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,
                 CommandBusinessFailedNbOfTimes.ONE,
@@ -288,7 +292,7 @@ class DefaultInvolvedFinderTest {
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
         final EncodedInvolved encodedInvolved = new EncodedInvolved(
-                identifiable, new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")),
+                identifiable, LINK_TO, new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,
                 CommandBusinessFailedNbOfTimes.ONE,
@@ -349,7 +353,7 @@ class DefaultInvolvedFinderTest {
     void shouldWrapTraceAppenderExceptionWhenFindingByAggregateId() throws Exception {
         // given
         final Pagination pagination = new Pagination(0, 10);
-        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable,
+        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable, LINK_TO,
                 new EncodedActor(new ExecutedByHashed("EU:hashed"), new ExecutedByEncoded("EU:encoded")),
                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.ONE, CommandBusinessFailedNbOfTimes.ONE,
                 QueryNbOfTimes.ONE, QueryUnauthorizedNbOfTimes.ONE, TraceabilityNbOfTimes.ONE);
@@ -359,7 +363,7 @@ class DefaultInvolvedFinderTest {
                 .willReturn(new Page<>(List.of(encodedInvolved), pagination, 1));
         given(ownedByProvider.provide(identifiable)).willReturn(ownedBy);
         given(usernameDecoder.decode(any(), same(ownedBy))).willReturn(username);
-        org.mockito.Mockito.doThrow(exception).when(traceAppender).append(Set.of(identifiable));
+        org.mockito.Mockito.doThrow(exception).when(traceAppender).append(Map.of(identifiable, LINK_TO));
 
         // when / then
         assertThatThrownBy(() -> finder.findBy(identifiable, new IncludeUncompounded(false), pagination))
@@ -434,7 +438,7 @@ class DefaultInvolvedFinderTest {
         // given
         final Pagination pagination = new Pagination(0, 10);
         final ExecutedByHashed executedByHashed = new ExecutedByHashed("EU:hashed");
-        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable,
+        final EncodedInvolved encodedInvolved = new EncodedInvolved(identifiable, LINK_TO,
                 new EncodedActor(executedByHashed, new ExecutedByEncoded("EU:encoded")),
                 CommandNbOfTimes.ONE,
                 CommandUnauthorizedNbOfTimes.ONE,

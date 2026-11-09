@@ -36,6 +36,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                 .statusCode(200)
                 .body("listOfInvolved.size()", equalTo(2))
                 .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].linkToAggregateRootId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[1].identifiable", equalTo("U000001-T000001"))
@@ -61,6 +62,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                 .body("listOfInvolved.size()", equalTo(2))
                 .body("listOfInvolved[0].traceId", equalTo(1))
                 .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].linkToAggregateRootId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("listOfInvolved[0].source", equalTo("COMMAND"))
@@ -148,6 +150,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                 .statusCode(200)
                 .body("listOfInvolved.size()", equalTo(1))
                 .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
+                .body("listOfInvolved[0].linkToAggregateRootId", equalTo("U000001-T000001"))
                 .body("listOfInvolved[0].executedByHashed", equalTo("EU:alice-hashed"))
                 .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
                 .body("totalPages", equalTo(1))
@@ -207,6 +210,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "traceId",
                                     "correlationId",
                                     "identifiable",
+                                    "linkToAggregateRootId",
                                     "executedByHashed",
                                     "executedBy",
                                     "source",
@@ -235,6 +239,10 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "identifiable": {
                                         "type": "string",
                                         "description": "Identifier of the identifiable."
+                                    },
+                                    "linkToAggregateRootId": {
+                                        "type": "string",
+                                        "description": "Link to aggregate root identifier."
                                     },
                                     "executedByHashed": {
                                         "type": "string",
@@ -423,6 +431,7 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                 "type": "object",
                                 "required": [
                                     "identifiable",
+                                    "linkToAggregateRootId",
                                     "executedByHashed",
                                     "executedBy",
                                     "commandNbOfTimes",
@@ -437,6 +446,10 @@ class TraceabilityFinderDetailedInvolvedEndpointTest {
                                     "identifiable": {
                                         "type": "string",
                                         "description": "Identifier of the identifiable."
+                                    },
+                                    "linkToAggregateRootId": {
+                                        "type": "string",
+                                        "description": "Link to aggregate root identifier."
                                     },
                                     "executedByHashed": {
                                         "type": "string",

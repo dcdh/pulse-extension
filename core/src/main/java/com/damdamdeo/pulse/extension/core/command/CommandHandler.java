@@ -81,17 +81,18 @@ public abstract class CommandHandler<A extends AggregateRoot<K>, K extends Aggre
         Validate.validState(!executionContext.executedBy().value().equals(ExecutedBy.Banned.DISCRIMINANT));
         return transaction.joiningExisting(() -> {
             try {
-                final List<ExecutedByEvent<K>> events = eventRepository.loadOrderByVersionASC(command.id());
+                final K id = command.id().linkTo();
+                final List<ExecutedByEvent<K>> events = eventRepository.loadOrderByVersionASC(id);
                 if (events.isEmpty()) {
                     throw missingAggregateException.get();
                 }
-                final StateApplier<A, K> stateApplier = stateApplier(events, command.id());
-                final A aggregate = commandHandlerRegistry.execute(command.id(),
+                final StateApplier<A, K> stateApplier = stateApplier(events, id);
+                final A aggregate = commandHandlerRegistry.execute(id,
                         () -> stateApplier.executeCommand(command, executionContext));
                 final List<VersionizedEvent<K>> newEvents = stateApplier.getNewEvents();
                 for (final VersionizedEvent<K> newEvent : newEvents) {
                     for (final OnStoredEventListener<K, Event<K>> onStoredEventListener : onStoredEventListeners) {
-                        onStoredEventListener.execute(command.id(), newEvent.version(), newEvent.event());
+                        onStoredEventListener.execute(id, newEvent.version(), newEvent.event());
                     }
                 }
                 eventRepository.save(newEvents, aggregate, executionContext.executedBy());

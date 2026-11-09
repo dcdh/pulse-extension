@@ -1,10 +1,11 @@
 package com.damdamdeo.pulse.extension.core.traceability;
 
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.Command;
+import com.damdamdeo.pulse.extension.core.command.CommandId;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.*;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 import com.damdamdeo.pulse.extension.core.query.Input;
@@ -18,9 +19,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,12 +69,12 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldAppendQueryTrace() throws Exception {
         // Given
-        final Identifiable firstIdentifiable = TodoId.USER_1_TODO_1;
-        final Identifiable secondIdentifiable = TodoId.USER_1_TODO_2;
+        final TodoId firstAggregateId = TodoId.USER_1_TODO_1;
+        final TodoId secondAggregateId = TodoId.USER_1_TODO_2;
         final TestInput input = new TestInput();
         final List<TestProjection> projections = List.of(
-                new TestProjection(ProjectionId.from(firstIdentifiable)),
-                new TestProjection(ProjectionId.from(secondIdentifiable)));
+                new TestProjection(ProjectionId.from(firstAggregateId)),
+                new TestProjection(ProjectionId.from(secondAggregateId)));
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final TraceId traceId = new TraceId(123L);
         final CorrelationId correlationId = new CorrelationId(125L);
@@ -85,8 +86,8 @@ class DefaultTraceAppenderTest {
         when(traceIdGenerator.generate()).thenReturn(traceId);
         when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
-        when(executedByEncodedProvider.provide(firstIdentifiable, executedBy)).thenReturn(firstExecutedByEncoded);
-        when(executedByEncodedProvider.provide(secondIdentifiable, executedBy)).thenReturn(secondExecutedByEncoded);
+        when(executedByEncodedProvider.provide(firstAggregateId, executedBy)).thenReturn(firstExecutedByEncoded);
+        when(executedByEncodedProvider.provide(secondAggregateId, executedBy)).thenReturn(secondExecutedByEncoded);
         when(traceRecorderRepositoryProvider.provide(
                 TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
 
@@ -106,15 +107,15 @@ class DefaultTraceAppenderTest {
                 () -> assertEquals(ExecutionStatus.SUCCESS, traceRecorder.executionStatus()),
                 () -> assertEquals(From.from(input), traceRecorder.from()),
                 () -> assertThat(traceRecorder.encodedTraceIdentifiables()).containsExactly(
-                        EncodedTraceIdentifiable.from(projections.get(0), new ExecutedByHashed("A"), firstExecutedByEncoded),
+                        EncodedTraceIdentifiable.from(projections.getFirst(), new ExecutedByHashed("A"), firstExecutedByEncoded),
                         EncodedTraceIdentifiable.from(projections.get(1), new ExecutedByHashed("A"), secondExecutedByEncoded)),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
                 () -> verify(correlationIdProvider).provide(),
                 () -> verify(executedAtProvider).now(),
-                () -> verify(executedByEncodedProvider).provide(firstIdentifiable, executedBy),
-                () -> verify(executedByEncodedProvider).provide(secondIdentifiable, executedBy)
+                () -> verify(executedByEncodedProvider).provide(firstAggregateId, executedBy),
+                () -> verify(executedByEncodedProvider).provide(secondAggregateId, executedBy)
         );
     }
 
@@ -123,7 +124,9 @@ class DefaultTraceAppenderTest {
         // Given
         final Identifiable firstIdentifiable = mock(Identifiable.class);
         final Identifiable secondIdentifiable = mock(Identifiable.class);
-        final LinkedHashSet<Identifiable> aggregateIds = new LinkedHashSet<>(List.of(firstIdentifiable, secondIdentifiable));
+        final Map<Identifiable, AnyAggregateId> aggregateIds = new LinkedHashMap<>();
+        aggregateIds.put(firstIdentifiable, new AnyAggregateId("aggregate-1"));
+        aggregateIds.put(secondIdentifiable, new AnyAggregateId("aggregate-2"));
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final TraceId traceId = new TraceId(123L);
         final CorrelationId correlationId = new CorrelationId(125L);
@@ -156,8 +159,8 @@ class DefaultTraceAppenderTest {
                 () -> assertEquals(ExecutionStatus.SUCCESS, traceRecorder.executionStatus()),
                 () -> assertEquals(new From("TRACEABILITY"), traceRecorder.from()),
                 () -> assertThat(traceRecorder.encodedTraceIdentifiables()).containsExactly(
-                        EncodedTraceIdentifiable.fromTraceability(firstIdentifiable, new ExecutedByHashed("A"), firstExecutedByEncoded),
-                        EncodedTraceIdentifiable.fromTraceability(secondIdentifiable, new ExecutedByHashed("A"), secondExecutedByEncoded)),
+                        EncodedTraceIdentifiable.fromTraceability(firstIdentifiable, aggregateIds.get(firstIdentifiable), new ExecutedByHashed("A"), firstExecutedByEncoded),
+                        EncodedTraceIdentifiable.fromTraceability(secondIdentifiable, aggregateIds.get(secondIdentifiable), new ExecutedByHashed("A"), secondExecutedByEncoded)),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
@@ -171,7 +174,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldNotAppendTraceabilityTraceWhenThereAreNoAggregateIds() throws Exception {
         // When
-        traceAppender.append(Set.of());
+        traceAppender.append(Map.of());
 
         // Then
         verifyNoInteractions(executionContextProvider, executedAtProvider, traceIdGenerator, usernameHasher,
@@ -181,7 +184,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldWrapTraceabilityTraceIdGenerationFailure() throws Exception {
         // Given
-        final AggregateId aggregateId = mock(AggregateId.class);
+        final TodoId aggregateId = TodoId.USER_1_TODO_1;
         final TraceIdGeneratorException cause = new TraceIdGeneratorException(new RuntimeException("Unable to generate trace id"));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(ExecutedBy.Anonymous.INSTANCE);
@@ -190,7 +193,7 @@ class DefaultTraceAppenderTest {
 
         // When
         final TraceAppenderException exception = assertThrows(TraceAppenderException.class,
-                () -> traceAppender.append(Set.of(aggregateId)));
+                () -> traceAppender.append(Map.of(aggregateId, new AnyAggregateId(aggregateId.id()))));
 
         // Then
         assertSame(cause, exception.getCause());
@@ -202,7 +205,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldWrapTraceabilityTraceStorageFailure() throws Exception {
         // Given
-        final AggregateId aggregateId = mock(AggregateId.class);
+        final TodoId aggregateId = TodoId.USER_1_TODO_1;
         final TraceRepositoryException cause = new TraceRepositoryException(new RuntimeException("Unable to store trace"));
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(ExecutedBy.Anonymous.INSTANCE);
@@ -216,7 +219,7 @@ class DefaultTraceAppenderTest {
 
         // When
         final TraceAppenderException exception = assertThrows(TraceAppenderException.class,
-                () -> traceAppender.append(Set.of(aggregateId)));
+                () -> traceAppender.append(Map.of(aggregateId, new AnyAggregateId(aggregateId.id()))));
 
         // Then
         assertSame(cause, exception.getCause());
@@ -226,11 +229,11 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldAppendCommandTraceForEachVersionizedEvent() throws Exception {
         // Given
-        final TestId aggregateId = new TestId("aggregate-id");
-        final TestCommand command = new TestCommand(aggregateId);
+        final TodoId todoId = TodoId.USER_1_TODO_1;;
+        final TestCommand command = new TestCommand(todoId);
         final AggregateVersion firstVersion = new AggregateVersion(1);
         final AggregateVersion secondVersion = new AggregateVersion(2);
-        final List<VersionizedEvent<TestId>> versionizedEvents = List.of(
+        final List<VersionizedEvent<TodoId>> versionizedEvents = List.of(
                 new VersionizedEvent<>(firstVersion,
                         new ExecutedByEvent<>(new FirstTestEvent(), ExecutedBy.NotAvailable.INSTANCE)),
                 new VersionizedEvent<>(secondVersion,
@@ -246,7 +249,7 @@ class DefaultTraceAppenderTest {
         when(traceIdGenerator.generate()).thenReturn(traceId);
         when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
-        when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
+        when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
         when(traceRecorderRepositoryProvider.provide(
                 TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
 
@@ -281,15 +284,15 @@ class DefaultTraceAppenderTest {
                                 secondVersion
                         )
                 ),
-                () -> verify(executedByEncodedProvider, times(2)).provide(aggregateId, executedBy)
+                () -> verify(executedByEncodedProvider, times(2)).provide(todoId, executedBy)
         );
     }
 
     @Test
     void shouldAppendCommandTraceWhenThereAreNoVersionizedEvents() throws Exception {
         // Given
-        final TestId aggregateId = new TestId("aggregate-id");
-        final TestCommand command = new TestCommand(aggregateId);
+        final TodoId todoId = TodoId.USER_1_TODO_1;
+        final TestCommand command = new TestCommand(todoId);
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final TraceId traceId = new TraceId(123L);
         final CorrelationId correlationId = new CorrelationId(125L);
@@ -300,7 +303,7 @@ class DefaultTraceAppenderTest {
         when(traceIdGenerator.generate()).thenReturn(traceId);
         when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
-        when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
+        when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
         when(traceRecorderRepositoryProvider.provide(
                 TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
 
@@ -322,7 +325,7 @@ class DefaultTraceAppenderTest {
                 () -> assertThat(traceRecorder.encodedTraceIdentifiables()).containsExactly(
                         EncodedTraceIdentifiable.from(command, new ExecutedByHashed("A"),
                                 executedByEncoded)),
-                () -> verify(executedByEncodedProvider).provide(aggregateId, executedBy)
+                () -> verify(executedByEncodedProvider).provide(todoId, executedBy)
         );
     }
 
@@ -342,7 +345,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldThrowTraceAppenderExceptionWhenTraceIdCannotBeGenerated() throws Exception {
         // Given
-        final AggregateId aggregateId = TodoId.USER_1_TODO_1;
+        final TodoId todoId = TodoId.USER_1_TODO_1;
         final TestInput input = new TestInput();
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("SA:encoded-1");
@@ -350,13 +353,13 @@ class DefaultTraceAppenderTest {
         when(executionContextProvider.provide()).thenReturn(executionContext);
         when(executionContext.executedBy()).thenReturn(executedBy);
         when(traceIdGenerator.generate()).thenThrow(cause);
-        when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
+        when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
 
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
                 () -> traceAppender.append(input, List.of(
-                                new TestProjection(ProjectionId.from(aggregateId))), ExecutionStatus.SUCCESS,
+                                new TestProjection(ProjectionId.from(todoId))), ExecutionStatus.SUCCESS,
                         TraceabilityDetails.INVOLVED_ONLY));
 
         // Then
@@ -375,7 +378,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldThrowTraceAppenderExceptionWhenCorrelationIdCannotBeGenerated() throws Exception {
         // Given
-        final AggregateId aggregateId = TodoId.USER_1_TODO_1;
+        final TodoId todoId = TodoId.USER_1_TODO_1;
         final TestInput input = new TestInput();
         final TraceId traceId = new TraceId(123L);
         final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
@@ -385,13 +388,13 @@ class DefaultTraceAppenderTest {
         when(executionContext.executedBy()).thenReturn(executedBy);
         when(traceIdGenerator.generate()).thenReturn(traceId);
         when(correlationIdProvider.provide()).thenThrow(cause);
-        when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
+        when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
 
         // When
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
                 () -> traceAppender.append(input, List.of(
-                                new TestProjection(ProjectionId.from(aggregateId))), ExecutionStatus.SUCCESS,
+                                new TestProjection(ProjectionId.from(todoId))), ExecutionStatus.SUCCESS,
                         TraceabilityDetails.INVOLVED_ONLY));
 
         // Then
@@ -411,7 +414,7 @@ class DefaultTraceAppenderTest {
     @Test
     void shouldThrowTraceAppenderExceptionWhenTraceCannotBeStored() throws Exception {
         // Given
-        final AggregateId aggregateId = TodoId.USER_1_TODO_1;
+        final TodoId todoId = TodoId.USER_1_TODO_1;
         final TestInput input = new TestInput();
         final TraceId traceId = new TraceId(123L);
         final CorrelationId correlationId = new CorrelationId(125L);
@@ -424,7 +427,7 @@ class DefaultTraceAppenderTest {
         when(traceIdGenerator.generate()).thenReturn(traceId);
         when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
-        when(executedByEncodedProvider.provide(aggregateId, executedBy)).thenReturn(executedByEncoded);
+        when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
         when(traceRecorderRepositoryProvider.provide(
                 TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
         doThrow(cause).when(traceRecorderRepository).store(any(TraceRecorder.class));
@@ -433,7 +436,7 @@ class DefaultTraceAppenderTest {
         final TraceAppenderException exception = assertThrows(
                 TraceAppenderException.class,
                 () -> traceAppender.append(input, List.of(
-                                new TestProjection(ProjectionId.from(aggregateId))), ExecutionStatus.SUCCESS,
+                                new TestProjection(ProjectionId.from(todoId))), ExecutionStatus.SUCCESS,
                         TraceabilityDetails.INVOLVED_ONLY));
 
         // Then
@@ -450,21 +453,23 @@ class DefaultTraceAppenderTest {
         );
     }
 
-    private record TestId(String id) implements AggregateId {
-    }
+    private record TestCommand(TodoId testId) implements Command<TodoId> {
 
-    private record TestCommand(TestId id) implements Command<TestId> {
+        @Override
+        public CommandId<TodoId> id() {
+            return CommandId.from(testId);
+        }
     }
 
     private record TestInput() implements Input {
     }
 
-    private record TestProjection(ProjectionId<Identifiable> id) implements Projection<Identifiable> {
+    private record TestProjection(ProjectionId<TodoId> id) implements Projection<TodoId> {
     }
 
-    private record FirstTestEvent() implements Event<TestId> {
+    private record FirstTestEvent() implements Event<TodoId> {
     }
 
-    private record SecondTestEvent() implements Event<TestId> {
+    private record SecondTestEvent() implements Event<TodoId> {
     }
 }

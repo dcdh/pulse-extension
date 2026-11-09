@@ -4,9 +4,14 @@ import com.damdamdeo.pulse.extension.core.TodoId;
 
 import java.util.Objects;
 
-public record CommandWithoutOnEvent(TodoId id) implements Command<TodoId> {
+public record CommandWithoutOnEvent(TodoId todoId) implements Command<TodoId> {
 
     public CommandWithoutOnEvent {
-        Objects.requireNonNull(id);
+        Objects.requireNonNull(todoId);
+    }
+
+    @Override
+    public CommandId<TodoId> id() {
+        return CommandId.from(todoId);
     }
 }

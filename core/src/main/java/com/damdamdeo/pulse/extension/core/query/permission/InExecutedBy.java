@@ -3,7 +3,6 @@ package com.damdamdeo.pulse.extension.core.query.permission;
 import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.ExecutionContext;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
-import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.permission.PermissionExecutionContext;
 import com.damdamdeo.pulse.extension.core.query.ProjectionId;
@@ -14,10 +13,10 @@ import com.damdamdeo.pulse.extension.core.query.UnableToResolveException;
 import java.util.Objects;
 import java.util.Set;
 
-public final class InExecutedBy<K extends Identifiable> implements CompositePermission<K> {
+public final class InExecutedBy<A extends AggregateId> implements CompositePermission<A> {
 
     @Override
-    public boolean allow(final ProjectionId<K> projectionId, final PermissionExecutionContext permissionExecutionContext)
+    public boolean allow(final ProjectionId<A> projectionId, final PermissionExecutionContext permissionExecutionContext)
             throws QueryException {
         Objects.requireNonNull(projectionId);
         Objects.requireNonNull(permissionExecutionContext);

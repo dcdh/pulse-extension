@@ -31,6 +31,6 @@ public final class IsOwnerPermission<C extends Command<TodoId>> extends Specific
     public boolean allow(final C command, final PermissionExecutionContext permissionExecutionContext) throws UseCaseException {
         Objects.requireNonNull(command);
         Objects.requireNonNull(permissionExecutionContext);
-        return ownerQuery.getByTodoId(command.id()).id().equals(userId);
+        return ownerQuery.getByTodoId(command.id().linkTo()).id().equals(userId);
     }
 }

@@ -52,8 +52,8 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
     public static final String INSERT_TRACEABILITY_AGGREGATE_EVENT_SQL = """
             INSERT INTO %s.traceability_aggregate_events (
                 traceability_trace_id,
-                aggregate_root_id,
-                projection_id,
+                identifiable,
+                link_to_aggregate_root_id,
                 event_type,
                 aggregate_version
             )
@@ -119,12 +119,13 @@ public class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository implemen
                         executedByEncodedId = resultSet.getLong(1);
                     }
                     insertTraceabilityAggregatePreparedStatement.setString(1, encodedTraceIdentifiable.identifiable().id());
-                    insertTraceabilityAggregatePreparedStatement.setLong(2, executedByEncodedId);
+                    insertTraceabilityAggregatePreparedStatement.setString(2, encodedTraceIdentifiable.linkTo().id());
+                    insertTraceabilityAggregatePreparedStatement.setLong(3, executedByEncodedId);
                     insertTraceabilityAggregatePreparedStatement.executeUpdate();
                     if (encodedTraceIdentifiable.hasEvent()) {
                         insertTraceabilityAggregateEventPreparedStatement.setLong(1, traceRecorder.traceId().id());
                         insertTraceabilityAggregateEventPreparedStatement.setString(2, encodedTraceIdentifiable.identifiable().id());
-                        insertTraceabilityAggregateEventPreparedStatement.setString(3, encodedTraceIdentifiable.projectionId() != null ? encodedTraceIdentifiable.projectionId().id() : null);
+                        insertTraceabilityAggregateEventPreparedStatement.setString(3, encodedTraceIdentifiable.linkTo().id());
                         insertTraceabilityAggregateEventPreparedStatement.setString(4, encodedTraceIdentifiable.eventType().type());
                         insertTraceabilityAggregateEventPreparedStatement.setInt(5, encodedTraceIdentifiable.aggregateVersion().version());
                         insertTraceabilityAggregateEventPreparedStatement.executeUpdate();

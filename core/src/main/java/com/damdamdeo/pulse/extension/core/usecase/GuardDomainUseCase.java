@@ -65,7 +65,7 @@ public abstract class GuardDomainUseCase<K extends AggregateId, C extends Comman
             } else {
                 try {
                     for (final Permission<K, C> permission : permissions) {
-                        if (permission.allow(command.id(), command, context)) {
+                        if (permission.allow(command.id().linkTo(), command, context)) {
                             try {
                                 final Handled<A, K> executed = distributedLockManager.executeWithLock(command, new UseCaseExecutor<K, C, A>() {
                                     @Override

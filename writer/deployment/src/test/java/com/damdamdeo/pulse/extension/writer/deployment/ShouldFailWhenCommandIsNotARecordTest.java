@@ -4,6 +4,7 @@ import com.damdamdeo.pulse.extension.core.Todo;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.Command;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
+import com.damdamdeo.pulse.extension.core.command.CommandId;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import io.quarkus.test.QuarkusUnitTest;
@@ -42,7 +43,7 @@ class ShouldFailWhenCommandIsNotARecordTest extends AbstractWriterTest {
     private static final class InvalidCommand implements Command<TodoId> {
 
         @Override
-        public TodoId id() {
+        public CommandId<TodoId> id() {
             throw new RuntimeException("Should not have been called");
         }
     }

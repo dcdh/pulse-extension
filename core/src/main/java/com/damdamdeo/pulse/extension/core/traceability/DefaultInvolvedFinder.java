@@ -60,6 +60,7 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
             for (final EncodedInvolved encodedInvolved : involvedPage.content()) {
                 final Involved involved = new Involved(
                         encodedInvolved.identifiable(),
+                        encodedInvolved.linkTo(),
                         new Actor(
                                 encodedInvolved.encodedActor().executedByHashed(),
                                 encodedInvolved.encodedActor().executedByEncoded()
@@ -72,7 +73,8 @@ public final class DefaultInvolvedFinder implements InvolvedFinder {
                         encodedInvolved.traceabilityNbOfTimes());
                 listOfInvolved.add(involved);
             }
-            traceAppender.append(listOfInvolved.stream().map(Involved::identifiable).collect(Collectors.toSet()));
+            traceAppender.append(listOfInvolved.stream().collect(Collectors.toMap(
+                    Involved::identifiable, Involved::linkTo, (x1, x2) -> x1)));
             return new Page<>(listOfInvolved, involvedPage.pagination(), involvedPage.totalElements());
         } catch (final TraceRepositoryException | OwnedByProviderException | UnauthorizedException
                        | TraceAppenderException exception) {

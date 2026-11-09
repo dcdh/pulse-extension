@@ -65,6 +65,7 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
                         encodedDetailedInvolved.traceId(),
                         encodedDetailedInvolved.correlationId(),
                         encodedDetailedInvolved.identifiable(),
+                        encodedDetailedInvolved.linkTo(),
                         new Actor(
                                 encodedDetailedInvolved.encodedActor().executedByHashed(),
                                 encodedDetailedInvolved.encodedActor().executedByEncoded()
@@ -79,7 +80,8 @@ public final class DefaultDetailedInvolvedFinder implements DetailedInvolvedFind
                 );
                 listOfInvolved.add(detailedInvolved);
             }
-            traceAppender.append(listOfInvolved.stream().map(DetailedInvolved::identifiable).collect(Collectors.toSet()));
+            traceAppender.append(listOfInvolved.stream().collect(Collectors.toMap(
+                    DetailedInvolved::identifiable, DetailedInvolved::linkTo, (x1, x2) -> x1)));
             return new Page<>(listOfInvolved, involvedPage.pagination(), involvedPage.totalElements());
         } catch (final TraceRepositoryException | OwnedByProviderException | UnauthorizedException
                        | TraceAppenderException exception) {

@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.traceability.runtime;
 
 import com.damdamdeo.pulse.extension.core.ApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.consumer.SchemaName;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
@@ -47,6 +48,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
                        ti.identifiable as identifiable,
+                       ti.link_to_aggregate_root_id as link_to_aggregate_root_id,
                        ti.command_nb_of_times AS command_nb_of_times,
                        ti.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
                        ti.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
@@ -75,6 +77,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
@@ -105,6 +108,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         new ExecutedByHashed(select.getString("executed_by_hashed")),
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))),
@@ -140,6 +144,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
              final PreparedStatement selectPreparedStatement = connection.prepareStatement("""
                      SELECT
                        ti.identifiable AS identifiable,
+                       ti.link_to_aggregate_root_id as link_to_aggregate_root_id,
                        ti.command_nb_of_times AS command_nb_of_times,
                        ti.command_unauthorized_nb_of_times AS command_unauthorized_nb_of_times,
                        ti.command_business_failed_nb_of_times AS command_business_failed_nb_of_times,
@@ -163,6 +168,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         executedByHashed,
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))
@@ -189,6 +195,7 @@ public class JdbcPostgresEncodedInvolvedRepository implements EncodedInvolvedRep
                     while (select.next()) {
                         content.add(new EncodedInvolved(
                                 new AnyIdentifiable(select.getString("identifiable")),
+                                new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
                                 new EncodedActor(
                                         executedByHashed,
                                         new ExecutedByEncoded(select.getString("executed_by_encoded"))

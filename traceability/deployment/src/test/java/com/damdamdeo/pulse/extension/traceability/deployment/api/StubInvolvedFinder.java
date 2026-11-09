@@ -3,6 +3,7 @@ package com.damdamdeo.pulse.extension.traceability.deployment.api;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
+import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
@@ -34,9 +35,9 @@ public class StubInvolvedFinder implements InvolvedFinder {
         }
         return new Page<>(
                 List.of(
-                        new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new Involved(TodoId.USER_1_TODO_1, AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER),
-                        new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
+                        new Involved(TodoId.USER_1_TODO_1, AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:bob-hashed"), new ExecutedBy.EndUser(new Username("bob@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 2L);
     }
@@ -47,7 +48,7 @@ public class StubInvolvedFinder implements InvolvedFinder {
         Objects.requireNonNull(pagination);
         return new Page<>(
                 List.of(
-                        new Involved(TodoId.USER_1_TODO_1, new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
+                        new Involved(TodoId.USER_1_TODO_1, AnyAggregateId.from(TodoId.USER_1_TODO_1), new Actor(new ExecutedByHashed("EU:alice-hashed"), new ExecutedBy.EndUser(new Username("alice@mail.com"))),
                                 CommandNbOfTimes.ONE, CommandUnauthorizedNbOfTimes.NEVER, CommandBusinessFailedNbOfTimes.NEVER, QueryNbOfTimes.NEVER, QueryUnauthorizedNbOfTimes.NEVER, TraceabilityNbOfTimes.NEVER)),
                 new Pagination(0, 10), 1L);
     }

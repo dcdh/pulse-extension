@@ -42,6 +42,7 @@ public class PulseTraceabilityProcessor {
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_identifiable (
                               identifiable character varying(255) NOT NULL,
+                              link_to_aggregate_root_id character varying(255) NOT NULL,
                               executed_by_encoded_id bigint NOT NULL,
                               command_nb_of_times bigint DEFAULT 0,
                               command_unauthorized_nb_of_times bigint DEFAULT 0,
@@ -152,15 +153,15 @@ public class PulseTraceabilityProcessor {
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events (
                                 id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
                                 traceability_trace_id bigint NOT NULL,
-                                aggregate_root_id varchar(255) NOT NULL,
-                                projection_id varchar(255),
+                                identifiable varchar(255) NOT NULL,
+                                link_to_aggregate_root_id varchar(255) NOT NULL,
                                 event_type character varying(255),
                                 aggregate_version bigint,
-                                CONSTRAINT tae_pkey PRIMARY KEY (aggregate_root_id, id),
+                                CONSTRAINT tae_pkey PRIMARY KEY (identifiable, id),
                                 CONSTRAINT tt_fkey
                                   FOREIGN KEY (traceability_trace_id)
                                   REFERENCES %1$s.traceability_details (trace_id)
-                            ) PARTITION BY HASH (aggregate_root_id);
+                            ) PARTITION BY HASH (identifiable);
                             
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_00 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 32, REMAINDER 0);
                             CREATE TABLE IF NOT EXISTS %1$s.traceability_aggregate_events_01 PARTITION OF %1$s.traceability_aggregate_events FOR VALUES WITH (MODULUS 32, REMAINDER 1);

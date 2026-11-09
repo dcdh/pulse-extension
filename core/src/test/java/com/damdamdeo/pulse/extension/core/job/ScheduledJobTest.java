@@ -70,13 +70,13 @@ class ScheduledJobTest {
         // given
         final TestCommand firstCommand = new TestCommand(new TestId("first"));
         final TestCommand secondCommand = new TestCommand(new TestId("second"));
-        final TestProjection firstProjection = new TestProjection(ProjectionId.from(firstCommand.id()));
-        final TestProjection secondProjection = new TestProjection(ProjectionId.from(secondCommand.id()));
+        final TestProjection firstProjection = new TestProjection(ProjectionId.from(firstCommand.aggregateId()));
+        final TestProjection secondProjection = new TestProjection(ProjectionId.from(secondCommand.aggregateId()));
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size()))).willReturn(firstResult);
         given(firstResult.projectionIds()).willReturn(Set.of(
-                ProjectionId.from(firstCommand.id()),
-                ProjectionId.from(secondCommand.id())));
+                ProjectionId.from(firstCommand.aggregateId()),
+                ProjectionId.from(secondCommand.aggregateId())));
         given(firstResult.projections()).willReturn(List.of(firstProjection, secondProjection));
         given(resultProcessor.process(firstProjection)).willReturn(firstCommand);
         given(resultProcessor.process(secondProjection)).willReturn(secondCommand);
@@ -108,15 +108,15 @@ class ScheduledJobTest {
         // given
         final TestCommand firstCommand = new TestCommand(new TestId("first"));
         final TestCommand secondCommand = new TestCommand(new TestId("second"));
-        final TestProjection firstProjection = new TestProjection(ProjectionId.from(firstCommand.id()));
-        final TestProjection secondProjection = new TestProjection(ProjectionId.from(secondCommand.id()));
+        final TestProjection firstProjection = new TestProjection(ProjectionId.from(firstCommand.aggregateId()));
+        final TestProjection secondProjection = new TestProjection(ProjectionId.from(secondCommand.aggregateId()));
         executeLockedJobWhenCalled();
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size())))
                 .willReturn(firstResult, secondResult);
         given(firstResult.projectionIds()).willReturn(Set.of(
-                ProjectionId.from(firstCommand.id())));
+                ProjectionId.from(firstCommand.aggregateId())));
         given(secondResult.projectionIds()).willReturn(Set.of(
-                ProjectionId.from(secondCommand.id())));
+                ProjectionId.from(secondCommand.aggregateId())));
         given(firstResult.projections()).willReturn(List.of(firstProjection));
         given(secondResult.projections()).willReturn(List.of(secondProjection));
         given(resultProcessor.process(firstProjection)).willReturn(firstCommand);
@@ -164,8 +164,8 @@ class ScheduledJobTest {
         // given
         final TestCommand failingCommand = new TestCommand(new TestId("failing"));
         final TestCommand ignoredCommand = new TestCommand(new TestId("ignored"));
-        final TestProjection failingProjection = new TestProjection(ProjectionId.from(failingCommand.id()));
-        final TestProjection ignoredProjection = new TestProjection(ProjectionId.from(ignoredCommand.id()));
+        final TestProjection failingProjection = new TestProjection(ProjectionId.from(failingCommand.aggregateId()));
+        final TestProjection ignoredProjection = new TestProjection(ProjectionId.from(ignoredCommand.aggregateId()));
         final UseCaseException useCaseException = new UseCaseException(
                 new RuntimeException("domain failure"),
                 UseCaseExceptionCode.BUSINESS_FAILURE
@@ -174,8 +174,8 @@ class ScheduledJobTest {
         given(queryUseCase.execute(INPUT, new Pagination(0, CHUNK_SIZE.size())))
                 .willReturn(firstResult);
         given(firstResult.projectionIds()).willReturn(Set.of(
-                ProjectionId.from(failingCommand.id()),
-                ProjectionId.from(ignoredCommand.id())));
+                ProjectionId.from(failingCommand.aggregateId()),
+                ProjectionId.from(ignoredCommand.aggregateId())));
         given(firstResult.projections()).willReturn(List.of(failingProjection, ignoredProjection));
         given(resultProcessor.process(failingProjection)).willReturn(failingCommand);
         given(domainUseCase.execute(failingCommand)).willThrow(useCaseException);
@@ -244,7 +244,12 @@ class ScheduledJobTest {
     public record TestProjection(ProjectionId<TestId> id) implements Projection<TestId> {
     }
 
-    public record TestCommand(TestId id) implements Command<TestId> {
+    public record TestCommand(TestId aggregateId) implements Command<TestId> {
+
+        @Override
+        public com.damdamdeo.pulse.extension.core.command.CommandId<TestId> id() {
+            return com.damdamdeo.pulse.extension.core.command.CommandId.from(aggregateId);
+        }
     }
 
     public static final class TestAggregate extends AggregateRoot<TestId> {
