@@ -20,9 +20,9 @@ public abstract class UseCaseWriter<A extends AggregateId, C extends Command<A>,
     private final JobContext jobContext;
     private final ExecutionContextOverloader executionContextOverloader;
 
-    protected UseCaseWriter(final DomainUseCase<A, C, AR> domainUseCase,
-                            final JobContext jobContext,
-                            final ExecutionContextOverloader executionContextOverloader) {
+    public UseCaseWriter(final DomainUseCase<A, C, AR> domainUseCase,
+                         final JobContext jobContext,
+                         final ExecutionContextOverloader executionContextOverloader) {
         this.domainUseCase = Objects.requireNonNull(domainUseCase);
         this.jobContext = Objects.requireNonNull(jobContext);
         this.executionContextOverloader = Objects.requireNonNull(executionContextOverloader);

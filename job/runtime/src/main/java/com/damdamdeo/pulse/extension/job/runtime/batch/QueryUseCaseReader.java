@@ -32,7 +32,7 @@ public abstract class QueryUseCaseReader<A extends AggregateId, I extends Input,
     private final PaginatedResultQueryUseCase<A, I, P, R> queryUseCase;
     private final JobContext jobContext;
 
-    protected QueryUseCaseReader(final PaginatedResultQueryUseCase<A, I, P, R> queryUseCase, final JobContext jobContext) {
+    public QueryUseCaseReader(final PaginatedResultQueryUseCase<A, I, P, R> queryUseCase, final JobContext jobContext) {
         this.queryUseCase = Objects.requireNonNull(queryUseCase);
         this.jobContext = Objects.requireNonNull(jobContext);
     }
