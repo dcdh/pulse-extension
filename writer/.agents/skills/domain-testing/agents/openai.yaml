@@ -1,0 +1,3 @@
+interface:
+  display_name: "Domain Testing"
+  short_description: "Test domain aggregates and command handlers"
