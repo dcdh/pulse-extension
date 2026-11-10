@@ -16,6 +16,7 @@ class ContextLocalsExecutionContextOverloaderTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(InMemoryTodoRepository.class))
             .withConfigurationResource("application.properties");
 
     @Inject
