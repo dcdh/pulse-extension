@@ -14,7 +14,7 @@ Use this skill when adding or changing tests for aggregates, domain commands, ev
 - Name each test with the `should...` form, describing the expected behavior (for example, `shouldMarkTodoAsDone` or `shouldThrowCommandExceptionWhenTodoIsMissing`). Keep the name focused on one behavior.
 - Structure every test with explicit `// Given`, `// When`, and `// Then` sections. Set up only the scenario in Given, perform the action under test in When, and put outcome assertions in Then.
 - For command-handler tests that use Mockito, annotate the test class with `@ExtendWith(MockitoExtension.class)` and declare mocked ports with `@Mock`. Prefer real domain objects and the real command handler; mock external collaborators such as repositories and ID generators.
-- Use static imports for `assertAll`, `assertThat`, and Mockito methods such as `doReturn` and `verify`. In Then, group state and event assertions with `assertAll(...)` so all relevant outcomes are reported together. Finish the Then section by verifying expected calls to mocks, especially persistence calls and their arguments.
+- Use static imports for `assertAll`, `assertThat`, and Mockito methods such as `doReturn` and `verify`. Put state, event, and mock interaction checks inside the same `assertAll(...)` in Then; write each `verify(...)` as its own lambda alongside the other assertions. This reports all failed checks together while keeping mock verifications at the end of the Then section.
 
 ## Test aggregates directly
 
