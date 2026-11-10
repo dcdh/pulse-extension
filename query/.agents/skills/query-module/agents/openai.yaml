@@ -1,0 +1,3 @@
+interface:
+  display_name: "Query Module"
+  short_description: "Work on the Pulse Query extension"
