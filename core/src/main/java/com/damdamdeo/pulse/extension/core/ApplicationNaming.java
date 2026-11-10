@@ -1,7 +1,5 @@
 package com.damdamdeo.pulse.extension.core;
 
-import org.apache.commons.lang3.Validate;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +13,6 @@ public record ApplicationNaming(String name) {
 
     public ApplicationNaming {
         Objects.requireNonNull(name);
-        Validate.validState(UPPER_CAMEL_CASE_PATTERN.matcher(name).matches());
     }
 
     public static ApplicationNaming of(final String name) {
