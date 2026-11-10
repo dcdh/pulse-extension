@@ -23,7 +23,8 @@ Use this skill when adding or changing tests for aggregates, domain commands, ev
 When testing domain rules without the command-handler pipeline:
 
 - Construct the aggregate from its identifier and replay any initial events through the same event application path used by production code.
-- Invoke the command handler on the aggregate with a real execution context and an event appender or a small capturing implementation.
+- Do not call an aggregate's `on(...)` method directly in a test. Invoke `handle(...)` through the `CommandHandler`; the handler applies historical and newly emitted events by calling `on(...)` programmatically.
+- Use a real execution context and an event appender or a small capturing implementation when testing command behavior.
 - Assert the events emitted by the command, and separately assert the state produced when those events are applied. Cover invalid transitions by asserting the business exception and its meaningful cause or message.
 - Avoid mocking the aggregate or its value objects; the rule under test belongs to the domain model.
 
