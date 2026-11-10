@@ -1,0 +1,3 @@
+interface:
+  display_name: "Domain Aggregate"
+  short_description: "Define Pulse domain aggregate roots"
