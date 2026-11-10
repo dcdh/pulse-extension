@@ -13,7 +13,7 @@ Use this skill when adding or changing tests for aggregates, domain commands, ev
 - Read `core/src/test/java/com/damdamdeo/pulse/extension/core/command/TodoCommandHandlerTest.java` for command-handler scenarios, especially how creation, replay, event versions, persistence, and failures are asserted.
 - Name each test with the `should...` form, describing the expected behavior (for example, `shouldMarkTodoAsDone` or `shouldThrowCommandExceptionWhenTodoIsMissing`). Keep the name focused on one behavior.
 - Structure every test with explicit `// Given`, `// When`, and `// Then` sections. Set up only the scenario in Given, perform the action under test in When, and put outcome assertions in Then.
-- In Then, group related assertions with `org.junit.jupiter.api.Assertions.assertAll(...)` so all relevant outcomes are reported together. Use one lambda per assertion; include returned state, emitted events, and important port interactions as appropriate.
+- Use static imports for `assertAll`, `assertThat`, and Mockito stubbing methods such as `doReturn`. In Then, group related assertions with `assertAll(...)` so all relevant outcomes are reported together. Use one lambda per assertion; include returned state, emitted events, and important port interactions as appropriate.
 
 ## Test aggregates directly
 
@@ -23,6 +23,22 @@ When testing domain rules without the command-handler pipeline:
 - Invoke the command handler on the aggregate with a real execution context and an event appender or a small capturing implementation.
 - Assert the events emitted by the command, and separately assert the state produced when those events are applied. Cover invalid transitions by asserting the business exception and its meaningful cause or message.
 - Avoid mocking the aggregate or its value objects; the rule under test belongs to the domain model.
+
+For example, `Todo.handle(MarkTodoAsDone, ...)` checks the current state and appends the domain event only when the transition is allowed:
+
+```java
+public void handle(final MarkTodoAsDone command,
+                   final ExecutionContext executionContext,
+                   final EventAppender<TodoId> eventAppender) throws BusinessException {
+    Objects.requireNonNull(command);
+    Objects.requireNonNull(eventAppender);
+    Objects.requireNonNull(executionContext);
+    TodoChecker.TODO_IN_PROGRESS.check(this, executionContext);
+    eventAppender.append(new TodoMarkedAsDone());
+}
+```
+
+This example is from `core/src/test/java/com/damdamdeo/pulse/extension/core/Todo.java`; use the aggregate's real command and event types rather than replacing them with mocks.
 
 ## Test the command-handler pipeline
 
@@ -34,6 +50,42 @@ Use `TodoCommandHandlerTest` as the primary pattern when verifying orchestration
 - Assert `ExecutedByEvent` wrapping when execution identity is part of the behavior. Verify that `EventRepository.save(...)` receives the exact newly emitted versioned events, resulting aggregate root, and execution identity.
 - Keep failure scenarios explicit: business failures become `CommandException` with the original cause, missing aggregates use the supplied exception, duplicates are checked during creation, and unhandled commands/events exercise the documented unsupported-operation behavior.
 - Prefer exact event assertions (`containsExactly`) when ordering and version numbers are part of the contract. Avoid asserting incidental implementation calls unless they protect a domain or persistence contract.
+
+The following excerpt follows `shouldMarkTodoAsDone` in `core/src/test/java/com/damdamdeo/pulse/extension/core/command/TodoCommandHandlerTest.java`. The fixture provides the handler and mocked repository:
+
+```java
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+
+@Test
+void shouldMarkTodoAsDone() throws CommandException {
+    // Given
+    final MarkTodoAsDone command = new MarkTodoAsDone(TodoId.USER_1_TODO_1);
+    doReturn(List.of(new ExecutedByEvent<>(
+            new NewTodoCreated("lorem ipsum", Owner.USER_1),
+            ExecutedBy.NotAvailable.INSTANCE)))
+            .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
+
+    // When
+    final Handled<Todo, TodoId> handled = todoCommandHandler.handle(
+            command, () -> new UnknownTodoException(TodoId.USER_1_TODO_1));
+
+    // Then
+    assertAll(
+            () -> assertThat(handled.id()).isEqualTo(TodoId.USER_1_TODO_1),
+            () -> assertThat(handled.aggregateRoot().status()).isEqualTo(Status.DONE),
+            () -> assertThat(handled.events()).containsExactly(new VersionizedEvent<>(
+                    new AggregateVersion(1),
+                    new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE))),
+            () -> verify(todoEventRepository).save(
+                    handled.events(), handled.aggregateRoot(), ExecutedBy.NotAvailable.INSTANCE)
+    );
+}
+```
+
+Show the static imports used by the example at the top of the snippet. Keep each Then check in its own lambda so JUnit reports all failed checks in one run.
 
 ## Useful test commands
 
