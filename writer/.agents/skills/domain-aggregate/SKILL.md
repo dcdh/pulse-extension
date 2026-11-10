@@ -17,8 +17,8 @@ Use this skill when creating or changing a domain aggregate, its aggregate ID, c
 
 - Define an ID type implementing `AggregateId` and make it a Java record. Its `id()` must be stable and unique; if it is a child ID, retain the parent ID needed to derive `belongsTo()` and `ownedBy()`.
 - Define commands and domain events as records. The Writer deployment validation requires aggregate IDs, commands, and events to be records.
-- Extend `AggregateRoot<IdType>`. Define a constructor that takes the ID and every aggregate state property, then pass the ID to `super(id)`. Do not define a constructor that takes only the ID.
-- Keep aggregate rehydration consistent with this constructor rule. The current `ReflectionAggregateRootInstanceCreator` expects an ID-only constructor, so inspect and update the rehydration path when introducing this convention; do not add an ID-only constructor as a workaround.
+- Extend `AggregateRoot<IdType>` and provide both required constructors: one taking only the ID, which passes it to `super(id)` and supports event replay, and one taking the ID plus every aggregate state property, which initializes the complete state. Do not omit either constructor.
+- Use the ID-only constructor when the command handler creates an empty aggregate to replay history. Use the full-state constructor when a caller already has the complete aggregate state. The current `ReflectionAggregateRootInstanceCreator` uses the ID-only constructor for replay.
 - Implement `belongsTo()` and `ownedBy()` from the domain's actual relationship and ownership rules. Do not guess these values from request context when the aggregate ID or state already defines them.
 - Keep state private and expose only the accessors needed by domain behavior and consumers. Use explicit null checks for required constructor, command, event, and execution-context inputs, following nearby code.
 
@@ -35,6 +35,10 @@ Example shape, adapted from `Todo`:
 public final class Item extends AggregateRoot<ItemId> {
 
     private String name;
+
+    public Item(final ItemId id) {
+        super(id);
+    }
 
     public Item(final ItemId id, final String name) {
         super(id);
