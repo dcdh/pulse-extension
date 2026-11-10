@@ -46,6 +46,7 @@ This example is from `core/src/test/java/com/damdamdeo/pulse/extension/core/Todo
 Use `TodoCommandHandlerTest` as the primary pattern when verifying orchestration across the aggregate and its ports:
 
 - Mock `EventRepository` and `AggregateIdGenerator`; use the real command handler, registry, aggregate, and transaction test double. The example uses `NotAvailableExecutionContextProvider` as a spy so it can assert execution-context lookups.
+- Leave one blank line between the test class declaration and its first property or field, matching `TodoCommandHandlerTest`.
 - For a creational command, arrange the generated identifier and `hasEventsFor(...) == false`, call the creation overload, then assert the returned identifier, aggregate state, and complete emitted event sequence starting at version zero.
 - For a command against an existing aggregate, arrange repository history with `loadOrderByVersionASC(...)`, call the existing-aggregate overload, and assert the new event version follows the replayed history. Check the updated aggregate state as well as `Handled.events()`.
 - Assert `ExecutedByEvent` wrapping when execution identity is part of the behavior. Verify that `EventRepository.save(...)` receives the exact newly emitted versioned events, resulting aggregate root, and execution identity.
