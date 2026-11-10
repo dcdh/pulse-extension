@@ -109,7 +109,7 @@ class CachedConnectionIdentifierRepositoryTest {
                 () -> assertThat(cache.as(CaffeineCache.class).get(new ConnectionIdentifier("U000001"), (_) -> {
                     throw new IllegalStateException("Should not be called");
                 }).await().indefinitely())
-                        .isEqualTo(UserId.USER_1));
+                        .isEqualTo(AnyIdentifiable.from(UserId.USER_1)));
     }
 
     @Test
