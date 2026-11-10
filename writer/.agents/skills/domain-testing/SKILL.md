@@ -11,7 +11,9 @@ Use this skill when adding or changing tests for aggregates, domain commands, ev
 
 - Read the aggregate and its command/event records first. `core/src/test/java/com/damdamdeo/pulse/extension/core/Todo.java` demonstrates command `handle(...)` methods emitting events and `on(...)` methods applying them to aggregate state.
 - Read `core/src/test/java/com/damdamdeo/pulse/extension/core/command/TodoCommandHandlerTest.java` for command-handler scenarios, especially how creation, replay, event versions, persistence, and failures are asserted.
-- Follow the current test fixture and naming conventions in the relevant package. Keep each test focused on one behavior and structure it as Given / When / Then.
+- Name each test with the `should...` form, describing the expected behavior (for example, `shouldMarkTodoAsDone` or `shouldThrowCommandExceptionWhenTodoIsMissing`). Keep the name focused on one behavior.
+- Structure every test with explicit `// Given`, `// When`, and `// Then` sections. Set up only the scenario in Given, perform the action under test in When, and put outcome assertions in Then.
+- In Then, group related assertions with `org.junit.jupiter.api.Assertions.assertAll(...)` so all relevant outcomes are reported together. Use one lambda per assertion; include returned state, emitted events, and important port interactions as appropriate.
 
 ## Test aggregates directly
 
