@@ -13,7 +13,8 @@ Use this skill when adding or changing tests for aggregates, domain commands, ev
 - Read `core/src/test/java/com/damdamdeo/pulse/extension/core/command/TodoCommandHandlerTest.java` for command-handler scenarios, especially how creation, replay, event versions, persistence, and failures are asserted.
 - Name each test with the `should...` form, describing the expected behavior (for example, `shouldMarkTodoAsDone` or `shouldThrowCommandExceptionWhenTodoIsMissing`). Keep the name focused on one behavior.
 - Structure every test with explicit `// Given`, `// When`, and `// Then` sections. Set up only the scenario in Given, perform the action under test in When, and put outcome assertions in Then.
-- Use static imports for `assertAll`, `assertThat`, and Mockito stubbing methods such as `doReturn`. In Then, group related assertions with `assertAll(...)` so all relevant outcomes are reported together. Use one lambda per assertion; include returned state, emitted events, and important port interactions as appropriate.
+- For command-handler tests that use Mockito, annotate the test class with `@ExtendWith(MockitoExtension.class)` and declare mocked ports with `@Mock`. Prefer real domain objects and the real command handler; mock external collaborators such as repositories and ID generators.
+- Use static imports for `assertAll`, `assertThat`, and Mockito methods such as `doReturn` and `verify`. In Then, group state and event assertions with `assertAll(...)` so all relevant outcomes are reported together. Finish the Then section by verifying expected calls to mocks, especially persistence calls and their arguments.
 
 ## Test aggregates directly
 
@@ -52,6 +53,23 @@ Use `TodoCommandHandlerTest` as the primary pattern when verifying orchestration
 - Prefer exact event assertions (`containsExactly`) when ordering and version numbers are part of the contract. Avoid asserting incidental implementation calls unless they protect a domain or persistence contract.
 
 The following excerpt follows `shouldMarkTodoAsDone` in `core/src/test/java/com/damdamdeo/pulse/extension/core/command/TodoCommandHandlerTest.java`. The fixture provides the handler and mocked repository:
+
+```java
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class TodoCommandHandlerTest {
+
+    @Mock
+    EventRepository<Todo, TodoId> todoEventRepository;
+
+    // Other fixture setup and tests...
+}
+```
+
+Within that fixture, a test follows this Given / When / Then pattern. Keep mock verifications at the end of Then, after checking the returned aggregate and emitted events:
 
 ```java
 import static org.assertj.core.api.Assertions.assertThat;
