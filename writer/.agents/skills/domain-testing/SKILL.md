@@ -47,6 +47,7 @@ Use `TodoCommandHandlerTest` as the primary pattern when verifying orchestration
 
 - Mock `EventRepository` and `AggregateIdGenerator`; use the real command handler, registry, aggregate, and transaction test double. The example uses `NotAvailableExecutionContextProvider` as a spy so it can assert execution-context lookups.
 - Leave one blank line between the test class declaration and its first property or field, matching `TodoCommandHandlerTest`.
+- Leave one blank line between each property or field declaration in the test class, including adjacent Mockito fields.
 - For a creational command, arrange the generated identifier and `hasEventsFor(...) == false`, call the creation overload, then assert the returned identifier, aggregate state, and complete emitted event sequence starting at version zero.
 - For a command against an existing aggregate, arrange repository history with `loadOrderByVersionASC(...)`, call the existing-aggregate overload, and assert the new event version follows the replayed history. Check the updated aggregate state as well as `Handled.events()`.
 - Assert `ExecutedByEvent` wrapping when execution identity is part of the behavior. Verify that `EventRepository.save(...)` receives the exact newly emitted versioned events, resulting aggregate root, and execution identity.
@@ -65,6 +66,9 @@ class TodoCommandHandlerTest {
 
     @Mock
     EventRepository<Todo, TodoId> todoEventRepository;
+
+    @Mock
+    AggregateIdGenerator aggregateIdGenerator;
 
     // Other fixture setup and tests...
 }
