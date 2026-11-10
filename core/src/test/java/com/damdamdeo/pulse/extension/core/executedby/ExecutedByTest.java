@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = new ExecutedBy.EndUser(new Username("alice@mail.com"));
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("EU:aliceEncoded"));
@@ -33,7 +33,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = new ExecutedBy.ServiceAccount("cron-job");
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("SA:cron-job"));
@@ -45,7 +45,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.Anonymous.INSTANCE;
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("A"));
@@ -57,7 +57,7 @@ class ExecutedByTest {
             final ExecutedBy executedBy = ExecutedBy.NotAvailable.INSTANCE;
 
             // When
-            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, Todo.OWNED_BY_USER_1);
+            final ExecutedByEncoded encoded = executedBy.encode(usernameEncoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertThat(encoded).isEqualTo(new ExecutedByEncoded("NA"));

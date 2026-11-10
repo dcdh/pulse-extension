@@ -25,7 +25,7 @@ class ShouldFailWhenAggregateRootIsNotUniqueTest extends AbstractWriterTest {
             .assertException(throwable -> assertThat(throwable)
                     .hasNoSuppressedExceptions()
                     .rootCause()
-                    .hasMessage("AggregateRoot 'Todo' declared more than once '3'")
+                    .hasMessage("AggregateRoot 'Todo' declared more than once '2'")
                     .hasNoSuppressedExceptions());
 
     @Test

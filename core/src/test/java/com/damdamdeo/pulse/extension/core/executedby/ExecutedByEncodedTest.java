@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.executedby;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.connecteduser.UsernameEncoded;
 import org.junit.jupiter.api.Test;
@@ -22,10 +22,10 @@ public class ExecutedByEncodedTest {
     void decodeEndUser() throws UnableToDecodeException {
         // Given
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("EU:encodedalice");
-        Mockito.doReturn(new Username("alice@mail.com")).when(usernameDecoder).decode(new UsernameEncoded("encodedalice"), Todo.OWNED_BY_USER_1);
+        Mockito.doReturn(new Username("alice@mail.com")).when(usernameDecoder).decode(new UsernameEncoded("encodedalice"), TodoAggregateRoot.OWNED_BY_USER_1);
 
         // When
-        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -39,10 +39,10 @@ public class ExecutedByEncodedTest {
         // Given
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("EU:encodedalice");
         Mockito.doThrow(new UnableToDecodeException(new RuntimeException())).when(usernameDecoder)
-                .decode(new UsernameEncoded("encodedalice"), Todo.OWNED_BY_USER_1);
+                .decode(new UsernameEncoded("encodedalice"), TodoAggregateRoot.OWNED_BY_USER_1);
 
         // When
-        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -56,7 +56,7 @@ public class ExecutedByEncodedTest {
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("SA:cron-job");
 
         // When
-        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -71,7 +71,7 @@ public class ExecutedByEncodedTest {
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("A");
 
         // When
-        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -85,7 +85,7 @@ public class ExecutedByEncodedTest {
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("NA");
 
         // When
-        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -99,7 +99,7 @@ public class ExecutedByEncodedTest {
         final ExecutedByEncoded executedByEncoded = new ExecutedByEncoded("BANNED");
 
         // When
-        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, Todo.OWNED_BY_USER_1);
+        final ExecutedBy executedBy = executedByEncoded.to(usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(

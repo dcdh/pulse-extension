@@ -48,7 +48,7 @@ class GuardDomainUseCaseTest {
     AggregateIdDecomposer aggregateIdDecomposer;
 
     @Mock
-    CommandHandler<Todo, TodoId> commandHandler;
+    CommandHandler<TodoAggregateRoot, TodoId> commandHandler;
 
     @Spy
     DistributedLockManager distributedLockManager = new DistributedLockManager() {
@@ -71,15 +71,15 @@ class GuardDomainUseCaseTest {
 
     StubDomainUseCase decorated;
 
-    private GuardDomainUseCase<TodoId, MarkTodoAsDone, Todo> guardDomainUseCase;
+    private GuardDomainUseCase<TodoId, MarkTodoAsDone, TodoAggregateRoot> guardDomainUseCase;
 
-    public static class StubDomainUseCase extends AbstractDomainUseCase<TodoId, MarkTodoAsDone, Todo> {
+    public static class StubDomainUseCase extends AbstractDomainUseCase<TodoId, MarkTodoAsDone, TodoAggregateRoot> {
 
         final List<String> called = new ArrayList<>();
         private final List<Permission<TodoId, MarkTodoAsDone>> permissions;
         private final Supplier<MissingAggregateException> missingAggregateException;
 
-        protected StubDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler,
+        protected StubDomainUseCase(final CommandHandler<TodoAggregateRoot, TodoId> commandHandler,
                                     final List<Permission<TodoId, MarkTodoAsDone>> permissions,
                                     final Supplier<MissingAggregateException> missingAggregateException) {
             super(commandHandler);
@@ -94,7 +94,7 @@ class GuardDomainUseCaseTest {
         }
 
         @Override
-        protected Handled<Todo, TodoId> onAfter(final MarkTodoAsDone command, final Handled<Todo, TodoId> handled) throws UseCaseExecutionException {
+        protected Handled<TodoAggregateRoot, TodoId> onAfter(final MarkTodoAsDone command, final Handled<TodoAggregateRoot, TodoId> handled) throws UseCaseExecutionException {
             called.add("onAfter");
             return super.onAfter(command, handled);
         }
@@ -119,17 +119,17 @@ class GuardDomainUseCaseTest {
     void shouldReturnResultWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
         // Given
         decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>()), missingAggregateException);
-        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()));
+        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated, distributedLockManager, traceAppender) {
         };
 
         // When
-        final Handled<Todo, TodoId> executed = guardDomainUseCase.execute(INPUT);
+        final Handled<TodoAggregateRoot, TodoId> executed = guardDomainUseCase.execute(INPUT);
 
         // Then
         assertAll(
-                () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
+                () -> assertEquals(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
                 () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS),
@@ -141,17 +141,17 @@ class GuardDomainUseCaseTest {
     void shouldReturnResultFromFirstAudienceThatAllowsAccess() throws UseCaseException, CommandException {
         // Given
         decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
-        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()));
+        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated, distributedLockManager, traceAppender) {
         };
 
         // When
-        final Handled<Todo, TodoId> executed = guardDomainUseCase.execute(INPUT);
+        final Handled<TodoAggregateRoot, TodoId> executed = guardDomainUseCase.execute(INPUT);
 
         // Then
         assertAll(
-                () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
+                () -> assertEquals(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
                 () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS),
@@ -163,17 +163,17 @@ class GuardDomainUseCaseTest {
     void shouldExecutePermissionsInPriorityOrder() throws UseCaseException, CommandException {
         // Given
         decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
-        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()));
+        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated, distributedLockManager, traceAppender) {
         };
 
         // When
-        final Handled<Todo, TodoId> executed = guardDomainUseCase.execute(INPUT);
+        final Handled<TodoAggregateRoot, TodoId> executed = guardDomainUseCase.execute(INPUT);
 
         // Then
         assertAll(
-                () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
+                () -> assertEquals(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(commandHandler).handle(any(), any()),
                 () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS)
@@ -184,17 +184,17 @@ class GuardDomainUseCaseTest {
     void shouldNotExecuteFollowingPermissionsWhenEveryoneAllowsAccess() throws UseCaseException, CommandException {
         // Given
         decorated = new StubDomainUseCase(commandHandler, List.of(new Everyone<>(), new VisibilityRoleRestricted<>()), missingAggregateException);
-        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()));
+        when(commandHandler.handle(INPUT, missingAggregateException)).thenReturn(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()));
         guardDomainUseCase = new GuardDomainUseCase<>(executionContextProvider, backendUserVisibilityRolesProvider,
                 executedByResolver, aggregateIdDecomposer, decorated, distributedLockManager, traceAppender) {
         };
 
         // When
-        final Handled<Todo, TodoId> executed = guardDomainUseCase.execute(INPUT);
+        final Handled<TodoAggregateRoot, TodoId> executed = guardDomainUseCase.execute(INPUT);
 
         // Then
         assertAll(
-                () -> assertEquals(new Handled<>(new Todo(TodoId.USER_1_TODO_1), List.of()), executed),
+                () -> assertEquals(new Handled<>(new TodoAggregateRoot(TodoId.USER_1_TODO_1), List.of()), executed),
                 () -> assertThat(decorated.called()).containsExactly("permissions", "onBefore", "onAfter"),
                 () -> verify(traceAppender).append(INPUT, List.of(), ExecutionStatus.SUCCESS),
                 () -> verifyNoInteractions(executionContextProvider, backendUserVisibilityRolesProvider,

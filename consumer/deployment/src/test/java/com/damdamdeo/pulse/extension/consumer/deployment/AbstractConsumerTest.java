@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.consumer.deployment;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import jakarta.annotation.Priority;
@@ -20,9 +20,9 @@ public abstract class AbstractConsumerTest {
 
         @Override
         public Optional<Passphrase> findBy(final OwnedBy ownedBy) {
-            if (Todo.OWNED_BY_USER_1.equals(ownedBy)) {
+            if (TodoAggregateRoot.OWNED_BY_USER_1.equals(ownedBy)) {
                 return Optional.of(PassphraseSample.PASSPHRASE_1);
-            } else if (Todo.OWNED_BY_USER_2.equals(ownedBy)) {
+            } else if (TodoAggregateRoot.OWNED_BY_USER_2.equals(ownedBy)) {
                 return Optional.of(new Passphrase(null));
             } else {
                 return Optional.empty();

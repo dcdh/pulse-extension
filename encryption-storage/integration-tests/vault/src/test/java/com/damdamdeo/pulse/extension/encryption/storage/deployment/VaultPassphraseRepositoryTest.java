@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.encryption.storage.deployment;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.hashing.Hasher;
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.VaultPassphraseRepository;
@@ -25,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @QuarkusTest
 class VaultPassphraseRepositoryTest {
 
-    private static final String SECRET_PATH_OWNED_BY_USER_1 = "owner/" + HasherProvider.GIVEN_OWNED_BY_EXPECTED_HASH.get(Todo.OWNED_BY_USER_1).value();
-    private static final String SECRET_PATH_OWNED_BY_USER_2 = "owner/" + HasherProvider.GIVEN_OWNED_BY_EXPECTED_HASH.get(Todo.OWNED_BY_USER_2).value();
+    private static final String SECRET_PATH_OWNED_BY_USER_1 = "owner/" + HasherProvider.GIVEN_OWNED_BY_EXPECTED_HASH.get(TodoAggregateRoot.OWNED_BY_USER_1).value();
+    private static final String SECRET_PATH_OWNED_BY_USER_2 = "owner/" + HasherProvider.GIVEN_OWNED_BY_EXPECTED_HASH.get(TodoAggregateRoot.OWNED_BY_USER_2).value();
 
     @Inject
     VaultKVSecretEngine vaultKVSecretEngine;
@@ -48,7 +48,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -60,7 +60,7 @@ class VaultPassphraseRepositoryTest {
         vaultKVSecretEngine.writeSecret(SECRET_PATH_OWNED_BY_USER_1, Map.of());
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertThat(passphrase).isEmpty();
@@ -73,7 +73,7 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
 
         // When
-        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(Todo.OWNED_BY_USER_1);
+        final Optional<Passphrase> passphrase = vaultPassphraseRepository.findBy(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -86,7 +86,7 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When
-        final Passphrase stored = vaultPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
+        final Passphrase stored = vaultPassphraseRepository.store(TodoAggregateRoot.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
 
         // Then
         final Map<String, String> secret = vaultKVSecretEngine.readSecret(SECRET_PATH_OWNED_BY_USER_1);
@@ -103,9 +103,9 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
 
         // When && Then
-        assertThatThrownBy(() -> vaultPassphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1))
+        assertThatThrownBy(() -> vaultPassphraseRepository.store(TodoAggregateRoot.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1))
                 .isExactlyInstanceOf(PassphraseAlreadyExistsException.class)
-                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
+                .hasFieldOrPropertyWithValue("ownedBy", TodoAggregateRoot.OWNED_BY_USER_1);
     }
 
     @Test
@@ -115,7 +115,7 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_1.passphrase())));
 
         // When
-        final Passphrase passphrase = vaultPassphraseRepository.update(Todo.OWNED_BY_USER_1, new Passphrase(null));
+        final Passphrase passphrase = vaultPassphraseRepository.update(TodoAggregateRoot.OWNED_BY_USER_1, new Passphrase(null));
 
         // Then
         assertThat(passphrase).isEqualTo(new Passphrase(null));
@@ -126,9 +126,9 @@ class VaultPassphraseRepositoryTest {
         // Given
 
         // When && Then
-        assertThatThrownBy(() -> vaultPassphraseRepository.update(Todo.OWNED_BY_USER_1, new Passphrase(null)))
+        assertThatThrownBy(() -> vaultPassphraseRepository.update(TodoAggregateRoot.OWNED_BY_USER_1, new Passphrase(null)))
                 .isExactlyInstanceOf(UnknownPassphraseException.class)
-                .hasFieldOrPropertyWithValue("ownedBy", Todo.OWNED_BY_USER_1);
+                .hasFieldOrPropertyWithValue("ownedBy", TodoAggregateRoot.OWNED_BY_USER_1);
     }
 
     @Test
@@ -140,11 +140,11 @@ class VaultPassphraseRepositoryTest {
                 Map.of("passphrase", new String(PassphraseSample.PASSPHRASE_2.passphrase())));
 
         // When
-        final List<RetrievedPassphrase> retrieved = vaultPassphraseRepository.list(List.of(Todo.OWNED_BY_USER_1, Todo.OWNED_BY_USER_2, Todo.OWNED_BY_USER_3));
+        final List<RetrievedPassphrase> retrieved = vaultPassphraseRepository.list(List.of(TodoAggregateRoot.OWNED_BY_USER_1, TodoAggregateRoot.OWNED_BY_USER_2, TodoAggregateRoot.OWNED_BY_USER_3));
 
         // Then
-        assertThat(retrieved).containsExactlyInAnyOrder(new RetrievedPassphrase(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1),
-                new RetrievedPassphrase(Todo.OWNED_BY_USER_2, PassphraseSample.PASSPHRASE_2),
-                new RetrievedPassphrase(Todo.OWNED_BY_USER_3, null));
+        assertThat(retrieved).containsExactlyInAnyOrder(new RetrievedPassphrase(TodoAggregateRoot.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1),
+                new RetrievedPassphrase(TodoAggregateRoot.OWNED_BY_USER_2, PassphraseSample.PASSPHRASE_2),
+                new RetrievedPassphrase(TodoAggregateRoot.OWNED_BY_USER_3, null));
     }
 }

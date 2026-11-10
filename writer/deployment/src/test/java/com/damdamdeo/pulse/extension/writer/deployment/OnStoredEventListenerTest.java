@@ -33,7 +33,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
             .withConfigurationResource("application.properties");
 
     @Inject
-    CommandHandler<Todo, TodoId> commandHandler;
+    CommandHandler<TodoAggregateRoot, TodoId> commandHandler;
 
     @Inject
     @All
@@ -77,7 +77,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
 
         // Then
         assertAll(
-                () -> assertThat(onStoredEventListeners.size()).isEqualTo(1),
+                () -> assertThat(onStoredEventListeners.size()).isEqualTo(4),
                 () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
                 () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(TodoId.USER_1_TODO_1),
                 () -> assertThat(onNewTodoCreated.events.getFirst().aggregateVersion()).isEqualTo(new AggregateVersion(0)),

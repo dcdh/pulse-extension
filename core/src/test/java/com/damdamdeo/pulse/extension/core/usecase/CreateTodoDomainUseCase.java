@@ -9,9 +9,9 @@ import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
 import java.util.List;
 import java.util.function.Function;
 
-public final class CreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, Todo> {
+public final class CreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, TodoAggregateRoot> {
 
-    CreateTodoDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler) {
+    CreateTodoDomainUseCase(final CommandHandler<TodoAggregateRoot, TodoId> commandHandler) {
         super(commandHandler);
     }
 

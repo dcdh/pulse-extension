@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CommandHandler;
 import com.damdamdeo.pulse.extension.core.event.Event;
@@ -35,7 +35,7 @@ class ShouldFailWhenEventNotARecordTest extends AbstractWriterTest {
     }
 
     @Inject
-    CommandHandler<Todo, TodoId> commandHandler;
+    CommandHandler<TodoAggregateRoot, TodoId> commandHandler;
 
     // NOT needed to use addClass
     // Will be registered automatically

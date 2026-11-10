@@ -153,7 +153,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, TodoId.USER_1_TODO_1.id());
-            ps.setString(2, Todo.class.getSimpleName());
+            ps.setString(2, TodoAggregateRoot.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, encrypted.payload());
             ps.setString(5, OwnedBy.from(UserId.USER_1).id());
@@ -197,7 +197,7 @@ class DebeziumPublisherTest extends AbstractPublisherTest {
                 () -> assertThat(getValuesByKey(headers, "__source_txId")).hasSize(1),
                 () -> assertThat(getValuesByKey(headers, "__source_lsn")).hasSize(1),
                 () -> assertThat(records.size()).isEqualTo(1L),
-                () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeAggregateRootKey("Todo",
+                () -> Assertions.assertThat(records.getFirst().getKey()).isEqualTo(new JsonNodeAggregateRootKey("TodoAggregateRoot",
                         TodoId.USER_1_TODO_1.id())),
                 () -> Assertions.assertThat(records.getFirst().getValue()).isEqualTo(new JsonNodeAggregateRootValue(1L,
                         encrypted.payload(), OwnedBy.from(UserId.USER_1).id(), BelongsTo.from(TodoId.USER_1_TODO_1).id())));

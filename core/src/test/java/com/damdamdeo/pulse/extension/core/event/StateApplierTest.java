@@ -23,8 +23,8 @@ class StateApplierTest {
                 new ExecutedByEvent<>(new TodoMarkedAsDone(), executionContextProvider.provide().executedBy()));
 
         // When
-        final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
-                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, Todo.class,
+        final StateApplier<TodoAggregateRoot, TodoId> todoStateApplier = new StateApplier<>(
+                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, TodoAggregateRoot.class,
                 TodoId.class, TodoId.USER_1_TODO_1);
 
         // Then
@@ -43,8 +43,8 @@ class StateApplierTest {
                 new ExecutedByEvent<>(new TodoMarkedAsDone(), executionContextProvider.provide().executedBy()));
 
         // When
-        final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
-                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, Todo.class,
+        final StateApplier<TodoAggregateRoot, TodoId> todoStateApplier = new StateApplier<>(
+                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenExecutedByEvents, TodoAggregateRoot.class,
                 TodoId.class, TodoId.USER_1_TODO_1);
 
         // Then
@@ -58,8 +58,8 @@ class StateApplierTest {
                 new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1),
                         executionContextProvider.provide().executedBy())
         );
-        final StateApplier<Todo, TodoId> todoStateApplier = new StateApplier<>(
-                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenEvents, Todo.class,
+        final StateApplier<TodoAggregateRoot, TodoId> todoStateApplier = new StateApplier<>(
+                new ReflectionAggregateRootInstanceCreator(), executionContextProvider, givenEvents, TodoAggregateRoot.class,
                 TodoId.class, TodoId.USER_1_TODO_1);
 
         // When

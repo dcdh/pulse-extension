@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -75,13 +75,13 @@ class JdbcPostgresOwnedByProviderTest {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000001", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         // When
         final OwnedBy provided = jdbcPostgresOwnedByProvider.provide(new AnyIdentifiable("00000000-0000-0000-0000-000000000001"));
 
         // Then
-        assertThat(provided).isEqualTo(Todo.OWNED_BY_USER_1);
+        assertThat(provided).isEqualTo(TodoAggregateRoot.OWNED_BY_USER_1);
     }
 
     @Test

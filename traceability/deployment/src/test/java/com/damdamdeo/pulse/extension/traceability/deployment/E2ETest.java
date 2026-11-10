@@ -141,16 +141,16 @@ class E2ETest {
         // Given
         insertEvent(TodoId.USER_1_TODO_1.id(), "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, ALICE);
+                TodoAggregateRoot.OWNED_BY_USER_1, ALICE);
         insertEvent(TodoId.USER_1_TODO_1.id(), "Todo", 1,
                 Instant.parse("2025-10-13T19:00:00Z"), "TodoDescriptionUpdated", "\\x",
-                Todo.OWNED_BY_USER_1, ALICE);
+                TodoAggregateRoot.OWNED_BY_USER_1, ALICE);
         insertEvent(TodoId.USER_1_TODO_1.id(), "Todo", 2,
                 Instant.parse("2025-10-13T21:00:00Z"), "MarkTodoAsDone", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
         insertEvent(TodoId.USER_1_TODO_2.id(), "Todo", 0,
                 Instant.parse("2025-10-13T22:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, ALICE);
+                TodoAggregateRoot.OWNED_BY_USER_1, ALICE);
 
         // When
         // Alice

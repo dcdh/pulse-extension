@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.deployment.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.encryption.storage.deployment.StubPassphraseRepository;
 import com.damdamdeo.pulse.extension.encryption.storage.runtime.CachedPassphraseRepository;
@@ -62,15 +62,15 @@ class DefaultPassphraseProviderTest {
         // Given
 
         // When
-        final Passphrase provided = defaultPassphraseProvider.provide(Todo.OWNED_BY_USER_1);
+        final Passphrase provided = defaultPassphraseProvider.provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
                 () -> assertThat(provided.passphrase()).containsExactly(PassphraseSample.PASSPHRASE_1.passphrase()),
                 () -> assertThat(stubPassphraseRepository.getCalled()).containsExactly(
                         "retrieveU000001", "storeU0000017-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&"),
-                () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(Todo.OWNED_BY_USER_1).get())
-                        .isEqualTo(new RetrievedPassphrase(Todo.OWNED_BY_USER_1,
+                () -> assertThat(cache.as(CaffeineCache.class).getIfPresent(TodoAggregateRoot.OWNED_BY_USER_1).get())
+                        .isEqualTo(new RetrievedPassphrase(TodoAggregateRoot.OWNED_BY_USER_1,
                                 PassphraseSample.PASSPHRASE_1))
         );
     }
@@ -78,10 +78,10 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldReuseCache() throws UnableToProvidePassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        passphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
+        passphraseRepository.store(TodoAggregateRoot.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
 
         // When
-        final Passphrase provided = defaultPassphraseProvider.provide(Todo.OWNED_BY_USER_1);
+        final Passphrase provided = defaultPassphraseProvider.provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -92,10 +92,10 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldBanUpdateCache() throws UnableToBanPassphraseException, PassphraseAlreadyExistsException, UnableToStorePassphraseException {
         // Given
-        passphraseRepository.store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
+        passphraseRepository.store(TodoAggregateRoot.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
 
         // When
-        final Passphrase banned = defaultPassphraseProvider.ban(Todo.OWNED_BY_USER_1);
+        final Passphrase banned = defaultPassphraseProvider.ban(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(

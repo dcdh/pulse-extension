@@ -29,14 +29,15 @@ class QueryUseCaseEventStoreTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             // classes.add(GuardDomainUseCase.class);
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(
-                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class,
+                    AbstractWriterTest.InMemoryTodoRepository.class))
             .withConfigurationResource("application.properties");
 
     @Inject
-    EventRepository<Todo, TodoId> todoEventRepository;
+    EventRepository<TodoAggregateRoot, TodoId> todoEventRepository;
 
     @Inject
-    QueryEventStore<Todo, TodoId> queryEventStore;
+    QueryEventStore<TodoAggregateRoot, TodoId> queryEventStore;
 
     @ApplicationScoped
     @Priority(1)
@@ -93,7 +94,7 @@ class QueryUseCaseEventStoreTest {
                 new VersionizedEvent<>(new AggregateVersion(0),
                         new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         givenTodoId,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
@@ -101,10 +102,10 @@ class QueryUseCaseEventStoreTest {
                 ), BOB);
 
         // When
-        final Optional<Todo> byId = queryEventStore.findById(givenTodoId);
+        final Optional<TodoAggregateRoot> byId = queryEventStore.findById(givenTodoId);
 
         // Then
-        assertThat(byId).isEqualTo(Optional.of(new Todo(
+        assertThat(byId).isEqualTo(Optional.of(new TodoAggregateRoot(
                 givenTodoId,
                 "lorem ipsum",
                 Status.IN_PROGRESS,
@@ -118,7 +119,7 @@ class QueryUseCaseEventStoreTest {
         final TodoId givenTodoId = TodoId.USER_1_TODO_11;
 
         // When
-        final Optional<Todo> byId = queryEventStore.findById(givenTodoId);
+        final Optional<TodoAggregateRoot> byId = queryEventStore.findById(givenTodoId);
 
         // Then
         assertThat(byId).isEqualTo(Optional.empty());
@@ -131,7 +132,7 @@ class QueryUseCaseEventStoreTest {
         final AggregateVersion aggregateVersion = new AggregateVersion(1);
 
         // When
-        final Optional<Todo> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);
+        final Optional<TodoAggregateRoot> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);
 
         // Then
         assertThat(byIdAndVersion).isEqualTo(Optional.empty());
@@ -148,7 +149,7 @@ class QueryUseCaseEventStoreTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         givenTodoId,
                         "lorem ipsum",
                         Status.DONE,
@@ -156,11 +157,11 @@ class QueryUseCaseEventStoreTest {
                 ), BOB);
 
         // When
-        final Optional<Todo> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);
+        final Optional<TodoAggregateRoot> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);
 
         // Then
         assertThat(byIdAndVersion).isEqualTo(Optional.of(
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_13,
                         "lorem ipsum",
                         Status.DONE,
@@ -180,7 +181,7 @@ class QueryUseCaseEventStoreTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         givenTodoId,
                         "lorem ipsum",
                         Status.DONE,
@@ -188,12 +189,12 @@ class QueryUseCaseEventStoreTest {
                 ), BOB);
 
         // When
-        final Optional<Todo> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);
+        final Optional<TodoAggregateRoot> byIdAndVersion = queryEventStore.findByIdAndVersion(givenTodoId, aggregateVersion);
 
 
         // Then
         assertThat(byIdAndVersion).isEqualTo(Optional.of(
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_14,
                         "lorem ipsum",
                         Status.IN_PROGRESS,

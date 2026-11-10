@@ -25,7 +25,7 @@ class CreationalWorkflowTest {
     UserRegistrationDomainUseCase userRegistrationDomainUseCase;
 
     @Mock
-    CommandHandler<Todo, TodoId> todoCommandHandler;
+    CommandHandler<TodoAggregateRoot, TodoId> todoCommandHandler;
 
     @Mock
     CommandHandler<TodoChecklist, TodoChecklistId> todoChecklistCommandHandler;
@@ -47,7 +47,7 @@ class CreationalWorkflowTest {
         final Handled<User, UserId> user = new Handled<>(new User(userId), List.of());
 
         final TodoId todoId = new TodoId(userId, TodoId.SEQUENCE_NUMBER_1);
-        final Handled<Todo, TodoId> todo = new Handled<>(new Todo(todoId), List.of());
+        final Handled<TodoAggregateRoot, TodoId> todo = new Handled<>(new TodoAggregateRoot(todoId), List.of());
 
         final TodoChecklistId todoChecklistId = new TodoChecklistId(todoId, TodoChecklistId.SEQUENCE_NUMBER_1);
         final Handled<TodoChecklist, TodoChecklistId> todoChecklist = new Handled<>(

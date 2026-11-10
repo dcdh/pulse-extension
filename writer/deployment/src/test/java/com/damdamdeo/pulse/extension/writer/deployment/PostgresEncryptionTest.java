@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.EventStoreException;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
@@ -35,7 +35,8 @@ class PostgresEncryptionTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             // classes.add(GuardDomainUseCase.class);
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(
-                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class,
+                    AbstractWriterTest.InMemoryTodoRepository.class))
             .withConfigurationResource("application.properties");
 
     @Inject
@@ -112,7 +113,7 @@ class PostgresEncryptionTest {
         }
 
         // When
-        final Decrypted<byte[]> decrypted = decryptionService.decrypt(Encrypted.of(searchByHash), Todo.OWNED_BY_USER_1);
+        final Decrypted<byte[]> decrypted = decryptionService.decrypt(Encrypted.of(searchByHash), TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(

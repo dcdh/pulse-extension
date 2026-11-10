@@ -22,9 +22,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PurposeAggregateRootChannelConsumerTest {
 
-    private static class TodoPurposeAggregateRootChannelConsumer extends AbstractPurposeAggregateRootChannelConsumer<Todo> {
+    private static class TodoPurposeAggregateRootChannelConsumer extends AbstractPurposeAggregateRootChannelConsumer<TodoAggregateRoot> {
 
-        public TodoPurposeAggregateRootChannelConsumer(final PurposeAggregateRootChannelExecutor<Todo> purposeAggregateRootChannelExecutor,
+        public TodoPurposeAggregateRootChannelConsumer(final PurposeAggregateRootChannelExecutor<TodoAggregateRoot> purposeAggregateRootChannelExecutor,
                                                        final IdempotencyRepository idempotencyRepository) {
             super(purposeAggregateRootChannelExecutor, idempotencyRepository);
         }
@@ -36,7 +36,7 @@ class PurposeAggregateRootChannelConsumerTest {
                                 Integer version) implements AggregateRootKey {
 
         public static TodoAggregateRootKey of() {
-            return new TodoAggregateRootKey(Todo.class.getSimpleName(), TodoId.USER_1_TODO_1.toString(), 1);
+            return new TodoAggregateRootKey(TodoAggregateRoot.class.getSimpleName(), TodoId.USER_1_TODO_1.toString(), 1);
         }
 
         @Override
@@ -81,7 +81,7 @@ class PurposeAggregateRootChannelConsumerTest {
     }
 
     @Mock
-    PurposeAggregateRootChannelExecutor<Todo> purposeAggregateRootChannelExecutor;
+    PurposeAggregateRootChannelExecutor<TodoAggregateRoot> purposeAggregateRootChannelExecutor;
 
     @Mock
     IdempotencyRepository idempotencyRepository;

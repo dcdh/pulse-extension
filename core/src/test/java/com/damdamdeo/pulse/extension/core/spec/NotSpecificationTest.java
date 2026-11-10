@@ -10,12 +10,12 @@ class NotSpecificationTest {
 
     private static ExecutionContext EXECUTION_CONTEXT = new NotAvailableExecutionContextProvider().provide();
 
-    private static final Specification<Todo> NOT_IMPORTANT = new TodoIsImportantSpec().not();
+    private static final Specification<TodoAggregateRoot> NOT_IMPORTANT = new TodoIsImportantSpec().not();
 
     @Test
     void shouldBeTrueWhenTodoIsNotImportant() {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
                 Owner.USER_1);
 
         // When
@@ -28,7 +28,7 @@ class NotSpecificationTest {
     @Test
     void shouldBeFalseWhenTodoIsImportant() {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, true,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, true,
                 Owner.USER_1);
 
         // When

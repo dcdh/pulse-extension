@@ -11,12 +11,12 @@ class CheckerTest {
 
     private static final ExecutionContext EXECUTION_CONTEXT = new NotAvailableExecutionContextProvider().provide();
 
-    private static final Checker<Todo> IMPORTANT_NEXT_IN_PROGRESS = Checker.<Todo>builder()
-            .step(Step.<Todo>builder()
+    private static final Checker<TodoAggregateRoot> IMPORTANT_NEXT_IN_PROGRESS = Checker.<TodoAggregateRoot>builder()
+            .step(Step.<TodoAggregateRoot>builder()
                     .spec(new TodoIsImportantSpec())
                     .exceptionProvider((todo) -> new IllegalStateException("la todo %s doit être importante".formatted(todo.id().id())))
                     .build())
-            .step(Step.<Todo>builder()
+            .step(Step.<TodoAggregateRoot>builder()
                     .spec(new TodoIsInProgressSpec())
                     .exceptionProvider((todo) -> new IllegalStateException("la todo %s doit être in progress".formatted(todo.id().id())))
                     .build())
@@ -25,7 +25,7 @@ class CheckerTest {
     @Test
     void shouldNotFailWhenTodoIsImportantAndInProgress() {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, true,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, true,
                 Owner.USER_1);
 
         // When && Then
@@ -37,7 +37,7 @@ class CheckerTest {
     @Test
     void shouldFailWhenTodoIsNotImportant() {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
                 Owner.USER_1);
 
         // When && Then
@@ -52,7 +52,7 @@ class CheckerTest {
     @Test
     void shouldFailWhenTodoIsImportantAndNotInProgress() {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.DONE, true,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.DONE, true,
                 Owner.USER_1);
 
         // When && Then

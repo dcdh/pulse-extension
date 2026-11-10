@@ -151,7 +151,7 @@ class SerializerTest {
     static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
-        OBJECT_MAPPER.addMixIn(Todo.class, TodoMixin.class);
+        OBJECT_MAPPER.addMixIn(TodoAggregateRoot.class, TodoMixin.class);
         OBJECT_MAPPER.addMixIn(TodoId.class, TodoIdMixin.class);
         OBJECT_MAPPER.addMixIn(TodoChecklist.class, TodoChecklistMixin.class);
         OBJECT_MAPPER.addMixIn(TodoChecklistId.class, TodoChecklistIdMixin.class);
@@ -237,7 +237,7 @@ class SerializerTest {
     @Test
     void shouldSerializeTodo() throws JsonProcessingException, JSONException {
         // Given
-        final Todo given = new Todo(TodoId.USER_1_TODO_1,
+        final TodoAggregateRoot given = new TodoAggregateRoot(TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,
                 false,
@@ -256,10 +256,10 @@ class SerializerTest {
         // Given
 
         // When
-        final Todo deserializedTodo = OBJECT_MAPPER.readValue(TODO, Todo.class);
+        final TodoAggregateRoot deserializedTodo = OBJECT_MAPPER.readValue(TODO, TodoAggregateRoot.class);
 
         // Then
-        assertThat(deserializedTodo).isEqualTo(new Todo(
+        assertThat(deserializedTodo).isEqualTo(new TodoAggregateRoot(
                 TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.DONE,

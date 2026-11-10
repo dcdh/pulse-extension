@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.traceability;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.query.file.ContentType;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
@@ -143,7 +143,7 @@ class DefaultTokenApplierTest {
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, resource.contentLength(), resource.payload());
 
             // When
-            final FileContent applied = tokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
+            final FileContent applied = tokenApplier.apply(fileContent, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertAll(
@@ -166,7 +166,7 @@ class DefaultTokenApplierTest {
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpg"), ContentType.IMAGE_JPG, resource.contentLength(), resource.payload());
 
             // When
-            final FileContent applied = tokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
+            final FileContent applied = tokenApplier.apply(fileContent, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertAll(
@@ -189,7 +189,7 @@ class DefaultTokenApplierTest {
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, resource.contentLength(), resource.payload());
 
             // When
-            final FileContent applied = tokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
+            final FileContent applied = tokenApplier.apply(fileContent, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertAll(
@@ -212,7 +212,7 @@ class DefaultTokenApplierTest {
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, resource.contentLength(), resource.payload());
 
             // When
-            final FileContent applied = tokenApplier.apply(fileContent, Todo.OWNED_BY_USER_1);
+            final FileContent applied = tokenApplier.apply(fileContent, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertAll(

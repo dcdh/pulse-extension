@@ -144,13 +144,13 @@ class PartitionTest extends AbstractPublisherTest {
                                 return Encrypted.of(payload.readAllBytes());
                             }
                         }).payload());
-                tEventPS.setString(7, Todo.OWNED_BY_USER_1.id());
+                tEventPS.setString(7, TodoAggregateRoot.OWNED_BY_USER_1.id());
                 tEventPS.setString(8, belongsTo.id());
                 tEventPS.setString(9, "EU:encodedbob");
                 tEventPS.executeUpdate();
 
                 tAggregateRootPS.setString(1, index.toString());
-                tAggregateRootPS.setString(2, Todo.class.getSimpleName());
+                tAggregateRootPS.setString(2, TodoAggregateRoot.class.getSimpleName());
                 tAggregateRootPS.setLong(3, 1);
                 tAggregateRootPS.setBytes(4, openPGPEncryptionService.encrypt(
                         // language=json
@@ -167,7 +167,7 @@ class PartitionTest extends AbstractPublisherTest {
                                 return Encrypted.of(payload.readAllBytes());
                             }
                         }).payload());
-                tAggregateRootPS.setString(5, Todo.OWNED_BY_USER_1.id());
+                tAggregateRootPS.setString(5, TodoAggregateRoot.OWNED_BY_USER_1.id());
                 tAggregateRootPS.setString(6, belongsTo.id());
                 tAggregateRootPS.executeUpdate();
 

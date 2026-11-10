@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.deployment.finder;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.event.Identifiable;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import com.damdamdeo.pulse.extension.core.traceability.OwnedByProvider;
@@ -16,6 +16,6 @@ public class StubOwnedByProvider implements OwnedByProvider {
 
     @Override
     public OwnedBy provide(final Identifiable identifiable) throws OwnedByProviderException {
-        return Todo.OWNED_BY_USER_1;
+        return TodoAggregateRoot.OWNED_BY_USER_1;
     }
 }

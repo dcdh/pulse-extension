@@ -63,7 +63,7 @@ class JdbcPostgresOwnedByProviderTest {
     void shouldReturnOwnedByByAggregateId() throws UnableToProvideOwnedByException {
         // Given
         {
-            final Todo todo = new Todo(
+            final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_1,
                     "IMPORTANT: pulse extension development",
                     Status.IN_PROGRESS,
@@ -79,7 +79,7 @@ class JdbcPostgresOwnedByProviderTest {
         final OwnedBy byAggregateId = jdbcPostgresOwnedByProvider.getByAggregateId(TodoId.USER_1_TODO_1);
 
         // Then
-        assertThat(byAggregateId).isEqualTo(Todo.OWNED_BY_USER_1);
+        assertThat(byAggregateId).isEqualTo(TodoAggregateRoot.OWNED_BY_USER_1);
     }
 
     @Test

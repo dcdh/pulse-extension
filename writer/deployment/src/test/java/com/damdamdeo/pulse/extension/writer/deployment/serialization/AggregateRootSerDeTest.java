@@ -2,6 +2,7 @@ package com.damdamdeo.pulse.extension.writer.deployment.serialization;
 
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessMapper;
 import com.damdamdeo.pulse.extension.core.*;
+import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubBackendUserVisibilityRolesProvider;
 import com.damdamdeo.pulse.extension.writer.deployment.domainusecase.StubExecutedByResolver;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,7 +27,8 @@ class AggregateRootSerDeTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             // classes.add(GuardDomainUseCase.class);
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(
-                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class,
+                    AbstractWriterTest.InMemoryTodoRepository.class))
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties");
 
@@ -60,7 +62,7 @@ class AggregateRootSerDeTest {
     @Test
     void shouldSerializedTodo() throws JsonProcessingException, JSONException {
         // Given
-        final Todo givenTodo = new Todo(
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(
                 TodoId.USER_1_TODO_1,
                 "lorem ipsum",
                 Status.IN_PROGRESS,
@@ -80,11 +82,11 @@ class AggregateRootSerDeTest {
         // Given
 
         // When
-        final Todo todo = objectMapper.readValue(TODO, Todo.class);
+        final TodoAggregateRoot todo = objectMapper.readValue(TODO, TodoAggregateRoot.class);
 
         // Then
         assertThat(todo).isEqualTo(
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_1,
                         "lorem ipsum",
                         Status.IN_PROGRESS,

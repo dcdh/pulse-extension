@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.core.command;
 
 import com.damdamdeo.pulse.extension.core.AggregateIdGenerator;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.Event;
 import com.damdamdeo.pulse.extension.core.event.EventRepository;
@@ -10,10 +10,10 @@ import com.damdamdeo.pulse.extension.core.listener.OnStoredEventListener;
 
 import java.util.List;
 
-public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
+public class TodoCommandHandler extends CommandHandler<TodoAggregateRoot, TodoId> {
 
     public TodoCommandHandler(final CommandHandlerRegistry commandHandlerRegistry,
-                              final EventRepository<Todo, TodoId> eventRepository,
+                              final EventRepository<TodoAggregateRoot, TodoId> eventRepository,
                               final Transaction transaction,
                               final ExecutionContextProvider executionContextProvider,
                               final List<OnStoredEventListener<TodoId, Event<TodoId>>> onStoredEventListeners,
@@ -23,8 +23,8 @@ public class TodoCommandHandler extends CommandHandler<Todo, TodoId> {
     }
 
     @Override
-    protected Class<Todo> getAggregateRootClass() {
-        return Todo.class;
+    protected Class<TodoAggregateRoot> getAggregateRootClass() {
+        return TodoAggregateRoot.class;
     }
 
     @Override

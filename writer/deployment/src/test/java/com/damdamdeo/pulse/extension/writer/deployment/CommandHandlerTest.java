@@ -36,7 +36,7 @@ public class CommandHandlerTest extends AbstractWriterTest {
             .withConfigurationResource("application.properties");
 
     @Inject
-    CommandHandler<Todo, TodoId> commandHandler;
+    CommandHandler<TodoAggregateRoot, TodoId> commandHandler;
 
     @Inject
     DataSource dataSource;
@@ -47,7 +47,7 @@ public class CommandHandlerTest extends AbstractWriterTest {
         final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum", Owner.USER_1);
 
         // When
-        final Handled<Todo, TodoId> todoCreated = commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
+        final Handled<TodoAggregateRoot, TodoId> todoCreated = commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,
                 DuplicateTodoException::new);
 
         // Then

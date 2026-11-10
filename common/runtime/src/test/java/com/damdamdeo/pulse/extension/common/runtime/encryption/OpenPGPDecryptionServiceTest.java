@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -52,10 +52,10 @@ class OpenPGPDecryptionServiceTest {
                             return Encrypted.of(payload1.readAllBytes());
                         }
                     });
-            doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
+            doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseProvider).provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
             // When
-            final Decrypted<byte[]> decrypted = decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1);
+            final Decrypted<byte[]> decrypted = decryptionService.decrypt(encrypted, TodoAggregateRoot.OWNED_BY_USER_1);
 
             // Then
             assertThat(decrypted.payload()).isEqualTo("Hello world!".getBytes(StandardCharsets.UTF_8));
@@ -73,10 +73,10 @@ class OpenPGPDecryptionServiceTest {
                         }
                     });
             doThrow(new UnableToProvidePassphraseException(new PassphraseBannedException()))
-                    .when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
+                    .when(passphraseProvider).provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
             // When && Then
-            assertThatThrownBy(() -> decryptionService.decrypt(encrypted, Todo.OWNED_BY_USER_1))
+            assertThatThrownBy(() -> decryptionService.decrypt(encrypted, TodoAggregateRoot.OWNED_BY_USER_1))
                     .isExactlyInstanceOf(DecryptionException.class)
                     .cause()
                     .isExactlyInstanceOf(UnableToProvidePassphraseException.class)

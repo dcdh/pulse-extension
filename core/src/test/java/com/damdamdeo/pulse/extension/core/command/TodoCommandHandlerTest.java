@@ -30,7 +30,7 @@ class TodoCommandHandlerTest {
     TodoChecklistCommandHandler todoChecklistCommandHandler;
 
     @Mock
-    EventRepository<Todo, TodoId> todoEventRepository;
+    EventRepository<TodoAggregateRoot, TodoId> todoEventRepository;
 
     @Mock
     EventRepository<TodoChecklist, TodoChecklistId> todoChecklistEventRepository;
@@ -63,7 +63,7 @@ class TodoCommandHandlerTest {
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
-        final Handled<Todo, TodoId> todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
+        final Handled<TodoAggregateRoot, TodoId> todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
@@ -129,7 +129,7 @@ class TodoCommandHandlerTest {
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
         // When
-        final Handled<Todo, TodoId> todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
+        final Handled<TodoAggregateRoot, TodoId> todoCreated = todoCommandHandler.handle(creational, givenCreateTodo, DuplicateTodoException::new);
 
         // Then
         assertAll(
@@ -170,7 +170,7 @@ class TodoCommandHandlerTest {
                 .when(todoEventRepository).loadOrderByVersionASC(TodoId.USER_1_TODO_1);
 
         // When
-        final Handled<Todo, TodoId> todoMarkedAsDone = todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(TodoId.USER_1_TODO_1));
+        final Handled<TodoAggregateRoot, TodoId> todoMarkedAsDone = todoCommandHandler.handle(givenMarkTodoAsDone, () -> new UnknownTodoException(TodoId.USER_1_TODO_1));
 
         // Then
         assertAll(
@@ -239,7 +239,7 @@ class TodoCommandHandlerTest {
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(unhandledTodo, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessage("Missing 'handle' method for command class - you must implement the method 'public void handle(final UnhandledTodo unhandledTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException' in 'Todo'");
+                .hasMessage("Missing 'handle' method for command class - you must implement the method 'public void handle(final UnhandledTodo unhandledTodo, final ExecutionContext executionContext, final EventAppender eventAppender) throws BusinessException' in 'TodoAggregateRoot'");
     }
 
     @Test
@@ -253,7 +253,7 @@ class TodoCommandHandlerTest {
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(commandWithoutOnEvent, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessage("Missing 'on' method for event class - you must implement the method 'public void on(final Missing missing, final ExecutedBy executedBy)' in 'Todo'");
+                .hasMessage("Missing 'on' method for event class - you must implement the method 'public void on(final Missing missing, final ExecutedBy executedBy)' in 'TodoAggregateRoot'");
     }
 
     static final class UnknownTodoException extends MissingAggregateException {

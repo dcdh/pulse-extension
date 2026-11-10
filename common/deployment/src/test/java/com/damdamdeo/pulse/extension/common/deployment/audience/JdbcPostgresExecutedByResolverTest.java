@@ -120,7 +120,7 @@ class JdbcPostgresExecutedByResolverTest {
     void shouldStoreInDatabase() {
         // Given
         {
-            final Todo todo = new Todo(
+            final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_1,
                     "IMPORTANT: pulse extension development",
                     Status.IN_PROGRESS,
@@ -143,7 +143,7 @@ class JdbcPostgresExecutedByResolverTest {
                     ALICE);
         }
         {
-            final Todo todo = new Todo(
+            final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_2,
                     "Organization vacancies",
                     Status.IN_PROGRESS,
@@ -166,7 +166,7 @@ class JdbcPostgresExecutedByResolverTest {
                     BOB);
         }
         {
-            final Todo todo = new Todo(
+            final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_2_TODO_1,
                     "Bob vacancies",
                     Status.IN_PROGRESS,

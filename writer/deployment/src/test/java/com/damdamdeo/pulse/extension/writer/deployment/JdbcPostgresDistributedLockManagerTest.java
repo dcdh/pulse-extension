@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.Handled;
 import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
@@ -43,6 +43,7 @@ class JdbcPostgresDistributedLockManagerTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
+            .withApplicationRoot(javaArchive -> javaArchive.addClass(AbstractWriterTest.InMemoryTodoRepository.class))
             .withConfigurationResource("application.properties");
 
     @Inject
@@ -51,10 +52,10 @@ class JdbcPostgresDistributedLockManagerTest {
     @Test
     void shouldLock() throws LockingException, UseCaseException {
         // Given
-        final UseCaseExecutor<TodoId, MarkTodoAsDone, Todo> useCaseExecutor = spy(new UseCaseExecutor<TodoId, MarkTodoAsDone, Todo>() {
+        final UseCaseExecutor<TodoId, MarkTodoAsDone, TodoAggregateRoot> useCaseExecutor = spy(new UseCaseExecutor<TodoId, MarkTodoAsDone, TodoAggregateRoot>() {
 
             @Override
-            public Handled<Todo, TodoId> execute(final MarkTodoAsDone command) throws UseCaseException {
+            public Handled<TodoAggregateRoot, TodoId> execute(final MarkTodoAsDone command) throws UseCaseException {
                 try {
                     LOGGER.info("Sleeping for 5 seconds");
                     TimeUnit.SECONDS.sleep(5);
@@ -96,23 +97,24 @@ class JdbcPostgresDistributedLockManagerTest {
         // Given
         final List<String> locksInExecute = new ArrayList<>();
 
-        final UseCaseExecutor<TodoId, MarkTodoAsDone, Todo> useCaseExecutor = new UseCaseExecutor<TodoId, MarkTodoAsDone, Todo>() {
+        final UseCaseExecutor<TodoId, MarkTodoAsDone, TodoAggregateRoot> useCaseExecutor = new UseCaseExecutor<TodoId, MarkTodoAsDone, TodoAggregateRoot>() {
 
             @Override
-            public Handled<Todo, TodoId> execute(final MarkTodoAsDone command) throws UseCaseException {
+            public Handled<TodoAggregateRoot, TodoId> execute(final MarkTodoAsDone command) throws UseCaseException {
                 locksInExecute.addAll(getLocks());
                 throw new UseCaseException(new RuntimeException("Something went wrong"), UseCaseExceptionCode.INFRASTRUCTURE_FAILURE);
             }
         };
 
         // When / Then
-        assertThatThrownBy(() -> jdbcPostgresDistributedLockManager.executeWithLock(new MarkTodoAsDone(TodoId.USER_1_TODO_1), useCaseExecutor))
+        assertAll(
+                () -> assertThatThrownBy(() -> jdbcPostgresDistributedLockManager.executeWithLock(new MarkTodoAsDone(TodoId.USER_1_TODO_1), useCaseExecutor))
                 .isExactlyInstanceOf(UseCaseException.class)
                 .cause()
                 .isExactlyInstanceOf(RuntimeException.class)
-                .hasMessage("Something went wrong");
-        assertThat(locksInExecute).containsExactly("ExclusiveLock|t|4294967295|2490515488");
-        assertThat(getLocks()).isEmpty();
+                .hasMessage("Something went wrong"),
+                () -> assertThat(locksInExecute).containsExactly("ExclusiveLock|t|4294967295|2387084288"),
+                () -> assertThat(getLocks()).isEmpty());
     }
 
     private List<String> getLocks() {

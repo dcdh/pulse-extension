@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.writer.deployment.domainusecase;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.command.CreateTodo;
 import com.damdamdeo.pulse.extension.core.command.Handled;
@@ -8,6 +8,7 @@ import com.damdamdeo.pulse.extension.core.usecase.DomainUseCase;
 import com.damdamdeo.pulse.extension.core.usecase.UseCaseException;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Everyone;
 import com.damdamdeo.pulse.extension.core.usecase.permission.Permission;
+import com.damdamdeo.pulse.extension.writer.deployment.AbstractWriterTest;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.enterprise.inject.spi.DeploymentException;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +25,8 @@ class ShouldFailOnDirectImplementationOfDomainUseCaseTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             // classes.add(GuardDomainUseCase.class);
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(
-                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class,
+                    AbstractWriterTest.InMemoryTodoRepository.class))
             .overrideConfigKey("quarkus.devservices.enabled", "false")
             .withConfigurationResource("application.properties")
             .assertException(throwable -> assertThat(throwable)
@@ -39,10 +41,10 @@ class ShouldFailOnDirectImplementationOfDomainUseCaseTest {
         Assertions.fail("Startup should have failed");
     }
 
-    static class CreateTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, Todo> {
+    static class CreateTodoDomainUseCase implements DomainUseCase<TodoId, CreateTodo, TodoAggregateRoot> {
 
         @Override
-        public Handled<Todo, TodoId> execute(final CreateTodo command) throws UseCaseException {
+        public Handled<TodoAggregateRoot, TodoId> execute(final CreateTodo command) throws UseCaseException {
             throw new IllegalStateException("Should not be called");
         }
 

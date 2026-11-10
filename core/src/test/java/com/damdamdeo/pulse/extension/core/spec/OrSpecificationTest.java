@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OrSpecificationTest {
 
-    private static final Specification<Todo> IMPORTANT_OR_IN_PROGRESS = new TodoIsImportantSpec()
+    private static final Specification<TodoAggregateRoot> IMPORTANT_OR_IN_PROGRESS = new TodoIsImportantSpec()
             .or(new TodoIsInProgressSpec());
 
     @ParameterizedTest
@@ -23,7 +23,7 @@ class OrSpecificationTest {
     )
     void shouldValidateSpecification(final Status givenStatus, final boolean givenImportant, final boolean expected) {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", givenStatus, givenImportant,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", givenStatus, givenImportant,
                 Owner.USER_1);
 
         // When

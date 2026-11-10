@@ -113,10 +113,10 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
                         {}
                         """,
                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
-                Todo.OWNED_BY_USER_1,
+                TodoAggregateRoot.OWNED_BY_USER_1,
                 ExecutedBy.NotAvailable.INSTANCE,
-                Todo.BELONGS_TO_USER_1,
-                Todo.class,
+                TodoAggregateRoot.BELONGS_TO_USER_1,
+                TodoAggregateRoot.class,
                 TodoMarkedAsDone.class);
 
         // Then
@@ -131,24 +131,24 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
                 new Call(
                         new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
-                        AggregateRootType.from(Todo.class),
+                        AggregateRootType.from(TodoAggregateRoot.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
-                        Todo.OWNED_BY_USER_1,
-                        Todo.BELONGS_TO_USER_1,
+                        TodoAggregateRoot.OWNED_BY_USER_1,
+                        TodoAggregateRoot.BELONGS_TO_USER_1,
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofDecrypted(expectedTodoMarkedAsDonePayload),
                         new AggregateRootLoaded<>(
-                                AggregateRootType.from(Todo.class),
+                                AggregateRootType.from(TodoAggregateRoot.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                                 new LastAggregateVersion(1),
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
-                                Todo.OWNED_BY_USER_1,
-                                Todo.BELONGS_TO_USER_1)));
+                                TodoAggregateRoot.OWNED_BY_USER_1,
+                                TodoAggregateRoot.BELONGS_TO_USER_1)));
     }
 
     @Test
@@ -176,10 +176,10 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
                         {}
                         """,
                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
-                Todo.OWNED_BY_USER_2,
+                TodoAggregateRoot.OWNED_BY_USER_2,
                 ExecutedBy.NotAvailable.INSTANCE,
-                Todo.BELONGS_TO_USER_2,
-                Todo.class,
+                TodoAggregateRoot.BELONGS_TO_USER_2,
+                TodoAggregateRoot.class,
                 TodoMarkedAsDone.class);
 
         // Then
@@ -188,23 +188,23 @@ class AsyncConsumerChannelEventConsumerTest extends AbstractConsumerTest {
                 new Call(
                         new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
-                        AggregateRootType.from(Todo.class),
+                        AggregateRootType.from(TodoAggregateRoot.class),
                         new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
                         EventType.from(TodoMarkedAsDone.class),
                         response.encryptedEvent(),
-                        Todo.OWNED_BY_USER_2,
-                        Todo.BELONGS_TO_USER_2,
+                        TodoAggregateRoot.OWNED_BY_USER_2,
+                        TodoAggregateRoot.BELONGS_TO_USER_2,
                         ExecutedBy.NotAvailable.INSTANCE,
                         DecryptablePayload.ofUndecryptable(),
                         new AggregateRootLoaded<>(
-                                AggregateRootType.from(Todo.class),
+                                AggregateRootType.from(TodoAggregateRoot.class),
                                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                                 new LastAggregateVersion(1),
                                 response.encryptedAggregateRoot(),
                                 DecryptablePayload.ofUndecryptable(),
-                                Todo.OWNED_BY_USER_2,
-                                Todo.BELONGS_TO_USER_2)));
+                                TodoAggregateRoot.OWNED_BY_USER_2,
+                                TodoAggregateRoot.BELONGS_TO_USER_2)));
     }
 }

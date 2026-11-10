@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,11 +46,11 @@ public class OpenPGPEncryptionServiceTest {
         doReturn(givenTempFile).when(temporaryPathProvider).provide();
 
         final ByteArrayInputStream clearData = new ByteArrayInputStream("Hello world!".getBytes(StandardCharsets.UTF_8));
-        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
+        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseProvider).provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // When
         final AtomicReference<Long> givenTempFileSize = new AtomicReference<>();
-        final Encrypted<byte[]> encrypted = encryptionService.encrypt(clearData, Todo.OWNED_BY_USER_1,
+        final Encrypted<byte[]> encrypted = encryptionService.encrypt(clearData, TodoAggregateRoot.OWNED_BY_USER_1,
                 encryptedPayload -> {
                     givenTempFileSize.set(Files.size(givenTempFile));
 
@@ -74,10 +74,10 @@ public class OpenPGPEncryptionServiceTest {
         // Given
         final ByteArrayInputStream clearData = new ByteArrayInputStream("Hello world!".getBytes(StandardCharsets.UTF_8));
         doThrow(new UnableToProvidePassphraseException(new PassphraseBannedException()))
-                .when(passphraseProvider).provide(Todo.OWNED_BY_USER_1);
+                .when(passphraseProvider).provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // When && Then
-        assertThatThrownBy(() -> encryptionService.encrypt(clearData, Todo.OWNED_BY_USER_1,
+        assertThatThrownBy(() -> encryptionService.encrypt(clearData, TodoAggregateRoot.OWNED_BY_USER_1,
                 encryptedPayload -> {
                     try (final InputStream payload1 = encryptedPayload.payload()) {
                         throw new IllegalStateException("Should not be called");

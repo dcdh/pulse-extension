@@ -11,7 +11,7 @@ class NullableInputSpecificationTest {
 
     private static ExecutionContext EXECUTION_CONTEXT = new NotAvailableExecutionContextProvider().provide();
 
-    private static final Specification<Todo> NULLABLE = new NullableInputSpecification<>();
+    private static final Specification<TodoAggregateRoot> NULLABLE = new NullableInputSpecification<>();
 
     @Test
     void shouldReturnFalseWhenInputIsNull() {
@@ -27,7 +27,7 @@ class NullableInputSpecificationTest {
     @Test
     void shouldReturnTrueWhenInputIsNotNull() {
         // Given
-        final Todo givenTodo = new Todo(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
                 Owner.USER_1);
 
         // When

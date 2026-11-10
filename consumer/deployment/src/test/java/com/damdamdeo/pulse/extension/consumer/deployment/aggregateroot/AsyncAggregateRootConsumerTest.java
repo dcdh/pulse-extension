@@ -4,10 +4,7 @@ import com.damdamdeo.pulse.extension.common.runtime.encryption.OpenPGPEncryption
 import com.damdamdeo.pulse.extension.consumer.Producer;
 import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.aggregateroot.AsyncAggregateRootConsumerChannel;
-import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.ApplicationNaming;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
@@ -106,9 +103,9 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
                         }
                         """,
                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
-                Todo.OWNED_BY_USER_1,
-                Todo.BELONGS_TO_USER_1,
-                Todo.class);
+                TodoAggregateRoot.OWNED_BY_USER_1,
+                TodoAggregateRoot.BELONGS_TO_USER_1,
+                TodoAggregateRoot.class);
 
         // Then
         await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
@@ -121,12 +118,12 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
                 new Call(
                         new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
-                        AggregateRootType.from(Todo.class),
+                        AggregateRootType.from(TodoAggregateRoot.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        Todo.OWNED_BY_USER_1,
-                        Todo.BELONGS_TO_USER_1,
+                        TodoAggregateRoot.OWNED_BY_USER_1,
+                        TodoAggregateRoot.BELONGS_TO_USER_1,
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload)));
     }
 
@@ -151,9 +148,9 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
                         }
                         """,
                 new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
-                Todo.OWNED_BY_USER_2,
-                Todo.BELONGS_TO_USER_2,
-                Todo.class);
+                TodoAggregateRoot.OWNED_BY_USER_2,
+                TodoAggregateRoot.BELONGS_TO_USER_2,
+                TodoAggregateRoot.class);
 
         // Then
         await().atMost(60, TimeUnit.SECONDS).until(() -> statisticsAggregateRootHandler.getCall() != null);
@@ -161,12 +158,12 @@ class AsyncAggregateRootConsumerTest extends AbstractConsumerTest {
                 new Call(
                         new FromApplication(new ApplicationNaming("TodoTaking")),
                         new Purpose("statistics"),
-                        AggregateRootType.from(Todo.class),
+                        AggregateRootType.from(TodoAggregateRoot.class),
                         new AnyAggregateId(TodoId.USER_2_TODO_1.id()),
                         new CurrentVersionInConsumption(0),
                         payload,
-                        Todo.OWNED_BY_USER_2,
-                        Todo.BELONGS_TO_USER_2,
+                        TodoAggregateRoot.OWNED_BY_USER_2,
+                        TodoAggregateRoot.BELONGS_TO_USER_2,
                         DecryptablePayload.ofUndecryptable()));
     }
 }

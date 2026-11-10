@@ -45,7 +45,7 @@ class JberetJobTest {
     @RunOnVertxContext(runOnEventLoop = false)
     void shouldExecuteJberetJob() throws UseCaseException {
         // Given
-        final Handled<Todo, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", new Owner(UserId.USER_1)));
+        final Handled<TodoAggregateRoot, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", new Owner(UserId.USER_1)));
         markTodoAsDoneUseCase.execute(new MarkTodoAsDone(loremIpsum.id()));
 
         // When

@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
 import java.util.Objects;
 
-public final class Todo extends AggregateRoot<TodoId> {
+public final class TodoAggregateRoot extends AggregateRoot<TodoId> {
 
     public static final OwnedBy OWNED_BY_USER_1 = OwnedBy.from(UserId.USER_1);
     public static final OwnedBy OWNED_BY_USER_2 = OwnedBy.from(UserId.USER_2);
@@ -29,15 +29,15 @@ public final class Todo extends AggregateRoot<TodoId> {
     @Nullable
     private String nullableField;
 
-    public Todo(final TodoId id) {
+    public TodoAggregateRoot(final TodoId id) {
         super(id);
     }
 
-    public Todo(final TodoId id,
-                final String description,
-                final Status status,
-                boolean important,
-                Owner owner) {
+    public TodoAggregateRoot(final TodoId id,
+                             final String description,
+                             final Status status,
+                             boolean important,
+                             Owner owner) {
         super(id);
         this.description = Objects.requireNonNull(description);
         this.status = Objects.requireNonNull(status);
@@ -144,7 +144,7 @@ public final class Todo extends AggregateRoot<TodoId> {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        Todo todo = (Todo) o;
+        TodoAggregateRoot todo = (TodoAggregateRoot) o;
         return important == todo.important
                 && Objects.equals(description, todo.description)
                 && status == todo.status

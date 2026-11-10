@@ -49,7 +49,7 @@ class JdbcEventCounterTest {
     void shouldTriggerUpdateCounters() throws EventCounterException {
         // Given
         {
-            final Todo todo = new Todo(
+            final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_1,
                     "IMPORTANT: pulse extension development",
                     Status.IN_PROGRESS,
@@ -71,7 +71,7 @@ class JdbcEventCounterTest {
                     ALICE);
         }
         {
-            final Todo todo = new Todo(
+            final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_2,
                     "Organization vacancies",
                     Status.IN_PROGRESS,
@@ -92,7 +92,7 @@ class JdbcEventCounterTest {
                     todoChecklist.ownedBy(),
                     BOB);
         }
-        final Todo todo = new Todo(
+        final TodoAggregateRoot todo = new TodoAggregateRoot(
                 TodoId.USER_2_TODO_1,
                 "Bob vacancies",
                 Status.IN_PROGRESS,

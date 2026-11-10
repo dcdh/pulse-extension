@@ -48,11 +48,12 @@ class JdbcPostgresEventRepositoryTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             // classes.add(GuardDomainUseCase.class);
             .withApplicationRoot(javaArchive -> javaArchive.addClasses(
-                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
+                    StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class,
+                    AbstractWriterTest.InMemoryTodoRepository.class))
             .withConfigurationResource("application.properties");
 
     @Inject
-    EventRepository<Todo, TodoId> todoEventRepository;
+    EventRepository<TodoAggregateRoot, TodoId> todoEventRepository;
 
     @Inject
     DataSource dataSource;
@@ -136,7 +137,7 @@ class JdbcPostgresEventRepositoryTest {
 
         // When
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_1,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
@@ -158,33 +159,33 @@ class JdbcPostgresEventRepositoryTest {
                                  FROM aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, TodoId.USER_1_TODO_1.id());
-            tEventPreparedStatement.setString(2, "Todo");
+            tEventPreparedStatement.setString(2, "TodoAggregateRoot");
             tAggregateRootPreparedStatement.setString(1, TodoId.USER_1_TODO_1.id());
-            tAggregateRootPreparedStatement.setString(2, "Todo");
+            tAggregateRootPreparedStatement.setString(2, "TodoAggregateRoot");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo(TodoId.USER_1_TODO_1.id()),
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("TodoAggregateRoot"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
-                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(TodoAggregateRoot.OWNED_BY_USER_1.id()),
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(TodoAggregateRoot.BELONGS_TO_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bobEncoded"),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 TodoId.USER_1_TODO_1.id()),
                         () -> assertThat(tAggregateRootResultSet.getString(
-                                "aggregate_root_type")).isEqualTo("Todo"),
+                                "aggregate_root_type")).isEqualTo("TodoAggregateRoot"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
                                 "last_version")).isEqualTo
                                 (0),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_payload")).startsWith("\\x"),
-                        () -> assertThat(tAggregateRootResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
-                        () -> assertThat(tAggregateRootResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()));
+                        () -> assertThat(tAggregateRootResultSet.getString("owned_by")).isEqualTo(TodoAggregateRoot.OWNED_BY_USER_1.id()),
+                        () -> assertThat(tAggregateRootResultSet.getString("belongs_to")).isEqualTo(TodoAggregateRoot.BELONGS_TO_USER_1.id()));
             }
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -198,7 +199,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(List.of(
                         new VersionizedEvent<>(new AggregateVersion(0),
                                 new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), BOB))),
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_2,
                         "lorem ipsum",
                         Status.IN_PROGRESS,
@@ -209,7 +210,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(List.of(
                         new VersionizedEvent<>(new AggregateVersion(1),
                                 new ExecutedByEvent<>(new TodoMarkedAsDone(), BOB))),
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_2,
                         "lorem ipsum",
                         Status.DONE,
@@ -231,47 +232,47 @@ class JdbcPostgresEventRepositoryTest {
                                  FROM aggregate_root WHERE aggregate_root_id = ? AND aggregate_root_type = ?
                              """)) {
             tEventPreparedStatement.setString(1, TodoId.USER_1_TODO_2.id());
-            tEventPreparedStatement.setString(2, "Todo");
+            tEventPreparedStatement.setString(2, "TodoAggregateRoot");
             tAggregateRootPreparedStatement.setString(1, TodoId.USER_1_TODO_2.id());
-            tAggregateRootPreparedStatement.setString(2, "Todo");
+            tAggregateRootPreparedStatement.setString(2, "TodoAggregateRoot");
             try (final ResultSet tEventResultSet = tEventPreparedStatement.executeQuery();
                  final ResultSet tAggregateRootResultSet = tAggregateRootPreparedStatement.executeQuery()) {
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo(TodoId.USER_1_TODO_2.id()),
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("TodoAggregateRoot"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(0),
                         () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("NewTodoCreated"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
-                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(TodoAggregateRoot.OWNED_BY_USER_1.id()),
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(TodoAggregateRoot.BELONGS_TO_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bobEncoded"));
                 tEventResultSet.next();
                 assertAll(
                         () -> assertThat(tEventResultSet.getString("aggregate_root_id")).isEqualTo(TodoId.USER_1_TODO_2.id()),
-                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("Todo"),
+                        () -> assertThat(tEventResultSet.getString("aggregate_root_type")).isEqualTo("TodoAggregateRoot"),
                         () -> assertThat(tEventResultSet.getLong("version")).isEqualTo(1),
                         () -> assertThat(tEventResultSet.getString("stored_at")).isEqualTo("2025-10-13 20:00:00+02"),
                         () -> assertThat(tEventResultSet.getString("event_type")).isEqualTo("TodoMarkedAsDone"),
                         () -> assertThat(tEventResultSet.getString("event_payload")).startsWith("\\x"),
-                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
-                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()),
+                        () -> assertThat(tEventResultSet.getString("owned_by")).isEqualTo(TodoAggregateRoot.OWNED_BY_USER_1.id()),
+                        () -> assertThat(tEventResultSet.getString("belongs_to")).isEqualTo(TodoAggregateRoot.BELONGS_TO_USER_1.id()),
                         () -> assertThat(tEventResultSet.getString("executed_by")).isEqualTo("EU:bobEncoded"));
                 tAggregateRootResultSet.next();
                 assertAll(
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_id")).isEqualTo(
                                 TodoId.USER_1_TODO_2.id()),
                         () -> assertThat(tAggregateRootResultSet.getString(
-                                "aggregate_root_type")).isEqualTo("Todo"),
+                                "aggregate_root_type")).isEqualTo("TodoAggregateRoot"),
                         () -> assertThat(tAggregateRootResultSet.getLong(
                                 "last_version")).isEqualTo
                                 (1),
                         () -> assertThat(tAggregateRootResultSet.getString("aggregate_root_payload")).startsWith("\\x"),
                         () -> assertThat(tAggregateRootResultSet.getString(
-                                "owned_by")).isEqualTo(Todo.OWNED_BY_USER_1.id()),
+                                "owned_by")).isEqualTo(TodoAggregateRoot.OWNED_BY_USER_1.id()),
                         () -> assertThat(tAggregateRootResultSet.getString(
-                                "belongs_to")).isEqualTo(Todo.BELONGS_TO_USER_1.id()));
+                                "belongs_to")).isEqualTo(TodoAggregateRoot.BELONGS_TO_USER_1.id()));
             }
         } catch (final SQLException e) {
             throw new RuntimeException(e);
@@ -288,7 +289,7 @@ class JdbcPostgresEventRepositoryTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_3,
                         "lorem ipsum",
                         Status.DONE,
@@ -314,7 +315,7 @@ class JdbcPostgresEventRepositoryTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_4,
                         "lorem ipsum",
                         Status.DONE,
@@ -336,12 +337,12 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000006", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         // When && Then
         assertThatThrownBy(() -> insertEvent("00000000-0000-0000-0000-000000000006", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB))
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB))
                 .isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: Event already present while should not be ! aggregate_root_id 00000000-0000-0000-0000-000000000006 aggregate_root_type Todo");
     }
@@ -351,13 +352,13 @@ class JdbcPostgresEventRepositoryTest {
         // Given
         insertEvent("00000000-0000-0000-0000-000000000007", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         // When && Then
         assertThatThrownBy(() -> {
             insertEvent("00000000-0000-0000-0000-000000000007", "Todo", 2,
                     Instant.parse("2025-10-13T18:01:00Z"), "TodoMarkedAsDone", "\\x",
-                    Todo.OWNED_BY_USER_1, BOB);
+                    TodoAggregateRoot.OWNED_BY_USER_1, BOB);
         }).isExactlyInstanceOf(PSQLException.class)
                 .hasMessageContaining("ERROR: current version unexpected 2 - expected version 1");
     }
@@ -366,7 +367,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventAggregateType() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000008", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -386,7 +387,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventAggregateId() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000009", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -406,7 +407,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventVersion() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000010", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -425,7 +426,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventStoredAt() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000011", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -447,7 +448,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventType() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000012", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -467,7 +468,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventPayload() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000013", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -487,7 +488,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventBelongsTo() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000014", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -507,7 +508,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventOwnedBy() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000015", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -527,7 +528,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToUpdateAnEventExecutedBy() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000016", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -547,7 +548,7 @@ class JdbcPostgresEventRepositoryTest {
     void shouldPreventMutabilityByFailingToDeleteAnEvent() throws SQLException {
         insertEvent("00000000-0000-0000-0000-000000000017", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         assertThatThrownBy(() -> {
             try (final Connection connection = dataSource.getConnection();
@@ -569,7 +570,7 @@ class JdbcPostgresEventRepositoryTest {
         // When
         insertEvent("00000000-0000-0000-0000-000000000018", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, ExecutedBy.Anonymous.INSTANCE);
+                TodoAggregateRoot.OWNED_BY_USER_1, ExecutedBy.Anonymous.INSTANCE);
 
         // Then
         try (final Connection connection = dataSource.getConnection();
@@ -594,7 +595,7 @@ class JdbcPostgresEventRepositoryTest {
         // When
         insertEvent("00000000-0000-0000-0000-000000000019", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, BOB);
+                TodoAggregateRoot.OWNED_BY_USER_1, BOB);
 
         // Then
         try (final Connection connection = dataSource.getConnection();
@@ -619,7 +620,7 @@ class JdbcPostgresEventRepositoryTest {
         // When
         insertEvent("00000000-0000-0000-0000-000000000020", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, new ExecutedBy.ServiceAccount("service-account-quarkus-app"));
+                TodoAggregateRoot.OWNED_BY_USER_1, new ExecutedBy.ServiceAccount("service-account-quarkus-app"));
 
         // Then
         try (final Connection connection = dataSource.getConnection();
@@ -644,7 +645,7 @@ class JdbcPostgresEventRepositoryTest {
         // When
         insertEvent("00000000-0000-0000-0000-000000000021", "Todo", 0,
                 Instant.parse("2025-10-13T18:00:00Z"), "NewTodoCreated", "\\x",
-                Todo.OWNED_BY_USER_1, ExecutedBy.NotAvailable.INSTANCE);
+                TodoAggregateRoot.OWNED_BY_USER_1, ExecutedBy.NotAvailable.INSTANCE);
 
         // Then
         try (final Connection connection = dataSource.getConnection();
@@ -686,7 +687,7 @@ class JdbcPostgresEventRepositoryTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_5,
                         "lorem ipsum",
                         Status.DONE,
@@ -709,7 +710,7 @@ class JdbcPostgresEventRepositoryTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_6,
                         "lorem ipsum",
                         Status.DONE,
@@ -723,13 +724,13 @@ class JdbcPostgresEventRepositoryTest {
         // Then
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(
                 new EventMetadata(
-                        new AggregateRootType("Todo"), new EventType("NewTodoCreated"), new AggregateVersion(0),
+                        new AggregateRootType("TodoAggregateRoot"), new EventType("NewTodoCreated"), new AggregateVersion(0),
                         new StoredAt(LocalDateTime.of(2025, Month.OCTOBER, 13, 18, 0, 0).toInstant(ZoneOffset.UTC)),
-                        Todo.OWNED_BY_USER_1, Todo.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE),
+                        TodoAggregateRoot.OWNED_BY_USER_1, TodoAggregateRoot.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE),
                 new EventMetadata(
-                        new AggregateRootType("Todo"), new EventType("TodoMarkedAsDone"), new AggregateVersion(1),
+                        new AggregateRootType("TodoAggregateRoot"), new EventType("TodoMarkedAsDone"), new AggregateVersion(1),
                         new StoredAt(LocalDateTime.of(2025, Month.OCTOBER, 13, 18, 0, 0).toInstant(ZoneOffset.UTC)),
-                        Todo.OWNED_BY_USER_1, Todo.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE));
+                        TodoAggregateRoot.OWNED_BY_USER_1, TodoAggregateRoot.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
@@ -741,7 +742,7 @@ class JdbcPostgresEventRepositoryTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_7,
                         "lorem ipsum",
                         Status.DONE,
@@ -754,9 +755,9 @@ class JdbcPostgresEventRepositoryTest {
 
         // Then
         assertThat(eventMetadataByIdOrderByVersionASC).containsExactly(new EventMetadata(
-                new AggregateRootType("Todo"), new EventType("TodoMarkedAsDone"), new AggregateVersion(1),
+                new AggregateRootType("TodoAggregateRoot"), new EventType("TodoMarkedAsDone"), new AggregateVersion(1),
                 new StoredAt(LocalDateTime.of(2025, Month.OCTOBER, 13, 18, 0, 0).toInstant(ZoneOffset.UTC)),
-                Todo.OWNED_BY_USER_1, Todo.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE));
+                TodoAggregateRoot.OWNED_BY_USER_1, TodoAggregateRoot.BELONGS_TO_USER_1, ExecutedBy.NotAvailable.INSTANCE));
     }
 
     @Test
@@ -779,7 +780,7 @@ class JdbcPostgresEventRepositoryTest {
                 new VersionizedEvent<>(new AggregateVersion(1),
                         new ExecutedByEvent<>(new TodoMarkedAsDone(), ExecutedBy.NotAvailable.INSTANCE)));
         todoEventRepository.save(givenTodoEvents,
-                new Todo(
+                new TodoAggregateRoot(
                         TodoId.USER_1_TODO_9,
                         "lorem ipsum",
                         Status.DONE,

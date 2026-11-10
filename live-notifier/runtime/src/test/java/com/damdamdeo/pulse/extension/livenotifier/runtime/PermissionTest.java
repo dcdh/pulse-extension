@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.livenotifier.runtime;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.connecteduser.Username;
 import com.damdamdeo.pulse.extension.core.executedby.*;
 import org.junit.jupiter.api.Test;
@@ -39,8 +39,8 @@ class PermissionTest {
         final Audience audience = Audience.AllConnected.INSTANCE;
 
         // When
-        final String encoded = audience.encode(TestUsernameEncoder.INSTANCE, Todo.OWNED_BY_USER_1);
-        final Audience decoded = Audience.decode(encoded, usernameDecoder, Todo.OWNED_BY_USER_1);
+        final String encoded = audience.encode(TestUsernameEncoder.INSTANCE, TodoAggregateRoot.OWNED_BY_USER_1);
+        final Audience decoded = Audience.decode(encoded, usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertAll(
@@ -80,8 +80,8 @@ class PermissionTest {
         final Audience audience = new Audience.FromListOfEligibility(List.of(ALICE, BOB));
 
         // When
-        final String encoded = audience.encode(TestUsernameEncoder.INSTANCE, Todo.OWNED_BY_USER_1);
-        final Audience decoded = Audience.decode(encoded, usernameDecoder, Todo.OWNED_BY_USER_1);
+        final String encoded = audience.encode(TestUsernameEncoder.INSTANCE, TodoAggregateRoot.OWNED_BY_USER_1);
+        final Audience decoded = Audience.decode(encoded, usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertThat(decoded).isInstanceOf(Audience.FromListOfEligibility.class);
@@ -101,7 +101,7 @@ class PermissionTest {
 
     @Test
     void decode_should_fail_on_unknown_discriminant() {
-        assertThatThrownBy(() -> Audience.decode("UNKNOWN", usernameDecoder, Todo.OWNED_BY_USER_1))
+        assertThatThrownBy(() -> Audience.decode("UNKNOWN", usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid Audience value");
     }
@@ -112,7 +112,7 @@ class PermissionTest {
         String invalid = Audience.FromListOfEligibility.DISCRIMINANT + Audience.SEPARATOR + "INVALID_FORMAT";
 
         // Then
-        assertThatThrownBy(() -> Audience.decode(invalid, usernameDecoder, Todo.OWNED_BY_USER_1))
+        assertThatThrownBy(() -> Audience.decode(invalid, usernameDecoder, TodoAggregateRoot.OWNED_BY_USER_1))
                 .isInstanceOf(IllegalStateException.class);
     }
 }

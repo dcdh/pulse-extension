@@ -15,24 +15,24 @@ public class CreationalWorkflow {
     private static final Logger LOGGER = LoggerFactory.getLogger(CreationalWorkflow.class);
 
     private final UserRegistrationDomainUseCase userRegistrationDomainUseCase;
-    private final CommandHandler<Todo, TodoId> todoCommandHandler;
+    private final CommandHandler<TodoAggregateRoot, TodoId> todoCommandHandler;
     private final CommandHandler<TodoChecklist, TodoChecklistId> todoChecklistCommandHandler;
 
     public CreationalWorkflow(final UserRegistrationDomainUseCase userRegistrationDomainUseCase,
-                              final CommandHandler<Todo, TodoId> todoCommandHandler,
+                              final CommandHandler<TodoAggregateRoot, TodoId> todoCommandHandler,
                               final CommandHandler<TodoChecklist, TodoChecklistId> todoChecklistCommandHandler) {
         this.userRegistrationDomainUseCase = Objects.requireNonNull(userRegistrationDomainUseCase);
         this.todoCommandHandler = Objects.requireNonNull(todoCommandHandler);
         this.todoChecklistCommandHandler = Objects.requireNonNull(todoChecklistCommandHandler);
     }
 
-    public Todo execute(final InitialiserCommand initialiserCommand) throws UseCaseException {
+    public TodoAggregateRoot execute(final InitialiserCommand initialiserCommand) throws UseCaseException {
         Objects.requireNonNull(initialiserCommand);
         final Handled<User, UserId> user = userRegistrationDomainUseCase.execute(new RegisterUser());
         LOGGER.info("User registered : {}", user);
 
         try {
-            final Handled<Todo, TodoId> todoCreated = todoCommandHandler.handle(sequenceNumber -> new TodoId(user.id(), sequenceNumber),
+            final Handled<TodoAggregateRoot, TodoId> todoCreated = todoCommandHandler.handle(sequenceNumber -> new TodoId(user.id(), sequenceNumber),
                     new CreateTodo("lorem ipsum", Owner.USER_1), DuplicateTodoException::new);
             LOGGER.info("Todo created : {}", todoCreated);
 

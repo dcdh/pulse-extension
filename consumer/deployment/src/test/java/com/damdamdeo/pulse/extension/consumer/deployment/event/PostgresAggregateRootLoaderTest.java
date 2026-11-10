@@ -55,7 +55,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
     void shouldThrowUnknownAggregateRootExceptionWhenAggregateDoesNotExists() {
         // Given
         final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
-        final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
+        final AggregateRootType givenAggregateRootType = AggregateRootType.from(TodoAggregateRoot.class);
         final AggregateId givenAggregateId = new AnyAggregateId("Damien-Unknown");
 
         // When
@@ -63,7 +63,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
                 postgresAggregateRootLoader.getByApplicationNamingAndAggregateRootTypeAndAggregateId(
                         givenFromApplication, givenAggregateRootType, givenAggregateId))
                 .isExactlyInstanceOf(UnknownAggregateRootException.class)
-                .hasFieldOrPropertyWithValue("aggregateRootType", AggregateRootType.from(Todo.class))
+                .hasFieldOrPropertyWithValue("aggregateRootType", AggregateRootType.from(TodoAggregateRoot.class))
                 .hasFieldOrPropertyWithValue("aggregateId", new AnyAggregateId("Damien-Unknown"));
     }
 
@@ -94,7 +94,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, TodoId.USER_1_TODO_1.id());
-            ps.setString(2, Todo.class.getSimpleName());
+            ps.setString(2, TodoAggregateRoot.class.getSimpleName());
             ps.setLong(3, 1);
             ps.setBytes(4, encrypted.payload());
             ps.setString(5, OwnedBy.from(UserId.USER_1).id());
@@ -104,7 +104,7 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
             throw new RuntimeException(e);
         }
         final FromApplication givenFromApplication = new FromApplication(new ApplicationNaming("TodoTaking"));
-        final AggregateRootType givenAggregateRootType = AggregateRootType.from(Todo.class);
+        final AggregateRootType givenAggregateRootType = AggregateRootType.from(TodoAggregateRoot.class);
         final AggregateId givenAggregateId = new AnyAggregateId(TodoId.USER_1_TODO_1.id());
 
         // When
@@ -119,12 +119,12 @@ class PostgresAggregateRootLoaderTest extends AbstractConsumerTest {
         expectedAggregateRootPayload.put("important", false);
         assertThat(byAggregateRootTypeAndAggregateId).isEqualTo(
                 new AggregateRootLoaded<>(
-                        AggregateRootType.from(Todo.class),
+                        AggregateRootType.from(TodoAggregateRoot.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()),
                         new LastAggregateVersion(1),
                         encrypted,
                         DecryptablePayload.ofDecrypted(expectedAggregateRootPayload),
-                        Todo.OWNED_BY_USER_1,
-                        Todo.BELONGS_TO_USER_1));
+                        TodoAggregateRoot.OWNED_BY_USER_1,
+                        TodoAggregateRoot.BELONGS_TO_USER_1));
     }
 }

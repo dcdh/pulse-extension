@@ -1,7 +1,7 @@
 package com.damdamdeo.pulse.extension.common.runtime.encryption;
 
 import com.damdamdeo.pulse.extension.core.PassphraseSample;
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.encryption.*;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,10 +34,10 @@ class DefaultPassphraseProviderTest {
     @Test
     void shouldRetrievePassphrase() throws UnableToRetrievePassphraseException, UnableToProvidePassphraseException {
         // Given
-        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).findBy(Todo.OWNED_BY_USER_1);
+        doReturn(Optional.of(PassphraseSample.PASSPHRASE_1)).when(passphraseRepository).findBy(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // When
-        final Passphrase customOrganizations = passphraseProvider.provide(Todo.OWNED_BY_USER_1);
+        final Passphrase customOrganizations = passphraseProvider.provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertThat(customOrganizations.passphrase()).isEqualTo("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
@@ -48,10 +48,10 @@ class DefaultPassphraseProviderTest {
         // Given
         doReturn(Optional.empty()).when(passphraseRepository).findBy(any(OwnedBy.class));
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
-        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseRepository).store(Todo.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
+        doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseRepository).store(TodoAggregateRoot.OWNED_BY_USER_1, PassphraseSample.PASSPHRASE_1);
 
         // When
-        final Passphrase customOrganizations = passphraseProvider.provide(Todo.OWNED_BY_USER_1);
+        final Passphrase customOrganizations = passphraseProvider.provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         assertThat(customOrganizations.passphrase()).isEqualTo("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray());
@@ -64,7 +64,7 @@ class DefaultPassphraseProviderTest {
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
 
         // When
-        passphraseProvider.provide(Todo.OWNED_BY_USER_1);
+        passphraseProvider.provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
         verify(passphraseGenerator, times(1)).generate();
@@ -78,10 +78,10 @@ class DefaultPassphraseProviderTest {
         doReturn(PassphraseSample.PASSPHRASE_1).when(passphraseGenerator).generate();
 
         // When
-        passphraseProvider.provide(Todo.OWNED_BY_USER_1);
+        passphraseProvider.provide(TodoAggregateRoot.OWNED_BY_USER_1);
 
         // Then
-        verify(passphraseRepository, times(1)).store(Todo.OWNED_BY_USER_1,
+        verify(passphraseRepository, times(1)).store(TodoAggregateRoot.OWNED_BY_USER_1,
                 new Passphrase("7-YP@28iVU(_#@S%tMrOG6RLQ07ilj&&".toCharArray()));
     }
 }

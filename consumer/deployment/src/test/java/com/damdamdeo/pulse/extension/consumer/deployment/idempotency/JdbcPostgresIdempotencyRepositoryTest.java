@@ -2,10 +2,7 @@ package com.damdamdeo.pulse.extension.consumer.deployment.idempotency;
 
 import com.damdamdeo.pulse.extension.consumer.deployment.AbstractConsumerTest;
 import com.damdamdeo.pulse.extension.consumer.runtime.idempotency.JdbcPostgresIdempotencyRepository;
-import com.damdamdeo.pulse.extension.core.AggregateRootType;
-import com.damdamdeo.pulse.extension.core.ApplicationNaming;
-import com.damdamdeo.pulse.extension.core.Todo;
-import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.*;
 import com.damdamdeo.pulse.extension.core.consumer.*;
 import com.damdamdeo.pulse.extension.core.consumer.idempotency.IdempotencyKey;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -84,7 +81,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                         new Purpose("statistics"),
                         new FromApplication(new ApplicationNaming("TodoTaking")),
                         Table.EVENT,
-                        AggregateRootType.from(Todo.class),
+                        AggregateRootType.from(TodoAggregateRoot.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id()))))
                 .isExactlyInstanceOf(TransactionalException.class)
                 .hasMessage("ARJUNA016110: Transaction is required for invocation");
@@ -101,7 +98,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                                 new Purpose("statistics"),
                                 new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
-                                AggregateRootType.from(Todo.class),
+                                AggregateRootType.from(TodoAggregateRoot.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()))));
 
         // Then
@@ -121,7 +118,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
-            ps.setString(4, Todo.class.getSimpleName());
+            ps.setString(4, TodoAggregateRoot.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());
             ps.setInt(6, 0);
             ps.executeUpdate();
@@ -136,7 +133,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                                 new Purpose("statistics"),
                                 new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
-                                AggregateRootType.from(Todo.class),
+                                AggregateRootType.from(TodoAggregateRoot.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id()))));
 
         // Then
@@ -151,7 +148,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                         new Purpose("statistics"),
                         new FromApplication(new ApplicationNaming("TodoTaking")),
                         Table.EVENT,
-                        AggregateRootType.from(Todo.class),
+                        AggregateRootType.from(TodoAggregateRoot.class),
                         new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0)))
                 .isExactlyInstanceOf(TransactionalException.class)
                 .hasMessage("ARJUNA016110: Transaction is required for invocation");
@@ -168,7 +165,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                                 new Purpose("statistics"),
                                 new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
-                                AggregateRootType.from(Todo.class),
+                                AggregateRootType.from(TodoAggregateRoot.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(0)));
 
         // Then
@@ -182,7 +179,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
-            ps.setString(4, Todo.class.getSimpleName());
+            ps.setString(4, TodoAggregateRoot.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());
             try (final ResultSet rs = ps.executeQuery()) {
                 assertThat(rs.next()).isTrue();
@@ -206,7 +203,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
-            ps.setString(4, Todo.class.getSimpleName());
+            ps.setString(4, TodoAggregateRoot.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());
             ps.setInt(6, 0);
             ps.executeUpdate();
@@ -221,7 +218,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
                                 new Purpose("statistics"),
                                 new FromApplication(new ApplicationNaming("TodoTaking")),
                                 Table.EVENT,
-                                AggregateRootType.from(Todo.class),
+                                AggregateRootType.from(TodoAggregateRoot.class),
                                 new AnyAggregateId(TodoId.USER_1_TODO_1.id())), new CurrentVersionInConsumption(1)));
 
         // Then
@@ -235,7 +232,7 @@ class JdbcPostgresIdempotencyRepositoryTest extends AbstractConsumerTest {
             ps.setString(1, "statistics");
             ps.setString(2, new FromApplication(new ApplicationNaming("TodoTaking")).name());
             ps.setString(3, Table.EVENT.name());
-            ps.setString(4, Todo.class.getSimpleName());
+            ps.setString(4, TodoAggregateRoot.class.getSimpleName());
             ps.setString(5, TodoId.USER_1_TODO_1.id());
             try (final ResultSet rs = ps.executeQuery()) {
                 assertAll(

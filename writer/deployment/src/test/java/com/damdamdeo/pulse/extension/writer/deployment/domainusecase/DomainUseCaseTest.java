@@ -41,9 +41,9 @@ class DomainUseCaseTest extends AbstractWriterTest {
                     StubBackendUserVisibilityRolesProvider.class, StubExecutedByResolver.class))
             .withConfigurationResource("application.properties");
 
-    static class NoAudienceCreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, Todo> {
+    static class NoAudienceCreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, TodoAggregateRoot> {
 
-        protected NoAudienceCreateTodoDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler) {
+        protected NoAudienceCreateTodoDomainUseCase(final CommandHandler<TodoAggregateRoot, TodoId> commandHandler) {
             super(commandHandler);
         }
 
@@ -95,13 +95,13 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        final Handled<Todo, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1));
+        final Handled<TodoAggregateRoot, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1));
 
         // Then
         assertAll(
                 () -> assertThat(loremIpsum).isEqualTo(
                         new Handled<>(
-                                new Todo(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false, Owner.USER_1),
+                                new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false, Owner.USER_1),
                                 List.of(new VersionizedEvent<>(
                                         new AggregateVersion(0), new ExecutedByEvent<>(
                                         new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE))))),
@@ -124,9 +124,9 @@ class DomainUseCaseTest extends AbstractWriterTest {
         assertThat(listEventsAggregateRootId(dataSource)).containsExactly("U000001-T000001");
     }
 
-    static class CreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, Todo> {
+    static class CreateTodoDomainUseCase extends AbstractCreationalDomainUseCase<TodoId, CreateTodo, TodoAggregateRoot> {
 
-        protected CreateTodoDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler) {
+        protected CreateTodoDomainUseCase(final CommandHandler<TodoAggregateRoot, TodoId> commandHandler) {
             super(commandHandler);
         }
 
@@ -149,9 +149,9 @@ class DomainUseCaseTest extends AbstractWriterTest {
         }
     }
 
-    static class UseCaseExceptionTodoDomainUseCase extends AbstractDomainUseCase<TodoId, CreateTodo, Todo> {
+    static class UseCaseExceptionTodoDomainUseCase extends AbstractDomainUseCase<TodoId, CreateTodo, TodoAggregateRoot> {
 
-        protected UseCaseExceptionTodoDomainUseCase(final CommandHandler<Todo, TodoId> commandHandler) {
+        protected UseCaseExceptionTodoDomainUseCase(final CommandHandler<TodoAggregateRoot, TodoId> commandHandler) {
             super(commandHandler);
         }
 

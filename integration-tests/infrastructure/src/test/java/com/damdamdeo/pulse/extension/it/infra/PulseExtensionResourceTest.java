@@ -51,15 +51,15 @@ class PulseExtensionResourceTest {
                 .body("aggregateRoots", hasSize(3))
                 .body("aggregateRoots", hasItems(
                         "U000001|User|0|U000001|U000001",
-                        "U000001-T000001|Todo|0|U000001|U000001",
+                        "U000001-T000001|TodoAggregateRoot|0|U000001|U000001",
                         "U000001-T000001-CL000001|TodoChecklist|0|U000001|U000001-T000001"
                 ))
                 // events
                 .body("events", hasSize(3))
                 .body("events", hasItems(
-                        "U000001|User|0|UserRegistered|U000001|U000001",
-                        "U000001-T000001|Todo|0|NewTodoCreated|U000001|U000001",
-                        "U000001-T000001-CL000001|TodoChecklist|0|TodoItemAdded|U000001|U000001-T000001"
+                        "U000001-T000001-CL000001|TodoChecklist|0|TodoItemAdded|U000001|U000001-T000001",
+                        "U000001-T000001|TodoAggregateRoot|0|NewTodoCreated|U000001|U000001",
+                        "U000001|User|0|UserRegistered|U000001|U000001"
                 ))
                 // vaultKeys
                 .body("vaultKeys", hasSize(2))
@@ -88,7 +88,7 @@ class PulseExtensionResourceTest {
                 .body("purpose.name", equalTo("statistics"))
                 // aggregate root
                 .body("aggregateRootType.type", equalTo("User"))
-                .body("identifiable", matchesPattern(UUID_PATTERN))
+                .body("aggregateId", matchesPattern(UUID_PATTERN))
                 // version
                 .body("currentVersionInConsumption.version", equalTo(0))
                 // storedAt
@@ -106,7 +106,7 @@ class PulseExtensionResourceTest {
                 .body("decryptableEventPayload.decrypted", equalTo(true))
                 // aggregateRootLoaded
                 .body("aggregateRootLoaded.aggregateRootType.type", equalTo("User"))
-                .body("aggregateRootLoaded.identifiable", matchesPattern(UUID_PATTERN))
+                .body("aggregateRootLoaded.aggregateId", matchesPattern(UUID_PATTERN))
                 .body("aggregateRootLoaded.lastAggregateVersion.version", equalTo(0))
                 // encrypted aggregate payload
                 .body("aggregateRootLoaded.encryptedAggregateRootPayload.payload", not(emptyOrNullString()))

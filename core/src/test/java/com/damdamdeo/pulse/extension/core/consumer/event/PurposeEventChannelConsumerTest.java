@@ -30,9 +30,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PurposeEventChannelConsumerTest {
 
-    private static class TodoPurposeEventChannelConsumer extends AbstractPurposeEventChannelConsumer<Todo> {
+    private static class TodoPurposeEventChannelConsumer extends AbstractPurposeEventChannelConsumer<TodoAggregateRoot> {
 
-        public TodoPurposeEventChannelConsumer(final PurposeEventChannelExecutor<Todo> purposeEventChannelExecutor,
+        public TodoPurposeEventChannelConsumer(final PurposeEventChannelExecutor<TodoAggregateRoot> purposeEventChannelExecutor,
                                                final IdempotencyRepository idempotencyRepository) {
             super(purposeEventChannelExecutor, idempotencyRepository);
         }
@@ -44,7 +44,7 @@ class PurposeEventChannelConsumerTest {
                         Integer version) implements EventKey {
 
         public static TodoEventKey of() {
-            return new TodoEventKey(Todo.class.getSimpleName(), TodoId.USER_1_TODO_1.toString(), 1);
+            return new TodoEventKey(TodoAggregateRoot.class.getSimpleName(), TodoId.USER_1_TODO_1.toString(), 1);
         }
 
         @Override
@@ -109,7 +109,7 @@ class PurposeEventChannelConsumerTest {
     }
 
     @Mock
-    PurposeEventChannelExecutor<Todo> purposeEventChannelExecutor;
+    PurposeEventChannelExecutor<TodoAggregateRoot> purposeEventChannelExecutor;
 
     @Mock
     IdempotencyRepository idempotencyRepository;

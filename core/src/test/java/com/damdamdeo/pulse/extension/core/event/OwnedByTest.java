@@ -1,6 +1,6 @@
 package com.damdamdeo.pulse.extension.core.event;
 
-import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoAggregateRoot;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +44,7 @@ class OwnedByTest {
     @Test
     void shouldGenerateExpectedIdFromAggregateRoot() {
         // Given
-        final Todo given = new Todo(TodoId.USER_1_TODO_1);
+        final TodoAggregateRoot given = new TodoAggregateRoot(TodoId.USER_1_TODO_1);
 
         // When
         final OwnedBy himself = OwnedBy.himself(given);
