@@ -139,7 +139,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_1,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.IN_PROGRESS,
                         false, Owner.USER_1
                 ), BOB);
@@ -201,7 +201,7 @@ class JdbcPostgresEventRepositoryTest {
                                 new ExecutedByEvent<>(new NewTodoCreated("lorem ipsum", Owner.USER_1), BOB))),
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_2,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.IN_PROGRESS,
                         false, Owner.USER_1
                 ), BOB);
@@ -212,7 +212,7 @@ class JdbcPostgresEventRepositoryTest {
                                 new ExecutedByEvent<>(new TodoMarkedAsDone(), BOB))),
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_2,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), BOB);
@@ -291,7 +291,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_3,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), ExecutedBy.NotAvailable.INSTANCE);
@@ -317,7 +317,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_4,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), ExecutedBy.NotAvailable.INSTANCE);
@@ -689,7 +689,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_5,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), ExecutedBy.NotAvailable.INSTANCE);
@@ -712,7 +712,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_6,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), ExecutedBy.NotAvailable.INSTANCE);
@@ -744,7 +744,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_7,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), ExecutedBy.NotAvailable.INSTANCE);
@@ -782,7 +782,7 @@ class JdbcPostgresEventRepositoryTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_9,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), ExecutedBy.NotAvailable.INSTANCE);

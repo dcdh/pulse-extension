@@ -122,7 +122,7 @@ class JdbcPostgresExecutedByResolverTest {
         {
             final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_1,
-                    "IMPORTANT: pulse extension development",
+                    new Description("IMPORTANT: pulse extension development"),
                     Status.IN_PROGRESS,
                     true,
                     Owner.USER_1);
@@ -145,7 +145,7 @@ class JdbcPostgresExecutedByResolverTest {
         {
             final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_2,
-                    "Organization vacancies",
+                    new Description("Organization vacancies"),
                     Status.IN_PROGRESS,
                     false,
                     Owner.USER_1);
@@ -168,7 +168,7 @@ class JdbcPostgresExecutedByResolverTest {
         {
             final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_2_TODO_1,
-                    "Bob vacancies",
+                    new Description("Bob vacancies"),
                     Status.IN_PROGRESS,
                     false,
                     Owner.USER_1);

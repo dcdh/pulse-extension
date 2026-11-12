@@ -1,42 +1,93 @@
 ---
 name: query-module
-description: Work on the Pulse Query Quarkus extension, including query runtime adapters, projection validation, generated guards, caching, GDPR serialization, and file queries.
+description: Work on the Pulse Query Quarkus extension or integrate it into an application, including query runtime adapters, projection validation, generated guards, caching, GDPR serialization, file queries, and query integration tests.
 ---
 
 # Query module
 
-Use this skill for changes under `query/runtime` or `query/deployment`.
+Use this skill for changes to the Pulse Query extension or query features in applications that consume it. Determine which context applies before choosing paths or module boundaries.
 
-## Module layout
+## Extension repository layout
+
+This layout describes the Pulse extension repository only. Do not reproduce it in an application that consumes the extension.
 
 - `query/runtime` contains runtime adapters and services for query-related core ports, including file persistence, owned-by lookup, caching, and serialization.
 - `query/deployment` contains Quarkus build-time processors, generated query guards, database setup, and validation of application query models.
+- `query/integration-tests` exercises the assembled extension with a PostgreSQL-backed Todo projection, Jackson configuration, and REST endpoints under `src/test/java/com/damdamdeo/pulse/extension/it`.
 - Runtime tests cover focused service behavior. Deployment tests use Quarkus test support to verify augmentation, CDI wiring, endpoints, database integration, and validation failures.
+
+## Classic application projects
+
+For a regular Quarkus application using Pulse Query, follow its existing packages and module boundaries. Put application projections and query use cases in its domain/query packages, JDBC repositories and Jackson customizers in its infrastructure packages, and endpoints and DTOs in its API packages, normally under `src/main/java`. Put Flyway migrations in `src/main/resources/db/migration`, application configuration in `src/main/resources/application.properties`, and tests and test-specific configuration under `src/test`. These are responsibilities, not mandatory modules or package names: do not create `query/runtime`, `query/deployment`, `query/integration-tests`, or a `core` module solely to match this repository. Depend on the Query runtime extension and let Quarkus load its deployment processors; application code should not copy those processors or register duplicate query-use-case producers. Index separate domain dependencies when needed for discovery. The integration-test fixtures below illustrate behavior to adapt into production application code, not files to copy into an application's test sources. Repository-relative paths and reactor test commands in this skill apply only when working inside the extension repository.
 
 ## Query model and deployment rules
 
-- Read nearby implementations and tests before changing query behavior. Keep domain query contracts in `core`; put Quarkus integration and infrastructure in this module.
-- `ValidationProcessor` validates the value graph of a `Projection`: nested values must be projections or aggregate IDs, with primitives, enums, arrays, and collections handled by the processor. Update validation tests when expanding supported types.
+- Read nearby implementations and tests before changing query behavior. In the extension repository, keep domain query contracts in `core` and Quarkus integration in the Query module. In an application, preserve the equivalent separation within its existing architecture.
+- `ValidationProcessor` validates the value graph of a `Projection`: nested values may be projections, aggregate IDs, or record value objects, with primitives, Java language types, enums, arrays, and collections handled by the processor. Validate record components recursively, including records inside collections and arrays. Track visited types per traversal branch so cycles terminate without hiding errors in sibling properties. Update validation tests when expanding supported types.
 - `CodeGenerationProcessor` generates guard query beans from discovered query use cases. Preserve generic type discovery, CDI qualifiers, and conditional behavior when changing generated guards.
 - Keep deployment-time checks actionable. Add a Quarkus deployment test for invalid projection shapes or missing extension wiring rather than relying only on a unit test of a processor helper.
 
 ## Privacy, persistence, and cache behavior
 
 - Read `query/ADR.adoc` before changing sensitive-value serialization or cache consistency. It documents the `@Sensitive` modes: encryption is non-deterministic; the optional hash supports equality searches and is deterministic.
-- Do not serialize sensitive plaintext alongside its encrypted representation. Preserve the custom Jackson serializer/deserializer behavior for value objects such as `OwnedBy`.
+- For persisted projections, do not serialize sensitive plaintext alongside its encrypted representation. Preserve the custom Jackson serializer/deserializer behavior for value objects such as `OwnedBy`.
 - Use parameterized SQL in JDBC adapters and map database or serialization failures to the exception declared by the relevant core port. Keep JDBC resources closed on success and failure, including streaming file responses.
 - Treat cache contents as derived data. Follow the version/count checks and fallback behavior documented by the ADR so stale or unavailable cache data does not silently return an incorrect result.
 - When handling deletion or banning of an aggregate, account for corresponding query-side data cleanup as described by the ADR.
+
+## Integration-test conventions
+
+### Persistence and Jackson
+
+- Use `query/integration-tests/src/test/java/com/damdamdeo/pulse/extension/it/query/todo/TodoJdbcProjectionRepository.java` as the PostgreSQL example. It stores the complete `TodoProjection` directly in one JSONB document, with `todo_id` as the separate technical key for lookup and upsert. Avoid an intermediate storage DTO or manually flattening each domain field into SQL columns.
+- Inject the configured `ObjectMapper` into repositories so runtime serializers and sensitive-value handling apply to persistence. Create the fixture table through Flyway before test cleanup, not through repository `@PostConstruct` DDL or `@Startup`. The migration is `query/integration-tests/src/test/resources/db/migration/V1__create_todo_projection.sql`.
+- The integration-test module depends on `quarkus-flyway` and `flyway-database-postgresql`, with `quarkus.flyway.migrate-at-start=true` in `application.properties`. Pulse enables `baseline-on-migrate` for the schema initialized by Dev Services; this fixture sets `quarkus.flyway.baseline-version=0` so migration `V1` runs rather than being skipped by the default baseline version of `1`.
+- Keep reusable `ProjectionId` serialization in `query/runtime/.../serialization`, including its mixin and mapper customizer; register the customizer through deployment `JacksonProcessor`. Keep Todo-specific mixins in the integration-test fixture.
+- `ProjectionIdSerializer` writes `id` as a string and `linkTo` as an object. Its contextual `StdDeserializer` uses the concrete generic aggregate ID type to deserialize `linkTo`, preserves distinct projection IDs, and validates the ID prefix. Use typed properties or `TypeReference<ProjectionId<ConcreteId>>` at the root; a raw `ProjectionId` is insufficient. Do not replace this with a list of domain-specific `@JsonSubTypes` or a global `Identifiable` mixin.
+- `TodoObjectMapperCustomizer.internal(ObjectMapper)` configures the fixture's mixins for plain JUnit tests. `DescriptionMixin` applies `@Sensitive` without adding infrastructure annotations to the domain record.
+
+### Endpoint DTOs and query discovery
+
+- API fixtures live under `com.damdamdeo.pulse.extension.it.api.todo`; persistence and fixture Jackson configuration live under `com.damdamdeo.pulse.extension.it.query.todo`.
+- Construct `TodoDTO` from the domain `Todo` interface, allowing the same mapping for a projection or aggregate. Retain value-object types in the DTO when requested.
+- Persistence encryption and an authorized API response can have different JSON representations. `TodoDTO.description` remains a `Description` in Java, but property-level `@JsonSerialize(converter = ...)` and `@JsonDeserialize(converter = ...)` using `StdConverter` map it to a plain JSON string. This leaves the projection's `@Sensitive` persistence mapping intact. A JAX-RS `ParamConverter` handles URL parameters, not DTO JSON fields.
+- Let the deployment processor discover and register query use cases; do not add a redundant CDI producer. When using fixtures from the `pulse-core` test-jar, index that dependency in `src/test/resources/application.properties`:
+
+```properties
+quarkus.index-dependency.pulse-core-tests.group-id=com.damdamdeo.pulse
+quarkus.index-dependency.pulse-core-tests.artifact-id=pulse-core
+quarkus.index-dependency.pulse-core-tests.classifier=tests
+```
+
+- Discovery also activates generated query guards. Respect the use case's permissions in tests. `ListDoneTodosQueryUseCase` permits specific jobs; its endpoint test supplies an authorized job through a test-only alternative `ExecutionContextProvider` rather than bypassing guards or changing domain permissions.
+
+### Choosing and writing tests
+
+- Use plain JUnit 5 for converter, serializer, and DTO behavior; add Mockito only for collaborators the test needs. Initialize the mapper outside the test method. A plain DTO mapping test does not need `EncryptionModuleCustomizer` or encryption mocks. Tests proving `@Sensitive` encryption/decryption should configure the real Jackson module with mocked cryptographic services.
+- Use `@QuarkusTest` and inject `ObjectMapper` to validate the assembled runtime and deployment registration. Do not manually instantiate mapper customizers or cryptographic services in that test. `TodoObjectMapperCustomizerQuarkusTest` checks a complete projection round trip and the absence of sensitive plaintext in JSON.
+- Put Quarkus test configuration in `src/test/resources/application.properties` instead of a dedicated serialization profile. Let PostgreSQL Dev Services supply the JDBC URL; do not hardcode a localhost URL or disable Dev Services to work around a test-launch environment issue.
+- For HTTP tests, seed the real projection repository, then extract `List<TodoDTO>` with RestAssured `TypeRef<List<TodoDTO>>` and compare it using a single AssertJ `containsExactly(...)`. Purge `todo_projection` through a `teardown()` method annotated with both `@BeforeEach` and `@AfterEach`, rather than a `try/finally` inside each test.
+- Leave a blank line between test properties, use Java text blocks for JSON fixtures, and group multiple independent JUnit assertions with `assertAll(...)`. Preserve the single `containsExactly(...)` assertion for endpoint list responses.
+- A JUnit discovery error such as “Could not load class” may wrap a Quarkus augmentation failure: inspect the deepest cause before changing JUnit configuration. Check projection validation, dependency indexing, and CDI wiring.
+- Dev Services requires access to Docker. A socket error such as `operation not permitted` from an agent sandbox does not establish that Docker is stopped. Use the permitted execution mechanism for Docker access and report the actual blocker; do not alter datasource configuration to hide it. The integration-test Maven configuration also supplies the Java 24+ `--add-opens=java.base/java.lang=ALL-UNNAMED` option needed by the runtime used here.
 
 ## Testing and validation
 
 - Use `query/deployment/src/test/java` as the main reference for Quarkus-level behavior. File query, repository, endpoint, and generated guard tests are grouped by feature.
 - Use the existing test resources under `query/deployment/src/test/resources` for PostgreSQL, OpenAPI, and file-processing cases. Keep tests focused on observable responses, stored data, privacy behavior, and augmentation errors.
-- Run the narrowest affected test first, then the relevant module tests:
+- Run the narrowest affected tests first; expand to relevant module suites when changes or unresolved failures justify it:
 
 ```bash
 mvn -pl query/runtime test
 mvn -pl query/deployment test
+```
+
+- To verify integration behavior and runtime serialization with reactor dependencies, select the affected tests explicitly, for example:
+
+```bash
+mvn -pl query/integration-tests -am \
+  -Dtest=TodoEndpointTest,TodoObjectMapperCustomizerQuarkusTest,ProjectionIdSerializationTest \
+  -Dsurefire.failIfNoSpecifiedTests=false test
 ```
 
 - If a change crosses runtime and deployment, verify both. If it changes a core query contract, also run the relevant `core` tests.

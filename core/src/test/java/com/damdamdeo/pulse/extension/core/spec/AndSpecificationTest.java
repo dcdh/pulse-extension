@@ -23,7 +23,7 @@ class AndSpecificationTest {
     )
     void shouldValidateSpecification(final Status givenStatus, final boolean givenImportant, final boolean expected) {
         // Given
-        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", givenStatus, givenImportant,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem"), givenStatus, givenImportant,
                 Owner.USER_1);
 
         // When

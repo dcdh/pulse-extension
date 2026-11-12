@@ -26,7 +26,7 @@ class SerializerTest {
         @JsonCreator
         public TodoMixin(
                 @JsonProperty("id") TodoId var1,
-                @JsonProperty("description") String var2,
+                @JsonProperty("description") Description var2,
                 @JsonProperty("status") Status var3,
                 @JsonProperty("important") boolean var4,
                 @JsonProperty("owner") Owner var5
@@ -172,7 +172,7 @@ class SerializerTest {
                          },
                          "sequence": "000001"
                        },
-                       "description": "lorem ipsum",
+                       "description": {"description": "lorem ipsum"},
                        "status": "DONE",
                        "important": false,
                        "owner": {
@@ -238,7 +238,7 @@ class SerializerTest {
     void shouldSerializeTodo() throws JsonProcessingException, JSONException {
         // Given
         final TodoAggregateRoot given = new TodoAggregateRoot(TodoId.USER_1_TODO_1,
-                "lorem ipsum",
+                new Description("lorem ipsum"),
                 Status.DONE,
                 false,
                 Owner.USER_1);
@@ -261,7 +261,7 @@ class SerializerTest {
         // Then
         assertThat(deserializedTodo).isEqualTo(new TodoAggregateRoot(
                 TodoId.USER_1_TODO_1,
-                "lorem ipsum",
+                new Description("lorem ipsum"),
                 Status.DONE,
                 false,
                 Owner.USER_1

@@ -30,7 +30,7 @@ class StateApplierTest {
         // Then
         assertAll(
                 () -> assertThat(todoStateApplier.aggregate().id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoStateApplier.aggregate().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoStateApplier.aggregate().description().description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoStateApplier.aggregate().status()).isEqualTo(Status.DONE));
     }
 

@@ -24,8 +24,8 @@ class ShouldFailWhenProjectionPropertyDoesNotImplementProjection {
             .assertException(throwable -> assertThat(throwable)
                     .isExactlyInstanceOf(DeploymentException.class)
                     .hasMessage("Found 2 deployment problems: \n" +
-                            "[1] Invalid projection property 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoProjection.checklist'. Type 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoChecklistProjection' must implement Projection or AggregateId.\n" +
-                            "[2] Invalid projection property 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoProjection.checklists'. Type 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoChecklistProjection' must implement Projection or AggregateId."));
+                            "[1] Invalid projection property 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoProjection.checklist'. Type 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoChecklistProjection' must be a record or implement Projection or AggregateId.\n" +
+                            "[2] Invalid projection property 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoProjection.checklists'. Type 'com.damdamdeo.pulse.extension.query.deployment.ShouldFailWhenProjectionPropertyDoesNotImplementProjection$TodoChecklistProjection' must be a record or implement Projection or AggregateId."));
 
     public record TodoProjection(ProjectionId<TodoId> todoId,
                                  String description,
@@ -40,7 +40,16 @@ class ShouldFailWhenProjectionPropertyDoesNotImplementProjection {
         }
     }
 
-    public record TodoChecklistProjection(TodoChecklistId todoChecklistId, String description) {
+    public static final class TodoChecklistProjection {
+
+        private final TodoChecklistId todoChecklistId;
+
+        private final String description;
+
+        public TodoChecklistProjection(final TodoChecklistId todoChecklistId, final String description) {
+            this.todoChecklistId = todoChecklistId;
+            this.description = description;
+        }
     }
 
     @Test

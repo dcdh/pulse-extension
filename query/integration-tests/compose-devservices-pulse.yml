@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:18.4-alpine3.23
+    labels:
+      io.quarkus.devservices.compose.wait_for.logs: .*database system is ready to
+        accept connections.*
+    restart: always
+    ports:
+    - '5432'
+    environment:
+    - POSTGRES_USER=quarkus
+    - POSTGRES_DB=quarkus
+    - POSTGRES_PASSWORD=quarkus
+    command:
+    - postgres
+    - -c
+    - wal_level=logical
+    - -c
+    - hot_standby=on
+    - -c
+    - max_wal_senders=10
+    - -c
+    - max_replication_slots=10
+    - -c
+    - synchronized_standby_slots=replication_slot
+    healthcheck:
+      start_period: 10s
+      interval: 10s
+      retries: 5
+      test: [
+        CMD,
+        pg_isready
+      ]
+      timeout: 5s
+    volumes:
+    - ./pulse_passphrase.sql:/docker-entrypoint-initdb.d/pulse_passphrase.sql:ro,z
+    - ./todo_serialization_aggregate_executed_by.sql:/docker-entrypoint-initdb.d/todo_serialization_aggregate_executed_by.sql:ro,z
+    - ./todo_serialization_aggregates.sql:/docker-entrypoint-initdb.d/todo_serialization_aggregates.sql:ro,z
+    - ./pulse_query_file.sql:/docker-entrypoint-initdb.d/pulse_query_file.sql:ro,z
+    - ./todo_serialization_query_event_counter.sql:/docker-entrypoint-initdb.d/todo_serialization_query_event_counter.sql:ro,z

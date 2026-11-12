@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
+import com.damdamdeo.pulse.extension.core.Description;
+import com.damdamdeo.pulse.extension.core.Owner;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoChecklistId;
@@ -105,8 +107,8 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 EncodedTraceIdentifiable.from(
                                         new TodoProjection(
                                                 ProjectionId.from(TodoId.USER_1_TODO_2),
-                                                "lorem ipsum",
-                                                Status.IN_PROGRESS, false, List.of()),
+                                                new Description("lorem ipsum"),
+                                                Status.IN_PROGRESS, false, List.of(), Owner.USER_1),
                                         new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(
@@ -120,8 +122,8 @@ class JdbcPostgresEncodedInvolvedRepositoryTest {
                                 EncodedTraceIdentifiable.from(
                                         new TodoProjection(
                                                 ProjectionId.from(TodoId.USER_1_TODO_1),
-                                                "lorem ipsum",
-                                                Status.IN_PROGRESS, false, List.of()),
+                                                new Description("lorem ipsum"),
+                                                Status.IN_PROGRESS, false, List.of(), Owner.USER_1),
                                         new ExecutedByHashed("EU:bob-hashed"),
                                         new ExecutedByEncoded("EU:bobEncoded")))),
                 new TraceRecorder(

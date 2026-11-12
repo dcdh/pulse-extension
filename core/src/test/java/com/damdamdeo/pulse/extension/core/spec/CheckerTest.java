@@ -25,7 +25,7 @@ class CheckerTest {
     @Test
     void shouldNotFailWhenTodoIsImportantAndInProgress() {
         // Given
-        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, true,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem"), Status.IN_PROGRESS, true,
                 Owner.USER_1);
 
         // When && Then
@@ -37,7 +37,7 @@ class CheckerTest {
     @Test
     void shouldFailWhenTodoIsNotImportant() {
         // Given
-        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem"), Status.IN_PROGRESS, false,
                 Owner.USER_1);
 
         // When && Then
@@ -52,7 +52,7 @@ class CheckerTest {
     @Test
     void shouldFailWhenTodoIsImportantAndNotInProgress() {
         // Given
-        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.DONE, true,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem"), Status.DONE, true,
                 Owner.USER_1);
 
         // When && Then

@@ -45,7 +45,7 @@ class AggregateRootSerDeTest {
                 },
                 "sequence": "000001"
               },
-              "description": "lorem ipsum",
+              "description": {"description": {"description": "lorem ipsum"}},
               "status": "IN_PROGRESS",
               "important": false,
               "owner": {
@@ -64,7 +64,7 @@ class AggregateRootSerDeTest {
         // Given
         final TodoAggregateRoot givenTodo = new TodoAggregateRoot(
                 TodoId.USER_1_TODO_1,
-                "lorem ipsum",
+                new Description("lorem ipsum"),
                 Status.IN_PROGRESS,
                 false, Owner.USER_1
         );
@@ -88,7 +88,7 @@ class AggregateRootSerDeTest {
         assertThat(todo).isEqualTo(
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_1,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.IN_PROGRESS,
                         false, Owner.USER_1));
     }

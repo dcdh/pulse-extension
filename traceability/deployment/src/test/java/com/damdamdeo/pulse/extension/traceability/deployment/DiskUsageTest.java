@@ -1,5 +1,7 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
+import com.damdamdeo.pulse.extension.core.Description;
+import com.damdamdeo.pulse.extension.core.Owner;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
@@ -57,8 +59,8 @@ class DiskUsageTest {
                             EncodedTraceIdentifiable.from(
                                     new TodoProjection(
                                             ProjectionId.from(TodoId.USER_1_TODO_1),
-                                            "lorem ipsum",
-                                            Status.IN_PROGRESS, false, List.of()),
+                                            new Description("lorem ipsum"),
+                                            Status.IN_PROGRESS, false, List.of(), Owner.USER_1),
                                     new ExecutedByHashed("EU:alice-hashed"),
                                     new ExecutedByEncoded("EU:aliceEncoded"))));
 

@@ -96,7 +96,7 @@ class QueryUseCaseEventStoreTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         givenTodoId,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.IN_PROGRESS,
                         false, Owner.USER_1
                 ), BOB);
@@ -107,7 +107,7 @@ class QueryUseCaseEventStoreTest {
         // Then
         assertThat(byId).isEqualTo(Optional.of(new TodoAggregateRoot(
                 givenTodoId,
-                "lorem ipsum",
+                new Description("lorem ipsum"),
                 Status.IN_PROGRESS,
                 false, Owner.USER_1
         )));
@@ -151,7 +151,7 @@ class QueryUseCaseEventStoreTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         givenTodoId,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), BOB);
@@ -163,7 +163,7 @@ class QueryUseCaseEventStoreTest {
         assertThat(byIdAndVersion).isEqualTo(Optional.of(
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_13,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 )
@@ -183,7 +183,7 @@ class QueryUseCaseEventStoreTest {
         todoEventRepository.save(givenTodoEvents,
                 new TodoAggregateRoot(
                         givenTodoId,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.DONE,
                         false, Owner.USER_1
                 ), BOB);
@@ -196,7 +196,7 @@ class QueryUseCaseEventStoreTest {
         assertThat(byIdAndVersion).isEqualTo(Optional.of(
                 new TodoAggregateRoot(
                         TodoId.USER_1_TODO_14,
-                        "lorem ipsum",
+                        new Description("lorem ipsum"),
                         Status.IN_PROGRESS,
                         false, Owner.USER_1
                 )

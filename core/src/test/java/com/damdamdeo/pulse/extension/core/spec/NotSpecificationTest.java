@@ -15,7 +15,7 @@ class NotSpecificationTest {
     @Test
     void shouldBeTrueWhenTodoIsNotImportant() {
         // Given
-        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem"), Status.IN_PROGRESS, false,
                 Owner.USER_1);
 
         // When
@@ -28,7 +28,7 @@ class NotSpecificationTest {
     @Test
     void shouldBeFalseWhenTodoIsImportant() {
         // Given
-        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, true,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem"), Status.IN_PROGRESS, true,
                 Owner.USER_1);
 
         // When

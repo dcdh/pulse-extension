@@ -170,8 +170,8 @@ class E2ETest {
         traceAppender.append(new SampleInput(),
                 List.of(new TodoProjection(
                         ProjectionId.from(TodoId.USER_1_TODO_1),
-                        "lorem ipsum",
-                        Status.IN_PROGRESS, false, List.of())),
+                        new Description("lorem ipsum"),
+                        Status.IN_PROGRESS, false, List.of(), Owner.USER_1)),
                 ExecutionStatus.FAILED_UNAUTHORIZED,
                 TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
         // Alice

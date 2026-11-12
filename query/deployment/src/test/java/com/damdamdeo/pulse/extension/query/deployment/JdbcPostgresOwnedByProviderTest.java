@@ -65,7 +65,7 @@ class JdbcPostgresOwnedByProviderTest {
         {
             final TodoAggregateRoot todo = new TodoAggregateRoot(
                     TodoId.USER_1_TODO_1,
-                    "IMPORTANT: pulse extension development",
+                    new Description("IMPORTANT: pulse extension development"),
                     Status.IN_PROGRESS,
                     true, Owner.USER_1);
             eventTestRepository.insert(

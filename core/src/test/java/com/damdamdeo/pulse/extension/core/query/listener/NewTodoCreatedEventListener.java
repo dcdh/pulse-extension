@@ -1,6 +1,7 @@
 package com.damdamdeo.pulse.extension.core.query.listener;
 
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.Description;
 import com.damdamdeo.pulse.extension.core.Status;
 import com.damdamdeo.pulse.extension.core.TodoId;
 import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
@@ -26,8 +27,8 @@ public class NewTodoCreatedEventListener extends AbstractOnStoredEventListener<T
         Objects.requireNonNull(id);
         Objects.requireNonNull(aggregateVersion);
         Objects.requireNonNull(event);
-        final TodoProjection todoProjection = new TodoProjection(ProjectionId.from(id), event.description(),
-                Status.IN_PROGRESS, false, List.of());
+        final TodoProjection todoProjection = new TodoProjection(ProjectionId.from(id), new Description(event.description()),
+                Status.IN_PROGRESS, false, List.of(), event.owner());
         todoRepository.store(todoProjection);
     }
 

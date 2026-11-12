@@ -22,6 +22,70 @@ Use this skill when creating or changing a domain aggregate, its aggregate ID, c
 - Implement `belongsTo()` and `ownedBy()` from the domain's actual relationship and ownership rules. Do not guess these values from request context when the aggregate ID or state already defines them.
 - Keep state private and expose only the accessors needed by domain behavior and consumers. Use explicit null checks for required constructor, command, event, and execution-context inputs, following nearby code.
 
+## Shared domain contract for query mapping
+
+- Define a small domain interface for the aggregate's query-facing properties when the query side needs to map aggregate data into a DTO. Put the interface with the domain model in `core`; expose only the values required by the mapping.
+- Have the aggregate root implement that interface and return its state through the interface accessors. The query DTO/projection should implement the same interface when it represents the same data shape. This lets mapping code depend on the shared contract instead of the concrete aggregate class.
+- Keep the interface as a read contract: do not put command handling, event application, persistence, or query-specific behavior on it.
+
+`Todo` is the example contract: `TodoAggregateRoot` implements it, and the query-side `TodoProjection` also implements it so the same accessors can be used for DTO mapping.
+
+```java
+public interface Todo {
+
+    TodoId todoId();
+
+    String description();
+
+    Status status();
+
+    boolean important();
+
+    boolean isInProgress();
+
+    Owner owner();
+}
+```
+
+```java
+public final class TodoAggregateRoot extends AggregateRoot<TodoId> implements Todo {
+
+    // Aggregate state and command/event behavior...
+
+    @Override
+    public TodoId todoId() {
+        return id;
+    }
+
+    @Override
+    public String description() {
+        return description;
+    }
+
+    @Override
+    public Status status() {
+        return status;
+    }
+
+    @Override
+    public boolean important() {
+        return important;
+    }
+
+    @Override
+    public boolean isInProgress() {
+        return Status.IN_PROGRESS.equals(status);
+    }
+
+    @Override
+    public Owner owner() {
+        return owner;
+    }
+}
+```
+
+The query-side example is `query/integration-tests/src/test/java/com/damdamdeo/pulse/extension/it/query/todo/TodoProjection.java`; check its current shape and the corresponding DTO mapper before adding or changing shared accessors.
+
 ## Commands and events
 
 - Implement each command transition in `handle(Command, ExecutionContext, EventAppender<Id>)`. Validate business rules against current aggregate state and append domain events through the provided appender instead of directly changing state.

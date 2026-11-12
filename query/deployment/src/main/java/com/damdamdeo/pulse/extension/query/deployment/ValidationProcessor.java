@@ -205,16 +205,16 @@ public final class ValidationProcessor {
         }
 
         /*
-         * Projection
+         * Projections and record value objects
          */
-        if (projections.contains(name)) {
+        if (projections.contains(name) || (classInfo != null && classInfo.isRecord())) {
             if (classInfo != null) {
                 validateProjection(
                         index,
                         projections,
                         aggregateIds,
                         classInfo,
-                        visited,
+                        new HashSet<>(visited),
                         path,
                         errors
                 );
@@ -227,7 +227,7 @@ public final class ValidationProcessor {
                                 "Invalid projection property '" + path
                                         + "'. Type '"
                                         + name
-                                        + "' must implement Projection or AggregateId."
+                                        + "' must be a record or implement Projection or AggregateId."
                         )
                 )
         );

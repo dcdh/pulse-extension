@@ -68,7 +68,7 @@ class TodoCommandHandlerTest {
         // Then
         assertAll(
                 () -> assertThat(todoCreated.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoCreated.aggregateRoot().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoCreated.aggregateRoot().description().description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.aggregateRoot().status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.FALSE),
                 () -> assertThat(todoCreated.events()).containsExactly(
@@ -134,7 +134,7 @@ class TodoCommandHandlerTest {
         // Then
         assertAll(
                 () -> assertThat(todoCreated.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoCreated.aggregateRoot().description()).isEqualTo("IMPORTANT lorem ipsum"),
+                () -> assertThat(todoCreated.aggregateRoot().description().description()).isEqualTo("IMPORTANT lorem ipsum"),
                 () -> assertThat(todoCreated.aggregateRoot().status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.TRUE),
                 () -> assertThat(todoCreated.events()).containsExactly(new VersionizedEvent<>(
@@ -175,7 +175,7 @@ class TodoCommandHandlerTest {
         // Then
         assertAll(
                 () -> assertThat(todoMarkedAsDone.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoMarkedAsDone.aggregateRoot().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoMarkedAsDone.aggregateRoot().description().description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoMarkedAsDone.aggregateRoot().status()).isEqualTo(Status.DONE),
                 () -> assertThat(todoMarkedAsDone.aggregateRoot().important()).isEqualTo(Boolean.FALSE),
                 () -> assertThat(todoMarkedAsDone.events()).containsExactly(

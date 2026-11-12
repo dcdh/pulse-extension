@@ -6,7 +6,7 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 
 import java.util.Objects;
 
-public final class TodoAggregateRoot extends AggregateRoot<TodoId> {
+public final class TodoAggregateRoot extends AggregateRoot<TodoId> implements Todo {
 
     public static final OwnedBy OWNED_BY_USER_1 = OwnedBy.from(UserId.USER_1);
     public static final OwnedBy OWNED_BY_USER_2 = OwnedBy.from(UserId.USER_2);
@@ -21,7 +21,7 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> {
 
     private static final String IMPORTANT = "IMPORTANT";
 
-    private String description;
+    private Description description;
     private Status status;
     private boolean important = false;
     private Owner owner;
@@ -34,7 +34,7 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> {
     }
 
     public TodoAggregateRoot(final TodoId id,
-                             final String description,
+                             final Description description,
                              final Status status,
                              boolean important,
                              Owner owner) {
@@ -52,7 +52,7 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> {
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
         eventAppender.append(new NewTodoCreated(createTodo.description(), createTodo.owner()));
-        if (description.startsWith(IMPORTANT)) {
+        if (description.description().startsWith(IMPORTANT)) {
             eventAppender.append(new ClassifiedAsImportant());
         }
     }
@@ -91,7 +91,7 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> {
     public void on(final NewTodoCreated newTodoCreated, final ExecutedBy executedBy) {
         Objects.requireNonNull(newTodoCreated);
         Objects.requireNonNull(executedBy);
-        this.description = newTodoCreated.description();
+        this.description = new Description(newTodoCreated.description());
         this.owner = newTodoCreated.owner();
         this.status = Status.IN_PROGRESS;
     }
@@ -120,22 +120,32 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> {
         return OwnedBy.from(id.userId());
     }
 
-    public String description() {
+    @Override
+    public TodoId todoId() {
+        return id;
+    }
+
+    @Override
+    public Description description() {
         return description;
     }
 
+    @Override
     public Status status() {
         return status;
     }
 
+    @Override
     public boolean important() {
         return important;
     }
 
+    @Override
     public boolean isInProgress() {
         return Status.IN_PROGRESS.equals(status);
     }
 
+    @Override
     public Owner owner() {
         return owner;
     }

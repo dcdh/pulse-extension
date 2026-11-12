@@ -27,7 +27,7 @@ class NullableInputSpecificationTest {
     @Test
     void shouldReturnTrueWhenInputIsNotNull() {
         // Given
-        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem", Status.IN_PROGRESS, false,
+        final TodoAggregateRoot givenTodo = new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem"), Status.IN_PROGRESS, false,
                 Owner.USER_1);
 
         // When

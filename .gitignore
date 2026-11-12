@@ -178,3 +178,4 @@
 /job/integration-tests/simple/quarkus-pulse-extension-job-integration-tests-simple.iml
 /job/integration-tests/simple/target/
 /common/deployment/b_o_o_m_aggregate_executed_by.sql
+/query/integration-tests/target/

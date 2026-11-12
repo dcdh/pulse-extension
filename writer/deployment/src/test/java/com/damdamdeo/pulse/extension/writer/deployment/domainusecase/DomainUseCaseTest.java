@@ -101,7 +101,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         assertAll(
                 () -> assertThat(loremIpsum).isEqualTo(
                         new Handled<>(
-                                new TodoAggregateRoot(TodoId.USER_1_TODO_1, "lorem ipsum", Status.IN_PROGRESS, false, Owner.USER_1),
+                                new TodoAggregateRoot(TodoId.USER_1_TODO_1, new Description("lorem ipsum"), Status.IN_PROGRESS, false, Owner.USER_1),
                                 List.of(new VersionizedEvent<>(
                                         new AggregateVersion(0), new ExecutedByEvent<>(
                                         new NewTodoCreated("lorem ipsum", Owner.USER_1), ExecutedBy.NotAvailable.INSTANCE))))),

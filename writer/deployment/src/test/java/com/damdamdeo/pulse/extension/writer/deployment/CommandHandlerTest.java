@@ -53,7 +53,7 @@ public class CommandHandlerTest extends AbstractWriterTest {
         // Then
         assertAll(
                 () -> assertThat(todoCreated.id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(todoCreated.aggregateRoot().description()).isEqualTo("lorem ipsum"),
+                () -> assertThat(todoCreated.aggregateRoot().description().description()).isEqualTo("lorem ipsum"),
                 () -> assertThat(todoCreated.aggregateRoot().status()).isEqualTo(Status.IN_PROGRESS),
                 () -> assertThat(todoCreated.aggregateRoot().important()).isEqualTo(Boolean.FALSE),
                 () -> assertThat(todoCreated.events()).containsExactly(
