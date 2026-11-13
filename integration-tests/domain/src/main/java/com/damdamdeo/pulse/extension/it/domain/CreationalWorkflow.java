@@ -33,7 +33,7 @@ public class CreationalWorkflow {
 
         try {
             final Handled<TodoAggregateRoot, TodoId> todoCreated = todoCommandHandler.handle(sequenceNumber -> new TodoId(user.id(), sequenceNumber),
-                    new CreateTodo("lorem ipsum", Owner.USER_1), DuplicateTodoException::new);
+                    new CreateTodo(new Description("lorem ipsum"), Owner.USER_1), DuplicateTodoException::new);
             LOGGER.info("Todo created : {}", todoCreated);
 
             final Handled<TodoChecklist, TodoChecklistId> todoChecklistAdded = todoChecklistCommandHandler.handle(sequenceNumber -> new TodoChecklistId(todoCreated.id(), sequenceNumber),

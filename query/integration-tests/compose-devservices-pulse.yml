@@ -34,7 +34,7 @@ services:
       timeout: 5s
     volumes:
     - ./pulse_passphrase.sql:/docker-entrypoint-initdb.d/pulse_passphrase.sql:ro,z
-    - ./todo_serialization_aggregate_executed_by.sql:/docker-entrypoint-initdb.d/todo_serialization_aggregate_executed_by.sql:ro,z
     - ./todo_serialization_aggregates.sql:/docker-entrypoint-initdb.d/todo_serialization_aggregates.sql:ro,z
     - ./pulse_query_file.sql:/docker-entrypoint-initdb.d/pulse_query_file.sql:ro,z
     - ./todo_serialization_query_event_counter.sql:/docker-entrypoint-initdb.d/todo_serialization_query_event_counter.sql:ro,z
+    - ./todo_serialization_aggregate_executed_by.sql:/docker-entrypoint-initdb.d/todo_serialization_aggregate_executed_by.sql:ro,z

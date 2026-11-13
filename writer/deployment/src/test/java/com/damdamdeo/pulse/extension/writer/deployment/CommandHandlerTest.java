@@ -44,7 +44,7 @@ public class CommandHandlerTest extends AbstractWriterTest {
     @Test
     void shouldExecuteCommand() throws CommandException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum", Owner.USER_1);
+        final CreateTodo givenCreateTodo = new CreateTodo(new Description("lorem ipsum"), Owner.USER_1);
 
         // When
         final Handled<TodoAggregateRoot, TodoId> todoCreated = commandHandler.handle(sequenceNumber -> new TodoId(UserId.USER_1, sequenceNumber), givenCreateTodo,

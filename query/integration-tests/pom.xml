@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
-            <artifactId>quarkus-pulse-query-extension-deployment</artifactId>
+            <artifactId>quarkus-pulse-query-extension</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -82,7 +82,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
 
     @Test
     void shouldFailWhenNoAudienceIsDefined() {
-        assertThatThrownBy(() -> noAudienceCreateTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1)))
+        assertThatThrownBy(() -> noAudienceCreateTodoDomainUseCase.execute(new CreateTodo(new Description("lorem ipsum"), Owner.USER_1)))
                 .isExactlyInstanceOf(UseCaseException.class)
                 .hasFieldOrPropertyWithValue("useCaseExceptionCode", UseCaseExceptionCode.FORBIDDEN)
                 .cause()
@@ -95,7 +95,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        final Handled<TodoAggregateRoot, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1));
+        final Handled<TodoAggregateRoot, TodoId> loremIpsum = createTodoDomainUseCase.execute(new CreateTodo(new Description("lorem ipsum"), Owner.USER_1));
 
         // Then
         assertAll(
@@ -115,7 +115,7 @@ class DomainUseCaseTest extends AbstractWriterTest {
         // Given
 
         // When
-        assertThatThrownBy(() -> useCaseExceptionTodoDomainUseCase.execute(new CreateTodo("lorem ipsum", Owner.USER_1)))
+        assertThatThrownBy(() -> useCaseExceptionTodoDomainUseCase.execute(new CreateTodo(new Description("lorem ipsum"), Owner.USER_1)))
                 .isInstanceOf(UseCaseException.class)
                 .hasRootCauseInstanceOf(RuntimeException.class)
                 .hasRootCauseMessage("Something wrong happened");

@@ -51,7 +51,7 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> implements To
         Objects.requireNonNull(createTodo);
         Objects.requireNonNull(eventAppender);
         Objects.requireNonNull(executionContext);
-        eventAppender.append(new NewTodoCreated(createTodo.description(), createTodo.owner()));
+        eventAppender.append(new NewTodoCreated(createTodo.description().description(), createTodo.owner()));
         if (description.description().startsWith(IMPORTANT)) {
             eventAppender.append(new ClassifiedAsImportant());
         }

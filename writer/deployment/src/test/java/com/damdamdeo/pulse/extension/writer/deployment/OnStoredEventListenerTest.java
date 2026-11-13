@@ -74,7 +74,7 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
     @Test
     void shouldListenToEvent() throws CommandException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum", Owner.USER_1);
+        final CreateTodo givenCreateTodo = new CreateTodo(new Description("lorem ipsum"), Owner.USER_1);
 
         // When
         commandHandler.handle(creational, givenCreateTodo, CommandHandlerTest.DuplicateTodoException::new);

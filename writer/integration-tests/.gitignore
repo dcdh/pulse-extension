@@ -1,0 +1,6 @@
+/target/
+/compose-devservices-pulse.yml
+/pulse_passphrase.sql
+/pulse_sequences_tables.sql
+/todo_writer_aggregate_executed_by.sql
+/todo_writer_aggregates.sql

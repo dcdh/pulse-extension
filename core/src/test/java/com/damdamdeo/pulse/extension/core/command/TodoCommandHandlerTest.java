@@ -58,7 +58,7 @@ class TodoCommandHandlerTest {
     @Test
     void shouldCreateTodoUsingExecutedByProvider() throws CommandException, SequenceGenerationException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("lorem ipsum", Owner.USER_1);
+        final CreateTodo givenCreateTodo = new CreateTodo(new Description("lorem ipsum"), Owner.USER_1);
         doReturn(false).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
 
@@ -123,7 +123,7 @@ class TodoCommandHandlerTest {
     @Test
     void shouldClassifieAsImportant() throws CommandException, SequenceGenerationException {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum",
+        final CreateTodo givenCreateTodo = new CreateTodo(new Description("IMPORTANT lorem ipsum"),
                 Owner.USER_1);
         doReturn(false).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
@@ -301,7 +301,7 @@ class TodoCommandHandlerTest {
     void shouldThrowCommandExceptionHavingDuplicateTodoExceptionWhenDuplicate() throws SequenceGenerationException {
         // Given
         doReturn(TodoId.USER_1_TODO_1).when(aggregateIdGenerator).generate(TodoId.class, creational);
-        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum", Owner.USER_1);
+        final CreateTodo givenCreateTodo = new CreateTodo(new Description("IMPORTANT lorem ipsum"), Owner.USER_1);
         doReturn(true).when(todoEventRepository).hasEventsFor(TodoId.USER_1_TODO_1);
 
         // When && Then
@@ -315,7 +315,7 @@ class TodoCommandHandlerTest {
     @Test
     void shouldFailFastWhenCreationalCommandCallByCommandHandler() {
         // Given
-        final CreateTodo givenCreateTodo = new CreateTodo("IMPORTANT lorem ipsum", Owner.USER_1);
+        final CreateTodo givenCreateTodo = new CreateTodo(new Description("IMPORTANT lorem ipsum"), Owner.USER_1);
 
         // When && Then
         assertThatThrownBy(() -> todoCommandHandler.handle(givenCreateTodo, () -> new UnknownTodoException(TodoId.USER_1_TODO_1)))
