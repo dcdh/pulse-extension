@@ -35,7 +35,7 @@ public interface Todo {
 
     TodoId todoId();
 
-    String description();
+    Description description();
 
     Status status();
 
@@ -58,7 +58,7 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> implements To
     }
 
     @Override
-    public String description() {
+    public Description description() {
         return description;
     }
 
@@ -84,7 +84,7 @@ public final class TodoAggregateRoot extends AggregateRoot<TodoId> implements To
 }
 ```
 
-The query-side example is `query/integration-tests/src/test/java/com/damdamdeo/pulse/extension/it/query/todo/TodoProjection.java`; check its current shape and the corresponding DTO mapper before adding or changing shared accessors.
+The query-side example is `core/src/test/java/com/damdamdeo/pulse/extension/core/query/TodoProjection.java`; check its current shape and the corresponding DTO mapper before adding or changing shared accessors.
 
 ## Commands and events
 
@@ -138,9 +138,130 @@ public final class Item extends AggregateRoot<ItemId> {
 
 The names above illustrate structure; use the real ID relationship and ownership rules for the domain being implemented.
 
+## Stored-event listeners and domain projections
+
+For each domain event that creates or changes query-side state, implement a domain listener extending `AbstractOnStoredEventListener<AggregateIdType, EventType>`. Cover the different events affecting the projection, such as creation, status changes, and archival, so the read model reflects those transitions. These listeners complement the aggregate's `on(Event, ExecutedBy)` methods: the aggregate applies events to its own state, while stored-event listeners maintain projections after event storage.
+
+- Keep each listener implementation in the domain, alongside its events and query model. Implement `eventType()` with the concrete event class and `on(id, aggregateVersion, event)` with the projection update. The base class filters events by type; do not override its final `execute(...)` method.
+- Each listener depends on a repository **interface defined in the domain**, supplied through its constructor. Its methods accept and return domain projections, never infrastructure DTOs, JDBC types, or persistence entities. Implement this repository interface in the application's infrastructure layer or `infrastructure` module, using the domain projection in the adapter's method signatures. The domain listener depends only on the interface; infrastructure supplies its concrete persistence implementation.
+- Define the projection in the domain and implement `Projection<AggregateIdType>`, using domain IDs and value objects. Both the listener and repository interface refer to that same projection. Keep the actual repository adapter and storage configuration in infrastructure.
+- For creation events, construct and store a projection. For subsequent events, load it through the domain repository, derive the updated projection, and store it. For example, `TodoMarkedAsDoneEventListener` loads with `getByTodoId(id)` and stores `projection.withStatus(Status.DONE)`.
+- Let Writer discover the listener implementations. Keep domain listeners free of Quarkus/CDI and JDBC annotations; do not add manual listener producers in an application to duplicate extension registration.
+
+The base class is `core/src/main/java/com/damdamdeo/pulse/extension/core/listener/AbstractOnStoredEventListener.java`. The following examples come directly from the domain fixtures in `core/src/test/java/com/damdamdeo/pulse/extension/core/query`.
+
+### Domain repository interface
+
+```java
+import com.damdamdeo.pulse.extension.core.TodoId;
+
+import java.util.Collection;
+
+public interface TodoRepository {
+
+    void store(TodoProjection todoProjection);
+
+    TodoProjection getByTodoId(TodoId todoId);
+
+    Collection<TodoProjection> findAll();
+}
+```
+
+### Domain projection
+
+```java
+import com.damdamdeo.pulse.extension.core.Description;
+import com.damdamdeo.pulse.extension.core.Owner;
+import com.damdamdeo.pulse.extension.core.Status;
+import com.damdamdeo.pulse.extension.core.Todo;
+import com.damdamdeo.pulse.extension.core.TodoId;
+
+import java.util.List;
+import java.util.Objects;
+
+public record TodoProjection(ProjectionId<TodoId> projectionId,
+                             Description description,
+                             Status status,
+                             boolean important,
+                             List<TodoChecklistProjection> checklist,
+                             Owner owner) implements Projection<TodoId>, Todo {
+
+    public TodoProjection {
+        Objects.requireNonNull(projectionId);
+        Objects.requireNonNull(description);
+        Objects.requireNonNull(status);
+        Objects.requireNonNull(checklist);
+        Objects.requireNonNull(owner);
+    }
+
+    public TodoProjection withStatus(final Status status) {
+        return new TodoProjection(projectionId, description, status, important, checklist, owner);
+    }
+
+    @Override
+    public TodoId todoId() {
+        return projectionId.linkTo();
+    }
+
+    @Override
+    public boolean isInProgress() {
+        return Status.IN_PROGRESS.equals(status);
+    }
+
+    @Override
+    public ProjectionId<TodoId> id() {
+        return projectionId;
+    }
+}
+```
+
+### Creation-event listener
+
+```java
+import com.damdamdeo.pulse.extension.core.AggregateVersion;
+import com.damdamdeo.pulse.extension.core.Description;
+import com.damdamdeo.pulse.extension.core.Status;
+import com.damdamdeo.pulse.extension.core.TodoId;
+import com.damdamdeo.pulse.extension.core.event.NewTodoCreated;
+import com.damdamdeo.pulse.extension.core.listener.AbstractOnStoredEventListener;
+import com.damdamdeo.pulse.extension.core.listener.OnStoredEventListenerException;
+import com.damdamdeo.pulse.extension.core.query.ProjectionId;
+import com.damdamdeo.pulse.extension.core.query.TodoProjection;
+import com.damdamdeo.pulse.extension.core.query.TodoRepository;
+
+import java.util.List;
+import java.util.Objects;
+
+public class NewTodoCreatedEventListener extends AbstractOnStoredEventListener<TodoId, NewTodoCreated> {
+
+    private final TodoRepository todoRepository;
+
+    public NewTodoCreatedEventListener(final TodoRepository todoRepository) {
+        this.todoRepository = Objects.requireNonNull(todoRepository);
+    }
+
+    @Override
+    public void on(final TodoId id, final AggregateVersion aggregateVersion, final NewTodoCreated event) throws OnStoredEventListenerException {
+        Objects.requireNonNull(id);
+        Objects.requireNonNull(aggregateVersion);
+        Objects.requireNonNull(event);
+        final TodoProjection todoProjection = new TodoProjection(ProjectionId.from(id), new Description(event.description()),
+                Status.IN_PROGRESS, false, List.of(), event.owner());
+        todoRepository.store(todoProjection);
+    }
+
+    @Override
+    protected Class<NewTodoCreated> eventType() {
+        return NewTodoCreated.class;
+    }
+}
+```
+
+Test listener behavior by passing the event through `execute(...)`, then assert the projection stored through the domain repository interface. For application integration tests, exercise the actual command and listener wiring and read the resulting projection through REST, following the application's Writer/Query test conventions.
+
 ## Integration and verification
 
-- Define the command records, event records, and aggregate ID alongside the domain model in `core`; keep repositories, SQL, serialization, and Quarkus annotations in their owning infrastructure modules.
+- Define the command records, event records, and aggregate ID alongside the domain model in `core`; keep repository interfaces and projections in the domain, and repository implementations, SQL, serialization, and Quarkus annotations in their owning infrastructure modules.
 - Connect the aggregate to the appropriate command handler/use case using existing core patterns. Check the Writer deployment processors and validation tests when adding record types or changing discovery behavior.
 - Add domain tests for successful state transitions, emitted event order, replay, and rejected transitions. Follow the `domain-testing` skill for the project's Given / When / Then and Mockito test conventions.
 - Run focused core tests first. Run Writer deployment tests when changing record validation or aggregate discovery.
