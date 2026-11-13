@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.Optional;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ContextLocalsExecutionContextOverloaderTest {
@@ -46,6 +47,32 @@ class ContextLocalsExecutionContextOverloaderTest {
 
         // Then
         assertThat(contextLocalsExecutionContextOverloader.current()).isEqualTo(Optional.empty());
+    }
+
+    @Test
+    void isolatesBlockingWorkerThreadsAndCleansTheirContext() throws Exception {
+        final JobName own = new JobName("BlockingJob");
+        contextLocalsExecutionContextOverloader.overload(own);
+        try {
+            assertThat(contextLocalsExecutionContextOverloader.current()).contains(own);
+            try (final var executor = newSingleThreadExecutor()) {
+                assertThat(executor.submit(() -> {
+                    assertThat(contextLocalsExecutionContextOverloader.current()).isEmpty();
+                    final JobName other = new JobName("OtherJob");
+                    contextLocalsExecutionContextOverloader.overload(other);
+                    try {
+                        return contextLocalsExecutionContextOverloader.current();
+                    } finally {
+                        contextLocalsExecutionContextOverloader.clean(other);
+                    }
+                }).get()).contains(new JobName("OtherJob"));
+                assertThat(executor.submit(() -> contextLocalsExecutionContextOverloader.current()).get()).isEmpty();
+            }
+            assertThat(contextLocalsExecutionContextOverloader.current()).contains(own);
+        } finally {
+            contextLocalsExecutionContextOverloader.clean(own);
+        }
+        assertThat(contextLocalsExecutionContextOverloader.current()).isEmpty();
     }
 
 }

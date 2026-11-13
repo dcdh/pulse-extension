@@ -18,7 +18,46 @@ This layout describes the Pulse extension repository only. Do not reproduce it i
 
 ## Classic application projects
 
-For a regular Quarkus application using Pulse Query, follow its existing packages and module boundaries. Put application projections and query use cases in its domain/query packages, JDBC repositories and Jackson customizers in its infrastructure packages, and endpoints and DTOs in its API packages, normally under `src/main/java`. Put Flyway migrations in `src/main/resources/db/migration`, application configuration in `src/main/resources/application.properties`, and tests and test-specific configuration under `src/test`. These are responsibilities, not mandatory modules or package names: do not create `query/runtime`, `query/deployment`, `query/integration-tests`, or a `core` module solely to match this repository. Depend on the Query runtime extension and let Quarkus load its deployment processors; application code should not copy those processors or register duplicate query-use-case producers. Index separate domain dependencies when needed for discovery. The integration-test fixtures below illustrate behavior to adapt into production application code, not files to copy into an application's test sources. Repository-relative paths and reactor test commands in this skill apply only when working inside the extension repository.
+A classic application is a regular Quarkus application that consumes the Pulse Query extension, rather than implementing the extension itself. It has no separate `runtime` and `deployment` modules: those belong to the extension and are supplied by its dependencies. The application is either a single-module Maven project or, in a multi-module project, the Quarkus application lives in an `infrastructure` module. In the single-module case, application sources, resources, tests, and extension dependencies belong to that project's standard Maven layout and `pom.xml`. In the multi-module case, Quarkus wiring, adapters, configuration, and extension dependencies belong to the existing `infrastructure` module; preserve the project's domain and API boundaries.
+
+Follow the application's existing packages and module boundaries. Put application projections and query use cases in its domain/query packages, JDBC repositories and Jackson customizers in its infrastructure packages, and endpoints and DTOs in its API packages, normally under `src/main/java`. Put Flyway migrations in `src/main/resources/db/migration`, application configuration in `src/main/resources/application.properties`, and tests and test-specific configuration under `src/test`. These are responsibilities, not mandatory modules or package names: do not create `query/runtime`, `query/deployment`, `query/integration-tests`, or a `core` module solely to match this repository. Depend on the Query runtime extension and let Quarkus load its deployment processors; application code should not copy those processors or register duplicate query-use-case producers. Index separate domain dependencies when needed for discovery. The integration-test fixtures below illustrate behavior to adapt into production application code, not files to copy into an application's test sources. Repository-relative paths and reactor test commands in this skill apply only when working inside the extension repository.
+
+## Testing a classic application
+
+Place application tests in `src/test/java` and test configuration in `src/test/resources` of the single Maven module or the Quarkus `infrastructure` module. Keep production endpoints, repositories, and Jackson customizers in `src/main`: the extension's integration-test fixture puts them in test sources to assemble a sample application, whereas an application tests its own production beans. No separate `deployment`, `runtime`, or `integration-tests` module is needed.
+
+Use the examples under `query/integration-tests/src/test/java/com/damdamdeo/pulse/extension/it` as behavioral references, adapting Todo types, permissions, and SQL tables to the application's domain:
+
+- `api/todo/TodoDTOTest.java`: use plain JUnit for DTO mapping and JSON contracts. Assert the expected JSON representation and the deserialized DTO, including value objects exposed as plain JSON values. Initialize the mapper outside the test method; configure only the customizers needed for this contract.
+- `query/todo/TodoObjectMapperCustomizerTest.java`: isolate sensitive-value serialization with the real Jackson encryption module and mocked cryptographic collaborators. Verify encryption, decryption, complete projection round trips, and absence of sensitive plaintext. This focused test complements the assembled application test.
+- `query/todo/TodoObjectMapperCustomizerQuarkusTest.java`: use `@QuarkusTest` and inject the application's `ObjectMapper` to check actual CDI registration and extension configuration. Round-trip a representative projection, including nested projections and typed IDs, and assert that sensitive fields are encrypted without leaking plaintext. Do not manually assemble the mapper or replace its cryptographic services in this test.
+- `api/todo/TodoEndpointTest.java`: use `@QuarkusTest`, inject the real projection repository, store matching and non-matching projections, then call the endpoint with RestAssured. Check the HTTP status and deserialize the result with `TypeRef<List<ApplicationDTO>>`; compare the expected DTOs with one `containsExactly(...)`. Clean the projection table before and after each test using the injected `DataSource`. Supply an authorized execution context through a test-only CDI alternative when needed, while keeping generated query guards active.
+
+Use PostgreSQL Dev Services for database-backed tests, with Docker accessible. Apply the application's Flyway migrations before cleanup or seeding; keep production migrations in `src/main/resources/db/migration`. In `src/test/resources/application.properties`, configure test-only settings such as a non-production `pulse.query.master-key` and dependency indexing when domain types live in a separate unindexed artifact. The fixture's `pulse-core` test-jar index and `baseline-version=0` solve fixture-specific discovery and migration needs; adapt them only when the application has the same need. See the persistence and discovery conventions below for details.
+
+Keep the application's dependency on the Query runtime extension; Quarkus resolves its deployment side. Add test-scoped Quarkus JUnit, JUnit Jupiter, RestAssured, and Mockito only as needed, using the application's Quarkus version and dependency management. Include the PostgreSQL JDBC and Flyway dependencies when required by persistence. Do not copy the integration-test POM's direct deployment dependency, extension annotation processor, or internal Quarkus test tooling into an application merely to run these tests.
+
+Run tests from the application repository, selecting its own test classes. For a single-module project:
+
+```bash
+mvn -Dtest=ApplicationDTOTest,ApplicationObjectMapperQuarkusTest,ApplicationEndpointTest test
+```
+
+For an application whose Quarkus module is `infrastructure`, run from its reactor root (adapt the module path):
+
+```bash
+mvn -pl infrastructure -am \
+  -Dtest=ApplicationDTOTest,ApplicationObjectMapperQuarkusTest,ApplicationEndpointTest \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+```
+
+These are example test names to replace with the application's classes. The examples use Surefire `*Test` classes annotated with `@QuarkusTest`; the name of the extension's `integration-tests` module does not require Failsafe or `@QuarkusIntegrationTest` in the application. Follow any existing application setup for packaged-application tests separately.
+
+## Java imports
+
+Declare Java imports for the types used in source files and use their simple names in code. Use fully qualified names only when needed to resolve a name collision.
+
+Leave a blank line between the class declaration and its first field, and between field declarations.
 
 ## Query model and deployment rules
 

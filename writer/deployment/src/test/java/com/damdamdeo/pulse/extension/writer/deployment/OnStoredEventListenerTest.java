@@ -52,6 +52,10 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
 
         final List<On> events = new ArrayList<>();
 
+        public List<On> events() {
+            return List.copyOf(events);
+        }
+
         @Override
         public void on(final TodoId id, final AggregateVersion aggregateVersion, final NewTodoCreated event) {
             Objects.requireNonNull(id);
@@ -78,10 +82,10 @@ class OnStoredEventListenerTest extends AbstractWriterTest {
         // Then
         assertAll(
                 () -> assertThat(onStoredEventListeners.size()).isEqualTo(4),
-                () -> assertThat(onNewTodoCreated.events.size()).isEqualTo(1),
-                () -> assertThat(onNewTodoCreated.events.getFirst().id()).isEqualTo(TodoId.USER_1_TODO_1),
-                () -> assertThat(onNewTodoCreated.events.getFirst().aggregateVersion()).isEqualTo(new AggregateVersion(0)),
-                () -> assertThat(onNewTodoCreated.events.getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum", Owner.USER_1))
+                () -> assertThat(onNewTodoCreated.events().size()).isEqualTo(1),
+                () -> assertThat(onNewTodoCreated.events().getFirst().id()).isEqualTo(TodoId.USER_1_TODO_1),
+                () -> assertThat(onNewTodoCreated.events().getFirst().aggregateVersion()).isEqualTo(new AggregateVersion(0)),
+                () -> assertThat(onNewTodoCreated.events().getFirst().event()).isEqualTo(new NewTodoCreated("lorem ipsum", Owner.USER_1))
         );
     }
 }

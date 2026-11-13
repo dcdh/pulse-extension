@@ -16,7 +16,7 @@ public class OnStoredEventListenerProcessor {
                 .stream()
                 .map(onStoredEventListener -> AdditionalBeanBuildItem.builder()
                         .addBeanClass(onStoredEventListener.name().toString())
-                        .setDefaultScope(DotNames.SINGLETON)
+                        .setDefaultScope(DotNames.APPLICATION_SCOPED)
                         .setUnremovable()
                         .build())
                 .toList();

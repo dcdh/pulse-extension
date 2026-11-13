@@ -34,9 +34,12 @@ public abstract class UseCaseWriter<A extends AggregateId, C extends Command<A>,
         Objects.requireNonNull(commands);
         final JobName jobName = new JobName(jobContext.getJobName());
         executionContextOverloader.overload(jobName);
-        for (final Object command : commands) {
-            domainUseCase.execute((C) command);
+        try {
+            for (final Object command : commands) {
+                domainUseCase.execute((C) command);
+            }
+        } finally {
+            executionContextOverloader.clean(jobName);
         }
-        executionContextOverloader.clean(jobName);
     }
 }

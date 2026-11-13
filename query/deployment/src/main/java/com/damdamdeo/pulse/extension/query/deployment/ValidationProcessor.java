@@ -86,6 +86,10 @@ public final class ValidationProcessor {
          * Support classes classiques
          */
         for (final FieldInfo field : projection.fields()) {
+            // Compiler-generated captures and class constants are not projection properties.
+            if (java.lang.reflect.Modifier.isStatic(field.flags()) || (field.flags() & 0x1000) != 0) {
+                continue;
+            }
             validateType(
                     index,
                     projections,
@@ -184,7 +188,14 @@ public final class ValidationProcessor {
         /*
          * java.lang.*
          */
-        if (name.toString().startsWith("java.lang.")) {
+        if (name.toString().startsWith("java.lang.")
+                || Set.of("java.time.LocalDate", "java.time.LocalTime", "java.time.LocalDateTime",
+                        "java.time.Instant", "java.time.Duration", "java.time.Period", "java.time.Month",
+                        "java.time.DayOfWeek", "java.time.Year", "java.time.YearMonth", "java.time.MonthDay",
+                        "java.time.OffsetDateTime", "java.time.OffsetTime", "java.time.ZonedDateTime",
+                        "java.time.ZoneId", "java.time.ZoneOffset").contains(name.toString())
+                || name.toString().equals("java.math.BigDecimal")
+                || name.toString().equals("java.math.BigInteger")) {
             return;
         }
 
