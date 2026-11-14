@@ -13,6 +13,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-devservices-keycloak</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.damdamdeo.pulse</groupId>
             <artifactId>quarkus-pulse-compose-extension-deployment</artifactId>
             <version>${project.version}</version>
