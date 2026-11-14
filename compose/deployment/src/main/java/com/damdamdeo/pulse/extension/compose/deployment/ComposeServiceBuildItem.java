@@ -187,15 +187,59 @@ public final class ComposeServiceBuildItem extends MultiBuildItem {
         }
     }
 
-    // https://docs.docker.com/engine/storage/bind-mounts/#syntax
-    public record Volume(String src, String destination, byte[] content, String contentType) {
+    public interface Volume {
 
-        public Volume {
+        String src();
+
+        String destination();
+
+        byte[] content();
+
+        String contentType();
+
+        boolean isFile();
+    }
+
+    // https://docs.docker.com/engine/storage/bind-mounts/#syntax
+    public record FileVolume(String src, String destination, byte[] content, String contentType) implements Volume {
+
+        public FileVolume {
             Objects.requireNonNull(src);
             Validate.validState(src.startsWith("./"));
             Objects.requireNonNull(destination);
+            Validate.validState(destination.startsWith("/"));
             Objects.requireNonNull(content);
             Objects.requireNonNull(contentType);
+        }
+
+        @Override
+        public boolean isFile() {
+            return true;
+        }
+    }
+
+    public record DirectoryVolume(String src, String destination) implements Volume {
+
+        public DirectoryVolume {
+            Objects.requireNonNull(src);
+            Validate.validState(src.startsWith("./"));
+            Objects.requireNonNull(destination);
+            Validate.validState(destination.startsWith("/"));
+        }
+
+        @Override
+        public byte[] content() {
+            throw new UnsupportedOperationException("Should not be called !");
+        }
+
+        @Override
+        public String contentType() {
+            throw new UnsupportedOperationException("Should not be called !");
+        }
+
+        @Override
+        public boolean isFile() {
+            return false;
         }
     }
 

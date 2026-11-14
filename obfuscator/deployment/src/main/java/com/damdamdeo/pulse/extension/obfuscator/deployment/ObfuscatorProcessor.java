@@ -59,7 +59,7 @@ public class ObfuscatorProcessor {
             final String schemaName = "pulse";
             additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                    new ComposeServiceBuildItem.Volume("./%s_obfuscator.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_obfuscator.sql".formatted(schemaName),
+                    new ComposeServiceBuildItem.FileVolume("./%s_obfuscator.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_obfuscator.sql".formatted(schemaName),
                             // language=sql
                             """
                                     CREATE SCHEMA IF NOT EXISTS %1$s;

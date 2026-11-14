@@ -36,7 +36,7 @@ public class KafkaProcessor {
 // Using configuration config/server.properties.
 // Using KAFKA_LISTENERS=PLAINTEXT://172.24.0.3:9092,CONTROLLER://172.24.0.3:9093 and KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.24.0.3:9092
 // /docker-entrypoint.sh: line 278: /kafka.sh: Permission denied
-//                    new ComposeServiceBuildItem.Volume("./kafka.sh", "/kafka.sh",
+//                    new ComposeServiceBuildItem.FileVolume("./kafka.sh", "/kafka.sh",
 //                            // language=bash
 //                            """
 //                                    #!/bin/bash

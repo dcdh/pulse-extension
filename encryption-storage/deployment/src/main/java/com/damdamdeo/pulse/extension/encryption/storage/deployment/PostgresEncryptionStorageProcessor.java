@@ -24,7 +24,7 @@ public class PostgresEncryptionStorageProcessor {
             final String schemaName = "pulse";
             return List.of(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(SERVICE_NAME),
-                    new ComposeServiceBuildItem.Volume("./%s_passphrase.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_passphrase.sql".formatted(schemaName),
+                    new ComposeServiceBuildItem.FileVolume("./%s_passphrase.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_passphrase.sql".formatted(schemaName),
                             // language=sql
                             """
                                     CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;

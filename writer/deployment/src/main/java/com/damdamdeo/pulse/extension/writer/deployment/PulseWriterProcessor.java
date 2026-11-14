@@ -138,7 +138,7 @@ public class PulseWriterProcessor {
                         """.formatted("pulse");
         additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                new ComposeServiceBuildItem.Volume("./%s_sequences_tables.sql".formatted("pulse"), "/docker-entrypoint-initdb.d/%s_sequences_tables.sql".formatted("pulse"),
+                new ComposeServiceBuildItem.FileVolume("./%s_sequences_tables.sql".formatted("pulse"), "/docker-entrypoint-initdb.d/%s_sequences_tables.sql".formatted("pulse"),
                         sequenceByAggregateRootTypeAndBelongsTo.getBytes(StandardCharsets.UTF_8), "sql")));
         final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
         final String aggregates =
@@ -338,7 +338,7 @@ public class PulseWriterProcessor {
                         """.formatted(schemaName);
         additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                new ComposeServiceBuildItem.Volume("./%s_aggregates.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregates.sql".formatted(schemaName),
+                new ComposeServiceBuildItem.FileVolume("./%s_aggregates.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregates.sql".formatted(schemaName),
                         aggregates.getBytes(StandardCharsets.UTF_8), "sql")));
     }
 }

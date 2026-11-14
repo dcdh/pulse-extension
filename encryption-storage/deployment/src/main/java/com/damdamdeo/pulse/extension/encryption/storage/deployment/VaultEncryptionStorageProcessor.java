@@ -59,7 +59,7 @@ public class VaultEncryptionStorageProcessor {
                     "sh", "-c", "sleep 10;bao policy write pulse-app-policy /tmp/pulse-policy-policy.hcl;bao auth enable userpass;bao write auth/userpass/users/bob password=sinclair policies=pulse-app-policy"
             )),
             null,
-            List.of(new ComposeServiceBuildItem.Volume("./pulse-policy-policy.hcl", "/tmp/pulse-policy-policy.hcl",
+            List.of(new ComposeServiceBuildItem.FileVolume("./pulse-policy-policy.hcl", "/tmp/pulse-policy-policy.hcl",
                     // language=hcl
                     """
                             path "secret/data/owner/*" {

@@ -189,7 +189,7 @@ public class DatabaseProcessor {
                             """.formatted(schemaName);
             additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                    new ComposeServiceBuildItem.Volume("./%s_aggregates.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregates.sql".formatted(schemaName),
+                    new ComposeServiceBuildItem.FileVolume("./%s_aggregates.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregates.sql".formatted(schemaName),
                             aggregates.getBytes(StandardCharsets.UTF_8), "sql")));
         }
         // language=sql
@@ -261,7 +261,7 @@ public class DatabaseProcessor {
                 """;
         additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                new ComposeServiceBuildItem.Volume("./pulse_query_file.sql", "/docker-entrypoint-initdb.d/pulse_query_file.sql",
+                new ComposeServiceBuildItem.FileVolume("./pulse_query_file.sql", "/docker-entrypoint-initdb.d/pulse_query_file.sql",
                         fileSql.getBytes(StandardCharsets.UTF_8), "sql")));
 
         if (capabilities.isPresent(Capability.CACHE)) {
@@ -307,7 +307,7 @@ public class DatabaseProcessor {
                     """.formatted(schemaName);
             additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                    new ComposeServiceBuildItem.Volume("./%s_query_event_counter.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_query_event_counter.sql".formatted(schemaName),
+                    new ComposeServiceBuildItem.FileVolume("./%s_query_event_counter.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_query_event_counter.sql".formatted(schemaName),
                             eventCounterQuery.getBytes(StandardCharsets.UTF_8), "sql")));
         }
     }

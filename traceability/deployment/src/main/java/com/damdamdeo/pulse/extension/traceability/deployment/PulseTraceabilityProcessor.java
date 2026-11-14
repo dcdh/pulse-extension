@@ -200,7 +200,7 @@ public class PulseTraceabilityProcessor {
         if (tablesDefinition != null) {
             additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                    new ComposeServiceBuildItem.Volume("./%s_traceability_tables.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_traceability_tables.sql".formatted("pulse"),
+                    new ComposeServiceBuildItem.FileVolume("./%s_traceability_tables.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_traceability_tables.sql".formatted("pulse"),
                             tablesDefinition.getBytes(StandardCharsets.UTF_8), "sql")));
         }
     }

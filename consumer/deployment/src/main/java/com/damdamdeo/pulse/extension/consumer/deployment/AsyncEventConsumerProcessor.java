@@ -109,7 +109,7 @@ public class AsyncEventConsumerProcessor {
                     .map(SchemaName::name)
                     .map(schemaName -> new AdditionalVolumeBuildItem(
                             new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                            new ComposeServiceBuildItem.Volume("./%s_target_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_target_consumer.sql".formatted(schemaName),
+                            new ComposeServiceBuildItem.FileVolume("./%s_target_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_target_consumer.sql".formatted(schemaName),
                                     // language=sql
                                     """
                                             CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;

@@ -162,8 +162,10 @@ public class ComposeProcessor {
 
             final Path whereToCreate = outputTargetBuildItem.getOutputDirectory().getParent();
             for (final ComposeServiceBuildItem.Volume volume : volumesToCreateOnHostSrc) {
-                final Path srcResolved = whereToCreate.resolve(volume.src().substring(2));
-                Files.write(srcResolved, volume.content(), CREATE, TRUNCATE_EXISTING);
+                if (volume.isFile()) {
+                    final Path srcResolved = whereToCreate.resolve(volume.src().substring(2));
+                    Files.write(srcResolved, volume.content(), CREATE, TRUNCATE_EXISTING);
+                }
             }
 
             final DumperOptions options = new DumperOptions();

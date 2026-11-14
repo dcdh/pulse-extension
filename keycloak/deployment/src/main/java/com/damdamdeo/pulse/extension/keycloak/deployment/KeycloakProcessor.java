@@ -32,13 +32,19 @@ public class KeycloakProcessor {
                     new ComposeServiceBuildItem.Command(
                             List.of(
                                     "start-dev",
-                                    "--import-realm")),
+                                    "--features=\"declarative-ui\"",
+                                    "--import-realm",
+                                    "--spi-theme-static-max-age=-1",
+                                    "--spi-theme-cache-themes=false",
+                                    "--spi-theme-cache-templates=false")),
                     ComposeServiceBuildItem.Entrypoint.ofNone(),
                     null,
-                    List.of(new ComposeServiceBuildItem.Volume("./realm.json",
-                            "/opt/keycloak/data/import/realm.json",
-                            KeycloakProcessor.class.getResourceAsStream("/realm.json").readAllBytes(), "json"
-                    )),
+                    List.of(
+                            new ComposeServiceBuildItem.FileVolume("./realm.json",
+                                    "/opt/keycloak/data/import/realm.json",
+                                    KeycloakProcessor.class.getResourceAsStream("/realm.json").readAllBytes(), "json"),
+                            new ComposeServiceBuildItem.DirectoryVolume("./keycloak-theme",
+                                    "/opt/keycloak/themes/keycloak-theme")),
                     ComposeServiceBuildItem.DependsOn.ofNone());
         } catch (final IOException e) {
             throw new RuntimeException(e);

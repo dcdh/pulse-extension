@@ -95,7 +95,7 @@ public class ConnectionIdentifierProcessor {
             final String schemaName = "pulse";
             additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                     new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                    new ComposeServiceBuildItem.Volume("./%s_connection_identifier.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_connection_identifier.sql".formatted(schemaName),
+                    new ComposeServiceBuildItem.FileVolume("./%s_connection_identifier.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_connection_identifier.sql".formatted(schemaName),
                             // language=sql
                             """
                                     CREATE SCHEMA IF NOT EXISTS %1$s;

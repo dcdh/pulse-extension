@@ -118,7 +118,7 @@ class DatabaseProcessor {
                 """.formatted(schemaName);
         additionalVolumeBuildItemBuildProducer.produce(new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                new ComposeServiceBuildItem.Volume("./%s_aggregate_executed_by.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregate_executed_by.sql".formatted(schemaName),
+                new ComposeServiceBuildItem.FileVolume("./%s_aggregate_executed_by.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_aggregate_executed_by.sql".formatted(schemaName),
                         aggregateExecutedByQuery.getBytes(StandardCharsets.UTF_8), "sql")));
     }
 }

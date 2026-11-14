@@ -63,7 +63,7 @@ public class PulseConsumerProcessor {
         final String schemaName = SchemaName.from(new ApplicationNaming(applicationInfoBuildItem.getName())).name();
         final AdditionalVolumeBuildItem additionalVolumeBuildItem = new AdditionalVolumeBuildItem(
                 new ComposeServiceBuildItem.ServiceName(PostgresUtils.SERVICE_NAME),
-                new ComposeServiceBuildItem.Volume("./%s_idempotency_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_idempotency_consumer.sql".formatted(schemaName),
+                new ComposeServiceBuildItem.FileVolume("./%s_idempotency_consumer.sql".formatted(schemaName), "/docker-entrypoint-initdb.d/%s_idempotency_consumer.sql".formatted(schemaName),
                         // language=sql
                         """
                                 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
