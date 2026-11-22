@@ -10,12 +10,13 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import org.apache.pdfbox.util.Matrix;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,27 +42,39 @@ public class PdfBoxContentTypeFiligraneApplier implements ContentTypeFiligraneAp
                 Files.copy(in, inTempFile, StandardCopyOption.REPLACE_EXISTING);
             }
             try (final PDDocument document = Loader.loadPDF(inTempFile.toFile())) {
+                final PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+                final float fontSize = 50;
+                final float textWidth = font.getStringWidth(text) * fontSize / 1000;
+                final float columnSpacing = textWidth + 24;
+                final float rowSpacing = fontSize + 24;
+                final PDExtendedGraphicsState graphicsState = new PDExtendedGraphicsState();
+                graphicsState.setNonStrokingAlphaConstant(0.2f);
+
                 for (final PDPage page : document.getPages()) {
+                    final PDRectangle cropBox = page.getCropBox();
+                    final float centerX = cropBox.getLowerLeftX() + cropBox.getWidth() / 2;
+                    final float centerY = cropBox.getLowerLeftY() + cropBox.getHeight() / 2;
+                    final double radius = Math.hypot(cropBox.getWidth(), cropBox.getHeight()) / 2;
+                    final int columns = (int) Math.ceil(radius / columnSpacing);
+                    final int rows = (int) Math.ceil(radius / rowSpacing);
 
-                    final PDPageContentStream content = new PDPageContentStream(
-                            document,
-                            page,
-                            PDPageContentStream.AppendMode.APPEND,
-                            true,
-                            true);
+                    try (final PDPageContentStream content = new PDPageContentStream(
+                            document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
+                        content.setGraphicsStateParameters(graphicsState);
+                        content.setNonStrokingColor(Color.LIGHT_GRAY);
+                        content.transform(Matrix.getRotateInstance(Math.toRadians(45), centerX, centerY));
 
-                    final PDExtendedGraphicsState gs = new PDExtendedGraphicsState();
-                    gs.setNonStrokingAlphaConstant(0.2f);
-                    content.setGraphicsStateParameters(gs);
-
-                    content.beginText();
-                    content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 50);
-                    content.setNonStrokingColor(Color.LIGHT_GRAY);
-                    content.setTextMatrix(
-                            Matrix.getRotateInstance(Math.toRadians(45), 200, 400));
-                    content.showText(text);
-                    content.endText();
-                    content.close();
+                        content.beginText();
+                        content.setFont(font, fontSize);
+                        for (int row = -rows; row <= rows; row++) {
+                            for (int column = -columns; column <= columns; column++) {
+                                content.setTextMatrix(Matrix.getTranslateInstance(
+                                        column * columnSpacing - textWidth / 2, row * rowSpacing));
+                                content.showText(text);
+                            }
+                        }
+                        content.endText();
+                    }
                 }
 
                 final Path tempFile = Files.createTempFile("pulse-filigrane-output-", "." + contentType().extension());
