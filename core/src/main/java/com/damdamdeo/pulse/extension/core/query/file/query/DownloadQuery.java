@@ -79,12 +79,8 @@ public final class DownloadQuery implements GenericQuery<DownloadInput, FileCont
                                     fileContent.contentLength(),
                                     decrypted.payload())
                     ));
-            if (provided.hasAnyRole(visibilityRoles)) {
-                final FileContent filigranedFileContent = filigraneApplier.apply(decryptedFileContent.payload());
-                return tokenApplier.apply(filigranedFileContent, encryptedFileInfo.ownedBy());
-            } else {
-                return tokenApplier.apply(decryptedFileContent.payload(), encryptedFileInfo.ownedBy());
-            }
+            final FileContent filigranedFileContent = filigraneApplier.apply(decryptedFileContent.payload());
+            return tokenApplier.apply(filigranedFileContent, encryptedFileInfo.ownedBy());
         } catch (final FileRepositoryException | UnableToResolveException
                        | DecryptionException | TokenApplierException | UnableToApplyFiligraneException exception) {
             throw new QueryException(exception, QueryExceptionCode.INFRASTRUCTURE_FAILURE);

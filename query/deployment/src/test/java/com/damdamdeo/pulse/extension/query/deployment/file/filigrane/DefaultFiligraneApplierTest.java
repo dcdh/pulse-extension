@@ -1,5 +1,8 @@
 package com.damdamdeo.pulse.extension.query.deployment.file.filigrane;
 
+import com.damdamdeo.pulse.extension.core.ExecutionContext;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
+import com.damdamdeo.pulse.extension.core.executedby.ExecutionContextProvider;
 import com.damdamdeo.pulse.extension.core.query.file.ContentType;
 import com.damdamdeo.pulse.extension.core.query.file.FileContent;
 import com.damdamdeo.pulse.extension.core.query.file.FileIdentifier;
@@ -14,6 +17,7 @@ import jakarta.annotation.Priority;
 import jakarta.decorator.Decorator;
 import jakarta.decorator.Delegate;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Alternative;
 import jakarta.enterprise.inject.Any;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
@@ -21,8 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -36,8 +39,9 @@ class DefaultFiligraneApplierTest {
                     .addAsResource("facture.jpg")
                     .addAsResource("facture.pdf")
                     .addAsResource("facture.png"))
-            .overrideConfigKey("pulse.query.file.filigrane", "lorem ipsum")
-            .withConfigurationResource("application.properties");
+            .withConfigurationResource("application.properties")
+            .overrideRuntimeConfigKey("pulse.query.file.filigrane", "lorem ipsum")
+            .overrideRuntimeConfigKey("pulse.query.file.apply-to-having-at-least-one-role", "role1");
 
     @Inject
     DefaultFiligraneApplier defaultFiligraneApplier;
@@ -45,10 +49,14 @@ class DefaultFiligraneApplierTest {
     @Inject
     FiligraneTestSpy filigraneTestSpy;
 
+    @Inject
+    StubExecutionContextProvider stubExecutionContextProvider;
+
     @BeforeEach
     @AfterEach
     void tearDown() {
         filigraneTestSpy.reset();
+        stubExecutionContextProvider.reset();
     }
 
     @ApplicationScoped
@@ -66,6 +74,27 @@ class DefaultFiligraneApplierTest {
 
         public void reset() {
             called.clear();
+        }
+    }
+
+    @ApplicationScoped
+    @Priority(1)
+    @Alternative
+    static class StubExecutionContextProvider implements ExecutionContextProvider {
+
+        private Set<String> roles = new HashSet<>();
+
+        @Override
+        public ExecutionContext provide() {
+            return new ExecutionContext(ExecutedBy.Anonymous.INSTANCE, roles);
+        }
+
+        public void overrideRoles(final Set<String> roles) {
+            this.roles = Objects.requireNonNull(roles);
+        }
+
+        public void reset() {
+            this.roles = new HashSet<>();
         }
     }
 
@@ -99,9 +128,32 @@ class DefaultFiligraneApplierTest {
     }
 
     @Test
+    void shouldNotApplyWhenNotInRole() {
+        // Given
+        try {
+            final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpeg");
+            final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, resource.contentLength(), resource.payload());
+
+            // When
+            final FileContent applied = defaultFiligraneApplier.apply(fileContent);
+
+            // Then
+            assertAll(
+                    () -> assertThat(applied.id()).isEqualTo(new FileIdentifier("facture.jpeg")),
+                    () -> assertThat(applied.contentType()).isEqualTo(ContentType.IMAGE_JPEG),
+                    () -> assertThat(applied.contentLength().contentLength()).isGreaterThan(1L),
+                    () -> assertThat(filigraneTestSpy.getCalled()).isEmpty()
+            );
+        } catch (final UnableToApplyFiligraneException exception) {
+            throw new RuntimeException(exception);
+        }
+    }
+
+    @Test
     void shouldApplyJpegFiligrane() {
         // Given
         try {
+            stubExecutionContextProvider.overrideRoles(Set.of("role1"));
             final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpeg");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpeg"), ContentType.IMAGE_JPEG, resource.contentLength(), resource.payload());
 
@@ -124,6 +176,7 @@ class DefaultFiligraneApplierTest {
     void shouldApplyJpgFiligrane() {
         // Given
         try {
+            stubExecutionContextProvider.overrideRoles(Set.of("role1"));
             final Resource resource = TestResourceProvider.getResourceFromStream("/facture.jpg");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.jpg"), ContentType.IMAGE_JPG, resource.contentLength(), resource.payload());
 
@@ -146,6 +199,7 @@ class DefaultFiligraneApplierTest {
     void shouldApplyPdfFiligrane() {
         // Given
         try {
+            stubExecutionContextProvider.overrideRoles(Set.of("role1"));
             final Resource resource = TestResourceProvider.getResourceFromStream("/facture.pdf");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.pdf"), ContentType.APPLICATION_PDF, resource.contentLength(), resource.payload());
 
@@ -168,6 +222,7 @@ class DefaultFiligraneApplierTest {
     void shouldApplyPngFiligrane() {
         // Given
         try {
+            stubExecutionContextProvider.overrideRoles(Set.of("role1"));
             final Resource resource = TestResourceProvider.getResourceFromStream("/facture.png");
             final FileContent fileContent = new FileContent(new FileIdentifier("facture.png"), ContentType.IMAGE_PNG, resource.contentLength(), resource.payload());
 

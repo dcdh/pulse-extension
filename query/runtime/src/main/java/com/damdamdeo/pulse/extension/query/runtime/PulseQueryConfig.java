@@ -4,6 +4,7 @@ import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.smallrye.config.ConfigMapping;
 
+import java.util.List;
 import java.util.Optional;
 
 @ConfigMapping(prefix = "pulse.query")
@@ -30,5 +31,12 @@ public interface PulseQueryConfig {
          * @return filigrane
          */
         Optional<String> filigrane();
+
+        /**
+         * applyToHavingAtLeastOneRole
+         *
+         * @return applyToHavingAtLeastOneRole
+         */
+        Optional<List<String>> applyToHavingAtLeastOneRole();
     }
 }

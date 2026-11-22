@@ -57,7 +57,7 @@ class FileQueryUseCaseTest {
 
     private final static FileIdentifier GIVEN_FILE_IDENTIFIER = new FileIdentifier("F000001");
 
-    private final static String EXPECTED_MD5 = "3b9124aacd88a0d0c4a1fbfeb0bc188c";
+    private final static String EXPECTED_MD5 = "d5a0dafbabbca957bfd2fa7d2dbc37f9";
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
