@@ -123,9 +123,9 @@ public class TraceabilityFinderInvolvedEndpoint {
 
     @Path("byIdentifiable/{identifiable}")
     @GET
-    public InvolvedPageDTO findBy(@PathParam("identifiable") final AnyIdentifiable identifiable,
-                                  @QueryParam("includeUncompounded") @DefaultValue("false") final IncludeUncompounded includeUncompounded,
-                                  @BeanParam final PaginationDTO paginationDTO) throws FinderException {
+    public InvolvedPageDTO findByIdentifiable(@PathParam("identifiable") final AnyIdentifiable identifiable,
+                                              @QueryParam("includeUncompounded") @DefaultValue("false") final IncludeUncompounded includeUncompounded,
+                                              @BeanParam final PaginationDTO paginationDTO) throws FinderException {
         Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(paginationDTO);
@@ -137,8 +137,8 @@ public class TraceabilityFinderInvolvedEndpoint {
 
     @Path("byExecutedByHashed/{executedByHashed}")
     @GET
-    public InvolvedPageDTO findBy(@PathParam("executedByHashed") final ExecutedByHashed executedByHashed,
-                                  @BeanParam final PaginationDTO paginationDTO) throws FinderException {
+    public InvolvedPageDTO findByExecutedByHashed(@PathParam("executedByHashed") final ExecutedByHashed executedByHashed,
+                                                  @BeanParam final PaginationDTO paginationDTO) throws FinderException {
         Objects.requireNonNull(executedByHashed);
         Objects.requireNonNull(paginationDTO);
         final Page<Involved> by = involvedFinder.findBy(executedByHashed, paginationDTO.toPagination());

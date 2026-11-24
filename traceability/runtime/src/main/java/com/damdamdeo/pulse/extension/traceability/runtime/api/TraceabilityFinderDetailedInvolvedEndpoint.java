@@ -1,7 +1,6 @@
 package com.damdamdeo.pulse.extension.traceability.runtime.api;
 
 import com.damdamdeo.pulse.extension.common.runtime.pagination.PaginationDTO;
-import com.damdamdeo.pulse.extension.core.AggregateId;
 import com.damdamdeo.pulse.extension.core.AggregateVersion;
 import com.damdamdeo.pulse.extension.core.connectionidentifier.AnyIdentifiable;
 import com.damdamdeo.pulse.extension.core.consumer.AnyAggregateId;
@@ -122,9 +121,9 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
 
     @Path("byIdentifiable/{identifiable}")
     @GET
-    public DetailedInvolvedPageDTO findBy(@PathParam("identifiable") final AnyIdentifiable identifiable,
-                                          @QueryParam("includeUncompounded") @DefaultValue("false") final IncludeUncompounded includeUncompounded,
-                                          @BeanParam final PaginationDTO paginationDTO) throws FinderException {
+    public DetailedInvolvedPageDTO findByIdentifiable(@PathParam("identifiable") final AnyIdentifiable identifiable,
+                                                      @QueryParam("includeUncompounded") @DefaultValue("false") final IncludeUncompounded includeUncompounded,
+                                                      @BeanParam final PaginationDTO paginationDTO) throws FinderException {
         Objects.requireNonNull(identifiable);
         Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(paginationDTO);
@@ -136,8 +135,8 @@ public class TraceabilityFinderDetailedInvolvedEndpoint {
 
     @Path("byExecutedByHashed/{executedByHashed}")
     @GET
-    public DetailedInvolvedPageDTO findBy(@PathParam("executedByHashed") final ExecutedByHashed executedByHashed,
-                                          @BeanParam final PaginationDTO paginationDTO) throws FinderException {
+    public DetailedInvolvedPageDTO findByExecutedByHashed(@PathParam("executedByHashed") final ExecutedByHashed executedByHashed,
+                                                          @BeanParam final PaginationDTO paginationDTO) throws FinderException {
         Objects.requireNonNull(executedByHashed);
         Objects.requireNonNull(paginationDTO);
         final Page<DetailedInvolved> by = detailedInvolvedFinder.findBy(executedByHashed, paginationDTO.toPagination());
