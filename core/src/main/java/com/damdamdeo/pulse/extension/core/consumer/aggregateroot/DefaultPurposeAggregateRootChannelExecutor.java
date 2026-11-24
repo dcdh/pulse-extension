@@ -68,9 +68,9 @@ public class DefaultPurposeAggregateRootChannelExecutor<T> implements PurposeAgg
         final AggregateRootType aggregateRootType = aggregateRootKey.toAggregateRootType();
         final AggregateId aggregateId = aggregateRootKey.toAggregateId();
         for (AsyncAggregateRootChannelMessageHandler<T> asyncEventChannelMessageHandler : asyncAggregateRootChannelMessageHandlerProvider.provideForTarget(purpose)) {
-            final Encrypted<byte[]> encrypted = aggregateRootValue.toEncryptedPayload();
-            final OwnedBy ownedBy = aggregateRootValue.toOwnedBy();
-            final BelongsTo belongsTo = aggregateRootValue.toBelongsTo();
+            final Encrypted<byte[]> encrypted = aggregateRootValue.encryptedPayload();
+            final OwnedBy ownedBy = aggregateRootValue.ownedBy();
+            final BelongsTo belongsTo = aggregateRootValue.belongsTo();
             try {
                 DecryptablePayload<T> decryptableEventPayload;
                 try {

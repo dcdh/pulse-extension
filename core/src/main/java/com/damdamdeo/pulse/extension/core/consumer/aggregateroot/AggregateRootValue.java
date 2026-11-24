@@ -6,9 +6,9 @@ import com.damdamdeo.pulse.extension.core.event.OwnedBy;
 
 public interface AggregateRootValue {
 
-    Encrypted<byte[]> toEncryptedPayload();
+    Encrypted<byte[]> encryptedPayload();
 
-    OwnedBy toOwnedBy();
+    OwnedBy ownedBy();
 
-    BelongsTo toBelongsTo();
+    BelongsTo belongsTo();
 }

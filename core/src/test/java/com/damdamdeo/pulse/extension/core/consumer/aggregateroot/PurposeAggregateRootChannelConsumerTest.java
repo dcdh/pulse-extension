@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -55,28 +56,18 @@ class PurposeAggregateRootChannelConsumerTest {
         }
     }
 
-    record TodoAggregateRootValue(byte[] payload,
-                                  String ownedBy,
-                                  String belongsTo) implements AggregateRootValue {
+    record TodoAggregateRootValue(Encrypted<byte[]> encryptedPayload, OwnedBy ownedBy, BelongsTo belongsTo)
+            implements AggregateRootValue {
+
+        TodoAggregateRootValue {
+            Objects.requireNonNull(encryptedPayload);
+            Objects.requireNonNull(ownedBy);
+            Objects.requireNonNull(belongsTo);
+        }
 
         public static TodoAggregateRootValue of() {
-            return new TodoAggregateRootValue("aggregateRootPayload".getBytes(StandardCharsets.UTF_8),
-                    UserId.USER_1.id(), TodoId.USER_1_TODO_1.id());
-        }
-
-        @Override
-        public Encrypted<byte[]> toEncryptedPayload() {
-            return Encrypted.of(payload);
-        }
-
-        @Override
-        public OwnedBy toOwnedBy() {
-            return new OwnedBy(ownedBy);
-        }
-
-        @Override
-        public BelongsTo toBelongsTo() {
-            return BelongsTo.from(new AnyAggregateId(belongsTo));
+            return new TodoAggregateRootValue(Encrypted.of("aggregateRootPayload".getBytes(StandardCharsets.UTF_8)),
+                    TodoAggregateRoot.OWNED_BY_USER_1, TodoAggregateRoot.BELONGS_TO_USER_1);
         }
     }
 

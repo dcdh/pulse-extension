@@ -8,56 +8,24 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record JsonNodeAggregateRootValue(@JsonProperty("aggregate_root_payload") byte[] payload,
-                                         @JsonProperty("owned_by") String ownedBy,
-                                         @JsonProperty("belongs_to") String belongsTo) implements AggregateRootValue {
+public record JsonNodeAggregateRootValue(
+        @JsonProperty("aggregate_root_payload")
+        Encrypted<byte[]> encryptedPayload,
+
+        @JsonProperty("owned_by")
+        OwnedBy ownedBy,
+
+        @JsonProperty("belongs_to")
+        BelongsTo belongsTo) implements AggregateRootValue {
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
     public JsonNodeAggregateRootValue {
-        Objects.requireNonNull(payload);
+        Objects.requireNonNull(encryptedPayload);
         Objects.requireNonNull(ownedBy);
         Objects.requireNonNull(belongsTo);
     }
 
-    @Override
-    public Encrypted<byte[]> toEncryptedPayload() {
-        return Encrypted.of(payload);
-    }
-
-    @Override
-    public OwnedBy toOwnedBy() {
-        return new OwnedBy(ownedBy);
-    }
-
-    @Override
-    public BelongsTo toBelongsTo() {
-        return new BelongsTo(belongsTo);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        JsonNodeAggregateRootValue that = (JsonNodeAggregateRootValue) o;
-        return Objects.equals(ownedBy, that.ownedBy)
-                && Arrays.equals(payload, that.payload)
-                && Objects.equals(belongsTo, that.belongsTo);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(Arrays.hashCode(payload), ownedBy, belongsTo);
-    }
-
-    @Override
-    public String toString() {
-        return "JsonNodeAggregateRootValue{" +
-                "payload=" + Arrays.toString(payload) +
-                ", ownedBy='" + ownedBy + '\'' +
-                ", belongsTo='" + belongsTo + '\'' +
-                '}';
-    }
 }

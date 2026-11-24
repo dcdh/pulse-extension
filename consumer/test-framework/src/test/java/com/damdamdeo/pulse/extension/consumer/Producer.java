@@ -13,7 +13,9 @@ import com.damdamdeo.pulse.extension.core.encryption.Encrypted;
 import com.damdamdeo.pulse.extension.core.encryption.EncryptionException;
 import com.damdamdeo.pulse.extension.core.encryption.Passphrase;
 import com.damdamdeo.pulse.extension.core.event.Event;
+import com.damdamdeo.pulse.extension.core.event.EventType;
 import com.damdamdeo.pulse.extension.core.event.OwnedBy;
+import com.damdamdeo.pulse.extension.core.event.StoredAt;
 import com.damdamdeo.pulse.extension.core.executedby.ExecutedBy;
 import com.damdamdeo.pulse.extension.core.executedby.UnableToEncodeException;
 import com.damdamdeo.pulse.extension.core.executedby.UsernameEncoder;
@@ -104,12 +106,12 @@ public class Producer {
                 .fromRecords(new ProducerRecord<>(CdcTopicNaming.from(fromApplication, Table.EVENT).name(),
                         new JsonNodeEventKey(aggregateRootClass.getSimpleName(), aggregateId.id(), 0),
                         new JsonNodeEventValue(
-                                ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC),
-                                eventClass.getSimpleName(),
+                                new StoredAt(ZonedDateTime.of(LocalDate.of(1970, Month.JANUARY, 12), LocalTime.of(13, 46, 40), ZoneOffset.UTC).toInstant()),
+                                EventType.from(eventClass),
                                 encrypted.payload(),
-                                ownedBy.id(),
-                                belongsTo.id(),
-                                executedBy.encode((UsernameEncoder) (username, ownedBy1) -> new UsernameEncoded("encoded" + username.username()), ownedBy).encoded())));// TestUsernameEncoder
+                                ownedBy,
+                                belongsTo,
+                                executedBy.encode((UsernameEncoder) (username, ownedBy1) -> new UsernameEncoded("encoded" + username.username()), ownedBy))));// TestUsernameEncoder
         return new Response(encryptedAggregate, encrypted);
     }
 

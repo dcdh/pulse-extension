@@ -6,6 +6,7 @@ import com.damdamdeo.pulse.extension.build.report.deployment.content.Title;
 import com.damdamdeo.pulse.extension.common.deployment.items.ValidationErrorBuildItem;
 import com.damdamdeo.pulse.extension.common.runtime.SmallryeConfigApplicationNamingProvider;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.BusinessObjectMapperProducer;
+import com.damdamdeo.pulse.extension.common.runtime.serialization.CommonObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.common.runtime.serialization.PulseObjectMapperCustomizer;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeProcessor;
 import com.damdamdeo.pulse.extension.compose.deployment.ComposeServiceBuildItem;
@@ -42,6 +43,7 @@ public class PulseCommonProcessor {
         additionalBeanBuildItems.add(AdditionalBeanBuildItem.builder()
                 .addBeanClasses(
                         PulseObjectMapperCustomizer.class,
+                        CommonObjectMapperCustomizer.class,
                         BusinessObjectMapperProducer.class,
                         SmallryeConfigApplicationNamingProvider.class)
                 .build());
