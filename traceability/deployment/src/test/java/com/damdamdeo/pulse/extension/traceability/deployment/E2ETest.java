@@ -34,7 +34,6 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.*;
 
-import static com.damdamdeo.pulse.extension.core.traceability.Finder.ROLE_TRACEABILITY_READ;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -78,7 +77,7 @@ class E2ETest {
             if (endUser == null) {
                 throw new IllegalStateException("endUser not set");
             }
-            return new ExecutionContext(endUser, Set.of(ROLE_TRACEABILITY_READ));
+            return new ExecutionContext(endUser, Set.of("ROLE_TRACEABILITY_READ"));
         }
 
         public void set(final ExecutedBy.EndUser endUser) {
@@ -185,111 +184,107 @@ class E2ETest {
         // Then
         given()
                 .pathParam("identifiable", "U000001-T000001")
-                .queryParam("includeUncompounded", "true")
                 .queryParam("page[index]", "0")
                 .queryParam("page[size]", "10")
                 .when()
-                .get("/traceability/finder/involved/byIdentifiable/{identifiable}")
+                .get("/traceability/finder/byIdentifiable/{identifiable}")
                 .then()
                 .log().all()
                 .statusCode(200)
-                .body("listOfInvolved.size()", equalTo(2))
-                .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
-                .body("listOfInvolved[0].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
-                .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
-                .body("listOfInvolved[0].commandNbOfTimes", equalTo(2))
-                .body("listOfInvolved[0].commandUnauthorizedNbOfTimes", equalTo(0))
-                .body("listOfInvolved[0].commandBusinessFailedNbOfTimes", equalTo(0))
-                .body("listOfInvolved[0].queryNbOfTimes", equalTo(0))
-                .body("listOfInvolved[0].queryUnauthorizedNbOfTimes", equalTo(0))
-                .body("listOfInvolved[0].traceabilityNbOfTimes", equalTo(0))
-                .body("listOfInvolved[1].identifiable", equalTo("U000001-T000001"))
-                .body("listOfInvolved[1].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
-                .body("listOfInvolved[1].executedBy", equalTo("EU:bob@mail.com"))
-                .body("listOfInvolved[1].commandNbOfTimes", equalTo(1))
-                .body("listOfInvolved[1].commandUnauthorizedNbOfTimes", equalTo(0))
-                .body("listOfInvolved[1].commandBusinessFailedNbOfTimes", equalTo(0))
-                .body("listOfInvolved[1].queryNbOfTimes", equalTo(0))
-                .body("listOfInvolved[1].queryUnauthorizedNbOfTimes", equalTo(1))
-                .body("listOfInvolved[1].traceabilityNbOfTimes", equalTo(0))
-                .body("totalPages", equalTo(1))
-                .body("hasNext", equalTo(false))
-                .body("hasPrevious", equalTo(false));
-        given()
-                .pathParam("identifiable", "U000001-T000001")
-                .queryParam("includeUncompounded", "true")
-                .queryParam("page[index]", "0")
-                .queryParam("page[size]", "10")
-                .when()
-                .get("/traceability/finder/detailed/byIdentifiable/{identifiable}")
-                .then()
-                .log().all()
-                .statusCode(200)
-                .body("listOfInvolved.size()", equalTo(5))
+                .body("identifiable", equalTo("U000001-T000001"))
+                .body("linkToAggregateRootId", equalTo("U000001-T000001"))
+                .body("page.listOfInvolved.size()", equalTo(4))
 
-                .body("listOfInvolved[0].traceId", equalTo(1))
-                .body("listOfInvolved[0].correlationId", equalTo(1))
-                .body("listOfInvolved[0].identifiable", equalTo("U000001-T000001"))
-                .body("listOfInvolved[0].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
-                .body("listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
-                .body("listOfInvolved[0].eventType", equalTo("NewTodoCreated"))
-                .body("listOfInvolved[0].aggregateVersion", equalTo(0))
-                .body("listOfInvolved[0].source", equalTo("COMMAND"))
-                .body("listOfInvolved[0].executionStatus", equalTo("SUCCESS"))
-                .body("listOfInvolved[0].from", equalTo("SimpleCommand"))
-                .body("listOfInvolved[0].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[0].traceId", equalTo(1))
+                .body("page.listOfInvolved[0].correlationId", equalTo(1))
+                .body("page.listOfInvolved[0].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
+                .body("page.listOfInvolved[0].executedBy", equalTo("EU:alice@mail.com"))
+                .body("page.listOfInvolved[0].eventType", equalTo("NewTodoCreated"))
+                .body("page.listOfInvolved[0].aggregateVersion", equalTo(0))
+                .body("page.listOfInvolved[0].source", equalTo("COMMAND"))
+                .body("page.listOfInvolved[0].executionStatus", equalTo("SUCCESS"))
+                .body("page.listOfInvolved[0].from", equalTo("SimpleCommand"))
+                .body("page.listOfInvolved[0].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[0].nbOfExecutions.executedBy", equalTo("EU:alice@mail.com"))
+                .body("page.listOfInvolved[0].nbOfExecutions.commandNbOfTimes", equalTo(2))
+                .body("page.listOfInvolved[0].nbOfExecutions.commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[0].nbOfExecutions.commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[0].nbOfExecutions.queryNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[0].nbOfExecutions.queryUnauthorizedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[0].nbOfExecutions.traceabilityNbOfTimes", equalTo(0))
 
-                .body("listOfInvolved[1].traceId", equalTo(1))
-                .body("listOfInvolved[1].correlationId", equalTo(1))
-                .body("listOfInvolved[1].identifiable", equalTo("U000001-T000001"))
-                .body("listOfInvolved[1].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
-                .body("listOfInvolved[1].executedBy", equalTo("EU:alice@mail.com"))
-                .body("listOfInvolved[1].eventType", equalTo("TodoDescriptionUpdated"))
-                .body("listOfInvolved[1].aggregateVersion", equalTo(1))
-                .body("listOfInvolved[1].source", equalTo("COMMAND"))
-                .body("listOfInvolved[1].executionStatus", equalTo("SUCCESS"))
-                .body("listOfInvolved[1].from", equalTo("SimpleCommand"))
-                .body("listOfInvolved[1].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[1].traceId", equalTo(1))
+                .body("page.listOfInvolved[1].correlationId", equalTo(1))
+                .body("page.listOfInvolved[1].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
+                .body("page.listOfInvolved[1].executedBy", equalTo("EU:alice@mail.com"))
+                .body("page.listOfInvolved[1].eventType", equalTo("TodoDescriptionUpdated"))
+                .body("page.listOfInvolved[1].aggregateVersion", equalTo(1))
+                .body("page.listOfInvolved[1].source", equalTo("COMMAND"))
+                .body("page.listOfInvolved[1].executionStatus", equalTo("SUCCESS"))
+                .body("page.listOfInvolved[1].from", equalTo("SimpleCommand"))
+                .body("page.listOfInvolved[1].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[1].nbOfExecutions.executedBy", equalTo("EU:alice@mail.com"))
+                .body("page.listOfInvolved[1].nbOfExecutions.commandNbOfTimes", equalTo(2))
+                .body("page.listOfInvolved[1].nbOfExecutions.commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[1].nbOfExecutions.commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[1].nbOfExecutions.queryNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[1].nbOfExecutions.queryUnauthorizedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[1].nbOfExecutions.traceabilityNbOfTimes", equalTo(0))
 
-                .body("listOfInvolved[2].traceId", equalTo(2))
-                .body("listOfInvolved[2].correlationId", equalTo(1))
-                .body("listOfInvolved[2].identifiable", equalTo("U000001-T000001"))
-                .body("listOfInvolved[2].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
-                .body("listOfInvolved[2].executedBy", equalTo("EU:bob@mail.com"))
-                .body("listOfInvolved[2].eventType", equalTo("TodoMarkedAsDone"))
-                .body("listOfInvolved[2].aggregateVersion", equalTo(2))
-                .body("listOfInvolved[2].source", equalTo("COMMAND"))
-                .body("listOfInvolved[2].executionStatus", equalTo("SUCCESS"))
-                .body("listOfInvolved[2].from", equalTo("SimpleCommand"))
-                .body("listOfInvolved[2].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[2].traceId", equalTo(2))
+                .body("page.listOfInvolved[2].correlationId", equalTo(1))
+                .body("page.listOfInvolved[2].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
+                .body("page.listOfInvolved[2].executedBy", equalTo("EU:bob@mail.com"))
+                .body("page.listOfInvolved[2].eventType", equalTo("TodoMarkedAsDone"))
+                .body("page.listOfInvolved[2].aggregateVersion", equalTo(2))
+                .body("page.listOfInvolved[2].source", equalTo("COMMAND"))
+                .body("page.listOfInvolved[2].executionStatus", equalTo("SUCCESS"))
+                .body("page.listOfInvolved[2].from", equalTo("SimpleCommand"))
+                .body("page.listOfInvolved[2].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[2].nbOfExecutions.executedBy", equalTo("EU:bob@mail.com"))
+                .body("page.listOfInvolved[2].nbOfExecutions.commandNbOfTimes", equalTo(1))
+                .body("page.listOfInvolved[2].nbOfExecutions.commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[2].nbOfExecutions.commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[2].nbOfExecutions.queryNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[2].nbOfExecutions.queryUnauthorizedNbOfTimes", equalTo(1))
+                .body("page.listOfInvolved[2].nbOfExecutions.traceabilityNbOfTimes", equalTo(0))
 
-                .body("listOfInvolved[3].traceId", equalTo(3))
-                .body("listOfInvolved[3].correlationId", equalTo(1))
-                .body("listOfInvolved[3].identifiable", equalTo("U000001-T000001"))
-                .body("listOfInvolved[3].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
-                .body("listOfInvolved[3].executedBy", equalTo("EU:bob@mail.com"))
-                .body("listOfInvolved[3].eventType", nullValue())
-                .body("listOfInvolved[3].aggregateVersion", nullValue())
-                .body("listOfInvolved[3].source", equalTo("QUERY"))
-                .body("listOfInvolved[3].executionStatus", equalTo("FAILED_UNAUTHORIZED"))
-                .body("listOfInvolved[3].from", equalTo("SampleInput"))
-                .body("listOfInvolved[3].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[3].traceId", equalTo(3))
+                .body("page.listOfInvolved[3].correlationId", equalTo(1))
+                .body("page.listOfInvolved[3].executedByHashed", equalTo("EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976"))
+                .body("page.listOfInvolved[3].executedBy", equalTo("EU:bob@mail.com"))
+                .body("page.listOfInvolved[3].eventType", nullValue())
+                .body("page.listOfInvolved[3].aggregateVersion", nullValue())
+                .body("page.listOfInvolved[3].source", equalTo("QUERY"))
+                .body("page.listOfInvolved[3].executionStatus", equalTo("FAILED_UNAUTHORIZED"))
+                .body("page.listOfInvolved[3].from", equalTo("SampleInput"))
+                .body("page.listOfInvolved[3].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.listOfInvolved[3].nbOfExecutions.executedBy", equalTo("EU:bob@mail.com"))
+                .body("page.listOfInvolved[3].nbOfExecutions.commandNbOfTimes", equalTo(1))
+                .body("page.listOfInvolved[3].nbOfExecutions.commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[3].nbOfExecutions.commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[3].nbOfExecutions.queryNbOfTimes", equalTo(0))
+                .body("page.listOfInvolved[3].nbOfExecutions.queryUnauthorizedNbOfTimes", equalTo(1))
+                .body("page.listOfInvolved[3].nbOfExecutions.traceabilityNbOfTimes", equalTo(0))
 
-                .body("listOfInvolved[4].traceId", equalTo(6))
-                .body("listOfInvolved[4].correlationId", equalTo(2))
-                .body("listOfInvolved[4].identifiable", equalTo("U000001-T000001"))
-                .body("listOfInvolved[4].executedByHashed", equalTo("EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4"))
-                .body("listOfInvolved[4].executedBy", equalTo("EU:alice@mail.com"))
-                .body("listOfInvolved[4].eventType", nullValue())
-                .body("listOfInvolved[4].aggregateVersion", nullValue())
-                .body("listOfInvolved[4].source", equalTo("TRACEABILITY"))
-                .body("listOfInvolved[4].executionStatus", equalTo("SUCCESS"))
-                .body("listOfInvolved[4].from", equalTo("TRACEABILITY"))
-                .body("listOfInvolved[4].executedAt", equalTo("2026-09-06T12:00:00Z"))
+                .body("page.totalPages", equalTo(1))
+                .body("page.hasNext", equalTo(false))
+                .body("page.hasPrevious", equalTo(false))
 
-                .body("totalPages", equalTo(1))
-                .body("hasNext", equalTo(false))
-                .body("hasPrevious", equalTo(false))
+                .body("nbOfExecutions[0].executedBy", equalTo("EU:alice@mail.com"))
+                .body("nbOfExecutions[0].commandNbOfTimes", equalTo(2))
+                .body("nbOfExecutions[0].commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[0].commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[0].queryNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[0].queryUnauthorizedNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[0].traceabilityNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[1].executedBy", equalTo("EU:bob@mail.com"))
+                .body("nbOfExecutions[1].commandNbOfTimes", equalTo(1))
+                .body("nbOfExecutions[1].commandUnauthorizedNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[1].commandBusinessFailedNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[1].queryNbOfTimes", equalTo(0))
+                .body("nbOfExecutions[1].queryUnauthorizedNbOfTimes", equalTo(1))
+                .body("nbOfExecutions[1].traceabilityNbOfTimes", equalTo(0))
         ;
 
         final List<String> data = new ArrayList<>();
@@ -329,7 +324,7 @@ class E2ETest {
                         "traceability_details",
                         resultSet.getString("trace_id"),
                         resultSet.getString("correlation_id"),
-                        resultSet.getString("executed_at"),
+                        resultSet.getTimestamp("executed_at").toInstant().toString(),
                         String.valueOf(resultSet.getInt("source_value")),
                         String.valueOf(resultSet.getInt("execution_status")),
                         resultSet.getString("from_value")));
@@ -375,22 +370,20 @@ class E2ETest {
             }
         }
         assertThat(data).containsExactly(
-                "traceability_details|1|1|2026-09-06 14:00:00+02|0|0|SimpleCommand",
-                "traceability_details|2|1|2026-09-06 14:00:00+02|0|0|SimpleCommand",
-                "traceability_details|3|1|2026-09-06 14:00:00+02|1|1|SampleInput",
-                "traceability_details|4|1|2026-09-06 14:00:00+02|0|0|SimpleCommand",
-                "traceability_details|5|1|2026-09-06 14:00:00+02|2|0|TRACEABILITY",
-                "traceability_details|6|2|2026-09-06 14:00:00+02|2|0|TRACEABILITY",
-                "traceability_details|7|3|2026-09-06 14:00:00+02|2|0|TRACEABILITY",
+                "traceability_details|1|1|2026-09-06T12:00:00Z|0|0|SimpleCommand",
+                "traceability_details|2|1|2026-09-06T12:00:00Z|0|0|SimpleCommand",
+                "traceability_details|3|1|2026-09-06T12:00:00Z|1|1|SampleInput",
+                "traceability_details|4|1|2026-09-06T12:00:00Z|0|0|SimpleCommand",
+                "traceability_details|5|1|2026-09-06T12:00:00Z|2|0|TRACEABILITY",
+                "traceability_details|6|2|2026-09-06T12:00:00Z|2|0|TRACEABILITY",
                 "executed_by_encoded|1|EU:4714636ab5e7b6ec200c9a0ec8a1b08f61df989c47f22f9e9322adf63922d9e4|EU:aliceEncoded",
                 "executed_by_encoded|4|EU:d05761c6486e77a8efdb4c5149f84ef0b20abd2454f66a91d7cbd52d71201976|EU:bobEncoded",
                 "traceability_identifiable|U000001-T000002|1|1|0|0|0|0|1",
                 "traceability_identifiable|U000001-T000001|4|1|0|0|0|1|0",
-                "traceability_identifiable|U000001-T000001|1|2|0|0|0|0|2",
+                "traceability_identifiable|U000001-T000001|1|2|0|0|0|0|1",
                 "traceability_details_traceability_identifiable|5|U000001-T000002|1",
                 "traceability_details_traceability_identifiable|3|U000001-T000001|4",
                 "traceability_details_traceability_identifiable|4|U000001-T000002|1",
-                "traceability_details_traceability_identifiable|7|U000001-T000001|1",
                 "traceability_details_traceability_identifiable|1|U000001-T000001|1",
                 "traceability_details_traceability_identifiable|6|U000001-T000001|1",
                 "traceability_details_traceability_identifiable|2|U000001-T000001|4",

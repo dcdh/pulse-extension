@@ -12,7 +12,8 @@ public record EncodedDetailedInvolved(TraceId traceId, CorrelationId correlation
                                       EncodedActor encodedActor,
                                       EventType eventType, AggregateVersion aggregateVersion,
                                       Source source, ExecutionStatus executionStatus, From from,
-                                      ExecutedAt executedAt) {
+                                      ExecutedAt executedAt,
+                                      EncodedNbOfExecutions encodedNbOfExecutions) {
 
     public EncodedDetailedInvolved {
         Objects.requireNonNull(traceId);

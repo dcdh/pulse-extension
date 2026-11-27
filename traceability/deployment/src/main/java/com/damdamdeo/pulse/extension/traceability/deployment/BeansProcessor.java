@@ -3,8 +3,7 @@ package com.damdamdeo.pulse.extension.traceability.deployment;
 import com.damdamdeo.pulse.extension.core.traceability.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.*;
 import com.damdamdeo.pulse.extension.traceability.runtime.api.FinderExceptionMapper;
-import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityFinderDetailedInvolvedEndpoint;
-import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityFinderInvolvedEndpoint;
+import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityInvolvedFinderEndpoint;
 import com.damdamdeo.pulse.extension.traceability.runtime.api.TraceabilityParamConverterProvider;
 import com.damdamdeo.pulse.extension.traceability.runtime.api.serialization.TraceabilityObjectMapperProducer;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -12,6 +11,9 @@ import io.quarkus.arc.processor.DotNames;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
+
+import java.util.List;
+import java.util.function.BooleanSupplier;
 
 public class BeansProcessor {
 
@@ -43,58 +45,28 @@ public class BeansProcessor {
         return builder.build();
     }
 
-    @BuildStep
-    AdditionalBeanBuildItem registerTraceRecorderRepositoryProvider(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        switch (traceabilityConfiguration.tracingMode()) {
-            case DISABLED -> {
-            }
-            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(ArcTraceRecorderRepositoryProvider.class);
-        }
-        return builder.build();
+    @BuildStep(onlyIf = IsTraceabilityEnabled.class)
+    AdditionalBeanBuildItem registerTraceRecorderRepository() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(JdbcPostgresTraceRecorderRepository.class)
+                .build();
     }
 
-    @BuildStep
-    AdditionalBeanBuildItem registerTraceRecorderRepository(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        switch (traceabilityConfiguration.tracingMode()) {
-            case DISABLED -> {
-            }
-            case INVOLVED -> builder.addBeanClass(JdbcPostgresInvolvedTraceRecorderRepository.class);
-            case INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClasses(JdbcPostgresInvolvedTraceRecorderRepository.class,
-                    JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.class);
-        }
-        return builder.build();
+    @BuildStep(onlyIf = IsTraceabilityEnabled.class)
+    AdditionalBeanBuildItem registerOwnedByProvider() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(JdbcPostgresOwnedByProvider.class)
+                .build();
     }
 
-    @BuildStep
-    AdditionalBeanBuildItem registerOwnedByProvider(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED)
-                || traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
-            builder.addBeanClass(JdbcPostgresOwnedByProvider.class);
-        }
-        return builder.build();
+    @BuildStep(onlyIf = IsTraceabilityEnabled.class)
+    AdditionalBeanBuildItem registerExecutedByEncodedProvider() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(ExecutedByEncodedProvider.class)
+                .build();
     }
 
-    @BuildStep
-    AdditionalBeanBuildItem registerExecutedByEncodedProvider(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED)
-                || traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
-            builder.addBeanClass(ExecutedByEncodedProvider.class);
-        }
-        return builder.build();
-    }
-
-    @BuildStep
-    AdditionalBeanBuildItem registerJdbcPostgresExecutedByEncodedRepository(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED)
-                || traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
-            builder.addBeanClass(JdbcPostgresExecutedByEncodedRepository.class);
-        }
-        return builder.build();
+    @BuildStep(onlyIf = IsTraceabilityEnabled.class)
+    AdditionalBeanBuildItem registerJdbcPostgresExecutedByEncodedRepository() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(JdbcPostgresExecutedByEncodedRepository.class)
+                .build();
     }
 
     @BuildStep
@@ -103,16 +75,6 @@ public class BeansProcessor {
         switch (traceabilityConfiguration.tracingMode()) {
             case DISABLED -> builder.addBeanClass(NoOpTraceAppender.class);
             case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(DefaultTraceAppender.class);
-        }
-        return builder.build();
-    }
-
-    @BuildStep
-    AdditionalBeanBuildItem registerInvolvedFinder(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        switch (traceabilityConfiguration.tracingMode()) {
-            case DISABLED -> builder.addBeanClass(NoOpInvolvedFinder.class);
-            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(DefaultInvolvedFinder.class);
         }
         return builder.build();
     }
@@ -131,10 +93,10 @@ public class BeansProcessor {
     AdditionalBeanBuildItem registerDetailedInvolvedFinder(final TraceabilityConfiguration traceabilityConfiguration) {
         final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
         switch (traceabilityConfiguration.tracingMode()) {
-            case INVOLVED, DISABLED -> builder.addBeanClass(NoOpDetailedInvolvedFinder.class)
+            case DISABLED -> builder.addBeanClass(NoOpInvolvedFinder.class)
                     .setUnremovable()
                     .setDefaultScope(DotNames.APPLICATION_SCOPED);
-            case INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(DefaultDetailedInvolvedFinder.class)
+            case INVOLVED, INVOLVED_WITH_FULL_DETAILS -> builder.addBeanClass(DefaultInvolvedFinder.class)
                     .setUnremovable()
                     .setDefaultScope(DotNames.APPLICATION_SCOPED);
         }
@@ -146,39 +108,19 @@ public class BeansProcessor {
         return new AdditionalIndexedClassesBuildItem(TraceabilityParamConverterProvider.class.getName());
     }
 
-    @BuildStep
-    AdditionalBeanBuildItem registerTraceabilityObjectMapperProducer(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED)
-                || traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
-            builder.addBeanClass(TraceabilityObjectMapperProducer.class);
-        }
-        return builder.build();
+    @BuildStep(onlyIf = IsTraceabilityEnabled.class)
+    AdditionalBeanBuildItem registerTraceabilityObjectMapperProducer() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(TraceabilityObjectMapperProducer.class)
+                .build();
     }
 
-    @BuildStep
-    void registerTraceabilityFinderInvolvedEndpoint(final TraceabilityConfiguration traceabilityConfiguration,
-                                                    final BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItemBuildProducer,
-                                                    final BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
-        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED)
-                || traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
-            additionalIndexedClassesBuildItemBuildProducer.produce(new AdditionalIndexedClassesBuildItem(
-                    TraceabilityFinderInvolvedEndpoint.class.getName()));
-            additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(
-                    TraceabilityFinderInvolvedEndpoint.class).build());
-        }
-    }
-
-    @BuildStep
-    void registerTraceabilityFinderDetailedInvolvedEndpoint(final TraceabilityConfiguration traceabilityConfiguration,
-                                                            final BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItemBuildProducer,
+    @BuildStep(onlyIf = IsTraceabilityEnabled.class)
+    void registerTraceabilityFinderDetailedInvolvedEndpoint(final BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItemBuildProducer,
                                                             final BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
-        if (traceabilityConfiguration.tracingMode().equals(TracingMode.INVOLVED_WITH_FULL_DETAILS)) {
-            additionalIndexedClassesBuildItemBuildProducer.produce(new AdditionalIndexedClassesBuildItem(
-                    TraceabilityFinderDetailedInvolvedEndpoint.class.getName()));
-            additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(
-                    TraceabilityFinderDetailedInvolvedEndpoint.class).build());
-        }
+        additionalIndexedClassesBuildItemBuildProducer.produce(new AdditionalIndexedClassesBuildItem(
+                TraceabilityInvolvedFinderEndpoint.class.getName()));
+        additionalBeanBuildItemBuildProducer.produce(AdditionalBeanBuildItem.builder().addBeanClasses(
+                TraceabilityInvolvedFinderEndpoint.class).build());
     }
 
     @BuildStep
@@ -186,29 +128,34 @@ public class BeansProcessor {
         return new AdditionalIndexedClassesBuildItem(FinderExceptionMapper.class.getName());
     }
 
-    @BuildStep
-    AdditionalBeanBuildItem registerEncodedInvolvedRepository(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (TracingMode.INVOLVED.equals(traceabilityConfiguration.tracingMode())
-                || TracingMode.INVOLVED_WITH_FULL_DETAILS.equals(traceabilityConfiguration.tracingMode())) {
-            builder.addBeanClass(JdbcPostgresEncodedInvolvedRepository.class);
-        }
-        return builder.build();
+    @BuildStep(onlyIf = IsTraceabilityEnabled.class)
+    AdditionalBeanBuildItem registerEncodedInvolvedRepository() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(JdbcPostgresInvolvedFinderRepository.class)
+                .build();
     }
 
     @BuildStep
-    AdditionalBeanBuildItem registerEncodedDetailedInvolvedRepository(final TraceabilityConfiguration traceabilityConfiguration) {
-        final AdditionalBeanBuildItem.Builder builder = AdditionalBeanBuildItem.builder();
-        if (TracingMode.INVOLVED_WITH_FULL_DETAILS.equals(traceabilityConfiguration.tracingMode())) {
-            builder.addBeanClass(JdbcPostgresEncodedDetailedInvolvedRepository.class);
-        }
-        return builder.build();
+    List<AdditionalBeanBuildItem> registerTraceabilityFeature() {
+        return List.of(
+                AdditionalBeanBuildItem.builder().addBeanClass(TraceabilityFeature.class)
+                        .setUnremovable()
+                        .setDefaultScope(DotNames.APPLICATION_SCOPED).build(),
+                AdditionalBeanBuildItem.builder().addBeanClass(SmallryeTraceabilityRoleProvider.class)
+                        .build());
     }
 
-    @BuildStep
-    AdditionalBeanBuildItem registerTraceabilityFeature() {
-        return AdditionalBeanBuildItem.builder().addBeanClass(TraceabilityFeature.class)
-                .setUnremovable()
-                .setDefaultScope(DotNames.APPLICATION_SCOPED).build();
+    static final class IsTraceabilityEnabled implements BooleanSupplier {
+
+        private final boolean enabled;
+
+        IsTraceabilityEnabled(final TraceabilityConfiguration config) {
+            this.enabled = TracingMode.INVOLVED.equals(config.tracingMode())
+                    || TracingMode.INVOLVED_WITH_FULL_DETAILS.equals(config.tracingMode());
+        }
+
+        @Override
+        public boolean getAsBoolean() {
+            return enabled;
+        }
     }
 }

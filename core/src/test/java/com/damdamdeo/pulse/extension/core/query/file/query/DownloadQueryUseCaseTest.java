@@ -97,7 +97,7 @@ class DownloadQueryUseCaseTest {
     }
 
     @Test
-    void shouldDownloadWithoutFiligraneWhenUserIsUploader() throws Exception {
+    void shouldDownloadWithFiligraneWhenUserIsUploader() throws Exception {
         // Given
         final DownloadInput input = downloadInput();
         final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
@@ -113,12 +113,12 @@ class DownloadQueryUseCaseTest {
         when(fileRepository.getFileInfoByFileIdentifier(input.fileIdentifier())).thenReturn(encryptedFileInfo);
         when(usernameDecoder.decode(new UsernameEncoded("bobEncoded"), encryptedFileInfo.ownedBy())).thenReturn(new Username("bob@mail.com"));
         when(fileRepository.getFileContentByFileIdentifier(input.fileIdentifier())).thenReturn(fileContent);
-        when(decryptionService.decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any()))
-                .thenReturn(new Decrypted<>(decryptedContent));
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any())).thenReturn(decrypted);
         final FileContent tokenizedFileContent = tokenizedFileContent();
-        when(tokenApplier.apply(decrypted.payload(), encryptedFileInfo.ownedBy())).thenReturn(tokenizedFileContent);
+        final FileContent filigranedContent = filigranedFileContent();
+        when(filigraneApplier.apply(decryptedContent)).thenReturn(filigranedContent);
+        when(tokenApplier.apply(filigranedContent, encryptedFileInfo.ownedBy())).thenReturn(tokenizedFileContent);
 
         // When
         final FileContent result = query.execute(input);
@@ -133,13 +133,13 @@ class DownloadQueryUseCaseTest {
                 () -> verify(fileRepository).getFileContentByFileIdentifier(input.fileIdentifier()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any()),
                 () -> verify(executedByResolver, never()).resolve(any(OwnedBy.class)),
-                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
-                () -> verify(filigraneApplier, never()).apply(any())
+                () -> verify(filigraneApplier).apply(decryptedContent),
+                () -> verify(tokenApplier).apply(filigranedContent, encryptedFileInfo.ownedBy())
         );
     }
 
     @Test
-    void shouldDownloadWithoutFiligraneWhenExecutedByIsEligible() throws Exception {
+    void shouldDownloadWithFiligraneWhenExecutedByIsEligible() throws Exception {
         // Given
         final DownloadInput input = downloadInput();
         final EncryptedFileInfo encryptedFileInfo = encryptedFileInfo();
@@ -157,7 +157,9 @@ class DownloadQueryUseCaseTest {
         final Decrypted<FileContent> decrypted = new Decrypted<>(decryptedContent);
         when(decryptionService.<FileContent>decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any())).thenReturn(decrypted);
         final FileContent tokenizedFileContent = tokenizedFileContent();
-        when(tokenApplier.apply(decrypted.payload(), encryptedFileInfo.ownedBy())).thenReturn(tokenizedFileContent);
+        final FileContent filigranedContent = filigranedFileContent();
+        when(filigraneApplier.apply(decryptedContent)).thenReturn(filigranedContent);
+        when(tokenApplier.apply(filigranedContent, encryptedFileInfo.ownedBy())).thenReturn(tokenizedFileContent);
 
         // When
         final FileContent result = query.execute(input);
@@ -171,8 +173,8 @@ class DownloadQueryUseCaseTest {
                 () -> verify(usernameDecoder).decode(any(), any()),
                 () -> verify(executedByResolver).resolve(encryptedFileInfo.ownedBy()),
                 () -> verify(decryptionService).decrypt(any(Encrypted.class), eq(encryptedFileInfo.ownedBy()), any()),
-                () -> verify(tokenApplier).apply(any(), any(OwnedBy.class)),
-                () -> verify(filigraneApplier, never()).apply(any())
+                () -> verify(filigraneApplier).apply(decryptedContent),
+                () -> verify(tokenApplier).apply(filigranedContent, encryptedFileInfo.ownedBy())
         );
     }
 
@@ -194,8 +196,8 @@ class DownloadQueryUseCaseTest {
         // When / Then
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
-                        .isInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.FORBIDDEN)
+                        .isInstanceOfSatisfying(QueryException.class, exception ->
+                                assertThat(exception.queryExceptionCode()).isEqualTo(QueryExceptionCode.FORBIDDEN))
                         .hasCauseInstanceOf(UnauthorizedException.class),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(backendUserVisibilityRolesProvider).provide(),
@@ -217,8 +219,8 @@ class DownloadQueryUseCaseTest {
         // When / Then
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
-                        .isInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .isInstanceOfSatisfying(QueryException.class, failure ->
+                                assertThat(failure.queryExceptionCode()).isEqualTo(QueryExceptionCode.INFRASTRUCTURE_FAILURE))
                         .cause()
                         .isSameAs(exception),
                 () -> verify(fileRepository).getFileInfoByFileIdentifier(input.fileIdentifier()),
@@ -241,8 +243,8 @@ class DownloadQueryUseCaseTest {
         // When / Then
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
-                        .isInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .isInstanceOfSatisfying(QueryException.class, failure ->
+                                assertThat(failure.queryExceptionCode()).isEqualTo(QueryExceptionCode.INFRASTRUCTURE_FAILURE))
                         .cause()
                         .isSameAs(exception),
                 () -> verify(executionContextProvider).provide(),
@@ -272,8 +274,8 @@ class DownloadQueryUseCaseTest {
         // When / Then
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
-                        .isInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .isInstanceOfSatisfying(QueryException.class, failure ->
+                                assertThat(failure.queryExceptionCode()).isEqualTo(QueryExceptionCode.INFRASTRUCTURE_FAILURE))
                         .cause()
                         .isSameAs(exception),
                 () -> verify(executionContextProvider).provide(),
@@ -302,8 +304,8 @@ class DownloadQueryUseCaseTest {
         // When / Then
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
-                        .isInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .isInstanceOfSatisfying(QueryException.class, failure ->
+                                assertThat(failure.queryExceptionCode()).isEqualTo(QueryExceptionCode.INFRASTRUCTURE_FAILURE))
                         .cause()
                         .isSameAs(exception),
                 () -> verify(executionContextProvider).provide(),
@@ -339,8 +341,8 @@ class DownloadQueryUseCaseTest {
         // When / Then
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
-                        .isInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .isInstanceOfSatisfying(QueryException.class, failure ->
+                                assertThat(failure.queryExceptionCode()).isEqualTo(QueryExceptionCode.INFRASTRUCTURE_FAILURE))
                         .cause()
                         .isSameAs(exception),
                 () -> verify(executionContextProvider).provide(),
@@ -375,8 +377,8 @@ class DownloadQueryUseCaseTest {
         // When / Then
         assertAll(
                 () -> assertThatThrownBy(() -> query.execute(input))
-                        .isInstanceOf(QueryException.class)
-                        .hasFieldOrPropertyWithValue("queryExceptionCode", QueryExceptionCode.INFRASTRUCTURE_FAILURE)
+                        .isInstanceOfSatisfying(QueryException.class, failure ->
+                                assertThat(failure.queryExceptionCode()).isEqualTo(QueryExceptionCode.INFRASTRUCTURE_FAILURE))
                         .cause()
                         .isSameAs(exception),
                 () -> verify(executionContextProvider).provide(),

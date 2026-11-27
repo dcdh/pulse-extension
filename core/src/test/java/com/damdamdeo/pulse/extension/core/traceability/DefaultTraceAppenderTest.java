@@ -53,9 +53,6 @@ class DefaultTraceAppenderTest {
     private ExecutedByEncodedProvider executedByEncodedProvider;
 
     @Mock
-    private TraceRecorderRepositoryProvider traceRecorderRepositoryProvider;
-
-    @Mock
     private TraceRecorderRepository traceRecorderRepository;
 
     private DefaultTraceAppender traceAppender;
@@ -63,7 +60,7 @@ class DefaultTraceAppenderTest {
     @BeforeEach
     void setUp() {
         traceAppender = new DefaultTraceAppender(executionContextProvider, executedAtProvider, traceIdGenerator,
-                correlationIdProvider, usernameHasher, executedByEncodedProvider, traceRecorderRepositoryProvider);
+                correlationIdProvider, usernameHasher, executedByEncodedProvider, traceRecorderRepository);
     }
 
     @Test
@@ -88,15 +85,12 @@ class DefaultTraceAppenderTest {
         when(executedAtProvider.now()).thenReturn(executedAt);
         when(executedByEncodedProvider.provide(firstAggregateId, executedBy)).thenReturn(firstExecutedByEncoded);
         when(executedByEncodedProvider.provide(secondAggregateId, executedBy)).thenReturn(secondExecutedByEncoded);
-        when(traceRecorderRepositoryProvider.provide(
-                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
 
         // When
         traceAppender.append(input, projections, ExecutionStatus.SUCCESS, TraceabilityDetails.INVOLVED_ONLY);
 
         // Then
         final ArgumentCaptor<TraceRecorder> traceRecorderCaptor = ArgumentCaptor.forClass(TraceRecorder.class);
-        verify(traceRecorderRepositoryProvider).provide(any());
         verify(traceRecorderRepository).store(traceRecorderCaptor.capture());
         final TraceRecorder traceRecorder = traceRecorderCaptor.getValue();
         assertAll(
@@ -140,15 +134,12 @@ class DefaultTraceAppenderTest {
         when(executedAtProvider.now()).thenReturn(executedAt);
         when(executedByEncodedProvider.provide(firstIdentifiable, executedBy)).thenReturn(firstExecutedByEncoded);
         when(executedByEncodedProvider.provide(secondIdentifiable, executedBy)).thenReturn(secondExecutedByEncoded);
-        when(traceRecorderRepositoryProvider.provide(
-                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
 
         // When
         traceAppender.append(aggregateIds);
 
         // Then
         final ArgumentCaptor<TraceRecorder> traceRecorderCaptor = ArgumentCaptor.forClass(TraceRecorder.class);
-        verify(traceRecorderRepositoryProvider).provide(any());
         verify(traceRecorderRepository).store(traceRecorderCaptor.capture());
         final TraceRecorder traceRecorder = traceRecorderCaptor.getValue();
         assertAll(
@@ -178,7 +169,7 @@ class DefaultTraceAppenderTest {
 
         // Then
         verifyNoInteractions(executionContextProvider, executedAtProvider, traceIdGenerator, usernameHasher,
-                correlationIdProvider, executedByEncodedProvider, traceRecorderRepositoryProvider);
+                correlationIdProvider, executedByEncodedProvider, traceRecorderRepository);
     }
 
     @Test
@@ -197,8 +188,6 @@ class DefaultTraceAppenderTest {
 
         // Then
         assertSame(cause, exception.getCause());
-        verify(traceRecorderRepositoryProvider).provide(
-                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY);
         verifyNoInteractions(correlationIdProvider, executedAtProvider);
     }
 
@@ -213,8 +202,6 @@ class DefaultTraceAppenderTest {
         when(correlationIdProvider.provide()).thenReturn(new CorrelationId(125L));
         when(executedAtProvider.now()).thenReturn(new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")));
         when(executedByEncodedProvider.provide(any(), any())).thenReturn(new ExecutedByEncoded("SA:encoded"));
-        when(traceRecorderRepositoryProvider.provide(
-                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
         doThrow(cause).when(traceRecorderRepository).store(any(TraceRecorder.class));
 
         // When
@@ -250,15 +237,12 @@ class DefaultTraceAppenderTest {
         when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
         when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
-        when(traceRecorderRepositoryProvider.provide(
-                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
 
         // When
         traceAppender.append(command, versionizedEvents, ExecutionStatus.FAILED_BUSINESS);
 
         // Then
         final ArgumentCaptor<TraceRecorder> traceRecorderCaptor = ArgumentCaptor.forClass(TraceRecorder.class);
-        verify(traceRecorderRepositoryProvider).provide(any());
         verify(traceRecorderRepository).store(traceRecorderCaptor.capture());
         final TraceRecorder traceRecorder = traceRecorderCaptor.getValue();
         assertAll(
@@ -304,15 +288,12 @@ class DefaultTraceAppenderTest {
         when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
         when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
-        when(traceRecorderRepositoryProvider.provide(
-                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
 
         // When
         traceAppender.append(command, List.of(), ExecutionStatus.SUCCESS);
 
         // Then
         final ArgumentCaptor<TraceRecorder> traceRecorderCaptor = ArgumentCaptor.forClass(TraceRecorder.class);
-        verify(traceRecorderRepositoryProvider).provide(any());
         verify(traceRecorderRepository).store(traceRecorderCaptor.capture());
         final TraceRecorder traceRecorder = traceRecorderCaptor.getValue();
         assertAll(
@@ -339,7 +320,7 @@ class DefaultTraceAppenderTest {
 
         // Then
         verifyNoInteractions(executionContextProvider, executedAtProvider, traceIdGenerator, usernameHasher,
-                correlationIdProvider, executedByEncodedProvider, traceRecorderRepositoryProvider);
+                correlationIdProvider, executedByEncodedProvider, traceRecorderRepository);
     }
 
     @Test
@@ -369,8 +350,6 @@ class DefaultTraceAppenderTest {
                 () -> verify(executionContext).executedBy(),
                 () -> verify(traceIdGenerator).generate(),
                 () -> verify(executedByEncodedProvider).provide(any(), any()),
-                () -> verify(traceRecorderRepositoryProvider).provide(
-                        TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY),
                 () -> verifyNoInteractions(correlationIdProvider, executedAtProvider, usernameHasher)
         );
     }
@@ -405,8 +384,6 @@ class DefaultTraceAppenderTest {
                 () -> verify(traceIdGenerator).generate(),
                 () -> verify(correlationIdProvider).provide(),
                 () -> verify(executedByEncodedProvider).provide(any(), any()),
-                () -> verify(traceRecorderRepositoryProvider).provide(
-                        TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY),
                 () -> verifyNoInteractions(executedAtProvider, usernameHasher)
         );
     }
@@ -428,8 +405,6 @@ class DefaultTraceAppenderTest {
         when(correlationIdProvider.provide()).thenReturn(correlationId);
         when(executedAtProvider.now()).thenReturn(executedAt);
         when(executedByEncodedProvider.provide(todoId, executedBy)).thenReturn(executedByEncoded);
-        when(traceRecorderRepositoryProvider.provide(
-                TraceabilityDetails.DETAILS_WHEN_AVAILABLE_OTHERWISE_INVOLVED_ONLY)).thenReturn(traceRecorderRepository);
         doThrow(cause).when(traceRecorderRepository).store(any(TraceRecorder.class));
 
         // When
@@ -442,7 +417,6 @@ class DefaultTraceAppenderTest {
         // Then
         assertAll(
                 () -> assertSame(cause, exception.getCause()),
-                () -> verify(traceRecorderRepositoryProvider).provide(any()),
                 () -> verify(traceRecorderRepository).store(any(TraceRecorder.class)),
                 () -> verify(executionContextProvider).provide(),
                 () -> verify(executionContext).executedBy(),

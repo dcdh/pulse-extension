@@ -8,17 +8,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static com.damdamdeo.pulse.extension.core.traceability.Finder.ROLE_TRACEABILITY_READ;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TraceabilityFeatureTest {
 
+    private static final String CONFIGURED_ROLE = "custom-traceability-reader";
+
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     ExecutionContextProvider executionContextProvider;
+
+    @Mock
+    TraceabilityRoleProvider traceabilityRoleProvider;
 
     @InjectMocks
     TraceabilityFeature traceabilityFeature;
@@ -35,9 +38,10 @@ class TraceabilityFeatureTest {
     }
 
     @Test
-    void shouldBeEnabledWhenExecutionContextHasTraceabilityReadRole() {
+    void shouldBeEnabledWhenExecutionContextHasConfiguredRole() {
         // Given
-        when(executionContextProvider.provide().hasRole(ROLE_TRACEABILITY_READ))
+        when(traceabilityRoleProvider.provide()).thenReturn(CONFIGURED_ROLE);
+        when(executionContextProvider.provide().hasRole(CONFIGURED_ROLE))
                 .thenReturn(true);
 
         // When
@@ -46,14 +50,15 @@ class TraceabilityFeatureTest {
         // Then
         assertAll(
                 () -> assertTrue(result),
-                () -> verify(executionContextProvider.provide()).hasRole(anyString())
+                () -> verify(executionContextProvider.provide()).hasRole(CONFIGURED_ROLE)
         );
     }
 
     @Test
-    void shouldBeDisabledWhenExecutionContextDoesNotHaveTraceabilityReadRole() {
+    void shouldBeDisabledWhenExecutionContextDoesNotHaveConfiguredRole() {
         // Given
-        when(executionContextProvider.provide().hasRole(ROLE_TRACEABILITY_READ))
+        when(traceabilityRoleProvider.provide()).thenReturn(CONFIGURED_ROLE);
+        when(executionContextProvider.provide().hasRole(CONFIGURED_ROLE))
                 .thenReturn(false);
 
         // When
@@ -62,7 +67,7 @@ class TraceabilityFeatureTest {
         // Then
         assertAll(
                 () -> assertFalse(result),
-                () -> verify(executionContextProvider.provide()).hasRole(anyString())
+                () -> verify(executionContextProvider.provide()).hasRole(CONFIGURED_ROLE)
         );
     }
 }

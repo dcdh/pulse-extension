@@ -12,34 +12,31 @@ import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
 import com.damdamdeo.pulse.extension.core.pagination.Page;
 import com.damdamdeo.pulse.extension.core.pagination.Pagination;
 import com.damdamdeo.pulse.extension.core.traceability.*;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import io.quarkus.arc.Unremovable;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @ApplicationScoped
 @Unremovable
-public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDetailedInvolvedRepository {
+public class JdbcPostgresInvolvedFinderRepository implements InvolvedFinderRepository {
 
     private final DataSource dataSource;
     private final SchemaName schemaName;
 
-    public JdbcPostgresEncodedDetailedInvolvedRepository(final DataSource dataSource,
-                                                         final ApplicationNamingProvider applicationNamingProvider) {
+    public JdbcPostgresInvolvedFinderRepository(final DataSource dataSource,
+                                                final ApplicationNamingProvider applicationNamingProvider) {
         this.dataSource = Objects.requireNonNull(dataSource);
         this.schemaName = SchemaName.from(applicationNamingProvider.provide());
     }
 
     @Override
-    public Page<EncodedDetailedInvolved> findBy(final Identifiable identifiable, final IncludeUncompounded includeUncompounded,
-                                                final Pagination pagination) throws TraceRepositoryException {
+    public EncodedAggregateIdInvolved findBy(final Identifiable identifiable, final Pagination pagination)
+            throws TraceRepositoryException {
         Objects.requireNonNull(identifiable);
-        Objects.requireNonNull(includeUncompounded);
         Objects.requireNonNull(pagination);
         try (final Connection connection = dataSource.getConnection();
              // language=sql
@@ -67,6 +64,12 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                        td.executed_at AS executed_at,
                        ti.identifiable as identifiable,
                        ti.link_to_aggregate_root_id as link_to_aggregate_root_id,
+                       ti.command_nb_of_times as command_nb_of_times,
+                       ti.command_unauthorized_nb_of_times as command_unauthorized_nb_of_times,
+                       ti.command_business_failed_nb_of_times as command_business_failed_nb_of_times,
+                       ti.query_nb_of_times as query_nb_of_times,
+                       ti.query_unauthorized_nb_of_times as query_unauthorized_nb_of_times,
+                       ti.traceability_nb_of_times as traceability_nb_of_times,
                        ebe.executed_by_hashed AS executed_by_hashed,
                        ebe.executed_by_encoded AS executed_by_encoded,
                        tae.event_type AS event_type,
@@ -86,44 +89,48 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                      LIMIT ? OFFSET ?
                      """.formatted(schemaName.name()))) {
             if (pagination.loadAll()) {
-                if (!includeUncompounded.included()) {
-                    selectPreparedStatement.setString(1, identifiable.id());
-                } else {
-                    selectPreparedStatement.setString(1, identifiable.id() + "%");
-                }
+                selectPreparedStatement.setString(1, identifiable.id());
                 selectPreparedStatement.setNull(2, Types.INTEGER);
                 selectPreparedStatement.setLong(3, 0);
                 final List<EncodedDetailedInvolved> content = new ArrayList<>();
+                final Set<EncodedNbOfExecutions> nbOfExecutions = new HashSet<>();
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
+                        final EncodedActor encodedActor = new EncodedActor(
+                                new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                        );
+                        final EncodedNbOfExecutions encodedNbOfExecutions = new EncodedNbOfExecutions(
+                                encodedActor,
+                                new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))
+                        );
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
                                 new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
-                                new EncodedActor(
-                                        new ExecutedByHashed(select.getString("executed_by_hashed")),
-                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))
-                                ),
+                                encodedActor,
                                 Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
                                 Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
                                         .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
+                                encodedNbOfExecutions
                         ));
+                        nbOfExecutions.add(encodedNbOfExecutions);
                     }
                 }
-                return new Page<>(content, pagination, content.size());
+                return new EncodedAggregateIdInvolved(identifiable, new Page<>(content, pagination, content.size()), nbOfExecutions);
             } else {
-                if (!includeUncompounded.included()) {
-                    countPreparedStatement.setString(1, identifiable.id());
-                    selectPreparedStatement.setString(1, identifiable.id());
-                } else {
-                    countPreparedStatement.setString(1, identifiable.id() + "%");
-                    selectPreparedStatement.setString(1, identifiable.id() + "%");
-                }
+                countPreparedStatement.setString(1, identifiable.id());
+                selectPreparedStatement.setString(1, identifiable.id());
                 selectPreparedStatement.setLong(2, pagination.size());
                 selectPreparedStatement.setLong(3, pagination.offset());
                 try (final ResultSet count = countPreparedStatement.executeQuery();
@@ -131,26 +138,39 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                     count.next();
                     final long totalElements = count.getLong("count");
                     final List<EncodedDetailedInvolved> content = new ArrayList<>(pagination.size());
+                    final Set<EncodedNbOfExecutions> nbOfExecutions = new HashSet<>();
                     while (select.next()) {
+                        final EncodedActor encodedActor = new EncodedActor(
+                                new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                        );
+                        final EncodedNbOfExecutions encodedNbOfExecutions = new EncodedNbOfExecutions(
+                                encodedActor,
+                                new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))
+                        );
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
                                 new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
-                                new EncodedActor(
-                                        new ExecutedByHashed(select.getString("executed_by_hashed")),
-                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))
-                                ),
+                                encodedActor,
                                 Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
                                 Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
                                         .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
+                                encodedNbOfExecutions
                         ));
+                        nbOfExecutions.add(encodedNbOfExecutions);
                     }
-                    return new Page<>(content, pagination, totalElements);
+                    return new EncodedAggregateIdInvolved(identifiable, new Page<>(content, pagination, totalElements), nbOfExecutions);
                 }
             }
         } catch (final SQLException exception) {
@@ -159,7 +179,7 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
     }
 
     @Override
-    public Page<EncodedDetailedInvolved> findBy(final ExecutedByHashed executedByHashed, final Pagination pagination) throws TraceRepositoryException {
+    public EncodedExecutedByInvolved findBy(final ExecutedByHashed executedByHashed, final Pagination pagination) throws TraceRepositoryException {
         Objects.requireNonNull(executedByHashed);
         Objects.requireNonNull(pagination);
         try (final Connection connection = dataSource.getConnection();
@@ -190,6 +210,12 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                          td.executed_at AS executed_at,
                          ti.identifiable AS identifiable,
                          ti.link_to_aggregate_root_id as link_to_aggregate_root_id,
+                         ti.command_nb_of_times as command_nb_of_times,
+                         ti.command_unauthorized_nb_of_times as command_unauthorized_nb_of_times,
+                         ti.command_business_failed_nb_of_times as command_business_failed_nb_of_times,
+                         ti.query_nb_of_times as query_nb_of_times,
+                         ti.query_unauthorized_nb_of_times as query_unauthorized_nb_of_times,
+                         ti.traceability_nb_of_times as traceability_nb_of_times,
                          ebe.executed_by_hashed AS executed_by_hashed,
                          ebe.executed_by_encoded AS executed_by_encoded,
                          tae.event_type AS event_type,
@@ -215,26 +241,36 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                 final List<EncodedDetailedInvolved> content = new ArrayList<>();
                 try (final ResultSet select = selectPreparedStatement.executeQuery()) {
                     while (select.next()) {
+                        final EncodedActor encodedActor = new EncodedActor(
+                                new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                        );
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
                                 new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
-                                new EncodedActor(
-                                        new ExecutedByHashed(select.getString("executed_by_hashed")),
-                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))
-                                ),
+                                encodedActor,
                                 Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
                                 Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
                                         .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
+                                new EncodedNbOfExecutions(
+                                        encodedActor,
+                                        new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                        new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                        new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                        new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                        new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                        new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))
+                                )
                         ));
                     }
                 }
-                return new Page<>(content, pagination, content.size());
+                return new EncodedExecutedByInvolved(new Page<>(content, pagination, content.size()));
             } else {
                 countPreparedStatement.setString(1, executedByHashed.hashed());
                 selectPreparedStatement.setString(1, executedByHashed.hashed());
@@ -246,25 +282,35 @@ public class JdbcPostgresEncodedDetailedInvolvedRepository implements EncodedDet
                     final long totalElements = count.getLong("count");
                     final List<EncodedDetailedInvolved> content = new ArrayList<>(pagination.size());
                     while (select.next()) {
+                        final EncodedActor encodedActor = new EncodedActor(
+                                new ExecutedByHashed(select.getString("executed_by_hashed")),
+                                new ExecutedByEncoded(select.getString("executed_by_encoded"))
+                        );
                         content.add(new EncodedDetailedInvolved(
                                 new TraceId(select.getLong("trace_id")),
                                 new CorrelationId(select.getLong("correlation_id")),
                                 new AnyIdentifiable(select.getString("identifiable")),
                                 new AnyAggregateId(select.getString("link_to_aggregate_root_id")),
-                                new EncodedActor(
-                                        new ExecutedByHashed(select.getString("executed_by_hashed")),
-                                        new ExecutedByEncoded(select.getString("executed_by_encoded"))
-                                ),
+                                encodedActor,
                                 Optional.ofNullable(select.getString("event_type")).map(EventType::new).orElse(null),
                                 Optional.ofNullable(select.getObject("aggregate_version") != null ? select.getInt("aggregate_version") : null)
                                         .map(AggregateVersion::new).orElse(null),
                                 Source.values()[select.getInt("source_value")],
                                 ExecutionStatus.values()[select.getInt("execution_status")],
                                 new From(select.getString("from_value")),
-                                new ExecutedAt(select.getTimestamp("executed_at").toInstant())
+                                new ExecutedAt(select.getTimestamp("executed_at").toInstant()),
+                                new EncodedNbOfExecutions(
+                                        encodedActor,
+                                        new CommandNbOfTimes(select.getInt("command_nb_of_times")),
+                                        new CommandUnauthorizedNbOfTimes(select.getInt("command_unauthorized_nb_of_times")),
+                                        new CommandBusinessFailedNbOfTimes(select.getInt("command_business_failed_nb_of_times")),
+                                        new QueryNbOfTimes(select.getInt("query_nb_of_times")),
+                                        new QueryUnauthorizedNbOfTimes(select.getInt("query_unauthorized_nb_of_times")),
+                                        new TraceabilityNbOfTimes(select.getInt("traceability_nb_of_times"))
+                                )
                         ));
                     }
-                    return new Page<>(content, pagination, totalElements);
+                    return new EncodedExecutedByInvolved(new Page<>(content, pagination, totalElements));
                 }
             }
         } catch (final SQLException exception) {

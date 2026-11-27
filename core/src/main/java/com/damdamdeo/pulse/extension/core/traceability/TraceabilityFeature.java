@@ -5,16 +5,17 @@ import com.damdamdeo.pulse.extension.core.featureflag.Feature;
 
 import java.util.Objects;
 
-import static com.damdamdeo.pulse.extension.core.traceability.Finder.ROLE_TRACEABILITY_READ;
-
 public final class TraceabilityFeature implements Feature {
 
     private final ExecutionContextProvider executionContextProvider;
+    private final TraceabilityRoleProvider traceabilityRoleProvider;
 
     public static final String TRACEABILITY = "TRACEABILITY";
 
-    public TraceabilityFeature(final ExecutionContextProvider executionContextProvider) {
+    public TraceabilityFeature(final ExecutionContextProvider executionContextProvider,
+                               final TraceabilityRoleProvider traceabilityRoleProvider) {
         this.executionContextProvider = Objects.requireNonNull(executionContextProvider);
+        this.traceabilityRoleProvider = Objects.requireNonNull(traceabilityRoleProvider);
     }
 
     @Override
@@ -24,6 +25,6 @@ public final class TraceabilityFeature implements Feature {
 
     @Override
     public boolean isEnabled() {
-        return executionContextProvider.provide().hasRole(ROLE_TRACEABILITY_READ);
+        return executionContextProvider.provide().hasRole(traceabilityRoleProvider.provide());
     }
 }

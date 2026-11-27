@@ -11,7 +11,7 @@ import com.damdamdeo.pulse.extension.core.traceability.CorrelationId;
 import com.damdamdeo.pulse.extension.core.traceability.ExecutedAt;
 import com.damdamdeo.pulse.extension.core.traceability.From;
 import com.damdamdeo.pulse.extension.core.traceability.TraceId;
-import com.damdamdeo.pulse.extension.core.traceability.nboftimes.NbOfTimes;
+import com.damdamdeo.pulse.extension.core.traceability.nboftimes.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,6 +66,12 @@ public class TraceabilityObjectMapperProducer {
         traceabilityMapperModule.addSerializer(NbOfTimes.class, new NbOfTimesSerializer());
         traceabilityMapperModule.addSerializer(AggregateVersion.class, new AggregateVersionSerializer());
         traceabilityMapperModule.addSerializer(EventType.class, new EventTypeSerializer());
+        traceabilityMapperModule.addSerializer(CommandBusinessFailedNbOfTimes.class, new CommandBusinessFailedNbOfTimesSerializer());
+        traceabilityMapperModule.addSerializer(CommandNbOfTimes.class, new CommandNbOfTimesSerializer());
+        traceabilityMapperModule.addSerializer(CommandUnauthorizedNbOfTimes.class, new CommandUnauthorizedNbOfTimesSerializer());
+        traceabilityMapperModule.addSerializer(QueryNbOfTimes.class, new QueryNbOfTimesSerializer());
+        traceabilityMapperModule.addSerializer(QueryUnauthorizedNbOfTimes.class, new QueryUnauthorizedNbOfTimesSerializer());
+        traceabilityMapperModule.addSerializer(TraceabilityNbOfTimes.class, new TraceabilityNbOfTimesSerializer());
         objectMapper.registerModule(traceabilityMapperModule);
         return objectMapper;
     }

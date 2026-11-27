@@ -1,14 +1,5 @@
 package com.damdamdeo.pulse.extension.traceability.deployment;
 
-import com.damdamdeo.pulse.extension.core.AggregateVersion;
-import com.damdamdeo.pulse.extension.core.TodoId;
-import com.damdamdeo.pulse.extension.core.command.MarkTodoAsDone;
-import com.damdamdeo.pulse.extension.core.event.EventType;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByEncoded;
-import com.damdamdeo.pulse.extension.core.executedby.ExecutedByHashed;
-import com.damdamdeo.pulse.extension.core.traceability.*;
-import com.damdamdeo.pulse.extension.traceability.runtime.JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
-import com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorderQualifier;
 import io.quarkus.test.QuarkusUnitTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
@@ -19,14 +10,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.damdamdeo.pulse.extension.traceability.runtime.TraceRecorder.INVOLVED_WITH_FULL_DETAILS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
+class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest extends AbstractTraceTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
@@ -37,36 +26,9 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
     @Inject
     DataSource dataSource;
 
-    @Inject
-    @TraceRecorderQualifier(value = INVOLVED_WITH_FULL_DETAILS)
-    JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository;
-
     @Test
-    void shouldStoreTraceRecorder() throws TraceRepositoryException, SQLException {
+    void shouldStoreTraceRecorder() throws SQLException {
         // Given
-        final TraceRecorder traceRecorder = new TraceRecorder(
-                new TraceId(0L),
-                new CorrelationId(0L),
-                new ExecutedAt(Instant.parse("2026-09-06T12:00:00Z")),
-                Source.COMMAND,
-                ExecutionStatus.SUCCESS,
-                new From("from"),
-                List.of(
-                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
-                                new ExecutedByHashed("EU:alice-hashed"),
-                                new ExecutedByEncoded("EU:aliceEncoded"),
-                                new EventType("TodoCreated"), new AggregateVersion(0)),
-                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
-                                new ExecutedByHashed("EU:alice-hashed"),
-                                new ExecutedByEncoded("EU:aliceEncoded"),
-                                new EventType("TodoUpdated"), new AggregateVersion(1)),
-                        EncodedTraceIdentifiable.from(new MarkTodoAsDone(TodoId.USER_1_TODO_1),
-                                new ExecutedByHashed("EU:bob-hashed"),
-                                new ExecutedByEncoded("EU:bobEncoded"),
-                                new EventType("TodoUpdated"), new AggregateVersion(2))));
-
-        // When
-        jdbcPostgresInvolvedWithFullDetailsTraceRecorderRepository.store(traceRecorder);
 
         // Then
         final List<String> data = new ArrayList<>();
@@ -96,7 +58,7 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
              )) {
             ResultSet resultSet = selectTraceabilityDetailsPreparedStatement.executeQuery();
             while (resultSet.next()) {
-                data.add(String.join("|", resultSet.getString("trace_id"), resultSet.getString("executed_at"),
+                data.add(String.join("|", resultSet.getString("trace_id"), resultSet.getTimestamp("executed_at").toInstant().toString(),
                         String.valueOf(resultSet.getInt("source_value")), String.valueOf(resultSet.getInt("execution_status")),
                         resultSet.getString("from_value")));
             }
@@ -123,12 +85,29 @@ class JdbcPostgresInvolvedWithFullDetailsTraceRecorderRepositoryTest {
                         resultSet.getString("traceability_identifiable_executed_by_encoded_id")));
             }
         }
-        assertThat(data).containsExactly("0|2026-09-06 14:00:00+02|0|0|from",
+        assertThat(data).containsExactlyInAnyOrder("1|2026-09-06T12:00:00Z|0|0|fromCommand",
+                "2|2026-09-06T13:00:00Z|0|1|fromCommand",
+                "3|2026-09-06T14:00:00Z|0|2|fromCommand",
+                "4|2026-09-06T15:00:00Z|1|0|fromQuery",
+                "5|2026-09-06T16:00:00Z|1|1|fromQuery",
+                "6|2026-09-06T17:00:00Z|1|1|fromQuery",
+                "7|2026-09-06T18:00:00Z|0|0|fromCommand",
+                "8|2026-09-06T19:00:00Z|2|0|TRACEABILITY",
+                "9|2026-09-06T20:00:00Z|2|0|TRACEABILITY",
                 "1|EU:alice-hashed|EU:aliceEncoded",
-                "3|EU:bob-hashed|EU:bobEncoded",
-                "U000001-T000001|1|2|0|0|0|0|0",
-                "U000001-T000001|3|1|0|0|0|0|0",
-                "0|U000001-T000001|3",
-                "0|U000001-T000001|1");
+                "4|EU:bob-hashed|EU:bobEncoded",
+                "U000001-T000001|4|0|1|1|0|1|0",
+                "U000001-T000001|1|3|0|0|0|0|0",
+                "U000001-T000002|4|1|0|0|1|0|2",
+                "U000001-T000001-CL000001|4|0|0|0|0|1|0",
+                "3|U000001-T000001|4",
+                "4|U000001-T000002|4",
+                "5|U000001-T000001|4",
+                "1|U000001-T000001|1",
+                "7|U000001-T000002|4",
+                "8|U000001-T000002|4",
+                "6|U000001-T000001-CL000001|4",
+                "2|U000001-T000001|4",
+                "9|U000001-T000002|4");
     }
 }
